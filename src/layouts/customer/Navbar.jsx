@@ -16,6 +16,8 @@ import {
 } from "react-icons/fi";
 import CartSlider from "../../components/cart/CartSlider";
 import useAuthStore from "../../store/authStore";
+import useGuestCartStore from "../../store/guestCartStore";
+import { useCart } from "../../hooks/cart/useCartTan";
 import useDebounce from "../../hooks/useDebounce";
 import { useProducts } from "../../hooks/product/useProductTan";
 
@@ -24,8 +26,12 @@ export default function Navbar() {
   const [searchParams] = useSearchParams();
   const [isCartOpen, setIsCartOpen] = useState(false);
   const [isProfileOpen, setIsProfileOpen] = useState(false);
-  const [cartCount] = useState(3); // Keeping mocked count to match Hero aesthetic for now
   const { isAuthenticated, logout, openAuthModal } = useAuthStore();
+  const { data: cartData } = useCart({ enabled: isAuthenticated });
+  const guestCartItems = useGuestCartStore((state) => state.items);
+  const cartCount = isAuthenticated
+    ? cartData?.data?.cart?.totalItems || 0
+    : guestCartItems.reduce((sum, item) => sum + item.quantity, 0);
 
   // Search State
   const [searchInput, setSearchInput] = useState("");
