@@ -22,9 +22,9 @@ import AuthModal from "./components/modals/AuthModal";
 import ChatWidget from "./components/chat/ChatWidget";
 
 // Lazy load all page components
-const LoginPage = lazy(() => import("./pages/auth/LoginPage"));
+
 const VerifyMagicLinkPage = lazy(() => import("./pages/auth/VerifyMagicLinkPage"));
-const ResetPasswordPage = lazy(() => import("./pages/auth/ResetPasswordPage"));
+
 const ProfilePage = lazy(() => import("./pages/customer/ProfilePage"));
 const NotificationsPage = lazy(
   () => import("./pages/customer/NotificationsPage"),
@@ -108,7 +108,6 @@ function App() {
         <Route path="/" element={<HomePage />} />
 
         {/* Auth Routes */}
-        <Route path="/login" element={<LoginPage />} />
         <Route path="/auth/verify" element={<VerifyMagicLinkPage />} />
 
         {/* Customer-facing routes - redirect admins to admin dashboard */}
@@ -236,8 +235,7 @@ function App() {
           }
         />
 
-        {/* Public route - password reset */}
-        <Route path="/reset-password/:token" element={<ResetPasswordPage />} />
+
 
         {/* Protected customer routes - requires auth + not admin */}
         <Route
