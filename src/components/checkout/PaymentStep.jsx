@@ -13,12 +13,12 @@ export default function PaymentStep() {
   return (
     <div className="space-y-6">
       <div className="flex items-center gap-2.5 pb-2 border-b border-neutral-100 mb-6">
-        <div className="w-8 h-8 rounded-full bg-teal-50 flex items-center justify-center">
-          <Wallet size={16} className="text-teal-600" />
+        <div className="w-8 h-8 rounded-full bg-[#F27318]/10 flex items-center justify-center">
+          <Wallet size={16} className="text-[#F27318]" />
         </div>
         <h2 className="text-lg font-playfair text-neutral-900">
           <span className="font-bold">Payment</span>{" "}
-          <span className="italic text-teal-700">Method</span>
+          <span className="italic text-[#F27318]">Method</span>
         </h2>
       </div>
 
@@ -57,18 +57,18 @@ export default function PaymentStep() {
           type="button"
           onClick={() => setPaymentMethod("cod")}
           className={`w-full text-left p-4 rounded-xl border-2 transition-all flex items-center gap-4 ${paymentMethod === "cod"
-            ? "border-teal-500 bg-teal-50"
+            ? "border-[#F27318] bg-[#F27318]/5"
             : "border-neutral-200 hover:border-neutral-300"
             }`}
         >
           <div
-            className={`w-12 h-12 rounded-full flex items-center justify-center ${paymentMethod === "cod" ? "bg-teal-100" : "bg-neutral-100"
+            className={`w-12 h-12 rounded-full flex items-center justify-center ${paymentMethod === "cod" ? "bg-[#F27318]/10" : "bg-neutral-100"
               }`}
           >
             <Truck
               size={24}
               className={
-                paymentMethod === "cod" ? "text-teal-600" : "text-neutral-500"
+                paymentMethod === "cod" ? "text-[#F27318]" : "text-neutral-500"
               }
             />
           </div>
@@ -81,7 +81,7 @@ export default function PaymentStep() {
             </p>
           </div>
           {paymentMethod === "cod" && (
-            <div className="w-6 h-6 rounded-full bg-teal-600 flex items-center justify-center">
+            <div className="w-6 h-6 rounded-full bg-[#F27318] flex items-center justify-center">
               <Check size={14} className="text-white" strokeWidth={3} />
             </div>
           )}

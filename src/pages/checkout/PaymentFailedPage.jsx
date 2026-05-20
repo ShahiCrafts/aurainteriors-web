@@ -55,7 +55,7 @@ export default function PaymentFailedPage() {
             <div className="flex flex-col sm:flex-row gap-3 justify-center mb-8">
               <Link
                 to="/checkout"
-                className="inline-flex items-center justify-center gap-2 px-6 py-3 bg-teal-700 text-white font-medium rounded-xl hover:bg-teal-800 transition-colors font-dm-sans"
+                className="inline-flex items-center justify-center gap-2 px-6 py-3 bg-[#F27318] text-white font-medium rounded-xl hover:bg-[#D9620E] transition-colors font-dm-sans"
               >
                 <RefreshCw size={18} />
                 Try Again
@@ -76,7 +76,7 @@ export default function PaymentFailedPage() {
               </p>
               <Link
                 to="/contact"
-                className="inline-flex items-center gap-2 text-sm text-teal-700 hover:text-teal-800 font-medium font-dm-sans"
+                className="inline-flex items-center gap-2 text-sm text-[#F27318] hover:text-[#D9620E] font-medium font-dm-sans"
               >
                 <HelpCircle size={16} />
                 Contact Support

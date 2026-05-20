@@ -71,19 +71,19 @@ export default function OrderConfirmationPage() {
   return (
     <>
       <Navbar />
-      <main className="min-h-screen bg-gradient-to-b from-teal-50/50 to-white pt-20">
+      <main className="min-h-screen bg-gradient-to-b from-[#F27318]/5 to-white pt-20">
         <div className="max-w-2xl mx-auto px-4 py-12">
           {/* Success Card */}
           <div className="bg-white rounded-2xl shadow-sm p-8 text-center">
             {/* Success Icon */}
-            <div className="w-16 h-16 bg-teal-700 rounded-full flex items-center justify-center mx-auto mb-6">
+            <div className="w-16 h-16 bg-[#F27318] rounded-full flex items-center justify-center mx-auto mb-6">
               <Check size={32} className="text-white" strokeWidth={3} />
             </div>
 
             {/* Thank You Message */}
             <h1 className="text-2xl md:text-3xl font-playfair text-neutral-900 mb-2">
               Thank you for your{" "}
-              <span className="italic text-teal-700">purchase!</span>
+              <span className="italic text-[#F27318]">purchase!</span>
             </h1>
 
             <p className="text-neutral-600 font-dm-sans mb-8">
@@ -100,7 +100,7 @@ export default function OrderConfirmationPage() {
                 <p className="text-xs text-neutral-500 uppercase tracking-wider font-dm-sans mb-1">
                   Order Number
                 </p>
-                <p className="text-sm md:text-base font-semibold text-teal-700 font-dm-sans">
+                <p className="text-sm md:text-base font-semibold text-[#F27318] font-dm-sans">
                   #{orderId || "N/A"}
                 </p>
               </div>
@@ -109,7 +109,7 @@ export default function OrderConfirmationPage() {
                 <p className="text-xs text-neutral-500 uppercase tracking-wider font-dm-sans mb-1">
                   Order Date
                 </p>
-                <p className="text-sm md:text-base font-semibold text-teal-700 font-dm-sans">
+                <p className="text-sm md:text-base font-semibold text-[#F27318] font-dm-sans">
                   {orderDate}
                 </p>
               </div>
@@ -118,7 +118,7 @@ export default function OrderConfirmationPage() {
                 <p className="text-xs text-neutral-500 uppercase tracking-wider font-dm-sans mb-1">
                   Est. Delivery
                 </p>
-                <p className="text-sm md:text-base font-semibold text-teal-700 font-dm-sans">
+                <p className="text-sm md:text-base font-semibold text-[#F27318] font-dm-sans">
                   {estimatedDelivery}
                 </p>
               </div>
@@ -152,7 +152,7 @@ export default function OrderConfirmationPage() {
                   )}
                   <div className="flex justify-between items-center font-semibold text-neutral-900 font-dm-sans pt-2 border-t border-neutral-200">
                     <span>Total</span>
-                    <span className="text-teal-700">
+                    <span className="text-[#F27318]">
                       NRs. {order.total?.toLocaleString()}
                     </span>
                   </div>
@@ -164,7 +164,7 @@ export default function OrderConfirmationPage() {
             <div className="flex flex-col sm:flex-row gap-3 justify-center mb-8">
               <Link
                 to={`/track-order?orderId=${orderId}${email ? `&email=${encodeURIComponent(email)}` : ""}`}
-                className="inline-flex items-center justify-center gap-2 px-6 py-3 bg-teal-700 text-white font-medium rounded-xl hover:bg-teal-800 transition-colors font-dm-sans"
+                className="inline-flex items-center justify-center gap-2 px-6 py-3 bg-[#F27318] text-white font-medium rounded-xl hover:bg-[#D9620E] transition-colors font-dm-sans"
               >
                 <Package size={18} />
                 Track Your Order
@@ -186,21 +186,21 @@ export default function OrderConfirmationPage() {
               <div className="flex items-center justify-center gap-6 flex-wrap">
                 <a
                   href="/contact"
-                  className="inline-flex items-center gap-2 text-sm text-teal-700 hover:text-teal-800 font-medium font-dm-sans"
+                  className="inline-flex items-center gap-2 text-sm text-[#F27318] hover:text-[#D9620E] font-medium font-dm-sans"
                 >
                   <MessageSquare size={16} />
                   Contact Support
                 </a>
                 <a
                   href="/faq"
-                  className="inline-flex items-center gap-2 text-sm text-teal-700 hover:text-teal-800 font-medium font-dm-sans"
+                  className="inline-flex items-center gap-2 text-sm text-[#F27318] hover:text-[#D9620E] font-medium font-dm-sans"
                 >
                   <HelpCircle size={16} />
                   FAQs
                 </a>
                 <a
                   href="mailto:support@aurainteriors.live"
-                  className="inline-flex items-center gap-2 text-sm text-teal-700 hover:text-teal-800 font-medium font-dm-sans"
+                  className="inline-flex items-center gap-2 text-sm text-[#F27318] hover:text-[#D9620E] font-medium font-dm-sans"
                 >
                   <Mail size={16} />
                   Email Us
