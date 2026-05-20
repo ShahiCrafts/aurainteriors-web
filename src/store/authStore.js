@@ -25,11 +25,17 @@ const useAuthStore = create((set) => {
     isAuthenticated: initialIsAuthenticated,
     loading: false,
     isAuthModalOpen: false,
-    authModalView: "login", // 'login' or 'signup'
+    authModalView: "email", // 'email', 'sent', 'onboarding'
 
-    openAuthModal: (view = "login") => set({ isAuthModalOpen: true, authModalView: view }),
+    openAuthModal: (view = "email") => {
+      const mappedView = (view === "login" || view === "signup") ? "email" : view;
+      set({ isAuthModalOpen: true, authModalView: mappedView });
+    },
     closeAuthModal: () => set({ isAuthModalOpen: false }),
-    setAuthModalView: (view) => set({ authModalView: view }),
+    setAuthModalView: (view) => {
+      const mappedView = (view === "login" || view === "signup") ? "email" : view;
+      set({ authModalView: mappedView });
+    },
 
     signIn: (userData, newToken) => {
       localStorage.setItem("user", JSON.stringify(userData));

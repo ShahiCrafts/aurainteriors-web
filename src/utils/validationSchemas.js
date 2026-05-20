@@ -18,17 +18,7 @@ export const shippingSchema = yup.object().shape({
     country: yup.string().required("Country is required").min(2, "Too short"),
 });
 
-export const loginSchema = yup.object().shape({
-    email: yup.string().email("Invalid email").required("Email is required"),
-    password: yup.string().required("Password is required"),
-});
 
-export const signupSchema = yup.object().shape({
-    firstName: yup.string().required("First name is required").min(2, "Minimum 2 characters"),
-    lastName: yup.string().required("Last name is required").min(2, "Minimum 2 characters"),
-    email: yup.string().email("Invalid email format").required("Email is required"),
-    password: yup.string().required("Password is required").min(6, "Password must be at least 6 characters"),
-});
 
 export const addressSchema = yup.object().shape({
     fullName: yup.string().required("Full name is required").min(3, "Minimum 3 characters"),
@@ -80,18 +70,7 @@ export const reviewSchema = yup.object().shape({
     comment: yup.string().required("Comment is required").min(10, "Comment too short"),
 });
 
-export const forgotPasswordSchema = yup.object().shape({
-    email: yup.string().email("Invalid email").required("Email is required"),
-});
 
-export const changePasswordSchema = yup.object().shape({
-    currentPassword: yup.string().required("Current password is required"),
-    newPassword: yup.string().required("New password is required").min(8, "Minimum 8 characters"),
-    confirmPassword: yup
-        .string()
-        .required("Confirm password is required")
-        .oneOf([yup.ref("newPassword"), null], "Passwords must match"),
-});
 
 export const trackOrderSchema = yup.object().shape({
     orderId: yup.string().trim().required("Order ID is required"),
@@ -102,10 +81,4 @@ export const newsletterSchema = yup.object().shape({
     email: yup.string().email("Invalid email address").required("Email is required"),
 });
 
-export const resetPasswordSchema = yup.object().shape({
-    password: yup.string().required("Password is required").min(8, "Minimum 8 characters"),
-    confirmPassword: yup
-        .string()
-        .required("Confirm password is required")
-        .oneOf([yup.ref("password"), null], "Passwords must match"),
-});
+

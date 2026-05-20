@@ -11,7 +11,7 @@ export default function VerifyMagicLinkPage() {
   const [searchParams] = useSearchParams();
   const token = searchParams.get("token");
   const navigate = useNavigate();
-  const { signIn } = useAuthStore();
+  const { signIn, openAuthModal } = useAuthStore();
   useEffect(() => {
     if (!token) {
       toast.error("Invalid or missing magic link token.");
@@ -28,7 +28,18 @@ export default function VerifyMagicLinkPage() {
         const data = response.data;
         const user = data.data.user;
         signIn(user, data.token);
-        toast.success("Successfully signed in!");
+        
+        if (user && user.email) {
+          localStorage.setItem("lastUsedEmail", user.email);
+        }
+
+        const isProfileIncomplete = !user.firstName && !user.lastName;
+        if (isProfileIncomplete) {
+          openAuthModal("onboarding");
+          toast.success("Signed in successfully! Let's complete your profile setup.");
+        } else {
+          toast.success(`Welcome back, ${user.firstName || "User"}!`);
+        }
         navigate("/");
       } catch (error) {
         toast.error(error.displayMessage || "Failed to verify magic link.");
@@ -37,7 +48,7 @@ export default function VerifyMagicLinkPage() {
     };
 
     verify();
-  }, [token, navigate, signIn]);
+  }, [token, navigate, signIn, openAuthModal]);
 
   return (
     <div className="flex flex-col items-center justify-center min-h-screen bg-[#F8F9FA] font-dm-sans">

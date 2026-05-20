@@ -8,7 +8,7 @@ import {
   useUpdateAvatar,
   useRemoveAvatar,
 } from "../../hooks/profile/useProfileTan";
-import ChangePasswordModal from "../modals/ChangePasswordModal";
+
 import { getAvatarUrl } from "../../utils/imageUrl";
 import formatError from "../../utils/errorHandler";
 import { useForm } from "react-hook-form";
@@ -20,7 +20,7 @@ const currentYear = new Date().getFullYear();
 export default function PersonalInformation() {
   const fileInputRef = useRef(null);
   const { user: authUser, signIn } = useAuthStore();
-  const [changePasswordModalOpen, setChangePasswordModalOpen] = useState(false);
+
 
   const { data, isLoading } = useProfile();
   const { mutate: updateProfile, isPending: isUpdating } = useUpdateProfile();
@@ -423,47 +423,7 @@ export default function PersonalInformation() {
         </form>
       </div>
 
-      <div className="bg-white rounded-2xl shadow-sm border border-neutral-100 p-6 sm:p-8">
-        <div className="mb-6">
-          <h2 className="text-xl font-bold text-[#1A1714] font-dm-sans">
-            Password & Security
-          </h2>
-          <p className="text-neutral-500 font-dm-sans text-sm mt-1">
-            Manage your password and security settings
-          </p>
-        </div>
 
-        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 p-4 bg-neutral-50 rounded-xl">
-          <div className="flex items-center gap-3">
-            <div className="w-10 h-10 bg-white rounded-lg flex items-center justify-center shadow-sm shrink-0">
-              <Lock size={20} className="text-neutral-500" />
-            </div>
-            <div className="min-w-0">
-              <p className="font-medium text-neutral-800 font-dm-sans">
-                Password
-              </p>
-              <p className="text-sm text-neutral-500 font-dm-sans truncate">
-                Last changed{" "}
-                {user?.passwordChangedAt
-                  ? getTimeAgo(user.passwordChangedAt)
-                  : "recently"}
-              </p>
-            </div>
-          </div>
-          <button
-            onClick={() => setChangePasswordModalOpen(true)}
-            className="w-full sm:w-auto flex items-center justify-center gap-2 px-4 py-2.5 border border-neutral-200 hover:bg-white text-neutral-700 text-sm font-medium rounded-lg transition-all font-dm-sans shrink-0"
-          >
-            <Lock size={14} />
-            Change Password
-          </button>
-        </div>
-      </div>
-
-      <ChangePasswordModal
-        isOpen={changePasswordModalOpen}
-        onClose={() => setChangePasswordModalOpen(false)}
-      />
     </div>
   );
 }
