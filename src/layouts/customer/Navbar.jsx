@@ -18,6 +18,7 @@ import CartSlider from "../../components/cart/CartSlider";
 import useAuthStore from "../../store/authStore";
 import useGuestCartStore from "../../store/guestCartStore";
 import { useCart } from "../../hooks/cart/useCartTan";
+import { useWishlist } from "../../hooks/cart/useWishlistTan";
 import useDebounce from "../../hooks/useDebounce";
 import { useProducts } from "../../hooks/product/useProductTan";
 
@@ -28,10 +29,14 @@ export default function Navbar() {
   const [isProfileOpen, setIsProfileOpen] = useState(false);
   const { isAuthenticated, logout, openAuthModal } = useAuthStore();
   const { data: cartData } = useCart({ enabled: isAuthenticated });
+  const { data: wishlistData } = useWishlist({ enabled: isAuthenticated });
   const guestCartItems = useGuestCartStore((state) => state.items);
+  
   const cartCount = isAuthenticated
     ? cartData?.data?.cart?.totalItems || 0
     : guestCartItems.reduce((sum, item) => sum + item.quantity, 0);
+    
+  const wishlistCount = wishlistData?.data?.wishlist?.itemCount || 0;
 
   // Search State
   const [searchInput, setSearchInput] = useState("");
@@ -71,15 +76,16 @@ export default function Navbar() {
   };
 
   const profileMenuItems = [
-    { label: "My Profile", icon: <FiUser size={16} />, path: "/profile" },
-    { label: "My Wishlist", icon: <FiHeart size={16} />, path: "/wishlist" },
-    { label: "My Orders", icon: <FiPackage size={16} />, path: "/orders" },
+    { label: "My Profile", icon: <FiUser size={16} />, path: "/profile", state: null },
+    { label: "My Wishlist", icon: <FiHeart size={16} />, path: "/profile", state: { activeTab: "wishlist" } },
+    { label: "My Orders", icon: <FiPackage size={16} />, path: "/profile", state: { activeTab: "orders" } },
     {
       label: "Saved Addresses",
       icon: <FiMapPin size={16} />,
-      path: "/addresses",
+      path: "/profile",
+      state: { activeTab: "saved-addresses" },
     },
-    { label: "Settings", icon: <FiSettings size={16} />, path: "/settings" },
+    { label: "Settings", icon: <FiSettings size={16} />, path: "/settings", state: null },
   ];
 
   const handleLogout = () => {
@@ -227,13 +233,13 @@ export default function Navbar() {
               onClick={() =>
                 !isAuthenticated
                   ? openAuthModal("login")
-                  : (window.location.href = "/wishlist")
+                  : navigate("/profile", { state: { activeTab: "wishlist" } })
               }
               className="flex flex-col items-center gap-[4px] px-2 md:px-[14px] py-[6px] rounded-[10px] cursor-pointer transition-colors duration-[180ms] text-[#6A6058] hover:text-[#1A1714] border-none bg-transparent font-sans relative group"
             >
               <FiHeart className="w-5 h-5 md:w-[22px] md:h-[22px]" />
               <span className="hidden md:block text-[11px] font-medium text-[#6A6058] group-hover:text-[#1A1714] whitespace-nowrap">
-                Wishlist (0)
+                Wishlist ({wishlistCount})
               </span>
             </button>
             <button
@@ -303,6 +309,7 @@ export default function Navbar() {
                         <Link
                           key={idx}
                           to={item.path}
+                          state={item.state}
                           onClick={(e) => {
                             if (!isAuthenticated) {
                               e.preventDefault();
