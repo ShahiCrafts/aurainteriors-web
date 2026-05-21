@@ -39,7 +39,7 @@ export default function ReviewStep() {
   return (
     <div className="space-y-6">
       <h2 className="text-xl font-semibold text-neutral-900 font-playfair flex items-center gap-2">
-        <ClipboardCheck size={20} className="text-teal-700" />
+        <ClipboardCheck size={20} className="text-[#F27318]" />
         Review Your Order
       </h2>
 
@@ -154,10 +154,10 @@ export default function ReviewStep() {
         </div>
         {discountAmount > 0 && (
           <div className="flex justify-between text-sm font-dm-sans">
-            <span className="text-teal-600">
+            <span className="text-[#F27318]">
               Discount ({appliedDiscount.code})
             </span>
-            <span className="text-teal-600">
+            <span className="text-[#F27318]">
               - NRs. {discountAmount.toLocaleString()}
             </span>
           </div>
@@ -174,7 +174,7 @@ export default function ReviewStep() {
           <span className="text-lg font-semibold text-neutral-900 font-dm-sans">
             Total
           </span>
-          <span className="text-xl font-bold text-teal-700 font-playfair">
+          <span className="text-xl font-bold text-[#F27318] font-playfair">
             NRs. {total.toLocaleString()}
           </span>
         </div>
@@ -190,7 +190,7 @@ export default function ReviewStep() {
           onChange={(e) => setCustomerNote(e.target.value)}
           rows={3}
           placeholder="Any special instructions for your order..."
-          className="w-full px-4 py-3 rounded-xl border border-neutral-200 focus:border-teal-500 focus:ring-2 focus:ring-teal-500/20 outline-none font-dm-sans resize-none transition-colors"
+          className="w-full px-4 py-3 rounded-xl border border-neutral-200 focus:border-[#F27318] focus:ring-2 focus:ring-[#F27318]/20 outline-none font-dm-sans resize-none transition-colors"
         />
       </div>
     </div>

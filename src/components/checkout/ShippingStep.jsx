@@ -10,7 +10,7 @@ export default function ShippingStep() {
 
   const { shippingMethod, setShippingMethod } = useCheckoutStore();
 
-  const inputClasses = "w-full px-4 py-3 bg-neutral-50 border border-neutral-200 rounded-lg text-sm text-neutral-800 placeholder:text-neutral-400 focus:outline-none focus:border-teal-500 focus:ring-1 focus:ring-teal-500/20 focus:bg-white transition-all";
+  const inputClasses = "w-full px-4 py-3 bg-neutral-50 border border-neutral-200 rounded-lg text-sm text-neutral-800 placeholder:text-neutral-400 focus:outline-none focus:border-[#F27318] focus:ring-1 focus:ring-[#F27318]/20 focus:bg-white transition-all";
   const labelClasses = "block text-sm font-medium text-neutral-700 mb-1.5";
 
   return (
@@ -19,12 +19,12 @@ export default function ShippingStep() {
       <div className="space-y-5">
         {/* Heading */}
         <div className="flex items-center gap-2.5 pb-2 border-b border-neutral-100">
-          <div className="w-8 h-8 rounded-full bg-teal-50 flex items-center justify-center">
-            <MapPin size={16} className="text-teal-600" />
+          <div className="w-8 h-8 rounded-full bg-[#F27318]/10 flex items-center justify-center">
+            <MapPin size={16} className="text-[#F27318]" />
           </div>
           <h2 className="text-lg font-playfair text-neutral-900">
             <span className="font-bold">Shipping</span>{" "}
-            <span className="italic text-teal-700">Address</span>
+            <span className="italic text-[#F27318]">Address</span>
           </h2>
         </div>
 
@@ -174,12 +174,12 @@ export default function ShippingStep() {
         {/* Shipping Method Section */}
         <div className="space-y-4">
           <div className="flex items-center gap-2.5 pb-2 border-b border-neutral-100">
-            <div className="w-8 h-8 rounded-full bg-teal-50 flex items-center justify-center">
-              <Truck size={16} className="text-teal-600" />
+            <div className="w-8 h-8 rounded-full bg-[#F27318]/10 flex items-center justify-center">
+              <Truck size={16} className="text-[#F27318]" />
             </div>
             <h2 className="text-lg font-playfair text-neutral-900">
               <span className="font-bold">Shipping</span>{" "}
-              <span className="italic text-teal-700">Method</span>
+              <span className="italic text-[#F27318]">Method</span>
             </h2>
           </div>
 
@@ -189,7 +189,7 @@ export default function ShippingStep() {
               type="button"
               onClick={() => setShippingMethod("standard")}
               className={`w-full text-left p-4 rounded-xl border-2 transition-all duration-200 ${shippingMethod === "standard"
-                ? "border-teal-500 bg-teal-50/50"
+                ? "border-[#F27318] bg-[#F27318]/5"
                 : "border-neutral-200 hover:border-neutral-300 bg-white"
                 }`}
             >
@@ -197,12 +197,12 @@ export default function ShippingStep() {
                 <div className="flex items-center gap-3">
                   <div
                     className={`w-5 h-5 rounded-full border-2 flex items-center justify-center transition-colors ${shippingMethod === "standard"
-                      ? "border-teal-500"
+                      ? "border-[#F27318]"
                       : "border-neutral-300"
                       }`}
                   >
                     {shippingMethod === "standard" && (
-                      <div className="w-2.5 h-2.5 rounded-full bg-teal-500" />
+                      <div className="w-2.5 h-2.5 rounded-full bg-[#F27318]" />
                     )}
                   </div>
                   <div>
@@ -225,7 +225,7 @@ export default function ShippingStep() {
               type="button"
               onClick={() => setShippingMethod("express")}
               className={`w-full text-left p-4 rounded-xl border-2 transition-all duration-200 ${shippingMethod === "express"
-                ? "border-teal-500 bg-teal-50/50"
+                ? "border-[#F27318] bg-[#F27318]/5"
                 : "border-neutral-200 hover:border-neutral-300 bg-white"
                 }`}
             >
@@ -233,12 +233,12 @@ export default function ShippingStep() {
                 <div className="flex items-center gap-3">
                   <div
                     className={`w-5 h-5 rounded-full border-2 flex items-center justify-center transition-colors ${shippingMethod === "express"
-                      ? "border-teal-500"
+                      ? "border-[#F27318]"
                       : "border-neutral-300"
                       }`}
                   >
                     {shippingMethod === "express" && (
-                      <div className="w-2.5 h-2.5 rounded-full bg-teal-500" />
+                      <div className="w-2.5 h-2.5 rounded-full bg-[#F27318]" />
                     )}
                   </div>
                   <div>

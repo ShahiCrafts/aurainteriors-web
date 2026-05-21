@@ -286,7 +286,7 @@ export default function CheckoutPage() {
       <>
         <Navbar />
         <div className="min-h-screen flex items-center justify-center pt-20">
-          <Loader2 size={48} className="text-teal-700 animate-spin" />
+          <Loader2 size={48} className="text-[#F27318] animate-spin" />
         </div>
       </>
     );
@@ -312,7 +312,7 @@ export default function CheckoutPage() {
               Collections
             </Link>
             <span className="text-neutral-300 shrink-0">/</span>
-            <span className="text-teal-700 font-medium shrink-0">Checkout</span>
+            <span className="text-[#F27318] font-medium shrink-0">Checkout</span>
           </nav>
 
           <div className="grid grid-cols-1 md:grid-cols-12 gap-6 sm:gap-8">
@@ -344,7 +344,7 @@ export default function CheckoutPage() {
                         disabled={isSubmitting}
                         className={`${
                           currentStep === 2 ? "sm:flex-2" : "w-full"
-                        } py-3 bg-teal-700 text-white font-semibold rounded-xl hover:bg-teal-800 transition-all duration-200 flex items-center justify-center gap-2 shadow-sm text-sm order-1 sm:order-2`}
+                        } py-3 bg-[#F27318] text-white font-semibold rounded-xl hover:bg-[#D9620E] transition-all duration-200 flex items-center justify-center gap-2 shadow-sm text-sm order-1 sm:order-2`}
                       >
                         {isSubmitting ? (
                           <Loader2 size={20} className="animate-spin" />
@@ -369,7 +369,7 @@ export default function CheckoutPage() {
               <div className="bg-white rounded-2xl shadow-sm border border-neutral-100 p-5 sm:p-6 md:sticky md:top-24">
                 <h2 className="text-lg sm:text-xl font-playfair text-neutral-900 mb-6">
                   <span className="font-bold">Order</span>{" "}
-                  <span className="italic text-teal-700">Summary</span>
+                  <span className="italic text-[#F27318]">Summary</span>
                 </h2>
                 <div className="space-y-4 sm:space-y-5 mb-6 max-h-[50vh] md:max-h-none overflow-y-auto pr-1">
                   {cartItems.map((item) => {
@@ -424,7 +424,7 @@ export default function CheckoutPage() {
                                 <Plus size={12} />
                               </button>
                             </div>
-                            <p className="text-xs sm:text-sm font-semibold text-teal-700">
+                            <p className="text-xs sm:text-sm font-semibold text-[#F27318]">
                               NRs. {(price * item.quantity).toLocaleString()}
                             </p>
                           </div>
@@ -435,16 +435,16 @@ export default function CheckoutPage() {
                 </div>
                 <div className="mb-6">
                   {appliedPromo ? (
-                    <div className="flex items-center justify-between p-3 bg-teal-50/50 border border-teal-100 rounded-lg">
+                    <div className="flex items-center justify-between p-3 bg-[#F27318]/5 border border-[#F27318]/10 rounded-lg">
                       <div className="flex items-center gap-2 overflow-hidden">
-                        <Tag className="w-4 h-4 text-teal-600 shrink-0" />
-                        <span className="text-xs sm:text-sm font-medium text-teal-700 truncate">
+                        <Tag className="w-4 h-4 text-[#F27318] shrink-0" />
+                        <span className="text-xs sm:text-sm font-medium text-[#F27318] truncate">
                           {appliedPromo.discount.code} applied
                         </span>
                       </div>
                       <button
                         onClick={handleRemovePromo}
-                        className="text-teal-600 hover:text-teal-700 text-xs sm:text-sm font-medium shrink-0 ml-2"
+                        className="text-[#F27318] hover:text-[#D9620E] text-xs sm:text-sm font-medium shrink-0 ml-2"
                       >
                         Remove
                       </button>
@@ -463,7 +463,7 @@ export default function CheckoutPage() {
                             setPromoCode(e.target.value.toUpperCase())
                           }
                           placeholder="Promo code"
-                          className="w-full pl-8 sm:pl-9 pr-3 py-2 border border-neutral-200 rounded-lg text-xs sm:text-sm focus:border-teal-500 outline-none transition-all"
+                          className="w-full pl-8 sm:pl-9 pr-3 py-2 border border-neutral-200 rounded-lg text-xs sm:text-sm focus:border-[#F27318] outline-none transition-all"
                         />
                       </div>
                       <button
@@ -501,7 +501,7 @@ export default function CheckoutPage() {
                     </span>
                   </div>
                   {promoDiscount > 0 && (
-                    <div className="flex justify-between text-xs sm:text-sm text-teal-600 font-medium">
+                    <div className="flex justify-between text-xs sm:text-sm text-[#F27318] font-medium">
                       <span>Discount</span>
                       <span>- NRs. {promoDiscount.toLocaleString()}</span>
                     </div>
@@ -511,7 +511,7 @@ export default function CheckoutPage() {
                   <span className="text-sm sm:text-base font-semibold text-neutral-900">
                     Total
                   </span>
-                  <span className="text-lg sm:text-xl font-bold text-teal-700">
+                  <span className="text-lg sm:text-xl font-bold text-[#F27318]">
                     NRs. {total.toLocaleString()}
                   </span>
                 </div>
