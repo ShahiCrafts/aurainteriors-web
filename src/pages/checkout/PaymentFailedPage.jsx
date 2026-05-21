@@ -39,14 +39,14 @@ export default function PaymentFailedPage() {
 
             {/* Error Message */}
             <h1 className="text-2xl md:text-3xl font-playfair text-neutral-900 mb-2">
-              Payment <span className="italic text-red-500">Failed</span>
+              Payment <span className="text-red-500">Failed</span>
             </h1>
-            <p className="text-neutral-600 font-dm-sans mb-4">
+            <p className="text-neutral-600 font-lato mb-4">
               {getErrorMessage(error)}
             </p>
 
             {orderId && (
-              <p className="text-sm text-neutral-500 font-dm-sans mb-8">
+              <p className="text-sm text-neutral-500 font-lato mb-8">
                 Order Reference: <span className="font-semibold">{orderId}</span>
               </p>
             )}
@@ -55,14 +55,14 @@ export default function PaymentFailedPage() {
             <div className="flex flex-col sm:flex-row gap-3 justify-center mb-8">
               <Link
                 to="/checkout"
-                className="inline-flex items-center justify-center gap-2 px-6 py-3 bg-[#F27318] text-white font-medium rounded-xl hover:bg-[#D9620E] transition-colors font-dm-sans"
+                className="inline-flex items-center justify-center gap-2 px-6 py-3 bg-[#F27318] text-white font-medium rounded-xl hover:bg-[#D9620E] transition-colors font-lato"
               >
                 <RefreshCw size={18} />
                 Try Again
               </Link>
               <Link
                 to="/"
-                className="inline-flex items-center justify-center gap-2 px-6 py-3 border border-neutral-200 text-neutral-700 font-medium rounded-xl hover:bg-neutral-50 transition-colors font-dm-sans"
+                className="inline-flex items-center justify-center gap-2 px-6 py-3 border border-neutral-200 text-neutral-700 font-medium rounded-xl hover:bg-neutral-50 transition-colors font-lato"
               >
                 <Home size={18} />
                 Go Home
@@ -71,12 +71,12 @@ export default function PaymentFailedPage() {
 
             {/* Help Section */}
             <div className="pt-6 border-t border-neutral-200">
-              <p className="text-neutral-600 font-dm-sans mb-4">
+              <p className="text-neutral-600 font-lato mb-4">
                 Need help with your payment?
               </p>
               <Link
                 to="/contact"
-                className="inline-flex items-center gap-2 text-sm text-[#F27318] hover:text-[#D9620E] font-medium font-dm-sans"
+                className="inline-flex items-center gap-2 text-sm text-[#F27318] hover:text-[#D9620E] font-medium font-lato"
               >
                 <HelpCircle size={16} />
                 Contact Support

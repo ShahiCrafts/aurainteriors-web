@@ -18,7 +18,7 @@ export default function PaymentStep() {
         </div>
         <h2 className="text-lg font-playfair text-neutral-900">
           <span className="font-bold">Payment</span>{" "}
-          <span className="italic text-[#F27318]">Method</span>
+          <span className="text-[#F27318]">Method</span>
         </h2>
       </div>
 
@@ -34,14 +34,14 @@ export default function PaymentStep() {
           <EsewaLogo />
           <div className="flex-1">
             <p
-              className={`font-semibold font-dm-sans ${paymentMethod === "esewa"
+              className={`font-semibold font-lato ${paymentMethod === "esewa"
                 ? "text-neutral-900"
                 : "text-neutral-900"
                 }`}
             >
               eSewa
             </p>
-            <p className="text-sm text-neutral-500 font-dm-sans">
+            <p className="text-sm text-neutral-500 font-lato">
               Pay with your digital wallet
             </p>
           </div>
@@ -73,10 +73,10 @@ export default function PaymentStep() {
             />
           </div>
           <div className="flex-1">
-            <p className="font-semibold text-neutral-900 font-dm-sans">
+            <p className="font-semibold text-neutral-900 font-lato">
               Cash on Delivery (COD)
             </p>
-            <p className="text-sm text-neutral-500 font-dm-sans">
+            <p className="text-sm text-neutral-500 font-lato">
               Pay when your order arrives
             </p>
           </div>
@@ -93,8 +93,8 @@ export default function PaymentStep() {
           <div className="flex items-start gap-3">
             <Shield size={20} className="text-amber-600 shrink-0 mt-0.5" />
             <div>
-              <p className="font-semibold text-amber-800 font-dm-sans">Secure Payment</p>
-              <p className="text-sm text-amber-700 font-dm-sans mt-1 leading-relaxed">
+              <p className="font-semibold text-amber-800 font-lato">Secure Payment</p>
+              <p className="text-sm text-amber-700 font-lato mt-1 leading-relaxed">
                 Your payment information is encrypted and secure. You'll be redirected to eSewa to complete your payment safely.
               </p>
             </div>

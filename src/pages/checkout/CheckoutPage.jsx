@@ -295,7 +295,7 @@ export default function CheckoutPage() {
   return (
     <>
       <Navbar />
-      <main className="min-h-screen bg-neutral-50 pt-16 sm:pt-20 font-dm-sans">
+      <main className="min-h-screen bg-neutral-50 pt-16 sm:pt-20 font-lato">
         <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 py-6 sm:py-8">
           <nav className="flex flex-wrap items-center gap-y-2 gap-x-2 text-[10px] sm:text-xs md:text-sm mb-6 sm:mb-8 overflow-hidden">
             <Link
@@ -369,7 +369,7 @@ export default function CheckoutPage() {
               <div className="bg-white rounded-2xl shadow-sm border border-neutral-100 p-5 sm:p-6 md:sticky md:top-24">
                 <h2 className="text-lg sm:text-xl font-playfair text-neutral-900 mb-6">
                   <span className="font-bold">Order</span>{" "}
-                  <span className="italic text-[#F27318]">Summary</span>
+                  <span className="text-[#F27318]">Summary</span>
                 </h2>
                 <div className="space-y-4 sm:space-y-5 mb-6 max-h-[50vh] md:max-h-none overflow-y-auto pr-1">
                   {cartItems.map((item) => {
