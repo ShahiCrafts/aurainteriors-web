@@ -14,7 +14,7 @@ export default function ShippingStep() {
   const labelClasses = "block text-sm font-medium text-neutral-700 mb-1.5";
 
   return (
-    <div className="space-y-8 font-dm-sans">
+    <div className="space-y-8 font-lato">
       {/* Shipping Address Section */}
       <div className="space-y-5">
         {/* Heading */}
@@ -24,7 +24,7 @@ export default function ShippingStep() {
           </div>
           <h2 className="text-lg font-playfair text-neutral-900">
             <span className="font-bold">Shipping</span>{" "}
-            <span className="italic text-[#F27318]">Address</span>
+            <span className="text-[#F27318]">Address</span>
           </h2>
         </div>
 
@@ -179,7 +179,7 @@ export default function ShippingStep() {
             </div>
             <h2 className="text-lg font-playfair text-neutral-900">
               <span className="font-bold">Shipping</span>{" "}
-              <span className="italic text-[#F27318]">Method</span>
+              <span className="text-[#F27318]">Method</span>
             </h2>
           </div>
 
