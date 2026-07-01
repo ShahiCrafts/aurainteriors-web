@@ -1,106 +1,84 @@
-import { Wallet, Truck, Check, Shield } from "lucide-react";
+import { Banknote, Check } from "lucide-react";
 import useCheckoutStore from "../../store/checkoutStore";
-
-const EsewaLogo = () => (
-  <div className="w-12 h-12 rounded-full bg-[#60BB46] flex items-center justify-center">
-    <span className="text-white font-bold text-xs">eSewa</span>
-  </div>
-);
 
 export default function PaymentStep() {
   const { paymentMethod, setPaymentMethod } = useCheckoutStore();
 
   return (
-    <div className="space-y-6">
-      <div className="flex items-center gap-2.5 pb-2 border-b border-neutral-100 mb-6">
-        <div className="w-8 h-8 rounded-full bg-[#F27318]/10 flex items-center justify-center">
-          <Wallet size={16} className="text-[#F27318]" />
-        </div>
-        <h2 className="text-lg font-playfair text-neutral-900">
-          <span className="font-bold">Payment</span>{" "}
-          <span className="text-[#F27318]">Method</span>
-        </h2>
-      </div>
+    <div className="space-y-8 font-dm-sans">
 
-      <div className="space-y-3">
+      {/* Payment Options */}
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+        {/* eSewa Option */}
         <button
           type="button"
           onClick={() => setPaymentMethod("esewa")}
-          className={`w-full text-left p-4 rounded-xl border-2 transition-all flex items-center gap-4 ${paymentMethod === "esewa"
-            ? "border-[#60BB46] bg-green-50"
-            : "border-neutral-200 hover:border-neutral-300"
-            }`}
+          className={`relative flex items-center gap-4 p-5 rounded-xl border transition-all duration-300 text-left ${
+            paymentMethod === "esewa"
+              ? "border-[#60BB46] bg-[#F3FBF1] ring-1 ring-[#60BB46]/20"
+              : "border-neutral-200 bg-white hover:border-neutral-300"
+          }`}
         >
-          <EsewaLogo />
-          <div className="flex-1">
-            <p
-              className={`font-semibold font-lato ${paymentMethod === "esewa"
-                ? "text-neutral-900"
-                : "text-neutral-900"
-                }`}
-            >
-              eSewa
+          <div className="w-14 h-14 flex items-center justify-center shrink-0">
+            <img
+              src="https://cdn.brandfetch.io/idDVuHZ3OK/w/600/h/600/theme/dark/icon.jpeg?c=1bxid64Mup7aczewSAYMX&t=1751351358039"
+              alt="eSewa"
+              className="w-full h-full object-contain"
+            />
+          </div>
+
+          <div className="flex-1 min-w-0">
+            <p className="text-[16px] font-semibold text-[#1A1714]">
+              eSewa Digital Wallet
             </p>
-            <p className="text-sm text-neutral-500 font-lato">
-              Pay with your digital wallet
+            <p className="text-[14px] text-neutral-400 mt-0.5">
+              Fast and secure mobile payment
             </p>
           </div>
+
           {paymentMethod === "esewa" && (
-            <div className="w-6 h-6 rounded-full bg-[#60BB46] flex items-center justify-center">
-              <Check size={14} className="text-white" strokeWidth={3} />
+            <div className="w-5 h-5 rounded-full bg-[#60BB46] flex items-center justify-center shrink-0">
+              <Check size={12} className="text-white" strokeWidth={4} />
             </div>
           )}
         </button>
 
-
+        {/* Cash on Delivery Option */}
         <button
           type="button"
           onClick={() => setPaymentMethod("cod")}
-          className={`w-full text-left p-4 rounded-xl border-2 transition-all flex items-center gap-4 ${paymentMethod === "cod"
-            ? "border-[#F27318] bg-[#F27318]/5"
-            : "border-neutral-200 hover:border-neutral-300"
-            }`}
+          className={`relative flex items-center gap-4 p-5 rounded-xl border transition-all duration-300 text-left ${
+            paymentMethod === "cod"
+              ? "border-[#F27318] bg-[#FFF8F2] ring-1 ring-[#F27318]/20"
+              : "border-neutral-200 bg-white hover:border-neutral-300"
+          }`}
         >
           <div
-            className={`w-12 h-12 rounded-full flex items-center justify-center ${paymentMethod === "cod" ? "bg-[#F27318]/10" : "bg-neutral-100"
-              }`}
-          >
-            <Truck
-              size={24}
-              className={
-                paymentMethod === "cod" ? "text-[#F27318]" : "text-neutral-500"
-              }
-            />
-          </div>
-          <div className="flex-1">
-            <p className="font-semibold text-neutral-900 font-lato">
-              Cash on Delivery (COD)
+  className={`w-11 h-11 rounded-full flex items-center justify-center shrink-0 transition-colors ${
+    paymentMethod === "cod"
+      ? "bg-[#F27318] text-white"
+      : "bg-neutral-100 text-neutral-400"
+  }`}
+>
+  <Banknote size={20} strokeWidth={2.2} />
+</div>
+
+          <div className="flex-1 min-w-0">
+            <p className="text-[16px] font-semibold text-[#1A1714]">
+              Cash on Delivery
             </p>
-            <p className="text-sm text-neutral-500 font-lato">
-              Pay when your order arrives
+            <p className="text-[14px] text-neutral-400 mt-0.5">
+              Pay when your order arrives at your door
             </p>
           </div>
+
           {paymentMethod === "cod" && (
-            <div className="w-6 h-6 rounded-full bg-[#F27318] flex items-center justify-center">
-              <Check size={14} className="text-white" strokeWidth={3} />
+            <div className="w-5 h-5 rounded-full bg-[#F27318] flex items-center justify-center shrink-0">
+              <Check size={12} className="text-white" strokeWidth={4} />
             </div>
           )}
         </button>
       </div>
-
-      {paymentMethod === "esewa" && (
-        <div className="bg-amber-50 border border-amber-200 rounded-xl p-4 mt-6">
-          <div className="flex items-start gap-3">
-            <Shield size={20} className="text-amber-600 shrink-0 mt-0.5" />
-            <div>
-              <p className="font-semibold text-amber-800 font-lato">Secure Payment</p>
-              <p className="text-sm text-amber-700 font-lato mt-1 leading-relaxed">
-                Your payment information is encrypted and secure. You'll be redirected to eSewa to complete your payment safely.
-              </p>
-            </div>
-          </div>
-        </div>
-      )}
     </div>
   );
 }

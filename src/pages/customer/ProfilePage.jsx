@@ -42,16 +42,16 @@ export default function ProfilePage() {
       <Navbar />
       <CategoryBar />
 
-      <main className="min-h-screen bg-white pt-0 pb-20 font-dm-sans">
-        <div className="max-w-[1440px] mx-auto px-4 md:px-6 lg:px-9">
-          <div className="flex flex-col lg:flex-row gap-12 lg:gap-20">
+      <main className="min-h-screen bg-white pb-20 font-dm-sans">
+        <div className="max-w-[1440px] mx-auto px-4 md:px-6 lg:px-6">
+          <div className="flex flex-col lg:flex-row gap-12 lg:gap-8">
             {/* Sidebar (Desktop) - Consistent Retail Aesthetic */}
-            <aside className="hidden lg:block lg:w-64 shrink-0 pt-10 md:pt-14">
+            <aside className="hidden lg:block lg:w-72 shrink-0 pt-10 md:pt-8 border-r-2 pr-6 border-r-neutral-100">
               <div className="sticky top-[120px]">
                 <div className="space-y-10">
                   {/* Account Summary */}
                   <div>
-                    <h3 className="text-[12px] font-black text-black/20 mb-4 uppercase tracking-[0.1em]">
+                    <h3 className="text-[15px] font-medium text-black/20 mb-4">
                       DecorX Account
                     </h3>
                     <div className="flex items-center gap-3.5 group">
@@ -74,7 +74,7 @@ export default function ProfilePage() {
 
                   {/* Navigation Links */}
                   <div>
-                    <h3 className="text-[12px] font-black text-black/20 mb-6 uppercase tracking-[0.1em]">
+                    <h3 className="text-[15px] font-medium text-black/20 mb-6">
                       Account Menu
                     </h3>
                     <nav className="flex flex-col space-y-8">
@@ -134,7 +134,7 @@ export default function ProfilePage() {
             </div>
 
             {/* Content Section - High Fidelity Editorial Layout */}
-            <div className="flex-1 pt-10 md:pt-14">
+            <div className="flex-1 pt-8 md:pt-8">
               <AnimatePresence mode="wait">
                 <motion.div
                   key={activeTab}

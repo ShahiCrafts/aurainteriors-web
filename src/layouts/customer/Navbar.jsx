@@ -1,20 +1,19 @@
-import { useState, useEffect, useRef } from "react";
+import { useState, useEffect, useRef, Suspense, lazy } from "react";
 import { Link, useNavigate, useSearchParams } from "react-router-dom";
 import {
-  FiSearch,
-  FiShoppingCart,
-  FiUser,
-  FiHeart,
-  FiPackage,
-  FiMapPin,
-  FiSettings,
-  FiLogOut,
-  FiBell,
-  FiMenu,
-  FiX,
-  FiLoader,
-} from "react-icons/fi";
-import CartSlider from "../../components/cart/CartSlider";
+  Search,
+  ShoppingCart,
+  User,
+  Heart,
+  Package,
+  MapPin,
+  Settings,
+  LogOut,
+  Bell,
+  Menu,
+  X,
+  Loader2,
+} from "lucide-react";
 import useAuthStore from "../../store/authStore";
 import useGuestCartStore from "../../store/guestCartStore";
 import { useCart } from "../../hooks/cart/useCartTan";
@@ -22,41 +21,52 @@ import { useWishlist } from "../../hooks/cart/useWishlistTan";
 import useDebounce from "../../hooks/useDebounce";
 import { useProducts } from "../../hooks/product/useProductTan";
 
+// Lazy: CartSlider is 10KB + its own deps. Mount it only after the first time
+// the user opens the cart so it never appears in the initial HTML paint.
+const CartSlider = lazy(() => import("../../components/cart/CartSlider"));
+
 export default function Navbar() {
   const navigate = useNavigate();
   const [searchParams] = useSearchParams();
   const [isCartOpen, setIsCartOpen] = useState(false);
+  // Latch: once true, CartSlider stays in the DOM so close animation works.
+  const [cartEverOpened, setCartEverOpened] = useState(false);
   const [isProfileOpen, setIsProfileOpen] = useState(false);
   const { isAuthenticated, logout, openAuthModal } = useAuthStore();
   const { data: cartData } = useCart({ enabled: isAuthenticated });
   const { data: wishlistData } = useWishlist({ enabled: isAuthenticated });
   const guestCartItems = useGuestCartStore((state) => state.items);
-  
+
   const cartCount = isAuthenticated
     ? cartData?.data?.cart?.totalItems || 0
     : guestCartItems.reduce((sum, item) => sum + item.quantity, 0);
-    
+
   const wishlistCount = wishlistData?.data?.wishlist?.itemCount || 0;
 
-  // Search State
+  // ── Search state ─────────────────────────────────────────────────────────
   const [searchInput, setSearchInput] = useState("");
   const [isSearchFocused, setIsSearchFocused] = useState(false);
   const debouncedSearch = useDebounce(searchInput, 300);
   const searchRef = useRef(null);
 
-  // Fetch search results
-  const { data: searchResultsData, isLoading: isSearchLoading } = useProducts({
-    search: debouncedSearch,
-    limit: 5,
-    status: "active",
-    enabled: debouncedSearch.length >= 2,
-  });
+  /**
+   * BUG FIX: Previously `enabled` was passed inside the `params` object,
+   * causing it to be sent to the API as a URL query parameter (?enabled=true)
+   * on every keystroke — the search fired regardless of input length.
+   *
+   * Now `enabled` is correctly passed as the second argument (React Query
+   * options), so the network request only fires when >= 2 chars are typed.
+   */
+  const { data: searchResultsData, isLoading: isSearchLoading } = useProducts(
+    { search: debouncedSearch, limit: 5, status: "active" },
+    { enabled: debouncedSearch.length >= 2 }
+  );
 
   const searchResults = searchResultsData?.data?.products || [];
   const showDropdown =
     isSearchFocused && debouncedSearch.length >= 2 && !isSearchLoading;
 
-  // Handle click outside search
+  // Close search dropdown on outside click
   useEffect(() => {
     const handleClickOutside = (event) => {
       if (searchRef.current && !searchRef.current.contains(event.target)) {
@@ -75,17 +85,23 @@ export default function Navbar() {
     }
   };
 
+  const handleOpenCart = () => {
+    setIsCartOpen(true);
+    // First open: latch true so CartSlider chunk is fetched and mounts
+    if (!cartEverOpened) setCartEverOpened(true);
+  };
+
   const profileMenuItems = [
-    { label: "My Profile", icon: <FiUser size={16} />, path: "/profile", state: null },
-    { label: "My Wishlist", icon: <FiHeart size={16} />, path: "/profile", state: { activeTab: "wishlist" } },
-    { label: "My Orders", icon: <FiPackage size={16} />, path: "/profile", state: { activeTab: "orders" } },
+    { label: "My Profile", icon: <User size={16} />, path: "/profile", state: null },
+    { label: "My Wishlist", icon: <Heart size={16} />, path: "/profile", state: { activeTab: "wishlist" } },
+    { label: "My Orders", icon: <Package size={16} />, path: "/profile", state: { activeTab: "orders" } },
     {
       label: "Saved Addresses",
-      icon: <FiMapPin size={16} />,
+      icon: <MapPin size={16} />,
       path: "/profile",
       state: { activeTab: "saved-addresses" },
     },
-    { label: "Settings", icon: <FiSettings size={16} />, path: "/settings", state: null },
+    { label: "Settings", icon: <Settings size={16} />, path: "/settings", state: null },
   ];
 
   const handleLogout = () => {
@@ -96,25 +112,27 @@ export default function Navbar() {
   return (
     <>
       <nav className="sticky top-0 z-40 bg-white border-b border-[#F0EFED] font-dm-sans">
-        <div className="px-4 md:px-9 h-16 md:h-20 flex items-center justify-between gap-3 md:gap-6">
+        <div className="px-4 md:px-6 lg:px-8 h-16 md:h-20 flex items-center justify-between gap-3 md:gap-6">
           <Link
             to="/"
             className="flex items-center gap-2 md:gap-[11px] cursor-pointer shrink-0 select-none no-underline"
           >
-            <div className="text-[20px] md:text-[24px] font-black text-[#1A1714] tracking-tight leading-none">
-              Decor<span className="text-[#F27318]">X</span>
-            </div>
+            <img
+              src="/logo.png"
+              alt="DecorX"
+              className="h-8 md:h-10 w-auto object-contain"
+            />
           </Link>
 
           {/* Desktop Search */}
-          <div 
+          <div
             ref={searchRef}
             className="hidden md:block flex-1 max-w-[560px] relative"
           >
             <form onSubmit={handleSearchSubmit} className="relative">
-              <FiSearch
+              <Search
                 size={16}
-                className="absolute left-[14px] top-1/2 -translate-y-1/2 text-[#B8B4AE] pointer-events-none"
+                className="absolute left-[14px] top-1/2 -translate-y-1/2 text-neutral-400 pointer-events-none"
               />
               <input
                 type="text"
@@ -122,7 +140,7 @@ export default function Navbar() {
                 onChange={(e) => setSearchInput(e.target.value)}
                 onFocus={() => setIsSearchFocused(true)}
                 placeholder="Search furniture, décor, colours…"
-                className="w-full py-[11px] pr-[100px] pl-[44px] border-[1.5px] border-[#DCDAD6] rounded-[10px] bg-[#FAFAFA] font-sans text-[14px] text-[#1A1714] outline-none transition-all duration-[220ms] focus:border-[#F27318] focus:bg-white focus:ring-[3px] focus:ring-[#F27318]/10 placeholder:text-[#B8B4AE]"
+                className="w-full py-[11px] pr-[100px] pl-[44px] border-[1.5px] border-neutral-300 rounded-[10px] bg-[#FAFAFA] font-sans text-[14px] text-neutral-400 focus:outline-none transition-all duration-[220ms] focus:border-[#F27318] focus:bg-white placeholder:text-[#B8B4AE]"
               />
               <div className="absolute right-[5px] top-1/2 -translate-y-1/2 flex items-center gap-2">
                 {searchInput && (
@@ -131,13 +149,13 @@ export default function Navbar() {
                     onClick={() => setSearchInput("")}
                     className="p-1 text-[#B8B4AE] hover:text-[#1A1714] transition-colors bg-transparent border-none cursor-pointer"
                   >
-                    <FiX size={16} />
+                    <X size={16} />
                   </button>
                 )}
                 {isSearchLoading && (
-                  <FiLoader size={16} className="text-[#F27318] animate-spin" />
+                  <Loader2 size={16} className="text-[#F27318] animate-spin" />
                 )}
-                <button 
+                <button
                   type="submit"
                   className="bg-[#F27318] hover:bg-[#D9620E] text-white border-none rounded-[8px] px-[18px] py-[7px] font-sans text-[13.5px] font-semibold cursor-pointer transition-colors duration-200"
                 >
@@ -199,7 +217,7 @@ export default function Navbar() {
                   ) : (
                     <div className="p-8 text-center">
                       <div className="w-12 h-12 bg-[#F9F8F6] rounded-full flex items-center justify-center mx-auto mb-3">
-                        <FiSearch size={20} className="text-[#B8B4AE]" />
+                        <Search size={20} className="text-[#B8B4AE]" />
                       </div>
                       <p className="text-[14px] font-medium text-[#1A1714]">
                         No products found for "{debouncedSearch}"
@@ -217,13 +235,13 @@ export default function Navbar() {
           {/* Mobile Action Icons */}
           <div className="flex md:hidden items-center gap-[18px] shrink-0 text-[#1A1714]">
             <button className="bg-transparent border-none p-0 flex items-center justify-center cursor-pointer text-[#1A1714] hover:text-[#F27318] transition-colors">
-              <FiBell size={22} />
+              <Bell size={22} />
             </button>
             <button className="bg-transparent border-none p-0 flex items-center justify-center cursor-pointer text-[#1A1714] hover:text-[#F27318] transition-colors">
-              <FiSearch size={22} />
+              <Search size={22} />
             </button>
             <button className="bg-transparent border-none p-0 flex items-center justify-center cursor-pointer text-[#1A1714] hover:text-[#F27318] transition-colors">
-              <FiMenu size={24} />
+              <Menu size={24} />
             </button>
           </div>
 
@@ -237,21 +255,21 @@ export default function Navbar() {
               }
               className="flex flex-col items-center gap-[4px] px-2 md:px-[14px] py-[6px] rounded-[10px] cursor-pointer transition-colors duration-[180ms] text-[#6A6058] hover:text-[#1A1714] border-none bg-transparent font-sans relative group"
             >
-              <FiHeart className="w-5 h-5 md:w-[22px] md:h-[22px]" />
+              <Heart className="w-5 h-5 md:w-[22px] md:h-[22px]" />
               <span className="hidden md:block text-[11px] font-medium text-[#6A6058] group-hover:text-[#1A1714] whitespace-nowrap">
                 Wishlist ({wishlistCount})
               </span>
             </button>
             <button
-              onClick={() => setIsCartOpen(true)}
+              onClick={handleOpenCart}
               className="flex flex-col items-center gap-[4px] px-2 md:px-[14px] py-[6px] rounded-[10px] cursor-pointer transition-colors duration-[180ms] text-[#6A6058] hover:text-[#1A1714] border-none bg-transparent font-sans relative group"
             >
-              <FiShoppingCart className="w-5 h-5 md:w-[22px] md:h-[22px]" />
+              <ShoppingCart className="w-5 h-5 md:w-[22px] md:h-[22px]" />
               <span className="hidden md:block text-[11px] font-medium text-[#6A6058] group-hover:text-[#1A1714] whitespace-nowrap">
                 Cart ({cartCount})
               </span>
               {cartCount > 0 && (
-                <span className="absolute top-[2px] md:top-[5px] right-[2px] md:right-[5px] w-[15px] h-[15px] md:w-[17px] md:h-[17px] rounded-full bg-[#F27318] text-white text-[8px] md:text-[9px] font-bold flex items-center justify-center border-2 border-white">
+                <span className="absolute -top-1 p-2 right-1 w-[15px] h-[15px] md:w-[17px] md:h-[17px] rounded-full bg-[#F27318] text-white text-[8px] md:text-[9px] font-bold flex items-center justify-center border-2 border-white">
                   {cartCount}
                 </span>
               )}
@@ -263,7 +281,7 @@ export default function Navbar() {
                 onClick={() => setIsProfileOpen(!isProfileOpen)}
                 className="flex flex-col items-center gap-[4px] px-2 md:px-[14px] py-[6px] rounded-[10px] cursor-pointer transition-colors duration-[180ms] text-[#6A6058] hover:text-[#1A1714] border-none bg-transparent font-sans relative group"
               >
-                <FiUser className="w-5 h-5 md:w-[22px] md:h-[22px]" />
+                <User className="w-5 h-5 md:w-[22px] md:h-[22px]" />
                 <span className="hidden md:block text-[11px] font-medium text-[#6A6058] group-hover:text-[#1A1714] whitespace-nowrap">
                   Profile
                 </span>
@@ -337,7 +355,7 @@ export default function Navbar() {
                           onClick={handleLogout}
                           className="w-full flex items-center gap-3 px-4 py-3 text-[14px] text-red-500 hover:bg-red-50 transition-colors border-none bg-transparent text-left cursor-pointer font-dm-sans group/logout"
                         >
-                          <FiLogOut
+                          <LogOut
                             size={16}
                             className="group-hover/logout:translate-x-1 transition-transform"
                           />
@@ -353,7 +371,17 @@ export default function Navbar() {
         </div>
       </nav>
 
-      <CartSlider isOpen={isCartOpen} onClose={() => setIsCartOpen(false)} />
+      {/*
+        CartSlider is lazy-loaded and only mounted after the first cart open.
+        This keeps 10KB of slider JS + its deps out of the initial page load.
+        Once the latch (cartEverOpened) is set, CartSlider stays mounted so
+        the close animation plays correctly.
+      */}
+      {cartEverOpened && (
+        <Suspense fallback={null}>
+          <CartSlider isOpen={isCartOpen} onClose={() => setIsCartOpen(false)} />
+        </Suspense>
+      )}
     </>
   );
 }

@@ -1,38 +1,48 @@
-import { useState } from "react";
+import { useState, Suspense, lazy } from "react";
 import { useNavigate, useLocation, useParams } from "react-router-dom";
-import { FiGrid } from "react-icons/fi";
-import { TbSofa, TbBed, TbLamp2 } from "react-icons/tb";
 import {
-  MdTableRestaurant,
-  MdKitchen,
-  MdOutlineBedroomParent,
-  MdOutlineLiving,
-  MdOutlineYard,
-  MdViewInAr,
-} from "react-icons/md";
-import { PiDesk } from "react-icons/pi";
+  LayoutGrid,
+  Armchair,
+  BedDouble,
+  Lamp,
+  UtensilsCrossed,
+  ChefHat,
+  Sofa,
+  Leaf,
+  Monitor,
+  Scan,
+} from "lucide-react";
 import { useCategoryTree } from "../../hooks/product/useCategoryTan";
-import ARViewModal from "../modals/ARViewModal";
 
+// Lazy: ARViewModal is only needed when the user clicks "Try AR View".
+// Keeping it in a lazy import removes it (and its 7.5KB) from the initial
+// CategoryBar bundle, which is eagerly loaded on every page.
+const ARViewModal = lazy(() => import("../modals/ARViewModal"));
+
+/**
+ * Maps a category name (case-insensitive substring match) to a lucide-react
+ * icon. All icons come from lucide-react — react-icons is no longer needed
+ * in this component.
+ */
 const iconMap = {
-  "sofas": <TbSofa size={15} />,
-  "beds": <TbBed size={15} />,
-  "dining": <MdTableRestaurant size={15} />,
-  "living": <MdOutlineLiving size={15} />,
-  "bedroom": <MdOutlineBedroomParent size={15} />,
-  "kitchen": <MdKitchen size={15} />,
-  "desks": <PiDesk size={15} />,
-  "outdoor": <MdOutlineYard size={15} />,
-  "lighting": <TbLamp2 size={15} />,
+  sofa: <Armchair size={15} />,
+  bed: <BedDouble size={15} />,
+  dining: <UtensilsCrossed size={15} />,
+  living: <Sofa size={15} />,
+  bedroom: <BedDouble size={15} />,
+  kitchen: <ChefHat size={15} />,
+  desk: <Monitor size={15} />,
+  outdoor: <Leaf size={15} />,
+  lighting: <Lamp size={15} />,
 };
 
 const getCategoryIcon = (categoryName) => {
-  if (!categoryName) return <FiGrid size={15} />;
+  if (!categoryName) return <LayoutGrid size={15} />;
   const name = categoryName.toLowerCase();
   for (const [key, icon] of Object.entries(iconMap)) {
     if (name.includes(key)) return icon;
   }
-  return <FiGrid size={15} />;
+  return <LayoutGrid size={15} />;
 };
 
 export default function CategoryBar() {
@@ -45,12 +55,12 @@ export default function CategoryBar() {
   const fetchedCategories = categoryTreeData?.data?.categories || [];
 
   const displayCategories = [
-    { label: "All", icon: <FiGrid size={14} />, id: "", slug: "" },
+    { label: "All", icon: <LayoutGrid size={14} />, id: "", slug: "" },
     ...fetchedCategories.map((c) => ({
       label: c.name,
       icon: getCategoryIcon(c.name),
       id: c._id,
-      slug: c.slug
+      slug: c.slug,
     })),
   ];
 
@@ -64,43 +74,60 @@ export default function CategoryBar() {
 
   return (
     <>
-      <div className="sticky top-[64px] md:top-[80px] z-30 bg-white/85 backdrop-blur-md border-b border-[#F0EFED] px-4 md:px-9 shadow-[0_2px_16px_rgba(0,0,0,0.06)] flex items-center overflow-x-auto no-scrollbar font-dm-sans">
-        {displayCategories.map((cat) => {
-          const isActive = cat.slug 
-            ? categorySlug === cat.slug 
-            : (location.pathname === "/shop" && cat.id === "");
+      <div className="sticky top-[64px] md:top-[80px] z-30 bg-white/85 backdrop-blur-md border-b border-[#F0EFED] shadow-[0_2px_16px_rgba(0,0,0,0.06)] flex items-center font-dm-sans">
+        {/* Scrollable category list */}
+        <div className="flex items-center overflow-x-auto no-scrollbar flex-1 px-4 md:px-6 lg:px-8">
+          {displayCategories.map((cat) => {
+            const isActive = cat.slug
+              ? categorySlug === cat.slug
+              : location.pathname === "/shop" && cat.id === "";
 
-          return (
-            <div
-              key={cat.label}
-              className={`flex items-center gap-[6px] md:gap-[8px] px-[16px] md:px-[22px] py-[12px] md:py-[16px] text-[14px] md:text-[15px] whitespace-nowrap cursor-pointer transition-all duration-[180ms] select-none hover:text-[#1A1714] shrink-0 ${isActive ? "text-[#F27318] font-bold" : "text-[#7A7068] font-medium"
+            return (
+              <div
+                key={cat.label}
+                className={`flex items-center gap-[6px] md:gap-[8px] pr-[16px] md:pr-[36px] py-[12px] md:py-[16px] text-[14px] md:text-[15px] whitespace-nowrap cursor-pointer transition-all duration-[180ms] select-none hover:text-[#1A1714] shrink-0 ${
+                  isActive
+                    ? "text-[#F27318] font-semibold"
+                    : "text-[#7A7068] font-medium"
                 }`}
-              onClick={() => handleCategoryClick(cat)}
-            >
-              {cat.icon}
-              {cat.label}
-            </div>
-          );
-        })}
+                onClick={() => handleCategoryClick(cat)}
+              >
+                {cat.icon}
+                {cat.label}
+              </div>
+            );
+          })}
+        </div>
+
+        {/* AR button — outside the scroll container so it's always visible */}
         <div
-          className="flex items-center gap-[4px] md:gap-[6px] ml-auto pl-[12px] md:pl-[18px] py-[8px] md:py-[10px] text-[12px] md:text-[13px] font-semibold text-[#F27318] hover:text-[#D9620E] whitespace-nowrap cursor-pointer transition-all duration-[180ms] select-none border-l border-[#F0EFED] shrink-0"
+          className="flex items-center gap-[4px] md:gap-[6px] px-[12px] md:px-[18px] py-[8px] md:py-[10px] text-[12px] md:text-[13px] font-semibold text-[#F27318] hover:text-[#D9620E] whitespace-nowrap cursor-pointer transition-all duration-[180ms] select-none border-l border-[#F0EFED] shrink-0 bg-white/85 backdrop-blur-md"
           onClick={() => setIsArModalOpen(true)}
         >
-          <MdViewInAr size={16} />
+          <Scan size={16} />
           <span className="hidden sm:inline">Try AR View</span>
-          <span className="sm:hidden">AR View</span>
+          <span className="sm:hidden">AR</span>
         </div>
       </div>
 
-      <ARViewModal
-        isOpen={isArModalOpen}
-        onClose={() => setIsArModalOpen(false)}
-        product={{
-          _id: "demo-product",
-          slug: "demo-product",
-          modelUrl: "https://example.com/demo.glb" // Demo placeholder to show options
-        }}
-      />
+      {/*
+        ARViewModal is gated: only rendered (and its lazy chunk fetched)
+        when the user actually clicks "Try AR View". Suspense fallback=null
+        since the button already provides interaction feedback.
+      */}
+      {isArModalOpen && (
+        <Suspense fallback={null}>
+          <ARViewModal
+            isOpen={isArModalOpen}
+            onClose={() => setIsArModalOpen(false)}
+            product={{
+              _id: "demo-product",
+              slug: "demo-product",
+              modelUrl: "https://example.com/demo.glb",
+            }}
+          />
+        </Suspense>
+      )}
     </>
   );
 }

@@ -17,7 +17,7 @@ export default function TrustBanner() {
   }, []);
 
   return (
-    <section className="font-dm-sans px-2 md:px-6 lg:px-9 py-2 md:py-4 bg-[#f6f6f6]">
+    <section className="font-dm-sans px-2 md:px-6 lg:px-8 py-2 md:py-4 bg-[#f6f6f6]">
       <div className="max-w-[1440px] mx-auto flex flex-col lg:flex-row gap-2 md:gap-4 items-stretch">
 
         {/* CARD 1 (NOW LEFT): SALE COUNTDOWN */}
@@ -86,11 +86,15 @@ export default function TrustBanner() {
             <img
               src="https://upload.wikimedia.org/wikipedia/commons/thumb/7/78/Google_Play_Store_badge_EN.svg/3840px-Google_Play_Store_badge_EN.svg.png"
               alt="Get it on Google Play"
+              loading="lazy"
+              decoding="async"
               className="h-11 w-auto object-contain transition-transform hover:scale-105"
             />
             <img
               src="https://developer.apple.com/app-store/marketing/guidelines/images/badge-download-on-the-app-store.svg"
               alt="Download on the App Store"
+              loading="lazy"
+              decoding="async"
               className="h-11 w-auto object-contain transition-transform hover:scale-105"
             />
           </div>

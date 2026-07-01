@@ -1,28 +1,24 @@
-import { Routes, Route, Navigate } from "react-router-dom";
+import { Routes, Route } from "react-router-dom";
 import { Suspense, lazy } from "react";
 import "./styles/index.css";
-import TopBar from "./layouts/customer/TopBar";
-import Navbar from "./layouts/customer/Navbar";
-import CategoryBar from "./components/navigation/CategoryBar";
-import Hero from "./components/sections/Hero";
-import FeaturedPieces from "./components/sections/FeaturedPieces";
-import BlogSection from "./components/sections/BlogSection";
-import Testimonials from "./components/sections/Testimonials";
-import BrandMarquee from "./components/sections/BrandMarquee";
-import TrustBanner from "./components/sections/TrustBanner";
-import Footer from "./layouts/customer/Footer";
 import AuthCallback from "./components/auth/AuthCallback";
 import ProtectedRoute from "./components/auth/ProtectedRoute";
 import AdminRoute from "./components/auth/AdminRoute";
 import CustomerRoute from "./components/auth/CustomerRoute";
-import useAuthStore from "./store/authStore";
-import AuthModal from "./components/modals/AuthModal";
 
-// Chat Widget
-import ChatWidget from "./components/chat/ChatWidget";
+// Lazy load homepage (now its own chunk — not part of the entry bundle)
+const HomePage = lazy(() => import("./pages/HomePage"));
+
+// Lazy: AuthModal defers react-hook-form + 14 KB modal out of the entry chunk.
+// Wrapped in Suspense(fallback=null) — nothing to show while it downloads.
+const AuthModal = lazy(() => import("./components/modals/AuthModal"));
+
+// Lazy: ChatWidget defers framer-motion (~96 KB) + socket.io-client out of
+// the entry chunk entirely. The chat polling and socket connection only begin
+// after this chunk downloads, keeping the initial page load lean.
+const ChatWidget = lazy(() => import("./components/chat/ChatWidget"));
 
 // Lazy load all page components
-
 const VerifyMagicLinkPage = lazy(() => import("./pages/auth/VerifyMagicLinkPage"));
 
 const ProfilePage = lazy(() => import("./pages/customer/ProfilePage"));
@@ -74,38 +70,22 @@ function LoadingSpinner() {
   );
 }
 
-function HomePage() {
-  const { isAuthenticated, user } = useAuthStore();
-
-  // Redirect admin users to admin dashboard
-  if (isAuthenticated && user?.role === "admin") {
-    return <Navigate to="/admin" replace />;
-  }
-
-  return (
-    <>
-      <TopBar />
-      <Navbar />
-      <CategoryBar />
-
-      <main className="min-h-screen">
-        <Hero />
-        <TrustBanner />
-        <FeaturedPieces />
-        <BlogSection />
-        <Testimonials />
-        <Footer />
-      </main>
-    </>
-  );
-}
-
 function App() {
   return (
     <>
-      <AuthModal />
+      {/* AuthModal: null fallback — renders nothing while chunk downloads */}
+      <Suspense fallback={null}>
+        <AuthModal />
+      </Suspense>
       <Routes>
-        <Route path="/" element={<HomePage />} />
+        <Route
+          path="/"
+          element={
+            <Suspense fallback={<LoadingSpinner />}>
+              <HomePage />
+            </Suspense>
+          }
+        />
 
         {/* Auth Routes */}
         <Route path="/auth/verify" element={<VerifyMagicLinkPage />} />
@@ -384,8 +364,10 @@ function App() {
         />
       </Routes>
 
-      {/* Chat Widget - Only for customers */}
-      <ChatWidget />
+      {/* ChatWidget: null fallback — the FAB appears once chunk is ready */}
+      <Suspense fallback={null}>
+        <ChatWidget />
+      </Suspense>
     </>
   );
 }

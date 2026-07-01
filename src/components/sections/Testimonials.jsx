@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useCallback } from "react";
 import { Star, Quote, ChevronLeft, ChevronRight, Calendar } from "lucide-react";
 
 const testimonials = [
@@ -54,14 +54,24 @@ export default function Testimonials() {
   const [visibleCount, setVisibleCount] = useState(3);
 
   useEffect(() => {
+    // Debounce the resize handler to avoid a state update (and re-render) on
+    // every pixel of window resize. The 150ms delay is imperceptible to users
+    // but dramatically reduces how often the component re-renders during resize.
+    let rafId;
     const updateVisible = () => {
-      if (window.innerWidth >= 1024) setVisibleCount(3);
-      else if (window.innerWidth >= 768) setVisibleCount(2);
-      else setVisibleCount(1);
+      cancelAnimationFrame(rafId);
+      rafId = requestAnimationFrame(() => {
+        if (window.innerWidth >= 1024) setVisibleCount(3);
+        else if (window.innerWidth >= 768) setVisibleCount(2);
+        else setVisibleCount(1);
+      });
     };
     updateVisible();
-    window.addEventListener("resize", updateVisible);
-    return () => window.removeEventListener("resize", updateVisible);
+    window.addEventListener("resize", updateVisible, { passive: true });
+    return () => {
+      window.removeEventListener("resize", updateVisible);
+      cancelAnimationFrame(rafId);
+    };
   }, []);
 
   const maxIndex = testimonials.length - visibleCount;
@@ -71,26 +81,26 @@ export default function Testimonials() {
     if (currentIndex > maxIndex) setCurrentIndex(Math.max(0, maxIndex));
   }, [visibleCount, maxIndex, currentIndex]);
 
-  const nextSlide = () => {
+  const nextSlide = useCallback(() => {
     setCurrentIndex((prev) => Math.min(prev + 1, maxIndex));
-  };
+  }, [maxIndex]);
 
-  const prevSlide = () => {
+  const prevSlide = useCallback(() => {
     setCurrentIndex((prev) => Math.max(prev - 1, 0));
-  };
+  }, []);
 
   const slidePercent = 100 / visibleCount;
 
   return (
     <section className="py-8 md:py-12 bg-white font-dm-sans overflow-hidden">
-      <div className="max-w-[1440px] mx-auto px-2 md:px-6 lg:px-9 relative">
+      <div className="max-w-[1440px] mx-auto px-2 md:px-6 lg:px-8 relative">
         
         {/* HEADER */}
         <div className="flex flex-col items-center text-center mb-6">
-          <h2 className="text-[24px] md:text-[32px] lg:text-[36px] font-bold text-[#1A1714] tracking-tight mb-3">
-            Voices of Decor<em className="text-[#F27318] not-italic">X</em>
+          <h2 className="text-[28px] md:text-[36px] font-semibold text-[#1A1714]">
+            Voices of Guchaa<em className="text-[#F27318] not-italic">Decor</em>
           </h2>
-          <p className="text-[13px] md:text-[14px] text-black/40 max-w-[500px]">
+          <p className="text-[15px] text-black/40 max-w-[500px]">
             Hear from our global community about their journey in creating a curated, soul-filled home.
           </p>
         </div>
@@ -143,7 +153,13 @@ export default function Testimonials() {
                    <div className="flex items-center justify-between pt-4 border-t border-black/[0.03]">
                      <div className="flex items-center gap-3">
                         <div className="w-9 h-9 rounded-full overflow-hidden bg-[#f6f6f6] border border-black/5">
-                          <img src={item.avatar} alt={item.name} className="w-full h-full object-cover" />
+                          <img
+                            src={item.avatar}
+                            alt={item.name}
+                            loading="lazy"
+                            decoding="async"
+                            className="w-full h-full object-cover"
+                          />
                         </div>
                         <div className="flex flex-col">
                           <span className="text-[13px] md:text-[14px] font-bold text-[#1A1714] leading-tight">{item.name}</span>

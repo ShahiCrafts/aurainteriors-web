@@ -1,11 +1,15 @@
-@import url("https://fonts.googleapis.com/css2?family=Lato:ital,wght@0,100;0,300;0,400;0,700;0,900;1,100;1,300;1,400;1,700;1,900&display=swap");
-@import url("https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400..900;1,400..900&display=swap");
-@import url("https://fonts.googleapis.com/css2?family=DM+Sans:ital,opsz,wght@0,9..40,100..1000;1,9..40,100..1000&display=swap");
+/* Google Fonts are loaded via <link> in index.html with preconnect hints.
+   Keeping the @import here would block CSS parsing — the <link> approach
+   is fetched in parallel with HTML parsing, saving one full round-trip. */
 @import "tailwindcss";
 
 html {
   -ms-overflow-style: none;
   scrollbar-width: none;
+}
+
+body {
+  font-family: "DM Sans", sans-serif;
 }
 
 html::-webkit-scrollbar {
@@ -50,4 +54,12 @@ html::-webkit-scrollbar {
 
 .animate-marquee:hover {
   animation-play-state: paused;
+}
+
+/* ── Custom toast progress bar ───────────────────────────────────────────────
+   Used by ToastItem.jsx. scaleX is GPU-composited (no layout/paint cost).
+   transform-origin: left center on the element lets it shrink left→right.     */
+@keyframes toast-shrink {
+  from { transform: scaleX(1); }
+  to   { transform: scaleX(0); }
 }

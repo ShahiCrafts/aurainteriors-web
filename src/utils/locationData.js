@@ -1,0 +1,32 @@
+export const COUNTRIES = [
+  "Nepal",
+  "India",
+  "China",
+  "United States",
+  "United Kingdom",
+  "Australia",
+  "Canada",
+  "Germany",
+  "France",
+  "Japan",
+  "South Korea",
+  "United Arab Emirates",
+  "Qatar",
+  "Saudi Arabia",
+  "Singapore",
+  "Malaysia",
+  "Bangladesh",
+  "Bhutan",
+  "Sri Lanka",
+  "Pakistan",
+];
+
+export const NEPAL_PROVINCES = [
+  "Koshi",
+  "Madhesh",
+  "Bagmati",
+  "Gandaki",
+  "Lumbini",
+  "Karnali",
+  "Sudurpashchim",
+];

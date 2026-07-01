@@ -1,4 +1,5 @@
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
+import useAuthStore from "../../store/authStore";
 import {
   getAllAddresses,
   getAddress,
@@ -8,13 +9,14 @@ import {
   setDefaultAddress,
 } from "../../api/addressApi";
 
-export const useAddresses = () => {
+export const useAddresses = (options = {}) => {
   return useQuery({
     queryKey: ["addresses"],
     queryFn: async () => {
       const response = await getAllAddresses();
       return response.data.data.addresses;
     },
+    ...options,
   });
 };
 
@@ -84,7 +86,8 @@ export const useDeleteAddress = () => {
 };
 
 export const useDefaultAddress = () => {
-  const { data: addresses, isLoading } = useAddresses();
+  const { isAuthenticated } = useAuthStore();
+  const { data: addresses, isLoading } = useAddresses({ enabled: isAuthenticated });
   const defaultAddress = addresses?.find((addr) => addr.isDefault);
   return { defaultAddress, isLoading };
 };

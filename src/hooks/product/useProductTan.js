@@ -10,11 +10,18 @@ const PRODUCT_KEYS = {
   related: (id, limit) => [...PRODUCT_KEYS.all, 'related', id, limit],
 };
 
-// Get all products with filtering
-export const useProducts = (params = {}) => {
+// Get all products with filtering.
+// `options` is an optional second argument for passing React Query options
+// (e.g. { enabled: false }) without touching the hook's core logic.
+// All existing callers that omit `options` are unaffected.
+export const useProducts = (params = {}, options = {}) => {
   return useQuery({
     queryKey: PRODUCT_KEYS.list(params),
     queryFn: () => productApi.getAll(params),
+    // Search results: shorter staleTime so they feel fresh. Product listings
+    // (shop page, featured): inherits the 5-min global default unless overridden.
+    staleTime: params.search ? 30 * 1000 : undefined, // 30s for search, global default otherwise
+    ...options,
   });
 };
 
@@ -33,6 +40,8 @@ export const useFeaturedProducts = (limit = 8) => {
   return useQuery({
     queryKey: PRODUCT_KEYS.featured(limit),
     queryFn: () => productApi.getFeatured(limit),
+    // Featured products rarely change — keep cached for 10 min.
+    staleTime: 10 * 60 * 1000,
   });
 };
 
@@ -41,6 +50,8 @@ export const useNewArrivals = (limit = 8) => {
   return useQuery({
     queryKey: PRODUCT_KEYS.newArrivals(limit),
     queryFn: () => productApi.getNewArrivals(limit),
+    // New arrivals update at most a few times per day.
+    staleTime: 10 * 60 * 1000,
   });
 };
 

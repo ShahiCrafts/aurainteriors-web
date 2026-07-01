@@ -4,27 +4,33 @@ import { MoveRight } from "lucide-react";
 import { useProducts } from "../../hooks/product/useProductTan";
 import ProductCard from "../shop/ProductCard";
 import Skeleton from "../common/Skeleton";
+import useInView from "../../hooks/useInView";
 
 export default function FeaturedPieces() {
-  const { data: productData, isLoading } = useProducts({
-    limit: 5,
-    sort: "-isFeatured,-createdAt",
-    status: "active"
-  });
+  // Only fire the API call once this section scrolls near the viewport.
+  // The rootMargin in useInView pre-fetches 200px before the element enters
+  // the screen, so products load just before the user sees the section.
+  const [sectionRef, isInView] = useInView();
+
+  const { data: productData, isLoading } = useProducts(
+    { limit: 5, sort: "-isFeatured,-createdAt", status: "active" },
+    // Spread any extra options; enabled gates the network request
+    { enabled: isInView }
+  );
 
   const products = productData?.data?.products || [];
 
   return (
-    <section className="bg-white pt-2 pb-8 md:py-12 mt-0 px-2 md:px-6 lg:px-9 font-dm-sans">
+    <section ref={sectionRef} className="bg-white pt-2 pb-8 md:py-12 mt-0 px-2 md:px-6 lg:px-8 font-dm-sans">
       <div className="max-w-[1440px] mx-auto">
 
         {/* HEADER */}
         <div className="flex items-center justify-between mb-8">
           <div>
-            <h2 className="text-[28px] md:text-[36px] font-black text-[#1A1714] tracking-tight">Discover what’s new</h2>
-            <p className="text-[15px] text-black/40 mt-1 font-medium">Designed to refresh your everyday life</p>
+            <h2 className="text-[28px] md:text-[36px] font-semibold text-[#1A1714]">Discover what’s new</h2>
+            <p className="text-[15px] text-black/40">Designed to refresh your everyday life</p>
           </div>
-          <Link to="/shop" className="flex items-center gap-2 text-[14px] font-bold text-[#1A1714] hover:text-[#F27318] transition-all group pb-1.5 border-b-2 border-black/5 hover:border-[#F27318]">
+          <Link to="/shop" className="flex items-center gap-2 text-[14px] font-semibold text-[#1A1714] hover:text-[#F27318] transition-all group pb-1.5 border-b-2 border-black/5 hover:border-[#F27318]">
             View All <MoveRight size={18} className="transition-transform group-hover:translate-x-2" />
           </Link>
         </div>

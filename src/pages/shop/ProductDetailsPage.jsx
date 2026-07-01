@@ -341,7 +341,7 @@ export default function ProductDetailsPage() {
       <Navbar />
       <CategoryBar />
       <main className="min-h-screen bg-white pt-4 font-dm-sans pb-24 lg:pb-12">
-        <div className="max-w-[1440px] mx-auto px-4 sm:px-6 lg:px-9 py-2 sm:py-4">
+        <div className="max-w-[1440px] mx-auto px-4 sm:px-6 lg:px-8 py-2 sm:py-4">
           {/* Breadcrumb */}
           <nav className="flex flex-wrap items-center gap-y-1 gap-x-2 text-[14px] font-medium mb-8">
             {breadcrumbs.map((crumb, index) => (
@@ -630,7 +630,7 @@ export default function ProductDetailsPage() {
 
         {/* High-Fidelity Trust Matrix - Edge to Edge */}
         <div className="bg-white border-t border-black/[0.06] py-8 mt-0 mb-0 overflow-hidden">
-          <div className="max-w-[1440px] mx-auto px-4 sm:px-6 lg:px-9">
+          <div className="max-w-[1440px] mx-auto px-4 sm:px-6 lg:px-8">
             {/* Grid with proper internal spacing */}
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-12 lg:gap-16">
               {/* Promise 1 */}
@@ -686,7 +686,7 @@ export default function ProductDetailsPage() {
 
         {/* Tab Switcher - Edge to Edge like Trust Matrix */}
         <div className="border-y border-black/[0.05] shadow-[0_8px_32px_-10px_rgba(0,0,0,0.07)] bg-white/50 backdrop-blur-sm">
-          <div className="max-w-[1440px] mx-auto px-4 sm:px-6 lg:px-9 flex items-center justify-between">
+          <div className="max-w-[1440px] mx-auto px-4 sm:px-6 lg:px-8 flex items-center justify-between">
             <div className="flex gap-12">
               {[
                 { id: "specifications", label: "Product Specifications" },
@@ -748,7 +748,7 @@ export default function ProductDetailsPage() {
         </div>
 
         {/* Tab Content + Related Products */}
-        <div className="max-w-[1440px] mx-auto px-4 sm:px-6 lg:px-9">
+        <div className="max-w-[1440px] mx-auto px-4 sm:px-6 lg:px-8">
           <div className="flex flex-col gap-16 pt-12">
             <AnimatePresence mode="wait">
               {activeMainTab === "specifications" ? (

@@ -55,7 +55,7 @@ export default function Footer() {
     <>
       <BrandMarquee />
       <footer className="bg-[#f6f6f6] font-dm-sans border-t border-black/[0.03]">
-      <div className="max-w-[1440px] mx-auto px-6 lg:px-9">
+      <div className="max-w-[1440px] mx-auto px-6 lg:px-8">
         
         {/* MIDDLE SECTION: MAIN LINKS GRID */}
         <div className="py-12 grid grid-cols-2 md:grid-cols-4 lg:grid-cols-5 gap-10 border-b border-black/[0.05]">
@@ -64,7 +64,7 @@ export default function Footer() {
           <div className="flex flex-col gap-6 col-span-2 lg:col-span-1">
             <div className="flex flex-col gap-4">
               <Link to="/" className="text-[24px] font-bold text-[#1A1714] tracking-[-0.03em] leading-none no-underline">
-                Decor<em className="text-[#F27318] not-italic">X</em>
+                Guchaa<em className="text-[#F27318] not-italic">Decor</em>
               </Link>
               <div className="flex flex-col gap-2.5">
                  <div className="flex items-start gap-3">
@@ -103,8 +103,8 @@ export default function Footer() {
 
           {/* OTHER LINK COLUMNS */}
           {footerLinks.map((column, idx) => (
-            <div key={idx} className="flex flex-col gap-4">
-              <h5 className="text-[14px] font-bold text-black uppercase tracking-widest">{column.title}</h5>
+            <div key={idx} className="flex flex-col gap-3">
+              <h5 className="text-[18px] font-medium text-black">{column.title}</h5>
               <ul className="flex flex-col gap-2">
                 {column.links.map((link, lIdx) => (
                   <li key={lIdx}>
@@ -125,7 +125,7 @@ export default function Footer() {
            {/* NEWSLETTER (LEFT) */}
            <div className="flex flex-col sm:flex-row items-center gap-6 w-full lg:w-auto">
               <div className="flex flex-col gap-1 text-center sm:text-left min-w-[200px]">
-                <h4 className="text-[18px] font-bold text-[#1A1714]">Join the DecorX Circle</h4>
+                <h4 className="text-[18px] font-semibold text-[#1A1714]">Join the DecorX Circle</h4>
                 <p className="text-[14px] text-black/40">Subscribe for the latest collections and trends.</p>
               </div>
               <div className="flex items-center gap-2 w-full sm:w-auto">
@@ -165,7 +165,7 @@ export default function Footer() {
 
         {/* FINAL STRIP: COPYRIGHT */}
         <div className="py-6 border-t border-black/[0.05] text-center">
-           <p className="text-[12px] text-black/20 font-medium tracking-wide">
+           <p className="text-[13px] text-black/40 tracking-wide">
              &copy; 2024 DecorX Private Limited. All rights reserved.
            </p>
         </div>

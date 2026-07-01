@@ -147,7 +147,7 @@ export default function ARViewModal({ isOpen, onClose, product }) {
                       fgColor="#000000"
                     />
                   </div>
-                  <p className="text-[12px] font-medium text-gray-400 uppercase tracking-wider text-center">
+                  <p className="text-[14px] font-medium text-gray-400 text-center">
                     Supported: {modelAvailability.hasUsdz && "iOS"}
                     {modelAvailability.hasUsdz && modelAvailability.hasGlb && " • "}
                     {modelAvailability.hasGlb && "Android"}
