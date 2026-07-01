@@ -71,8 +71,8 @@ export default function OrderCard({ order }) {
   const isCancelled = order.orderStatus === "cancelled";
 
   return (
-    <div className="group relative bg-white rounded-2xl border border-neutral-100 shadow-sm transition-all duration-300 overflow-hidden">
-      <div className="p-6 lg:p-8">
+    <div className="group relative bg-white rounded-xl border-neutral-100 border-2 transition-all duration-300 overflow-hidden">
+      <div className="p-4 lg:p-6">
         <div className="flex flex-col lg:flex-row gap-12 lg:gap-20">
         {/* The Architectural Timeline Pillar */}
         <div className="lg:w-48 shrink-0">

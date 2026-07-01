@@ -1,8 +1,9 @@
-import { useEffect, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import { useNavigate, Link } from "react-router-dom";
 import useCheckoutStore from "../../store/checkoutStore";
 import useAuthStore from "../../store/authStore";
 import useGuestCartStore from "../../store/guestCartStore";
+import { useDefaultAddress } from "../../hooks/profile/useAddressTan";
 import {
   useCart,
   useUpdateCartItem,
@@ -21,6 +22,7 @@ import {
   Minus,
   Trash2,
   Tag,
+  Check,
   ChevronRight,
   Loader2,
 } from "lucide-react";
@@ -30,6 +32,32 @@ import { useForm, FormProvider } from "react-hook-form";
 import { yupResolver } from "@hookform/resolvers/yup";
 import { shippingSchema } from "../../utils/validationSchemas";
 
+// Custom checkbox: native checkboxes can't guarantee a white tick across
+// browsers (accent-color styling of the check glyph itself isn't
+// controllable), so this renders the tick as an actual white SVG icon.
+function SelectionCheckbox({ checked, indeterminate, onChange, ariaLabel }) {
+  return (
+    <button
+      type="button"
+      role="checkbox"
+      aria-checked={indeterminate ? "mixed" : checked}
+      aria-label={ariaLabel}
+      onClick={onChange}
+      className={`w-[18px] h-[18px] rounded-[5px] flex items-center justify-center border transition-colors shrink-0 ${
+        checked || indeterminate
+          ? "bg-[#F27318] border-[#F27318]"
+          : "bg-white border-neutral-300 hover:border-neutral-400"
+      }`}
+    >
+      {indeterminate ? (
+        <Minus size={12} strokeWidth={3} className="text-white" />
+      ) : checked ? (
+        <Check size={12} strokeWidth={3} className="text-white" />
+      ) : null}
+    </button>
+  );
+}
+
 export default function CheckoutPage() {
   const navigate = useNavigate();
   const { isAuthenticated, user } = useAuthStore();
@@ -37,6 +65,9 @@ export default function CheckoutPage() {
     guestInfo,
     setGuestInfo,
     shippingAddress,
+    shippingAddressId,
+    setShippingAddress,
+    setShippingAddressId,
     shippingMethod,
     paymentMethod,
     setPaymentMethod,
@@ -55,7 +86,6 @@ export default function CheckoutPage() {
 
   const {
     items: guestCartItems,
-    getCartTotals: getGuestCartTotals,
     clearCart: clearGuestCart,
     updateItemQuantity: updateGuestCartQuantity,
     removeItem: removeGuestCartItem,
@@ -66,10 +96,12 @@ export default function CheckoutPage() {
   const applyDiscountMutation = useApplyDiscount();
   const guestCheckoutMutation = useGuestCheckout();
   const authenticatedCheckoutMutation = useCheckout();
+  const { defaultAddress } = useDefaultAddress();
 
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [promoCode, setPromoCode] = useState("");
   const [appliedPromo, setAppliedPromo] = useState(null);
+  const [showPromoInput, setShowPromoInput] = useState(false);
 
   const methods = useForm({
     resolver: yupResolver(shippingSchema),
@@ -86,7 +118,7 @@ export default function CheckoutPage() {
     mode: "onTouched",
   });
 
-  const { reset: resetForm, handleSubmit: handleFormSubmit, watch } = methods;
+  const { reset: resetForm, handleSubmit: handleFormSubmit, watch, setValue } = methods;
 
   const watchedGuestInfo = watch(["firstName", "lastName", "email", "phone"]);
   const watchedShippingFields = watch([
@@ -115,6 +147,11 @@ export default function CheckoutPage() {
           phone: ph || "",
         });
       }
+
+      if (state.shippingAddressId) {
+        return;
+      }
+
       const shippingUpdates = {
         addressLine1: addr1 || "",
         city: cty || "",
@@ -122,9 +159,18 @@ export default function CheckoutPage() {
         country: cntry || "",
         state: st || "",
       };
+      const hasShippingOverride = Object.entries(shippingUpdates).some(
+        ([key, value]) => value !== state.shippingAddress[key],
+      );
+
+      if (hasShippingOverride && state.shippingAddressId) {
+        setShippingAddressId(null);
+      }
+
       Object.entries(shippingUpdates).forEach(([key, value]) => {
-        if (value !== state.shippingAddress[key])
+        if (value !== state.shippingAddress[key]) {
           state.updateShippingField(key, value);
+        }
       });
     }
   }, [
@@ -139,12 +185,75 @@ export default function CheckoutPage() {
     st,
     currentStep,
     setGuestInfo,
+    setShippingAddressId,
   ]);
 
   const cart = cartData?.data?.cart;
-  const guestTotals = getGuestCartTotals();
   const cartItems = isAuthenticated ? cart?.items || [] : guestCartItems;
-  const subtotal = isAuthenticated ? cart?.subtotal || 0 : guestTotals.subtotal;
+
+  // ---- Item selection (checkbox) state ----
+  // Everything starts checked by default. Once initialized, any item id
+  // that's newly seen (e.g. added later) also defaults to checked; ids no
+  // longer present in the cart are dropped from the selection.
+  const [selectedItemIds, setSelectedItemIds] = useState(() => new Set());
+  const initializedSelectionRef = useRef(false);
+  const seenItemIdsRef = useRef(new Set());
+
+  useEffect(() => {
+    const currentIds = cartItems.map((item) => item._id);
+    if (currentIds.length === 0) return;
+
+    if (!initializedSelectionRef.current) {
+      setSelectedItemIds(new Set(currentIds));
+      initializedSelectionRef.current = true;
+      seenItemIdsRef.current = new Set(currentIds);
+      return;
+    }
+
+    setSelectedItemIds((prev) => {
+      const next = new Set(prev);
+      currentIds.forEach((id) => {
+        if (!seenItemIdsRef.current.has(id)) {
+          next.add(id); // newly added item -> default checked
+        }
+      });
+      [...next].forEach((id) => {
+        if (!currentIds.includes(id)) next.delete(id); // item removed from cart
+      });
+      return next;
+    });
+    seenItemIdsRef.current = new Set(currentIds);
+  }, [cartItems]);
+
+  const selectedCartItems = useMemo(
+    () => cartItems.filter((item) => selectedItemIds.has(item._id)),
+    [cartItems, selectedItemIds],
+  );
+
+  const allSelected = cartItems.length > 0 && selectedCartItems.length === cartItems.length;
+  const someSelected = selectedCartItems.length > 0 && !allSelected;
+
+  const toggleSelectItem = (itemId) => {
+    setSelectedItemIds((prev) => {
+      const next = new Set(prev);
+      if (next.has(itemId)) {
+        next.delete(itemId);
+      } else {
+        next.add(itemId);
+      }
+      return next;
+    });
+  };
+
+  const toggleSelectAll = () => {
+    setSelectedItemIds(allSelected ? new Set() : new Set(cartItems.map((item) => item._id)));
+  };
+
+  const subtotal = selectedCartItems.reduce(
+    (sum, item) =>
+      sum + (item.product?.salePrice || item.product?.price || 0) * item.quantity,
+    0,
+  );
   const promoDiscount = appliedPromo?.discount?.discountAmount || 0;
   const shippingCost = shippingMethod === "express" ? 100 : 0;
   const taxRate = 0.13;
@@ -161,10 +270,81 @@ export default function CheckoutPage() {
         lastName: user.lastName || "",
         phone: user.phone || "",
       };
-      setGuestInfo(userData);
-      resetForm((prev) => ({ ...prev, ...userData }));
+      const state = useCheckoutStore.getState();
+      const guestInfoChanged =
+        state.guestInfo.email !== userData.email ||
+        state.guestInfo.firstName !== userData.firstName ||
+        state.guestInfo.lastName !== userData.lastName ||
+        state.guestInfo.phone !== userData.phone;
+
+      if (guestInfoChanged) {
+        setGuestInfo(userData);
+      }
+
+      resetForm({
+        firstName: userData.firstName,
+        lastName: userData.lastName,
+        email: userData.email,
+        phone: userData.phone,
+        addressLine1: state.shippingAddress.addressLine1 || "",
+        city: state.shippingAddress.city || "",
+        postalCode: state.shippingAddress.postalCode || "",
+        country: state.shippingAddress.country || "Nepal",
+        state: state.shippingAddress.state || "",
+      });
     }
   }, [isAuthenticated, user, setGuestInfo, resetForm]);
+
+  useEffect(() => {
+    if (!isAuthenticated || !user || !defaultAddress || shippingAddressId) {
+      return;
+    }
+
+    const hasSavedShippingData = Boolean(
+      shippingAddress.addressLine1 ||
+        shippingAddress.city ||
+        shippingAddress.postalCode ||
+        shippingAddress.country ||
+        shippingAddress.state ||
+        shippingAddress.phone,
+    );
+
+    if (hasSavedShippingData) {
+      return;
+    }
+
+    const defaultShippingAddress = {
+      phone: defaultAddress.phone || user.phone || "",
+      addressLine1: defaultAddress.addressLine1 || "",
+      addressLine2: defaultAddress.addressLine2 || "",
+      city: defaultAddress.city || "",
+      state: defaultAddress.state || "",
+      postalCode: defaultAddress.postalCode || "",
+      country: defaultAddress.country || "Nepal",
+    };
+
+    setShippingAddress(defaultShippingAddress);
+    setShippingAddressId(defaultAddress._id);
+    setValue("phone", defaultShippingAddress.phone, { shouldDirty: false });
+    setValue("addressLine1", defaultShippingAddress.addressLine1, {
+      shouldDirty: false,
+    });
+    setValue("city", defaultShippingAddress.city, { shouldDirty: false });
+    setValue("state", defaultShippingAddress.state, { shouldDirty: false });
+    setValue("postalCode", defaultShippingAddress.postalCode, {
+      shouldDirty: false,
+    });
+    setValue("country", defaultShippingAddress.country, { shouldDirty: false });
+  }, [
+    defaultAddress,
+    isAuthenticated,
+    shippingAddress,
+    shippingAddressId,
+    setShippingAddress,
+    setShippingAddressId,
+    setValue,
+    user,
+  ]);
 
   useEffect(() => {
     setStep(1);
@@ -196,7 +376,7 @@ export default function CheckoutPage() {
       {
         onError: (err) =>
           toast.error(formatError(err, "Failed to update quantity")),
-      }
+      },
     );
   };
 
@@ -221,6 +401,7 @@ export default function CheckoutPage() {
       onSuccess: (data) => {
         setAppliedPromo(data.data);
         setPromoCode("");
+        setShowPromoInput(false);
         toast.success("Promo code applied!");
       },
       onError: (err) => toast.error(formatError(err, "Invalid promo code")),
@@ -232,23 +413,51 @@ export default function CheckoutPage() {
     toast.success("Promo code removed");
   };
 
+  const ensureItemsSelected = () => {
+    if (selectedCartItems.length === 0) {
+      toast.error("Select at least one item to checkout");
+      return false;
+    }
+    return true;
+  };
+
+  const handleGoToPayment = () => {
+    if (!ensureItemsSelected()) return;
+
+    // Authenticated users who have a saved address selected: the checkout API
+    // uses shippingAddressId directly, so running shippingSchema validation
+    // against the hidden form fields is both wrong and the reason nextStep()
+    // was never being called. Skip validation and advance immediately.
+    if (isAuthenticated && shippingAddressId) {
+      nextStep();
+      return;
+    }
+
+    // Guest users (or authenticated users manually entering a new address):
+    // validate the form before advancing to payment.
+    handleFormSubmit(() => nextStep())();
+  };
+
   const handlePlaceOrder = async () => {
     if (isSubmitting) return;
+    if (!ensureItemsSelected()) return;
     setIsSubmitting(true);
     try {
       let result;
       if (isAuthenticated) {
         result = await authenticatedCheckoutMutation.mutateAsync(
-          getAuthenticatedCheckoutData()
+          getAuthenticatedCheckoutData(
+            selectedCartItems.map((item) => item._id),
+          ),
         );
       } else {
-        const formattedItems = guestCartItems.map((item) => ({
+        const formattedItems = selectedCartItems.map((item) => ({
           productId: item.product._id,
           quantity: item.quantity,
           variant: item.variant || {},
         }));
         result = await guestCheckoutMutation.mutateAsync(
-          getGuestCheckoutData(formattedItems)
+          getGuestCheckoutData(formattedItems),
         );
       }
       const order = result.data?.order;
@@ -272,8 +481,8 @@ export default function CheckoutPage() {
       reset();
       navigate(
         `/order-confirmation/${order.orderId}?email=${encodeURIComponent(
-          order.email || guestInfo.email
-        )}&emailSent=${result.data?.emailSent ? "true" : "false"}`
+          order.email || guestInfo.email,
+        )}&emailSent=${result.data?.emailSent ? "true" : "false"}`,
       );
     } catch (error) {
       toast.error(formatError(error, "Failed to place order"));
@@ -295,225 +504,373 @@ export default function CheckoutPage() {
   return (
     <>
       <Navbar />
-      <main className="min-h-screen bg-neutral-50 pt-16 sm:pt-20 font-lato">
-        <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 py-6 sm:py-8">
-          <nav className="flex flex-wrap items-center gap-y-2 gap-x-2 text-[10px] sm:text-xs md:text-sm mb-6 sm:mb-8 overflow-hidden">
-            <Link
-              to="/"
-              className="text-neutral-400 hover:text-neutral-600 transition-colors shrink-0"
-            >
-              Home
-            </Link>
-            <span className="text-neutral-300 shrink-0">/</span>
-            <Link
-              to="/shop"
-              className="text-neutral-400 hover:text-neutral-600 transition-colors shrink-0"
-            >
-              Collections
-            </Link>
-            <span className="text-neutral-300 shrink-0">/</span>
-            <span className="text-[#F27318] font-medium shrink-0">Checkout</span>
-          </nav>
+      <main className="min-h-screen bg-white font-dm-sans">
+        <div className="flex flex-col lg:flex-row items-stretch">
+          {/* Left Side: Content & Steps */}
+          <div className="flex-1 bg-white">
+            <div className="w-full px-4 sm:px-6 lg:px-12 py-12 lg:py-12">
 
-          <div className="grid grid-cols-1 md:grid-cols-12 gap-6 sm:gap-8">
-            <div className="order-2 md:order-1 md:col-span-7 lg:col-span-7">
-              <div className="bg-white rounded-2xl shadow-sm border border-neutral-100 p-4 sm:p-6 md:p-8">
-                <FormProvider {...methods}>
-                  <form
-                    onSubmit={(e) => {
-                      e.preventDefault();
-                      currentStep === 1
-                        ? handleFormSubmit(() => nextStep())(e)
-                        : handlePlaceOrder();
-                    }}
-                  >
-                    {currentStep === 1 ? <ShippingStep /> : <PaymentStep />}
-                    <div className="flex flex-col sm:flex-row gap-3 sm:gap-4 mt-6 sm:mt-8">
-                      {currentStep === 2 && (
-                        <button
-                          type="button"
-                          onClick={prevStep}
-                          className="flex-1 py-3 bg-neutral-100 text-neutral-700 font-semibold rounded-xl hover:bg-neutral-200 transition-all duration-200 flex items-center justify-center gap-2 text-sm order-2 sm:order-1"
-                        >
-                          <ChevronLeft size={18} />
-                          <span>Back</span>
-                        </button>
-                      )}
-                      <button
-                        type="submit"
-                        disabled={isSubmitting}
-                        className={`${
-                          currentStep === 2 ? "sm:flex-2" : "w-full"
-                        } py-3 bg-[#F27318] text-white font-semibold rounded-xl hover:bg-[#D9620E] transition-all duration-200 flex items-center justify-center gap-2 shadow-sm text-sm order-1 sm:order-2`}
+              <div className="flex items-center gap-3 mb-10">
+                {[
+                  { n: 1, label: "Shipping" },
+                  { n: 2, label: "Payment" },
+                ].map(({ n, label }, i) => (
+                  <div key={n} className="flex items-center gap-3">
+                    <div className="flex items-center gap-2">
+                      <div
+                        className={`w-7 h-7 rounded-full flex items-center justify-center text-[14px] font-bold transition-all ${
+                          currentStep === n
+                            ? "bg-[#F27318] text-white"
+                            : currentStep > n
+                            ? "bg-[#F27318]/20 text-[#F27318]"
+                            : "bg-gray-100 text-neutral-500"
+                        }`}
                       >
-                        {isSubmitting ? (
-                          <Loader2 size={20} className="animate-spin" />
-                        ) : (
-                          <>
-                            <span>
-                              {currentStep === 1
-                                ? "Continue to Payment"
-                                : "Place Order"}
-                            </span>
-                            <ChevronRight size={18} />
-                          </>
-                        )}
-                      </button>
+                        {currentStep > n ? "✓" : n}
+                      </div>
+                      <span
+                        className={`text-[16px] font-semibold ${
+                          currentStep === n ? "text-[#1A1714]" : "text-neutral-500"
+                        }`}
+                      >
+                        {label}
+                      </span>
                     </div>
-                  </form>
-                </FormProvider>
+                    {i === 0 && (
+                      <div className={`h-px w-10 ${currentStep > 1 ? "bg-[#F27318]/40" : "bg-neutral-200"}`} />
+                    )}
+                  </div>
+                ))}
               </div>
-            </div>
 
-            <div className="order-1 md:order-2 md:col-span-5 lg:col-span-5">
-              <div className="bg-white rounded-2xl shadow-sm border border-neutral-100 p-5 sm:p-6 md:sticky md:top-24">
-                <h2 className="text-lg sm:text-xl font-playfair text-neutral-900 mb-6">
-                  <span className="font-bold">Order</span>{" "}
-                  <span className="text-[#F27318]">Summary</span>
-                </h2>
-                <div className="space-y-4 sm:space-y-5 mb-6 max-h-[50vh] md:max-h-none overflow-y-auto pr-1">
-                  {cartItems.map((item) => {
-                    const product = item.product || {};
-                    const price = product.salePrice || product.price || 0;
-                    return (
-                      <div key={item._id} className="flex gap-3 sm:gap-4">
-                        <div className="w-16 h-16 sm:w-[72px] sm:h-[72px] rounded-lg overflow-hidden bg-neutral-100 shrink-0">
-                          <img
-                            src={getImageUrl(product)}
-                            alt={product.name}
-                            className="w-full h-full object-cover"
-                          />
-                        </div>
-                        <div className="flex-1 min-w-0">
-                          <div className="flex items-start justify-between gap-2">
-                            <h4 className="text-[13px] sm:text-sm font-medium text-neutral-800 leading-tight line-clamp-2">
-                              {product.name}
-                            </h4>
-                            <button
-                              onClick={() => handleRemoveItem(item._id)}
-                              className="text-orange-400 hover:text-orange-500 transition-colors p-0.5 shrink-0"
-                            >
-                              <Trash2 size={16} />
-                            </button>
-                          </div>
-                          <div className="flex items-center justify-between mt-2">
-                            <div className="flex items-center border border-neutral-200 rounded-lg overflow-hidden scale-90 sm:scale-100 origin-left">
+              <div className="space-y-6">
+                {/* Item Review Section */}
+                <div>
+                  <div className="flex justify-between items-end mb-5">
+                    <h2 className="text-[20px] font-semibold text-[#1A1714] font-dm-sans">
+                      Review your items
+                    </h2>
+                    <span className="text-[15px] font-medium text-neutral-500">
+                      {selectedCartItems.length} of {cartItems.length} selected
+                    </span>
+                  </div>
+
+                  <section className="bg-white overflow-hidden">
+                    {/* Table header */}
+                    <div className="grid grid-cols-[40px_1fr_120px_120px_64px] gap-4 items-center bg-gray-100 px-6 py-5">
+                      <div className="flex justify-center">
+                        <SelectionCheckbox
+                          checked={allSelected}
+                          indeterminate={someSelected}
+                          onChange={toggleSelectAll}
+                          ariaLabel="Select all items"
+                        />
+                      </div>
+                      <div className="text-[16px] font-medium text-neutral-600">
+                        Items
+                      </div>
+                      <div className="text-[16px] font-medium text-neutral-600 text-center">
+                        Qty
+                      </div>
+                      <div className="text-[16px] font-medium text-neutral-600 text-right">
+                        Price
+                      </div>
+                      <div className="text-[16px] font-medium text-neutral-600 text-center">
+                        Action
+                      </div>
+                    </div>
+
+                    {/* Table rows */}
+                    <div className="divide-y divide-neutral-100">
+                      {cartItems.map((item) => {
+                        const isChecked = selectedItemIds.has(item._id);
+                        return (
+                          <div
+                            key={item._id}
+                            className="grid grid-cols-[40px_1fr_120px_120px_64px] gap-4 items-center px-6 py-4 hover:bg-neutral-50/80 transition-colors group"
+                          >
+                            {/* Checkbox */}
+                            <div className="flex justify-center">
+                              <SelectionCheckbox
+                                checked={isChecked}
+                                onChange={() => toggleSelectItem(item._id)}
+                                ariaLabel={`Select ${item.product?.name}`}
+                              />
+                            </div>
+
+                            {/* Item */}
+                            <div className="flex items-center gap-4 min-w-0">
+                              <div className="w-16 h-16 rounded-lg overflow-hidden bg-[#FCFBFA] border border-neutral-100 shrink-0">
+                                <img
+                                  src={getImageUrl(item.product)}
+                                  alt={item.product?.name}
+                                  className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
+                                />
+                              </div>
+                              <div className="min-w-0">
+                                <h4 className="text-[16px] font-semibold text-[#1A1714] truncate">
+                                  {item.product?.name}
+                                </h4>
+                                <p className="text-[15px] text-neutral-400 truncate mt-1">
+                                  {item.variant?.color &&
+                                    `Color: ${item.variant.color}`}
+                                  {item.variant?.size &&
+                                    ` • Size: ${item.variant.size}`}
+                                </p>
+                              </div>
+                            </div>
+
+                            {/* Qty */}
+                            <div className="flex justify-center">
+                              <div className="flex items-center border border-neutral-200 rounded-lg px-1 py-1 bg-white">
+                                <button
+                                  type="button"
+                                  onClick={() =>
+                                    handleUpdateQuantity(item._id, item.quantity - 1)
+                                  }
+                                  disabled={item.quantity <= 1 || isUpdating}
+                                  className="p-1 hover:text-[#F27318] transition-colors disabled:opacity-30 disabled:hover:text-inherit disabled:cursor-not-allowed"
+                                  aria-label="Decrease quantity"
+                                >
+                                  <Minus size={14} />
+                                </button>
+                                <span className="w-8 text-center text-[14px] font-bold">
+                                  {item.quantity}
+                                </span>
+                                <button
+                                  type="button"
+                                  onClick={() =>
+                                    handleUpdateQuantity(item._id, item.quantity + 1)
+                                  }
+                                  disabled={isUpdating}
+                                  className="p-1 hover:text-[#F27318] transition-colors disabled:opacity-30 disabled:cursor-not-allowed"
+                                  aria-label="Increase quantity"
+                                >
+                                  <Plus size={14} />
+                                </button>
+                              </div>
+                            </div>
+
+                            {/* Price */}
+                            <div className="text-right">
+                              <p className="text-[16px] font-bold text-[#1A1714]">
+                                NRs.{" "}
+                                {(
+                                  (item.product?.salePrice ||
+                                    item.product?.price ||
+                                    0) * item.quantity
+                                ).toLocaleString()}
+                              </p>
+                            </div>
+
+                            {/* Action */}
+                            <div className="flex justify-center">
                               <button
-                                onClick={() =>
-                                  handleUpdateQuantity(
-                                    item._id,
-                                    item.quantity - 1
-                                  )
-                                }
-                                className="w-7 h-7 sm:w-8 sm:h-8 flex items-center justify-center text-neutral-500 hover:bg-neutral-50"
+                                type="button"
+                                onClick={() => handleRemoveItem(item._id)}
+                                disabled={isRemoving}
+                                className="p-2 rounded-lg text-red-500 hover:bg-red-50 hover:text-red-700 transition-colors disabled:opacity-40 disabled:cursor-not-allowed"
+                                aria-label="Remove item"
                               >
-                                <Minus size={12} />
-                              </button>
-                              <span className="w-7 h-7 sm:w-8 sm:h-8 flex items-center justify-center text-xs sm:text-sm font-semibold text-neutral-800 border-x border-neutral-200">
-                                {item.quantity}
-                              </span>
-                              <button
-                                onClick={() =>
-                                  handleUpdateQuantity(
-                                    item._id,
-                                    item.quantity + 1
-                                  )
-                                }
-                                className="w-7 h-7 sm:w-8 sm:h-8 flex items-center justify-center text-neutral-500 hover:bg-neutral-50"
-                              >
-                                <Plus size={12} />
+                                <Trash2 size={18} />
                               </button>
                             </div>
-                            <p className="text-xs sm:text-sm font-semibold text-[#F27318]">
-                              NRs. {(price * item.quantity).toLocaleString()}
-                            </p>
                           </div>
+                        );
+                      })}
+                    </div>
+                  </section>
+                </div>
+
+                {/* Main Steps Content */}
+                <div className="bg-white">
+                  <FormProvider {...methods}>
+                    <form
+                      onSubmit={(e) => {
+                        e.preventDefault();
+                        currentStep === 1
+                          ? handleGoToPayment()
+                          : handlePlaceOrder();
+                      }}
+                    >
+                      <div className="space-y-6">
+                        <h2 className="text-[20px] font-semibold text-[#1A1714] font-dm-sans mt-12">
+                          {currentStep === 1 ? "Shipping Information" : "Payment Method"}
+                        </h2>
+
+                        <div className="bg-white">
+                          {currentStep === 1 ? <ShippingStep /> : <PaymentStep />}
                         </div>
                       </div>
-                    );
-                  })}
+
+                      {/* Back Navigation — "Return to Shipping" only. */}
+                      {currentStep === 2 && (
+                        <div className="pt-12 flex items-center">
+                          <button
+                            type="button"
+                            onClick={prevStep}
+                            className="text-[16px] font-medium text-neutral-500 hover:text-[#1A1714] transition-colors flex items-center gap-2"
+                          >
+                            <ChevronLeft size={18} />
+                            Return to Shipping
+                          </button>
+                        </div>
+                      )}
+                    </form>
+                  </FormProvider>
                 </div>
-                <div className="mb-6">
-                  {appliedPromo ? (
-                    <div className="flex items-center justify-between p-3 bg-[#F27318]/5 border border-[#F27318]/10 rounded-lg">
-                      <div className="flex items-center gap-2 overflow-hidden">
-                        <Tag className="w-4 h-4 text-[#F27318] shrink-0" />
-                        <span className="text-xs sm:text-sm font-medium text-[#F27318] truncate">
-                          {appliedPromo.discount.code} applied
+              </div>
+            </div>
+          </div>
+
+          {/* Right Side: Order Summary (Sidepanel) */}
+          <div className="w-full lg:w-[380px] xl:w-[512px] shrink-0 bg-gray-100">
+            <div className="lg:sticky lg:top-20 px-4 sm:px-6 lg:px-12 py-12">
+              <div className="bg-white rounded-xl overflow-hidden">
+
+                {/* Header */}
+                <div className="px-6 py-5">
+                  <h2 className="text-[20px] font-semibold text-[#1A1714]">
+                    Order Summary
+                    <span className="ml-2 text-[15px] font-medium text-neutral-500">
+                      ({selectedCartItems.length} {selectedCartItems.length === 1 ? "item" : "items"})
+                    </span>
+                  </h2>
+                </div>
+
+                <div className="px-6 pb-6 space-y-5">
+                  {/* Line items */}
+                  <div className="space-y-5">
+                    <div className="flex justify-between items-center text-[16px]">
+                      <span className="text-neutral-500">Subtotal</span>
+                      <span className="font-semibold text-[#1A1714]">
+                        NRs. {subtotal.toLocaleString()}
+                      </span>
+                    </div>
+
+                    {promoDiscount > 0 && (
+                      <div className="flex justify-between items-center text-[16px]">
+                        <span className="text-emerald-600 font-medium flex items-center gap-1.5">
+                          <Tag size={13} />
+                          Discount
+                        </span>
+                        <span className="font-semibold text-emerald-600">
+                          − NRs. {promoDiscount.toLocaleString()}
                         </span>
                       </div>
-                      <button
-                        onClick={handleRemovePromo}
-                        className="text-[#F27318] hover:text-[#D9620E] text-xs sm:text-sm font-medium shrink-0 ml-2"
-                      >
-                        Remove
-                      </button>
+                    )}
+
+                    <div className="flex justify-between items-center text-[16px]">
+                      <span className="text-neutral-500">VAT (13%)</span>
+                      <span className="font-semibold text-[#1A1714]">
+                        NRs. {taxAmount.toLocaleString()}
+                      </span>
                     </div>
-                  ) : (
-                    <div className="flex gap-2">
-                      <div className="flex-1 relative">
-                        <Tag
-                          size={14}
-                          className="absolute left-3 top-1/2 -translate-y-1/2 text-neutral-300"
-                        />
-                        <input
-                          type="text"
-                          value={promoCode}
-                          onChange={(e) =>
-                            setPromoCode(e.target.value.toUpperCase())
-                          }
-                          placeholder="Promo code"
-                          className="w-full pl-8 sm:pl-9 pr-3 py-2 border border-neutral-200 rounded-lg text-xs sm:text-sm focus:border-[#F27318] outline-none transition-all"
-                        />
+
+                    <div className="flex justify-between items-center text-[16px]">
+                      <span className="text-neutral-500">Shipping</span>
+                      <span className={`font-medium ${shippingCost === 0 ? "text-emerald-600" : "text-[#1A1714]"}`}>
+                        {shippingCost === 0 ? "Free" : `NRs. ${shippingCost.toLocaleString()}`}
+                      </span>
+                    </div>
+                  </div>
+
+                  <div className="h-px w-full bg-[repeating-linear-gradient(to_right,#d4d4d4_0_10px,transparent_10px_18px)]" />
+                  <div className="flex justify-between items-center">
+                    <span className="text-[20px] font-semibold text-[#1A1714]">Total</span>
+                    <div className="text-right">
+                      <p className="text-[24px] font-semibold text-[#1A1714] leading-none">
+                        NRs. {total.toLocaleString()}
+                      </p>
+                      <p className="text-[13px] text-neutral-500 mt-3">VAT included</p>
+                    </div>
+                  </div>
+
+                  <div className="h-px w-full bg-[repeating-linear-gradient(to_right,#d4d4d4_0_10px,transparent_10px_18px)]" />
+                  {/* Promo code */}
+                  <div>
+                    {appliedPromo ? (
+                      <div className="flex items-center justify-between bg-emerald-50 border border-emerald-100 rounded-xl px-4 py-3">
+                        <div className="flex items-center gap-2">
+                          <Tag size={14} className="text-emerald-600" />
+                          <span className="text-[13px] font-bold text-emerald-700 uppercase tracking-wider">
+                            {appliedPromo.discount.code}
+                          </span>
+                        </div>
+                        <button
+                          onClick={handleRemovePromo}
+                          className="text-[12px] font-semibold text-emerald-600 hover:text-red-500 transition-colors"
+                        >
+                          Remove
+                        </button>
                       </div>
+                    ) : (
+                      <div>
+                        {!showPromoInput ? (
+                          <button
+                            onClick={() => setShowPromoInput(true)}
+                            className="flex items-center gap-2 text-[15px] text-neutral-400 hover:text-[#F27318] transition-colors w-full py-2"
+                          >
+                            <Tag size={14} />
+                            Have a promo code?
+                          </button>
+                        ) : (
+                          <div className="flex gap-2">
+                            <input
+                              type="text"
+                              value={promoCode}
+                              onChange={(e) => setPromoCode(e.target.value)}
+                              onKeyDown={(e) => e.key === "Enter" && handleApplyPromo()}
+                              placeholder="Enter code"
+                              className="flex-1 px-4 py-2.5 bg-neutral-50 border border-neutral-200 rounded-md text-[14px] focus:outline-none focus:border-[#F27318] transition-all"
+                              autoFocus
+                            />
+                            <button
+                              onClick={handleApplyPromo}
+                              disabled={applyDiscountMutation.isPending}
+                              className="px-4 py-2.5 bg-[#F27318] hover:bg-[#cd5704] text-white rounded-md text-[13px] font-bold transition-all disabled:opacity-50 shrink-0"
+                            >
+                              {applyDiscountMutation.isPending ? (
+                                <Loader2 size={14} className="animate-spin" />
+                              ) : (
+                                "Apply"
+                              )}
+                            </button>
+                          </div>
+                        )}
+                      </div>
+                    )}
+                  </div>
+
+                  {/* Back button — hidden on ShippingStep (step 1), visible on PaymentStep (step 2) */}
+                  <div className="flex items-center gap-3">
+                    {currentStep === 2 && (
                       <button
-                        onClick={handleApplyPromo}
-                        disabled={
-                          applyDiscountMutation.isPending || !promoCode.trim()
-                        }
-                        className="px-4 py-2 bg-neutral-900 text-white text-xs sm:text-sm font-semibold rounded-lg hover:bg-neutral-800 disabled:opacity-40"
+                        type="button"
+                        onClick={prevStep}
+                        className="h-12 px-4 shrink-0 rounded-xl border border-neutral-200 text-[15px] font-medium text-neutral-600 hover:bg-neutral-50 hover:text-[#1A1714] transition-colors flex items-center gap-1.5"
                       >
-                        Apply
+                        <ChevronLeft size={16} />
+                        Back
                       </button>
-                    </div>
-                  )}
-                </div>
-                <div className="border-t border-neutral-100 my-4 sm:my-5" />
-                <div className="space-y-2 sm:space-y-3">
-                  <div className="flex justify-between text-xs sm:text-sm">
-                    <span className="text-neutral-500">Subtotal</span>
-                    <span className="text-neutral-800 font-medium">
-                      NRs. {subtotal.toLocaleString()}
-                    </span>
+                    )}
+                    <button
+                      onClick={() => {
+                        currentStep === 1 ? handleGoToPayment() : handlePlaceOrder();
+                      }}
+                      disabled={isSubmitting || selectedCartItems.length === 0}
+                      className="flex-1 bg-[#F27318] hover:bg-[#cd5704] text-white h-12 rounded-xl font-medium text-[15px] transition-all flex items-center justify-center gap-2 disabled:opacity-50 group"
+                    >
+                      {isSubmitting ? (
+                        <Loader2 size={20} className="animate-spin" />
+                      ) : (
+                        <>
+                          {currentStep === 1 ? "Next: Payment" : "Place Order"}
+                          <ChevronRight size={18} className="group-hover:translate-x-0.5 transition-transform" />
+                        </>
+                      )}
+                    </button>
                   </div>
-                  <div className="flex justify-between text-xs sm:text-sm">
-                    <span className="text-neutral-500">Shipping</span>
-                    <span className="text-neutral-800 font-medium">
-                      {shippingCost === 0
-                        ? "FREE"
-                        : `NRs. ${shippingCost.toLocaleString()}`}
-                    </span>
-                  </div>
-                  <div className="flex justify-between text-xs sm:text-sm">
-                    <span className="text-neutral-500">Tax (13%)</span>
-                    <span className="text-neutral-800 font-medium">
-                      NRs. {taxAmount.toLocaleString()}
-                    </span>
-                  </div>
-                  {promoDiscount > 0 && (
-                    <div className="flex justify-between text-xs sm:text-sm text-[#F27318] font-medium">
-                      <span>Discount</span>
-                      <span>- NRs. {promoDiscount.toLocaleString()}</span>
-                    </div>
-                  )}
-                </div>
-                <div className="flex justify-between items-center pt-4 sm:pt-5 mt-4 sm:mt-5 border-t border-neutral-100">
-                  <span className="text-sm sm:text-base font-semibold text-neutral-900">
-                    Total
-                  </span>
-                  <span className="text-lg sm:text-xl font-bold text-[#F27318]">
-                    NRs. {total.toLocaleString()}
-                  </span>
                 </div>
               </div>
             </div>

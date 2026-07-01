@@ -1,10 +1,4 @@
-import {
-  FiMapPin,
-  FiTruck,
-  FiTag,
-  FiUsers,
-  FiHelpCircle,
-} from "react-icons/fi";
+import { MapPin, Truck, Tag, Users, HelpCircle } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import { useDefaultAddress } from "../../hooks/profile/useAddressTan";
 import useAuthStore from "../../store/authStore";
@@ -12,13 +6,13 @@ import useAuthStore from "../../store/authStore";
 const G = "#F27318";
 
 const topOffers = [
-  { icon: <FiTruck size={12} />, text: "Free delivery on orders above ₹5,000" },
-  { icon: <FiTag size={12} />, text: "Use DECOR15 — flat 15% off sitewide" },
+  { icon: <Truck size={12} />, text: "Free delivery on orders above ₹5,000" },
+  { icon: <Tag size={12} />, text: "Use DECOR15 — flat 15% off sitewide" },
 ];
 
 const topLinks = [
-  { icon: <FiUsers size={14} />, label: "Become a Partner" },
-  { icon: <FiHelpCircle size={14} />, label: "Help" },
+  { icon: <Users size={14} />, label: "Become a Partner" },
+  { icon: <HelpCircle size={14} />, label: "Help" },
 ];
 
 export default function TopBar() {
@@ -43,13 +37,13 @@ export default function TopBar() {
     : "Kathmandu 44600";
 
   return (
-    <div className="hidden md:flex bg-[#f6f6f6] px-4 md:px-6 lg:px-9 h-10 md:h-11 items-center justify-between font-dm-sans">
+    <div className="hidden md:flex bg-[#f6f6f6] px-4 md:px-6 lg:px-8 h-10 md:h-11 items-center justify-between font-dm-sans">
       <div className="flex items-center gap-3 lg:gap-[18px]">
         <div
           onClick={handleAddressClick}
           className="flex items-center gap-1 sm:gap-[5px] text-xs sm:text-sm text-[#5A5248] cursor-pointer shrink-0"
         >
-          <FiMapPin size={14} color={G} className="shrink-0" />
+          <MapPin size={14} color={G} className="shrink-0" />
           <span className="hidden sm:inline">Deliver to</span>
           <span className="font-bold text-[#1A1714] border-b-[1.5px] border-dashed border-[#F27318]">
             {addressText}

@@ -1,5 +1,6 @@
 import React from "react";
 import { MoveRight, Calendar } from "lucide-react";
+import { Link } from "react-router-dom";
 
 const blogPosts = [
   {
@@ -59,20 +60,19 @@ const blogPosts = [
 export default function BlogSection() {
   return (
     <section className="bg-[#f6f6f6] py-12 font-dm-sans">
-      <div className="max-w-[1440px] mx-auto px-6 lg:px-9">
+      <div className="max-w-[1440px] mx-auto px-6 lg:px-8">
 
         {/* HEADER: COMPACT & REFINED */}
         <div className="flex items-center justify-between gap-8 mb-10">
-          <div className="flex flex-col gap-2">
-            <h2 className="text-[28px] font-bold text-[#1A1714] leading-tight tracking-[-0.04em]">
-              Design stories from Decor<em className="text-[#F27318] not-italic">X</em>
+          <div>
+            <h2 className="text-[28px] md:text-[36px] font-semibold text-[#1A1714]">
+              Design stories from Guchaa<em className="text-[#F27318] not-italic">Decor</em>
             </h2>
-            <p className="text-[14px] text-black/40 mt-1">Insights and inspiration for a curated lifestyle</p>
+            <p className="text-[15px] text-black/40">Insights and inspiration for a curated lifestyle</p>
           </div>
-          <button className="flex items-center gap-2 text-[12px] font-bold text-[#1A1714] hover:text-[#F27318] transition-all group pb-1.5 border-b border-black/5 hover:border-[#F27318]">
-            Explore All
-            <MoveRight size={16} className="transition-transform group-hover:translate-x-2" />
-          </button>
+          <Link to="/shop" className="flex items-center gap-2 text-[14px] font-semibold text-[#1A1714] hover:text-[#F27318] transition-all group pb-1.5 border-b-2 border-black/5 hover:border-[#F27318]">
+            Explore All <MoveRight size={18} className="transition-transform group-hover:translate-x-2" />
+          </Link>
         </div>
 
         {/* BLOG GRID: HIGH DENSITY (4 COLUMNS) */}
@@ -84,23 +84,24 @@ export default function BlogSection() {
                 <img
                   src={post.image}
                   alt={post.title}
+                  loading="lazy"
+                  decoding="async"
                   className="w-full h-full object-cover transition-all duration-700 scale-100 group-hover:scale-110"
                 />
 
                 {/* SUBTLE GRADIENT OVERLAY */}
                 <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-transparent opacity-80" />
 
-                {/* CATEGORY TAG (TOP LEFT) - COMPACT WHITE BOX */}
-                <div className="absolute top-3 left-3">
-                  <div className="bg-white px-2.5 h-[24px] flex items-center justify-center rounded-[2px] shadow-sm">
-                    <span className="text-[12px] font-medium text-[#F27318] leading-none tracking-tight">{post.category}</span>
-                  </div>
-                </div>
+                <div className="absolute top-2 left-2 bg-white text-[#F27318] text-[10px] font-semibold px-2 py-1 rounded font-dm-sans z-10 uppercase tracking-wide">
+            {post.category}
+          </div>
+
+                
 
                 {/* AUTHOR OVERLAY (BOTTOM LEFT) */}
                 <div className="absolute bottom-3 left-3 flex items-center gap-2.5">
                   <div className="w-9 h-9 rounded-full overflow-hidden border border-white/40 shadow-sm">
-                    <img src={post.author.avatar} alt={post.author.name} className="w-full h-full object-cover" />
+                    <img src={post.author.avatar} alt={post.author.name} loading="lazy" decoding="async" className="w-full h-full object-cover" />
                   </div>
                   <div className="flex flex-col">
                     <span className="text-[14px] font-medium text-white leading-tight drop-shadow-sm">{post.author.name}</span>
@@ -117,14 +118,14 @@ export default function BlogSection() {
 
               {/* CONTENT: COMPACT TYPOGRAPHY */}
               <div className="flex flex-col gap-2.5">
-                <h3 className="text-[17px] font-bold text-[#1A1714] leading-[1.3] tracking-tight group-hover:text-[#F27318] transition-colors line-clamp-2">
+                <h3 className="text-[16px] font-semibold text-[#1A1714] leading-[1.3] tracking-tight group-hover:text-[#F27318] transition-colors line-clamp-2">
                   {post.title}
                 </h3>
                 <p className="text-[14px] text-black/50 leading-relaxed font-light line-clamp-2">
                   {post.excerpt}
                 </p>
                 <div className="pt-2">
-                  <div className="flex items-center gap-1.5 text-[12px] font-semibold text-black/40 group-hover:text-[#F27318] transition-all group-hover:gap-3">
+                  <div className="flex items-center gap-1.5 text-[14px] font-semibold text-black/40 group-hover:text-[#F27318] transition-all group-hover:gap-3">
                     <span>Read More</span>
                     <div className="w-4 h-[1px] bg-black/10 group-hover:bg-[#F27318] transition-all group-hover:w-8"></div>
                   </div>

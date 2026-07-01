@@ -20,6 +20,9 @@ export const useCategoryTree = () => {
   return useQuery({
     queryKey: CATEGORY_KEYS.tree(),
     queryFn: () => categoryApi.getTree(),
+    // Categories rarely change. Cache for 10 min so CategoryBar (mounted on
+    // every page) never triggers a network request on navigation or tab focus.
+    staleTime: 10 * 60 * 1000,
   });
 };
 

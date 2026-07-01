@@ -1,5 +1,6 @@
 import { Link } from "react-router-dom";
 import { X, ShoppingBag, Plus, Minus, Trash2, Loader2 } from "lucide-react";
+import { useEffect } from "react";
 import {
   useCart,
   useUpdateCartItem,
@@ -50,6 +51,18 @@ export default function CartSlider({ isOpen, onClose }) {
     );
   };
 
+  useEffect(() => {
+  if (isOpen) {
+    document.body.style.overflow = "hidden";
+  } else {
+    document.body.style.overflow = "";
+  }
+
+  return () => {
+    document.body.style.overflow = "";
+  };
+}, [isOpen]);
+
   const handleRemoveItem = (itemId) => {
     if (!isAuthenticated) {
       removeGuestCartItem(itemId);
@@ -66,8 +79,11 @@ export default function CartSlider({ isOpen, onClose }) {
   return (
     <>
       <div
-        className={`fixed inset-0 z-[100] bg-black/40 backdrop-blur-sm transition-opacity duration-300 ${isOpen ? "opacity-100 visible pointer-events-auto" : "opacity-0 invisible pointer-events-none"
-          }`}
+        className={`fixed inset-0 z-[100] bg-black/40 h-[100vh] transition-opacity duration-300 ${
+      isOpen
+        ? "opacity-100 visible pointer-events-auto"
+        : "opacity-0 invisible pointer-events-none"
+    }`}
         onClick={onClose}
       />
 

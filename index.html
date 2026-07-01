@@ -2,9 +2,38 @@
 <html lang="en">
   <head>
     <meta charset="UTF-8" />
-    <link rel="icon" type="image/svg+xml" href="/vite.svg" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>DecorX - Redefine Your Space</title>
+    <meta
+      name="description"
+      content="GuchaaDecor – Discover handcrafted furniture and home décor that transforms your living space. Shop sofas, beds, dining sets, wardrobes and more."
+    />
+
+    <!-- Favicon -->
+    <link rel="icon" type="image/png" href="/favicon.png" />
+
+    <!-- DNS prefetch for API origin (resolves the domain before any fetch fires) -->
+    <link rel="dns-prefetch" href="https://api.guchaadecor.com" />
+
+    <!--
+      Preconnect to Google Fonts origins before any stylesheet is parsed.
+      This eliminates two round-trips (DNS + TCP + TLS) from the critical path.
+    -->
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+
+    <!--
+      Load Google Fonts as a <link> tag instead of a CSS @import.
+      @import inside a CSS file is render-blocking: the browser cannot begin
+      downloading the font until the CSS file is parsed.
+      A <link> in <head> is fetched in parallel with the HTML parse.
+      display=swap ensures text remains visible while the font loads.
+    -->
+    <link
+      href="https://fonts.googleapis.com/css2?family=DM+Sans:ital,opsz,wght@0,9..40,100..1000;1,9..40,100..1000&display=swap"
+      rel="stylesheet"
+    />
+
+    <title>GuchaaDecor – Redefine Your Space</title>
   </head>
   <body>
     <div id="root"></div>
