@@ -70,17 +70,17 @@ export default function ReviewModal({ isOpen, onClose, productId, existingReview
 
   return (
     <AnimatePresence>
-      <div className="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm">
+      <div className="fixed inset-0 z-100 flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm">
         <motion.div
           initial={{ opacity: 0, scale: 0.95, y: 20 }}
           animate={{ opacity: 1, scale: 1, y: 0 }}
           exit={{ opacity: 0, scale: 0.95, y: 20 }}
-          className="bg-white w-full max-w-[480px] rounded-[12px] overflow-hidden relative shadow-[0_20px_60px_rgba(0,0,0,0.3)] font-dm-sans"
+          className="bg-white w-full max-w-[480px] rounded-xl overflow-hidden relative shadow-[0_20px_60px_rgba(0,0,0,0.3)] font-dm-sans"
         >
           {/* Close Button */}
           <button
             onClick={onClose}
-            className="absolute top-4 right-4 z-20 w-8 h-8 flex items-center justify-center bg-gray-100 text-gray-600 hover:bg-black hover:text-white transition-all rounded-[8px] border-none cursor-pointer"
+            className="absolute top-4 right-4 z-20 w-8 h-8 flex items-center justify-center bg-gray-100 text-gray-600 hover:bg-black hover:text-white transition-all rounded-lg border-none cursor-pointer"
           >
             <X size={18} />
           </button>
@@ -140,7 +140,7 @@ export default function ReviewModal({ isOpen, onClose, productId, existingReview
                     {...register("title")}
                     placeholder="Summarize your experience"
                     maxLength={100}
-                    className="w-full h-[44px] px-4 border border-[#E2E8F0] rounded-[8px] focus:border-[#F27318] focus:ring-1 focus:ring-[#F27318] outline-none transition-all text-[15px] font-dm-sans"
+                    className="w-full h-11 px-4 border border-[#E2E8F0] rounded-lg focus:border-[#F27318] focus:ring-1 focus:ring-[#F27318] outline-none transition-all text-[15px] font-dm-sans"
                   />
                   {errors.title && (
                     <p className="text-[12px] text-red-500 font-medium">{errors.title.message}</p>
@@ -156,7 +156,7 @@ export default function ReviewModal({ isOpen, onClose, productId, existingReview
                     placeholder="Share your experience with this piece. What did you love?"
                     rows={4}
                     maxLength={1000}
-                    className="w-full px-4 py-3 border border-[#E2E8F0] rounded-[8px] focus:border-[#F27318] focus:ring-1 focus:ring-[#F27318] outline-none transition-all text-[15px] resize-none font-dm-sans"
+                    className="w-full px-4 py-3 border border-[#E2E8F0] rounded-lg focus:border-[#F27318] focus:ring-1 focus:ring-[#F27318] outline-none transition-all text-[15px] resize-none font-dm-sans"
                   />
                   {errors.comment && (
                     <p className="text-[12px] text-red-500 font-medium">{errors.comment.message}</p>
@@ -169,14 +169,14 @@ export default function ReviewModal({ isOpen, onClose, productId, existingReview
                   <button
                     type="button"
                     onClick={onClose}
-                    className="flex-1 h-[44px] border border-[#E2E8F0] rounded-[8px] text-[#64748B] font-semibold text-[14px] hover:bg-gray-50 transition-all cursor-pointer bg-transparent"
+                    className="flex-1 h-11 border border-[#E2E8F0] rounded-lg text-[#64748B] font-semibold text-[14px] hover:bg-gray-50 transition-all cursor-pointer bg-transparent"
                   >
                     Cancel
                   </button>
                   <button
                     type="submit"
                     disabled={isPending}
-                    className="flex-1 h-[44px] bg-[#F27318] hover:bg-[#D9620E] text-white font-semibold text-[14px] rounded-[8px] transition-all disabled:opacity-50 disabled:cursor-not-allowed border-none cursor-pointer flex items-center justify-center gap-2"
+                    className="flex-1 h-11 bg-[#F27318] hover:bg-[#D9620E] text-white font-semibold text-[14px] rounded-lg transition-all disabled:opacity-50 disabled:cursor-not-allowed border-none cursor-pointer flex items-center justify-center gap-2"
                   >
                     {isPending ? (
                       <Loader2 size={18} className="animate-spin" />

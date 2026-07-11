@@ -1,4 +1,4 @@
-import { useState, useMemo, useEffect } from "react";
+import { useState, useMemo, useEffect, useRef } from "react";
 import { Link, Outlet, useLocation, useNavigate } from "react-router-dom";
 import {
   LayoutDashboard,
@@ -15,6 +15,13 @@ import {
   Megaphone,
   Headphones,
   Mail,
+  BookOpen,
+  HelpCircle,
+  ShieldCheck,
+  ChevronLeft,
+  ChevronRight,
+  ChevronDown,
+  Search,
 } from "lucide-react";
 import NotificationBell from "../../components/common/NotificationBell";
 import ConfirmationDialog from "../../components/modals/ConfirmationDialog";
@@ -27,7 +34,29 @@ export default function AdminLayout() {
   const { user, signOut } = useAuthStore();
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [logoutModalOpen, setLogoutModalOpen] = useState(false);
+  const [policyModalOpen, setPolicyModalOpen] = useState(false);
+  const [helpModalOpen, setHelpModalOpen] = useState(false);
   const [toasts, setToasts] = useState([]);
+  const [isCollapsed, setIsCollapsed] = useState(() => {
+    return localStorage.getItem("admin_sidebar_collapsed") === "true";
+  });
+
+  const [profileMenuOpen, setProfileMenuOpen] = useState(false);
+  const [statusMenuOpen, setStatusMenuOpen] = useState(false);
+  const [onlineStatus, setOnlineStatus] = useState("online");
+  const [searchValue, setSearchValue] = useState("");
+
+  const profileRef = useRef(null);
+  const statusRef = useRef(null);
+  const searchInputRef = useRef(null);
+
+  const toggleCollapse = () => {
+    setIsCollapsed((prev) => {
+      const next = !prev;
+      localStorage.setItem("admin_sidebar_collapsed", String(next));
+      return next;
+    });
+  };
 
   const token = useMemo(() => localStorage.getItem("token"), []);
 
@@ -43,17 +72,41 @@ export default function AdminLayout() {
   useEffect(() => {
     if (adminNotifications.length > 0) {
       const latestNotification = adminNotifications[0];
-      // Only show toast for truly new notifications (check timestamp)
       if (latestNotification.timestamp) {
         const notificationTime = new Date(latestNotification.timestamp).getTime();
         const now = Date.now();
-        // Only show toast if notification is less than 5 seconds old
         if (now - notificationTime < 5000) {
           addToast(latestNotification);
         }
       }
     }
   }, [adminNotifications.length]);
+
+  // Close dropdowns when clicking outside
+  useEffect(() => {
+    const handleClickOutside = (e) => {
+      if (profileRef.current && !profileRef.current.contains(e.target)) {
+        setProfileMenuOpen(false);
+      }
+      if (statusRef.current && !statusRef.current.contains(e.target)) {
+        setStatusMenuOpen(false);
+      }
+    };
+    document.addEventListener("mousedown", handleClickOutside);
+    return () => document.removeEventListener("mousedown", handleClickOutside);
+  }, []);
+
+  // Cmd/Ctrl + K focuses the search bar
+  useEffect(() => {
+    const handleKeyDown = (e) => {
+      if ((e.metaKey || e.ctrlKey) && e.key.toLowerCase() === "k") {
+        e.preventDefault();
+        searchInputRef.current?.focus();
+      }
+    };
+    document.addEventListener("keydown", handleKeyDown);
+    return () => document.removeEventListener("keydown", handleKeyDown);
+  }, []);
 
   // Add toast notification
   const addToast = (notification) => {
@@ -85,7 +138,7 @@ export default function AdminLayout() {
           id: "dashboard",
           label: "Dashboard",
           icon: LayoutDashboard,
-          path: "/admin",
+          path: "/dashboard",
         },
       ],
     },
@@ -96,21 +149,21 @@ export default function AdminLayout() {
           id: "products",
           label: "Products",
           icon: Package,
-          path: "/admin/products",
+          path: "/dashboard/products",
         },
         {
           id: "categories",
           label: "Categories",
           icon: Tag,
-          path: "/admin/categories",
+          path: "/dashboard/categories",
         },
         {
           id: "orders",
           label: "Orders",
           icon: ShoppingCart,
-          path: "/admin/orders",
+          path: "/dashboard/orders",
         },
-        { id: "users", label: "Users", icon: Users, path: "/admin/users" },
+        { id: "users", label: "Users", icon: Users, path: "/dashboard/users" },
       ],
     },
     {
@@ -120,19 +173,25 @@ export default function AdminLayout() {
           id: "support",
           label: "Support Chat",
           icon: Headphones,
-          path: "/admin/support",
+          path: "/dashboard/support",
+        },
+        {
+          id: "knowledge",
+          label: "Knowledge Base",
+          icon: BookOpen,
+          path: "/dashboard/knowledge",
         },
         {
           id: "contacts",
           label: "Contacts",
           icon: Mail,
-          path: "/admin/contacts",
+          path: "/dashboard/contacts",
         },
         {
           id: "reviews",
           label: "Reviews",
           icon: MessageSquare,
-          path: "/admin/reviews",
+          path: "/dashboard/reviews",
         },
       ],
     },
@@ -143,49 +202,32 @@ export default function AdminLayout() {
           id: "discounts",
           label: "Discounts",
           icon: Percent,
-          path: "/admin/discounts",
+          path: "/dashboard/discounts",
         },
         {
           id: "promotions",
           label: "Promotions",
           icon: Megaphone,
-          path: "/admin/promotions",
+          path: "/dashboard/promotions",
         },
         {
           id: "announcements",
           label: "Announcements",
           icon: Bell,
-          path: "/admin/announcements",
+          path: "/dashboard/announcements",
         },
       ],
     },
   ];
 
   const isActive = (path) =>
-    path === "/admin"
-      ? location.pathname === "/admin"
+    path === "/dashboard"
+      ? location.pathname === "/dashboard"
       : location.pathname.startsWith(path);
-  const currentLabel =
-    menuGroups.flatMap((g) => g.items).find((i) => isActive(i.path))?.label ||
-    "Dashboard";
 
   return (
     <div className="min-h-screen bg-gray-50/50 font-dm-sans text-slate-900">
-      {/* Mobile Header */}
-      <div className="lg:hidden fixed top-0 left-0 right-0 h-16 bg-white border-b border-gray-200 z-50 flex items-center justify-between px-6">
-        <button
-          onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
-          className="p-2 -ml-2 text-slate-600"
-        >
-          {mobileMenuOpen ? <X size={24} /> : <Menu size={24} />}
-        </button>
-        <span className="font-playfair font-black text-xl text-teal-600">
-          Aura
-        </span>
-        <NotificationBell user={user} token={token} />
-      </div>
-
-      {/* Sidebar Overlay */}
+      {/* Sidebar Overlay (mobile) - covers full screen including header */}
       {mobileMenuOpen && (
         <div
           className="lg:hidden fixed inset-0 bg-black/20 z-40"
@@ -193,46 +235,55 @@ export default function AdminLayout() {
         />
       )}
 
-      {/* Sidebar */}
+      {/* Sidebar - starts from the very top of the page */}
       <aside
-        className={`fixed top-0 left-0 h-full w-72 bg-white border-r border-gray-200 z-50 transform transition-transform duration-300 ease-in-out ${mobileMenuOpen
-          ? "translate-x-0"
-          : "-translate-x-full lg:translate-x-0"
-          }`}
+        className={`fixed top-0 left-0 h-screen bg-white border-r border-gray-100 z-50 transform transition-all duration-300 ease-in-out ${mobileMenuOpen ? "translate-x-0" : "-translate-x-full lg:translate-x-0"
+          } ${isCollapsed ? "w-20" : "w-72"}`}
       >
-        <div className="flex flex-col h-full">
-          {/* Logo Area - No Shadows */}
-          <div className="h-20 flex items-center px-8 border-b border-gray-100">
-            <Link to="/admin" className="flex items-center gap-3 group">
-              <div className="w-10 h-10 rounded-xl bg-teal-600 flex items-center justify-center transition-transform duration-300 group-hover:scale-105">
-                <span className="font-playfair font-bold text-white text-xl">
-                  A
-                </span>
-              </div>
-              <div className="flex flex-col">
-                <span className="font-playfair font-bold text-xl text-gray-900 tracking-wide">
-                  Aura
-                </span>
-                <span className="text-[11px] font-bold text-gray-400 uppercase tracking-widest leading-none mt-1">
-                  Admin Panel
-                </span>
-              </div>
-            </Link>
+        <div className="flex flex-col h-full relative">
+          <div
+            className={`w-full flex items-center border-b border-gray-100 ${isCollapsed
+              ? "justify-center h-20 px-0"
+              : "justify-between h-20 px-5"
+              }`}
+          >
+            {!isCollapsed && (
+              <Link to="/dashboard" className="flex items-center min-w-0 shrink">
+                <img
+                  src="/admin-logo.png"
+                  alt="Aura"
+                  className="w-48 h-auto object-contain transition-all duration-300"
+                />
+              </Link>
+            )}
+
+            <button
+              onClick={toggleCollapse}
+              className="hidden lg:flex p-2 rounded-lg text-gray-500 bg-gray-100 hover:bg-gray-200 hover:text-gray-700 transition-colors shrink-0"
+              title={isCollapsed ? "Expand Sidebar" : "Collapse Sidebar"}
+            >
+              {isCollapsed ? <ChevronRight size={18} /> : <ChevronLeft size={18} />}
+            </button>
           </div>
 
-          {/* Navigation - No Shadows on Active */}
-          <nav className="flex-1 overflow-y-auto p-4 space-y-7 custom-scrollbar pb-24">
+          {/* Navigation */}
+          <nav className="flex-1 overflow-y-auto p-5 space-y-6 custom-scrollbar pb-28 pt-8">
             {menuGroups.map((group) => (
               <div key={group.title}>
-                <h3 className="px-5 text-[11px] font-bold text-gray-400 uppercase tracking-[0.2em] mb-3">
-                  {group.title}
-                </h3>
+                {!isCollapsed ? (
+                  <h3 className="px-5 text-[12px] font-medium text-gray-400 uppercase mb-3 truncate">
+                    {group.title}
+                  </h3>
+                ) : (
+                  <div className="h-px bg-gray-100 my-4 mx-2" />
+                )}
                 <div className="space-y-1">
                   {group.items.map((item) => (
                     <NavLink
                       key={item.id}
                       item={item}
                       active={isActive(item.path)}
+                      isCollapsed={isCollapsed}
                       onClick={() => setMobileMenuOpen(false)}
                     />
                   ))}
@@ -240,62 +291,165 @@ export default function AdminLayout() {
               </div>
             ))}
           </nav>
-
-          {/* Sidebar Footer Profile */}
-          <div className="absolute bottom-0 left-0 right-0 p-4 border-t border-gray-100 bg-white">
-            <div className="flex items-center gap-3 p-3 rounded-2xl bg-gray-50/80 border border-gray-100">
-              <div className="w-10 h-10 rounded-xl bg-teal-600 flex items-center justify-center text-white font-bold text-sm shrink-0">
-                {user?.firstName?.charAt(0)?.toUpperCase() || "A"}
-              </div>
-              <div className="flex-1 min-w-0">
-                <p className="text-[14px] font-bold text-gray-900 truncate leading-tight">
-                  {user?.firstName}
-                </p>
-                <p className="text-[12px] font-medium text-gray-500 truncate leading-tight mt-1">
-                  {user?.email}
-                </p>
-              </div>
-              <button
-                onClick={() => setLogoutModalOpen(true)}
-                className="p-2 rounded-lg text-gray-400 hover:text-rose-600 transition-colors"
-              >
-                <LogOut className="w-4.5 h-4.5" />
-              </button>
-            </div>
-          </div>
         </div>
       </aside>
 
-      {/* Main Content Area */}
-      <div className="lg:ml-72 min-h-screen">
-        <header className="hidden lg:flex h-20 bg-white border-b border-gray-200 items-center justify-between px-8 sticky top-0 z-30">
-          <div>
-            <h2 className="text-[13px] font-bold text-gray-400 uppercase tracking-widest">
-              PAGES / <span className="text-gray-900">{currentLabel}</span>
-            </h2>
+      {/* Top Navbar - sits only to the right of the sidebar, not full width */}
+      <header
+        className={`fixed top-0 right-0 left-0 h-20 bg-white border-b border-gray-100 z-30 flex items-center gap-4 px-4 sm:px-6 transition-all duration-300 ease-in-out ${isCollapsed ? "lg:left-20" : "lg:left-72"
+          }`}
+      >
+        {/* Mobile menu toggle */}
+        <button
+          onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
+          className="lg:hidden p-2 -ml-2 text-gray-600 shrink-0"
+        >
+          {mobileMenuOpen ? <X size={22} /> : <Menu size={22} />}
+        </button>
+
+        {/* Search bar */}
+        <div className="hidden md:flex w-110">
+          <div className="relative w-full">
+            <Search
+              size={16}
+              className="absolute left-3.5 top-1/2 -translate-y-1/2 text-gray-400"
+            />
+            <input
+              ref={searchInputRef}
+              type="text"
+              value={searchValue}
+              onChange={(e) => setSearchValue(e.target.value)}
+              placeholder="Search customers, orders, products, conversations..."
+              className="w-full pl-10 pr-14 py-2.5 bg-gray-100/90 rounded-lg text-sm text-gray-700 placeholder:text-gray-400 focus:outline-none focus:ring-2 focus:ring-teal-500/20 focus:border-teal-400 transition-all"
+            />
+            <span className="absolute right-3 top-1/2 -translate-y-1/2 text-[11px] font-semibold text-gray-400 bg-white border border-gray-200 rounded-md px-1.5 py-0.5">
+              ⌘K
+            </span>
+          </div>
+        </div>
+
+        {/* Right cluster */}
+        <div className="flex items-center gap-3 sm:gap-4 ml-auto">
+          {/* Online / Offline status */}
+          <div className="relative hidden sm:block" ref={statusRef}>
+            <button
+              onClick={() => setStatusMenuOpen((prev) => !prev)}
+              className="flex items-center gap-2 px-3 py-2 rounded-lg bg-gray-100/90 transition-colors"
+            >
+              <span
+                className={`w-2 h-2 rounded-full ${onlineStatus === "online" ? "bg-emerald-500" : "bg-gray-400"
+                  }`}
+              />
+              <span className="text-sm font-medium text-gray-700 capitalize">
+                {onlineStatus}
+              </span>
+              <ChevronDown size={14} className="text-gray-400" />
+            </button>
+
+            {statusMenuOpen && (
+              <div className="absolute right-0 mt-2 w-32 bg-white border border-gray-100 shadow-[0_2px_10px_-4px_rgba(0,0,0,0.05)] rounded-lg py-1.5 z-50">
+                <button
+                  onClick={() => {
+                    setOnlineStatus("online");
+                    setStatusMenuOpen(false);
+                  }}
+                  className="w-full flex items-center gap-2 px-4 py-2 text-sm text-gray-700 hover:bg-gray-50"
+                >
+                  <span className="w-2 h-2 rounded-full bg-emerald-500" />
+                  Online
+                </button>
+                <button
+                  onClick={() => {
+                    setOnlineStatus("offline");
+                    setStatusMenuOpen(false);
+                  }}
+                  className="w-full flex items-center gap-2 px-4 py-2 text-sm text-gray-700 hover:bg-gray-50"
+                >
+                  <span className="w-2 h-2 rounded-full bg-gray-400" />
+                  Offline
+                </button>
+              </div>
+            )}
           </div>
 
-          <div className="flex items-center gap-5">
-            <NotificationBell user={user} token={token} />
-            <div className="h-8 w-px bg-gray-100"></div>
+          {/* Notifications */}
+          <NotificationBell user={user} token={token} />
 
-            <div className="flex items-center gap-3 pl-1">
+          <div className="h-8 w-px bg-gray-100 hidden sm:block" />
+
+          {/* Profile dropdown */}
+          <div className="relative" ref={profileRef}>
+            <button
+              onClick={() => setProfileMenuOpen((prev) => !prev)}
+              className="flex items-center gap-3 pl-1 rounded-xl hover:bg-gray-50 py-1.5 pr-2 transition-colors"
+            >
+              <div className="w-9 h-9 rounded-xl bg-teal-600/10 flex items-center justify-center text-teal-700 font-bold text-sm border border-teal-100 shrink-0">
+                {user?.firstName?.charAt(0)?.toUpperCase() || "A"}
+              </div>
               <div className="text-right hidden xl:block">
                 <p className="text-[14px] font-bold text-gray-900 leading-none">
-                  {user?.firstName}
+                  {user?.firstName} {user?.lastName}
                 </p>
                 <p className="text-[11px] font-bold text-teal-600 mt-1 uppercase tracking-wider">
                   Administrator
                 </p>
               </div>
-              <div className="w-9 h-9 rounded-xl bg-teal-600/10 flex items-center justify-center text-teal-700 font-bold text-sm border border-teal-100">
-                {user?.firstName?.charAt(0)?.toUpperCase() || "A"}
-              </div>
-            </div>
-          </div>
-        </header>
+              <ChevronDown size={14} className="text-gray-400 hidden sm:block" />
+            </button>
 
-        <main className="p-8 pt-24 lg:pt-8 min-h-[calc(100vh-5rem)]">
+            {profileMenuOpen && (
+              <div className="absolute right-0 mt-2 w-56 bg-white border border-gray-100 rounded-xl shadow-lg py-1.5 z-50">
+                <div className="px-4 py-2.5 border-b border-gray-100">
+                  <p className="text-sm font-bold text-gray-900 truncate">
+                    {user?.firstName} {user?.lastName}
+                  </p>
+                  <p className="text-[11px] font-bold text-teal-600 uppercase tracking-wider mt-0.5">
+                    Administrator
+                  </p>
+                </div>
+                <button
+                  onClick={() => {
+                    setProfileMenuOpen(false);
+                    setHelpModalOpen(true);
+                  }}
+                  className="w-full flex items-center gap-2.5 px-4 py-2.5 text-sm text-gray-600 hover:bg-gray-50"
+                >
+                  <HelpCircle size={16} />
+                  Help & Support
+                </button>
+                <button
+                  onClick={() => {
+                    setProfileMenuOpen(false);
+                    setPolicyModalOpen(true);
+                  }}
+                  className="w-full flex items-center gap-2.5 px-4 py-2.5 text-sm text-gray-600 hover:bg-gray-50"
+                >
+                  <ShieldCheck size={16} />
+                  Privacy & Policies
+                </button>
+                <div className="h-px bg-gray-100 my-1" />
+                <button
+                  onClick={() => {
+                    setProfileMenuOpen(false);
+                    setLogoutModalOpen(true);
+                  }}
+                  className="w-full flex items-center gap-2.5 px-4 py-2.5 text-sm text-rose-500 hover:bg-rose-50/50"
+                >
+                  <LogOut size={16} />
+                  Sign Out
+                </button>
+              </div>
+            )}
+          </div>
+        </div>
+      </header>
+
+      {/* Main Content Area - no padding here, each page controls its own */}
+      <div
+        className={`min-h-screen pt-20 transition-all duration-300 ease-in-out ${isCollapsed ? "lg:ml-20" : "lg:ml-72"
+          }`}
+      >
+        <main className="min-h-[calc(100vh-5rem)]">
           <Outlet />
         </main>
       </div>
@@ -310,7 +464,6 @@ export default function AdminLayout() {
               animation: "slideInRight 0.3s ease-out",
             }}
           >
-            {/* Icon */}
             <div className="w-10 h-10 rounded-lg bg-teal-50 flex items-center justify-center text-lg shrink-0">
               {toast.type === "order:new" && "🛒"}
               {toast.type === "order:cancelled" && "❌"}
@@ -321,7 +474,6 @@ export default function AdminLayout() {
               {!["order:new", "order:cancelled", "return:requested", "review:new", "contact:new", "chat:started"].includes(toast.type) && "🔔"}
             </div>
 
-            {/* Content */}
             <div className="flex-1 min-w-0">
               <p className="text-sm font-semibold text-gray-900 truncate">
                 {toast.title}
@@ -332,7 +484,7 @@ export default function AdminLayout() {
               {toast.actionUrl && (
                 <button
                   onClick={() => {
-                    navigate(toast.actionUrl);
+                    navigate(toast.actionUrl.replace("/admin", "/dashboard"));
                     removeToast(toast.id);
                   }}
                   className="text-xs text-teal-600 font-medium mt-1 hover:text-teal-700"
@@ -342,7 +494,6 @@ export default function AdminLayout() {
               )}
             </div>
 
-            {/* Close Button */}
             <button
               onClick={() => removeToast(toast.id)}
               className="p-1 text-gray-400 hover:text-gray-600 rounded-lg hover:bg-gray-100 shrink-0"
@@ -353,19 +504,75 @@ export default function AdminLayout() {
         ))}
       </div>
 
-      {/* Toast animation styles */}
-      <style>{`
-        @keyframes slideInRight {
-          from {
-            transform: translateX(100%);
-            opacity: 0;
-          }
-          to {
-            transform: translateX(0);
-            opacity: 1;
-          }
-        }
-      `}</style>
+      {/* Help Modal */}
+      {helpModalOpen && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 p-4">
+          <div className="bg-white rounded-2xl border border-gray-100 shadow-xl max-w-md w-full p-6 relative">
+            <button
+              onClick={() => setHelpModalOpen(false)}
+              className="absolute top-4 right-4 p-1.5 rounded-lg text-gray-400 hover:text-gray-700 hover:bg-gray-50"
+            >
+              <X size={16} />
+            </button>
+            <div className="flex items-center gap-3 mb-4">
+              <div className="w-10 h-10 rounded-xl bg-teal-50 flex items-center justify-center text-teal-600">
+                <HelpCircle size={20} />
+              </div>
+              <h3 className="text-lg font-bold text-gray-900">Help & Support</h3>
+            </div>
+            <div className="space-y-3 text-sm text-gray-600 leading-relaxed">
+              <p>Welcome to Aura Interiors Admin Panel. Here you can manage products, coordinate orders, and interact with customer chats.</p>
+              <p>For technical inquiries or system configuration issues, please contact your systems administrator or write to <span className="font-semibold text-teal-600">admin-support@aurainteriors.com</span>.</p>
+            </div>
+            <button
+              onClick={() => setHelpModalOpen(false)}
+              className="w-full mt-6 py-2.5 bg-teal-600 hover:bg-teal-700 text-white font-medium rounded-lg transition-colors shadow-sm text-sm"
+            >
+              Okay
+            </button>
+          </div>
+        </div>
+      )}
+
+      {/* Privacy & Policy Terms Modal */}
+      {policyModalOpen && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 p-4">
+          <div className="bg-white rounded-2xl border border-gray-100 shadow-xl max-w-lg w-full p-6 relative">
+            <button
+              onClick={() => setPolicyModalOpen(false)}
+              className="absolute top-4 right-4 p-1.5 rounded-lg text-gray-400 hover:text-gray-700 hover:bg-gray-50"
+            >
+              <X size={16} />
+            </button>
+            <div className="flex items-center gap-3 mb-4">
+              <div className="w-10 h-10 rounded-xl bg-teal-50 flex items-center justify-center text-teal-600">
+                <ShieldCheck size={20} />
+              </div>
+              <h3 className="text-lg font-bold text-gray-900">Privacy & Policies</h3>
+            </div>
+            <div className="space-y-4 text-xs text-gray-600 overflow-y-auto max-h-[300px] pr-2 leading-relaxed">
+              <section>
+                <h4 className="font-bold text-gray-800 mb-1">1. Data Confidentiality</h4>
+                <p>All administrative credentials, customer information, transaction data, and conversation transcripts are strictly confidential. Staff members must secure their credentials at all times.</p>
+              </section>
+              <section>
+                <h4 className="font-bold text-gray-800 mb-1">2. AI Copilot Guidelines</h4>
+                <p>AI suggestions are meant to support support flows. Please review any generated replies or suggested text carefully before transmission to prevent incorrect policy advice.</p>
+              </section>
+              <section>
+                <h4 className="font-bold text-gray-800 mb-1">3. Customer Information Protection</h4>
+                <p>Do not export personal details or order transcripts unless authorized by a senior systems manager for troubleshooting purposes.</p>
+              </section>
+            </div>
+            <button
+              onClick={() => setPolicyModalOpen(false)}
+              className="w-full mt-6 py-2.5 bg-teal-600 hover:bg-teal-700 text-white font-medium rounded-lg transition-colors shadow-sm text-sm"
+            >
+              Close Policies
+            </button>
+          </div>
+        </div>
+      )}
 
       <ConfirmationDialog
         isOpen={logoutModalOpen}
@@ -380,32 +587,29 @@ export default function AdminLayout() {
   );
 }
 
-function NavLink({ item, active, onClick }) {
+function NavLink({ item, active, isCollapsed, onClick }) {
   return (
     <Link
       to={item.path}
       onClick={onClick}
-      className={`group flex items-center gap-3.5 px-4.5 py-3 mx-2.5 rounded-xl transition-all duration-200 relative overflow-hidden focus:outline-none ${active
-        ? "bg-teal-50/80 text-teal-700 ring-1 ring-teal-100/50"
-        : "text-gray-500 hover:bg-gray-50 hover:text-gray-900"
+      title={isCollapsed ? item.label : undefined}
+      className={`group flex items-center px-4.5 py-2.5 mx-2.5 rounded-lg transition-all duration-200 relative overflow-hidden focus:outline-none ${isCollapsed ? "justify-center gap-0 px-2" : "gap-3.5"} ${active
+        ? "bg-teal-50 text-teal-700 font-semibold"
+        : "text-gray-600 hover:bg-gray-50 hover:text-gray-900 font-medium"
         }`}
     >
-      {/* Active Indicator Bar - Now Positioned on the Absolute Left */}
-      {active && (
-        <span className="absolute left-0 top-1/2 -translate-y-1/2 w-1 h-6 bg-teal-600 rounded-r-full"></span>
-      )}
 
       <item.icon
-        className={`w-5 h-5 shrink-0 transition-all duration-200 ${active ? "text-teal-600" : "text-gray-400 group-hover:text-gray-900"
+        className={`w-5 h-5 shrink-0 transition-all duration-200 ${active ? "text-teal-600" : "text-gray-400 group-hover:text-gray-700"
           }`}
         strokeWidth={active ? 2.5 : 2}
       />
-      <span
-        className={`flex-1 text-[15px] tracking-tight ${active ? "font-semibold" : "font-medium"
-          }`}
-      >
-        {item.label}
-      </span>
+
+      {!isCollapsed && (
+        <span className="flex-1 text-[15px] tracking-tight truncate">
+          {item.label}
+        </span>
+      )}
     </Link>
   );
 }

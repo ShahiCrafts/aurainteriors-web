@@ -25,7 +25,7 @@ export const useUpdateProfile = () => {
         const response = await updateProfile(data);
         return response.data;
       } catch (error) {
-        throw error.displayMessage;
+        throw error;
       }
     },
     onSuccess: () => {
@@ -45,7 +45,7 @@ export const useUpdateAvatar = () => {
         const response = await updateAvatar(formData);
         return response.data;
       } catch (error) {
-        throw error.displayMessage;
+        throw error;
       }
     },
     onSuccess: () => {
@@ -63,7 +63,7 @@ export const useRemoveAvatar = () => {
         const response = await removeAvatar();
         return response.data;
       } catch (error) {
-        throw error.displayMessage;
+        throw error;
       }
     },
     onSuccess: () => {

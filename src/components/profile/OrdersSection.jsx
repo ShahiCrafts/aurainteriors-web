@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import {
   Package,
   ChevronLeft,
@@ -8,52 +8,79 @@ import {
   Search,
   ChevronDown,
   X,
+  SlidersHorizontal,
+  ArrowRight,
 } from "lucide-react";
 import { useMyOrders } from "../../hooks/order/useOrderTan";
 import OrderCard from "./OrderCard";
+import OrderStatsCards from "./OrderStatsCards";
+import { Link, useLocation } from "react-router-dom";
 
 const ITEMS_PER_PAGE = 5;
 
 const STATUS_OPTIONS = [
-  { value: "", label: "All orders" },
+  { value: "", label: "All Orders" },
   { value: "pending", label: "Pending" },
   { value: "processing", label: "Processing" },
   { value: "shipped", label: "Shipped" },
   { value: "delivered", label: "Delivered" },
 ];
 
-const STATUS_COLORS = {
-  pending: "bg-amber-50 text-amber-700 border-amber-200",
-  processing: "bg-blue-50 text-blue-700 border-blue-200",
-  shipped: "bg-purple-50 text-purple-700 border-purple-200",
-  delivered: "bg-emerald-50 text-emerald-700 border-emerald-200",
-};
+const SORT_OPTIONS = [
+  { value: "newest", label: "Newest First" },
+  { value: "oldest", label: "Oldest First" },
+  { value: "amount_high", label: "Amount: High to Low" },
+  { value: "amount_low", label: "Amount: Low to High" },
+];
 
 export default function OrdersSection() {
   const [page, setPage] = useState(1);
   const [statusFilter, setStatusFilter] = useState("");
-  const [searchQuery, setSearchQuery] = useState("");
+  const [sortBy, setSortBy] = useState("newest");
+  const location = useLocation();
+  const [searchQuery, setSearchQuery] = useState(location.state?.searchQuery || "");
 
-  const { data, isLoading, isError } = useMyOrders(
+  const { data, isLoading, isError, refetch } = useMyOrders(
     { page, limit: ITEMS_PER_PAGE, status: statusFilter || undefined },
     { keepPreviousData: true },
   );
 
-  const orders = data?.data?.orders || [];
+  useEffect(() => {
+    refetch();
+  }, []);
+
+  const rawOrders = data?.data?.orders || [];
   const pagination = data?.data?.pagination || { total: 0, pages: 1 };
 
-  const filteredOrders = searchQuery
-    ? orders.filter((o) =>
-      o._id?.toLowerCase().includes(searchQuery.toLowerCase()),
-    )
-    : orders;
+  const sortedOrders = [...rawOrders].sort((a, b) => {
+    const dateA = new Date(a.orderedAt || a.createdAt || 0);
+    const dateB = new Date(b.orderedAt || b.createdAt || 0);
+    switch (sortBy) {
+      case "oldest":
+        return dateA - dateB;
+      case "amount_high":
+        return (b.total || 0) - (a.total || 0);
+      case "amount_low":
+        return (a.total || 0) - (b.total || 0);
+      default:
+        return dateB - dateA;
+    }
+  });
 
-  if (isLoading && !orders.length) {
+  const filteredOrders = searchQuery
+    ? sortedOrders.filter(
+        (o) =>
+          o.orderId?.toLowerCase().includes(searchQuery.toLowerCase()) ||
+          o._id?.toLowerCase().includes(searchQuery.toLowerCase()),
+      )
+    : sortedOrders;
+
+  if (isLoading && !rawOrders.length) {
     return (
-      <div className="flex flex-col items-center justify-center h-72 gap-3">
+      <div className="flex flex-col items-center justify-center h-80 gap-3">
         <Loader2 size={28} className="text-[#F27318] animate-spin" />
-        <p className="text-sm text-neutral-400 font-dm-sans tracking-wide">
-          Loading your orders…
+        <p className="text-[14px] text-neutral-400 font-medium tracking-wide">
+          Loading your purchase history...
         </p>
       </div>
     );
@@ -62,190 +89,183 @@ export default function OrdersSection() {
   if (isError) {
     return (
       <div className="flex flex-col items-center justify-center py-20 gap-4">
-        <div className="w-12 h-12 rounded-full bg-red-50 border border-red-100 flex items-center justify-center">
-          <AlertCircle size={18} className="text-red-400" />
+        <div className="w-14 h-14 rounded-2xl bg-red-50 flex items-center justify-center">
+          <AlertCircle size={22} className="text-red-500" />
         </div>
-        <div className="text-center">
-          <p className="text-sm font-semibold text-neutral-700 font-dm-sans mb-1">
-            Something went wrong
-          </p>
-          <p className="text-xs text-neutral-400 font-dm-sans">
-            We couldn't load your orders. Please refresh the page.
+        <div className="text-center space-y-1">
+          <h3 className="text-[16px] font-bold text-[#1A1714]">Connection Error</h3>
+          <p className="text-[13px] text-neutral-400 max-w-xs">
+            We couldn't retrieve your order information. Please refresh to try again.
           </p>
         </div>
       </div>
     );
   }
 
+  const isEmpty = !(rawOrders.length > 0 || statusFilter || searchQuery);
+
   return (
-    <div className="space-y-8">
-      {/* ── Controls ── */}
-      {(orders.length > 0 || statusFilter || searchQuery) && (
-        <div className="flex flex-col sm:flex-row gap-4 items-start sm:items-center sm:justify-end">
-          {/* Search */}
-          <div className="relative w-full sm:w-96">
-            <Search
-              size={15}
-              className="absolute left-3.5 top-1/2 -translate-y-1/2 text-neutral-300"
-            />
-            <input
-              type="text"
-              placeholder="Search by order ID…"
-              value={searchQuery}
-              onChange={(e) => setSearchQuery(e.target.value)}
-              className="w-full pl-10 pr-9 py-2.5 border border-neutral-200 rounded-lg focus:border-[#F27318] focus:ring-0 outline-none text-sm text-[#1A1714] placeholder:text-neutral-300 bg-white font-dm-sans font-medium transition-colors"
-            />
-            {searchQuery && (
-              <button
-                onClick={() => setSearchQuery("")}
-                className="absolute right-3 top-1/2 -translate-y-1/2 text-neutral-300 hover:text-neutral-500"
+    <div className="h-full flex flex-col space-y-6">
+      {/* Header */}
+      <div className="flex flex-wrap items-start justify-between gap-4 shrink-0">
+        <div>
+          <h2 className="text-[18px] font-semibold text-[#1A1714]">Order History</h2>
+          <p className="text-[14px] text-neutral-400 mt-1">
+            View your orders, track deliveries, download invoices and more.
+          </p>
+        </div>
+      </div>
+
+      {!isEmpty && (
+        <div className="shrink-0">
+          <OrderStatsCards orders={rawOrders} totalCount={pagination.total} />
+        </div>
+      )}
+
+      {!isEmpty ? (
+        <>
+          {/* Controls */}
+          <div className="flex flex-col sm:flex-row gap-3 items-stretch sm:items-center sm:justify-end shrink-0">
+            <div className="relative w-full sm:w-auto sm:flex-none sm:max-w-xs">
+              <Search size={15} className="absolute left-3.5 top-1/2 -translate-y-1/2 text-neutral-400" />
+              <input
+                type="text"
+                placeholder="Search by order ID, product..."
+                value={searchQuery}
+                onChange={(e) => setSearchQuery(e.target.value)}
+                className="w-full pl-10 pr-9 py-3 border border-neutral-200 rounded-xl focus:border-[#F27318] outline-none text-sm text-[#1A1714] placeholder:text-neutral-400 bg-white font-medium transition-colors"
+              />
+              {searchQuery && (
+                <button
+                  onClick={() => setSearchQuery("")}
+                  className="absolute right-3 top-1/2 -translate-y-1/2 text-neutral-400 hover:text-neutral-600"
+                >
+                  <X size={13} />
+                </button>
+              )}
+            </div>
+
+            <div className="relative min-w-[150px]">
+              <select
+                value={statusFilter}
+                onChange={(e) => {
+                  setStatusFilter(e.target.value);
+                  setPage(1);
+                }}
+                className="w-full pl-3.5 pr-9 py-3 border border-neutral-200 rounded-xl focus:border-[#F27318] outline-none text-sm text-[#1A1714] bg-white appearance-none cursor-pointer font-medium transition-colors"
               >
-                <X size={14} />
-              </button>
-            )}
+                {STATUS_OPTIONS.map((opt) => (
+                  <option key={opt.value} value={opt.value}>
+                    {opt.label}
+                  </option>
+                ))}
+              </select>
+              <ChevronDown size={13} className="absolute right-3 top-1/2 -translate-y-1/2 text-neutral-400 pointer-events-none" />
+            </div>
+
+            <div className="relative min-w-[170px]">
+              <select
+                value={sortBy}
+                onChange={(e) => setSortBy(e.target.value)}
+                className="w-full pl-3.5 pr-9 py-3 border border-neutral-200 rounded-xl focus:border-[#F27318] outline-none text-sm text-[#1A1714] bg-white appearance-none cursor-pointer font-medium transition-colors"
+              >
+                {SORT_OPTIONS.map((opt) => (
+                  <option key={opt.value} value={opt.value}>
+                    {opt.label}
+                  </option>
+                ))}
+              </select>
+              <ChevronDown size={13} className="absolute right-3 top-1/2 -translate-y-1/2 text-neutral-400 pointer-events-none" />
+            </div>
           </div>
 
-          {/* Status filter */}
-          <div className="relative">
-            <select
-              value={statusFilter}
-              onChange={(e) => {
-                setStatusFilter(e.target.value);
-                setPage(1);
-              }}
-              className="w-40 pl-3.5 pr-9 py-2.5 border border-neutral-200 rounded-lg focus:border-[#F27318] focus:ring-0 outline-none text-sm text-[#1A1714] bg-white appearance-none cursor-pointer font-dm-sans transition-colors font-medium"
-            >
-              {STATUS_OPTIONS.map((opt) => (
-                <option key={opt.value} value={opt.value}>
-                  {opt.label}
-                </option>
-              ))}
-            </select>
-            <ChevronDown
-              size={13}
-              className="absolute right-3 top-1/2 -translate-y-1/2 text-neutral-400 pointer-events-none"
-            />
-          </div>
-        </div>
-      )}
+          {/* Results — single table-like container, rows divided by hairlines */}
+          {filteredOrders.length === 0 ? (
+            <div className="flex-1 min-h-0 flex flex-col items-center justify-center text-center bg-neutral-50 rounded-2xl">
+              <SlidersHorizontal size={30} className="text-neutral-300 mb-4" />
+              <h3 className="text-[16px] font-semibold text-[#1A1714] mb-1">No Orders Match</h3>
+              <p className="text-[14px] text-neutral-400 max-w-xs">
+                No orders match your filter criteria. Try changing your search query or status filter.
+              </p>
+            </div>
+          ) : (
+            <div className="flex-1 min-h-0 overflow-y-auto space-y-5">
+              <div className="border border-neutral-200 rounded-xl overflow-hidden divide-y divide-neutral-100">
+                {filteredOrders.map((order, idx) => (
+                  <OrderCard key={order._id} order={order} defaultExpanded={idx === 0} />
+                ))}
+              </div>
 
-      {/* ── Empty State ── */}
-      {orders.length === 0 && (
-        <div className="py-28 flex flex-col items-center text-center">
-          <div className="w-16 h-16 rounded-2xl border border-neutral-100 bg-neutral-50 flex items-center justify-center mb-5">
-            <Package size={28} className="text-neutral-200" />
-          </div>
-          <h2 className="text-lg font-bold text-[#1A1714] font-dm-sans mb-3">
-            No orders yet
-          </h2>
-          <p className="text-sm text-neutral-400 font-dm-sans max-w-xs leading-relaxed mb-8">
-            Once you place an order, it'll appear here with full tracking and
-            history.
-          </p>
-          <a
-            href="/shop"
-            className="inline-flex items-center gap-2 px-6 py-2.5 bg-[#F27318] hover:bg-[#E6651B] text-white text-sm font-semibold font-dm-sans rounded-lg transition-colors duration-200"
-          >
-            Start shopping
-          </a>
-        </div>
-      )}
-
-      {/* ── No search results ── */}
-      {orders.length > 0 && filteredOrders.length === 0 && (
-        <div className="py-20 text-center border border-dashed border-neutral-200 rounded-xl">
-          <Search size={28} className="text-neutral-200 mx-auto mb-4" />
-          <p className="text-sm font-semibold text-neutral-700 font-dm-sans mb-2">
-            No orders match
-          </p>
-          <p className="text-xs text-neutral-400 font-dm-sans tracking-wide">
-            Try a different order ID or{" "}
-            <button
-              onClick={() => setSearchQuery("")}
-              className="text-[#F27318] underline underline-offset-2"
-            >
-              clear search
-            </button>
-          </p>
-        </div>
-      )}
-
-      {/* ── Orders List ── */}
-      {filteredOrders.length > 0 && (
-        <div className="flex flex-col gap-6">
-          {filteredOrders.map((order) => (
-            <OrderCard key={order._id} order={order} />
-          ))}
-        </div>
-      )}
-
-      {/* ── Pagination ── */}
-      {pagination.pages > 1 && (
-        <div className="flex items-center justify-between pt-8 border-t border-neutral-100">
-          <button
-            onClick={() => setPage((p) => Math.max(1, p - 1))}
-            disabled={page === 1}
-            className="flex items-center gap-1.5 px-4 py-2.5 text-sm font-medium text-[#1A1714] border border-neutral-200 rounded-lg hover:bg-neutral-50 disabled:opacity-30 disabled:cursor-not-allowed transition-colors font-dm-sans"
-          >
-            <ChevronLeft size={14} />
-            Previous
-          </button>
-
-          <div className="flex items-center gap-1">
-            {Array.from({ length: pagination.pages }, (_, i) => i + 1).map(
-              (pageNum) => {
-                const isActive = pageNum === page;
-                const isNear =
-                  Math.abs(pageNum - page) <= 1 ||
-                  pageNum === 1 ||
-                  pageNum === pagination.pages;
-
-                if (!isNear) {
-                  if (pageNum === 2 || pageNum === pagination.pages - 1) {
-                    return (
-                      <span
-                        key={pageNum}
-                        className="w-8 text-center text-xs text-neutral-300 font-dm-sans"
-                      >
-                        …
-                      </span>
-                    );
-                  }
-                  return null;
-                }
-
-                return (
+              {pagination.pages > 1 && (
+                <div className="flex items-center justify-center gap-2 py-2">
                   <button
-                    key={pageNum}
-                    onClick={() => setPage(pageNum)}
-                    className={`w-9 h-9 rounded-lg text-sm font-semibold font-dm-sans transition-colors ${isActive
-                        ? "bg-[#F27318] text-white"
-                        : "border border-neutral-200 text-neutral-500 hover:bg-neutral-50"
-                      }`}
+                    onClick={() => setPage((p) => Math.max(1, p - 1))}
+                    disabled={page === 1}
+                    className="w-9 h-9 flex items-center justify-center border border-neutral-200 rounded-lg text-neutral-500 hover:border-neutral-900 hover:text-neutral-900 disabled:opacity-30 disabled:cursor-not-allowed transition-colors bg-white"
                   >
-                    {pageNum}
+                    <ChevronLeft size={15} />
                   </button>
-                );
-              },
-            )}
+
+                  {Array.from({ length: pagination.pages }, (_, i) => i + 1).map((pageNum) => {
+                    const isActive = pageNum === page;
+                    const isNear =
+                      Math.abs(pageNum - page) <= 1 || pageNum === 1 || pageNum === pagination.pages;
+
+                    if (!isNear) {
+                      if (pageNum === 2 || pageNum === pagination.pages - 1) {
+                        return (
+                          <span key={pageNum} className="w-9 text-center text-xs text-neutral-300">
+                            …
+                          </span>
+                        );
+                      }
+                      return null;
+                    }
+
+                    return (
+                      <button
+                        key={pageNum}
+                        onClick={() => setPage(pageNum)}
+                        className={`w-9 h-9 rounded-lg text-xs font-bold transition-colors ${
+                          isActive
+                            ? "bg-[#F27318] text-white"
+                            : "border border-neutral-200 text-neutral-500 hover:border-neutral-900 bg-white"
+                        }`}
+                      >
+                        {pageNum}
+                      </button>
+                    );
+                  })}
+
+                  <button
+                    onClick={() => setPage((p) => Math.min(pagination.pages, p + 1))}
+                    disabled={page === pagination.pages}
+                    className="w-9 h-9 flex items-center justify-center border border-neutral-200 rounded-lg text-neutral-500 hover:border-neutral-900 hover:text-neutral-900 disabled:opacity-30 disabled:cursor-not-allowed transition-colors bg-white"
+                  >
+                    <ChevronRight size={15} />
+                  </button>
+                </div>
+              )}
+            </div>
+          )}
+        </>
+      ) : (
+        <div className="flex-1 min-h-0 flex flex-col items-center justify-center text-center bg-neutral-50 rounded-2xl">
+          <div className="w-16 h-16 rounded-2xl bg-white flex items-center justify-center mb-5 text-[#F27318]">
+            <Package size={26} />
           </div>
-
-          <button
-            onClick={() => setPage((p) => Math.min(pagination.pages, p + 1))}
-            disabled={page === pagination.pages}
-            className="flex items-center gap-1.5 px-4 py-2.5 text-sm font-medium text-[#1A1714] border border-neutral-200 rounded-lg hover:bg-neutral-50 disabled:opacity-30 disabled:cursor-not-allowed transition-colors font-dm-sans"
+          <h3 className="text-[18px] font-semibold text-[#1A1714]">No orders placed yet</h3>
+          <p className="text-[14px] text-neutral-400 max-w-xs mt-1.5 mb-7 leading-relaxed">
+            You haven't made any purchases yet. Explore our selection of modern furniture pieces.
+          </p>
+          <Link
+            to="/shop"
+            className="inline-flex items-center gap-2 px-6 py-2.5 bg-[#F27318] hover:bg-[#E6651B] text-white text-[14px] font-medium rounded-lg transition-colors"
           >
-            Next
-            <ChevronRight size={14} />
-          </button>
+            Start Shopping
+            <ArrowRight size={13} />
+          </Link>
         </div>
-      )}
-
-      {/* Count footer */}
-      {filteredOrders.length > 0 && (
-        <p className="text-xs text-neutral-300 font-dm-sans text-center tracking-wide">
-          Page {page} of {pagination.pages} · {pagination.total} total orders
-        </p>
       )}
     </div>
   );

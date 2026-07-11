@@ -2,9 +2,52 @@ import { defineConfig } from "vite";
 import react from "@vitejs/plugin-react";
 import tailwindcss from "@tailwindcss/vite";
 import path from "path";
+import fs from "fs";
 
-export default defineConfig({
-  plugins: [react(), tailwindcss()],
+export default defineConfig(({ mode }) => {
+  const isAdmin = mode === "admin";
+
+  return {
+  // ── Plugins ────────────────────────────────────────────────────────────────
+  // adminHtmlEntry: dev-server only plugin.
+  // Vite always serves index.html for the root request regardless of --mode.
+  // This plugin intercepts "/" and "/index.html" and rewrites the URL to
+  // "/index.admin.html" so that the admin dev server (port 5174) loads
+  // main.admin.jsx → AdminApp.jsx instead of main.jsx → customer App.jsx.
+  plugins: [
+    react(),
+    tailwindcss(),
+    isAdmin && {
+      name: "admin-html-entry",
+      configureServer(server) {
+        // Intercept HTML document requests for routes before Vite's own SPA
+        // middleware serves index.html, and serve index.admin.html instead.
+        server.middlewares.use(async (req, res, next) => {
+          try {
+            const accept = req.headers.accept || "";
+            if (!accept.includes("text/html")) return next();
+
+            const url = req.url?.split("?")[0] ?? "/";
+            const hasFileExtension = /\.\w+$/.test(url);
+            if (hasFileExtension) return next();
+
+            const adminHtml = fs.readFileSync(
+              path.resolve("index.admin.html"),
+              "utf-8"
+            );
+            const transformed = await server.transformIndexHtml(
+              req.url ?? "/",
+              adminHtml
+            );
+            res.writeHead(200, { "Content-Type": "text/html; charset=utf-8" });
+            res.end(transformed);
+          } catch (e) {
+            next(e);
+          }
+        });
+      },
+    },
+  ].filter(Boolean),
 
   resolve: {
     dedupe: ["three", "react", "react-dom"],
@@ -28,10 +71,18 @@ export default defineConfig({
     // Target modern browsers to enable smaller output (no legacy transforms).
     target: "es2020",
 
-    // Split CSS per chunk so lazily-loaded pages only download their styles.
-    cssCodeSplit: true,
+    // Each mode emits into its own directory so the two builds never collide.
+    outDir: isAdmin ? "dist/admin" : "dist/customer",
 
+    // Override the HTML entry point for the admin build.
+    // The customer build uses the default index.html → src/main.jsx.
+    // The admin build uses index.html but we swap the script tag via rollupOptions.
     rollupOptions: {
+      // Point Rollup at the correct JS entry for each build target.
+      input: isAdmin
+        ? { main: "index.admin.html" }
+        : undefined, // default: index.html
+
       output: {
         /**
          * Manual chunk strategy:
@@ -106,4 +157,6 @@ export default defineConfig({
       },
     },
   },
-});
+  }; // ← closes the return object
+}); // ← closes defineConfig(() => { ... })
+

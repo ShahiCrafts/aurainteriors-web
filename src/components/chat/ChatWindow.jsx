@@ -1,21 +1,13 @@
-import { useEffect, useState } from 'react';
+import { useEffect } from 'react';
+import { DotLottieReact } from '@lottiefiles/dotlottie-react';
 import {
   Plus,
-  Sparkles,
-  MessageCircle,
-  Clock,
-  CheckCircle2,
-  ArrowRight,
-  Shield,
-  X,
   Loader2,
-  Zap,
-  HelpCircle,
-  Truck,
-  ShoppingBag,
-  RotateCcw,
-  Headset
-} from 'lucide-react';
+  Headset,
+  Package,
+  Sofa,
+  ArrowRight,
+} from "lucide-react";
 import { motion, AnimatePresence } from 'framer-motion';
 import { useChatMessages, useMarkMessagesRead, useSendMessage } from '../../hooks/chat/useChatTan';
 import useChatSocket from '../../hooks/chat/useChatSocket';
@@ -39,7 +31,26 @@ const ChatWindow = ({ chat, onClose, onStartNew, onResetView, isCreatingChat }) 
 
   const markAsReadMutation = useMarkMessagesRead();
   const sendMessageMutation = useSendMessage();
-  const { typingStatus, sendTypingIndicator, broadcastRead } = useChatSocket(socket, chat?._id);
+  const { typingStatus, streamingMessage, aiStillWorking, sendTypingIndicator, broadcastRead } = useChatSocket(socket, chat?._id);
+
+  // Derived message list — must be declared before any useEffect that depends on its length
+  const allMessages = messagesData?.pages.flatMap((page) => page.data.messages) || [];
+  const messageCount = allMessages.length;
+
+  // CHAT-FIXES-8 Fix 1: Continuous read tracking.
+  // Fire markAsRead whenever new messages arrive while the tab is focused.
+  useEffect(() => {
+    if (!chat?._id) return;
+    const markReadIfVisible = () => {
+      if (document.visibilityState === 'visible') {
+        markAsReadMutation.mutate(chat._id);
+        broadcastRead();
+      }
+    };
+    markReadIfVisible();
+    document.addEventListener('visibilitychange', markReadIfVisible);
+    return () => document.removeEventListener('visibilitychange', markReadIfVisible);
+  }, [messageCount, chat?._id]);
 
   useEffect(() => {
     if (chat?._id && chat?.unreadCountCustomer > 0) {
@@ -47,8 +58,6 @@ const ChatWindow = ({ chat, onClose, onStartNew, onResetView, isCreatingChat }) 
       broadcastRead();
     }
   }, [chat?._id]);
-
-  const allMessages = messagesData?.pages.flatMap((page) => page.data.messages) || [];
 
   return (
     <div className="flex flex-col h-full bg-white font-dm-sans overflow-hidden">
@@ -62,8 +71,8 @@ const ChatWindow = ({ chat, onClose, onStartNew, onResetView, isCreatingChat }) 
               <Headset size={18} sm:size={20} strokeWidth={2.5} />
             </div>
             <div>
-              <h3 className="text-gray-900 font-bold text-sm sm:text-base tracking-tight leading-none">Aura Assistant</h3>
-              <p className="text-[10px] sm:text-xs text-gray-500 mt-0.5">Expert help for your home</p>
+              <h3 className="text-gray-900 font-semibold text-[15px] sm:text-base tracking-tight leading-none">Aura Assistant</h3>
+              <p className="text-[10px] sm:text-[13px] text-gray-500 mt-0.5">Expert help for your home</p>
             </div>
           </div>
 
@@ -74,12 +83,6 @@ const ChatWindow = ({ chat, onClose, onStartNew, onResetView, isCreatingChat }) 
             >
               <Plus size={16} /> New Chat
             </button>
-            <button
-              onClick={onClose}
-              className="p-1 rounded-full text-gray-400 hover:bg-gray-100 transition-all"
-            >
-              <X size={20} />
-            </button>
           </div>
         </div>
       </div>
@@ -88,7 +91,11 @@ const ChatWindow = ({ chat, onClose, onStartNew, onResetView, isCreatingChat }) 
         {chat ? (
           <div className="h-full flex flex-col">
             <div className="flex-1 overflow-hidden relative">
-              {allMessages.length > 0 && (
+              {isLoading ? (
+                <div className="flex items-center justify-center h-full">
+                  <Loader2 className="w-8 h-8 text-[#F27318] animate-spin" />
+                </div>
+              ) : (
                 <ChatMessageList
                   messages={allMessages}
                   isLoading={isLoading}
@@ -96,80 +103,100 @@ const ChatWindow = ({ chat, onClose, onStartNew, onResetView, isCreatingChat }) 
                   hasMore={hasNextPage}
                   isFetchingMore={isFetchingNextPage}
                   currentUserId={user?._id}
+                  streamingMessage={streamingMessage}
                 />
-              )}
-              {allMessages.length === 0 && !isLoading && (
-                <div className="absolute inset-0 flex flex-col justify-end px-4 pb-0 bg-gray-50/30">
-                  <div className="flex-1 overflow-y-auto p-4 flex flex-col items-start space-y-4">
-                    {/* Greeting Bubble */}
-                    <div className="bg-[#F9F8F6] border border-[#E5E5E5] p-4 rounded-2xl rounded-tl-none max-w-[85%] text-sm text-[#1A1714] leading-relaxed shadow-sm">
-                      Hello! Welcome to Aura Interiors. How can I help you find the perfect piece for your home today? 🛋️
-                    </div>
-                  </div>
-
-                  <div className="p-3 sm:p-4 pt-2 bg-white/50 backdrop-blur-sm border-t border-gray-100">
-                    <h4 className="text-[9px] sm:text-[10px] font-extrabold text-gray-400 uppercase tracking-widest mb-2 sm:mb-3">Quick Messages</h4>
-                    <div className="grid grid-cols-2 gap-2">
-                      {[
-                        "Show sofas",
-                        "Bedroom furniture",
-                        "Best deals",
-                        "Track order",
-                        "Return Policy",
-                        "Speak to agent"
-                      ].map((text) => (
-                        <button
-                          key={text}
-                          onClick={() => sendMessageMutation.mutate({ chatId: chat._id, content: text })}
-                          className="px-3 py-2 sm:px-4 sm:py-2.5 bg-white border border-gray-200 rounded-full text-xs sm:text-sm font-medium text-[#1A1714] hover:border-[#F27318] hover:text-[#F27318] hover:shadow-sm transition-all text-left truncate"
-                        >
-                          {text}
-                        </button>
-                      ))}
-                    </div>
-                  </div>
-                </div>
               )}
             </div>
           </div>
         ) : (
-          <div className="flex flex-col items-center justify-center h-full px-6 bg-white">
+          <div className="h-full relative bg-white">
             {isCreatingChat ? (
-              <div className="text-center">
-                <Loader2 className="w-10 h-10 text-[#F27318] animate-spin mx-auto mb-4" />
-                <p className="text-gray-500 font-medium animate-pulse">Starting conversation...</p>
+              <div className="flex items-center justify-center h-full text-center px-6">
+                <div>
+                  <Loader2 className="w-10 h-10 text-[#F27318] animate-spin mx-auto mb-4" />
+                  <p className="text-gray-500 font-medium animate-pulse">Starting conversation...</p>
+                </div>
               </div>
             ) : (
-              <div className="w-full max-w-xs">
-                <div className="w-full">
-                  {/* Greeting Bubble Fallback */}
-                  <div className="bg-[#F9F8F6] border border-[#E5E5E5] p-4 rounded-2xl rounded-tl-none text-sm text-[#1A1714] leading-relaxed shadow-sm mb-6 text-left">
-                    Hello! Select a topic below to get started. 👇
+              <div className="absolute inset-0 flex flex-col justify-between bg-gray-50/30">
+                <div className="flex-1 flex flex-col items-center justify-center text-center">
+                  <div className="w-40 h-40 flex items-center justify-center overflow-hidden">
+                    <DotLottieReact
+                      src="/ai-anim.lottie"
+                      loop
+                      autoplay
+                      className="w-full h-full"
+                    />
                   </div>
 
-                  <h4 className="text-[10px] font-extrabold text-gray-400 uppercase tracking-widest mb-3 text-left">Quick Messages</h4>
-                  <div className="grid grid-cols-2 gap-2">
-                    {[
-                      "Show sofas",
-                      "Bedroom furniture",
-                      "Best deals",
-                      "Track order"
-                    ].map((text) => (
-                      <button
-                        key={text}
-                        onClick={() => onStartNew(text)}
-                        className="px-4 py-2.5 bg-white border border-gray-200 rounded-full text-sm font-medium text-[#1A1714] hover:border-[#F27318] hover:text-[#F27318] hover:shadow-sm transition-all text-left truncate shadow-sm"
-                      >
-                        {text}
-                      </button>
-                    ))}
+                  <h2 className="text-[#1A1714] text-lg sm:text-xl font-black tracking-tight leading-tight max-w-[280px]">
+                    Hi{user?.firstName ? ` ${user.firstName}` : ''} 👋, I'm here to help.
+                  </h2>
+                  <p className="text-gray-500 text-xs sm:text-sm mt-2 max-w-[260px] leading-normal">
+                    Ask me anything about our products, orders, or policies.
+                  </p>
+                </div>
+
+                <div className="relative z-10 flex flex-col">
+                  {/* Suggestions */}
+                  <div className="px-10 pb-5 mb-6">
+                    <h4 className="mb-4 pt-10 text-[15px] font-semibold text-gray-900">
+                      Suggested questions
+                    </h4>
+
+                    <div className="space-y-3">
+                      {[
+                        {
+                          title: "Track my order",
+                          icon: Package,
+                        },
+                        {
+                          title: "Product recommendations",
+                          icon: Sofa,
+                        },
+                      ].map((item) => {
+                        const Icon = item.icon;
+
+                        return (
+                          <button
+                            key={item.title}
+                            onClick={() => onStartNew(item.title)}
+                            className="group flex w-full items-center justify-between rounded-xl px-2 py-3 transition-all duration-200 hover:bg-[#FFF8F3]/80"
+                          >
+                            <div className="flex items-center gap-3">
+                              <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-lg bg-[#F27318]/10 transition-colors duration-200 group-hover:bg-[#F27318]">
+                                <Icon className="h-5 w-5 text-[#F27318] transition-colors duration-200 group-hover:text-white" />
+                              </div>
+
+                              <div className="text-left">
+                                <p className="text-[15px] font-semibold text-gray-900 group-hover:text-[#F27318]">
+                                  {item.title}
+                                </p>
+
+                                <p className="text-[13px] text-gray-500">
+                                  {item.title === "Track my order"
+                                    ? "Check your delivery status"
+                                    : "Discover beautiful furniture"}
+                                </p>
+                              </div>
+                            </div>
+
+                            <ArrowRight className="h-4 w-4 text-gray-300 transition-all duration-200 group-hover:translate-x-1 group-hover:text-[#F27318]" />
+                          </button>
+                        );
+                      })}
+                    </div>
                   </div>
-                  <button
-                    onClick={() => onStartNew()}
-                    className="w-full text-center mt-4 text-xs font-semibold text-gray-400 hover:text-[#F27318] transition-colors"
-                  >
-                    Start a blank conversation
-                  </button>
+
+                  {/* Footer */}
+                  <div className="border-t border-gray-200 bg-white py-4 shadow-[0_-8px_24px_rgba(0,0,0,0.04)] rounded-b-2xl">
+                    <button
+                      onClick={() => onStartNew()}
+                      className="flex w-full items-center justify-center py-2 text-sm font-medium text-gray-500 transition-colors hover:text-[#F27318]"
+                    >
+                      Start a blank conversation
+                    </button>
+                  </div>
                 </div>
               </div>
             )}
@@ -179,8 +206,7 @@ const ChatWindow = ({ chat, onClose, onStartNew, onResetView, isCreatingChat }) 
 
       <div className="shrink-0 bg-white">
         <AnimatePresence>
-          {/* FIXED: Capture admin typing status specifically */}
-          {typingStatus.isTyping && typingStatus.userRole === 'admin' && (
+          {typingStatus.isTyping && (typingStatus.userRole === 'admin' || typingStatus.userRole === 'ai') && (
             <motion.div
               initial={{ opacity: 0, y: 5 }}
               animate={{ opacity: 1, y: 0 }}
@@ -193,21 +219,21 @@ const ChatWindow = ({ chat, onClose, onStartNew, onResetView, isCreatingChat }) 
                   <span className="w-1.5 h-1.5 bg-[#F27318] rounded-full animate-bounce" style={{ animationDelay: '150ms' }} />
                   <span className="w-1.5 h-1.5 bg-[#F27318] rounded-full animate-bounce" style={{ animationDelay: '300ms' }} />
                 </div>
-                <span className="text-[10px] font-black text-gray-400 uppercase tracking-widest">Agent is typing</span>
+                <span className="text-[10px] font-black text-gray-400 uppercase tracking-widest">
+                  {typingStatus.userRole === 'ai'
+                    ? aiStillWorking ? 'Still working on it…' : 'AI is thinking'
+                    : 'Agent is typing'}
+                </span>
               </div>
             </motion.div>
           )}
         </AnimatePresence>
 
         {chat && (chat.status === 'waiting' || chat.status === 'active') && (
-          <div className="p-3 sm:p-4 bg-white border-t border-gray-50">
-            <div>
-              <ChatInput
-                chatId={chat._id}
-                onTyping={(isTyping) => sendTypingIndicator(isTyping)}
-              />
-            </div>
-          </div>
+          <ChatInput
+            chatId={chat._id}
+            onTyping={(isTyping) => sendTypingIndicator(isTyping)}
+          />
         )}
       </div>
     </div>

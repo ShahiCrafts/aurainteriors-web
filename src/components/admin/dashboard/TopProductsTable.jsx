@@ -6,7 +6,7 @@ export default function TopProductsTable({ products }) {
         <div className="bg-white rounded-2xl border border-gray-100 overflow-hidden shadow-[0_2px_10px_-4px_rgba(0,0,0,0.05)]">
             <div className="px-6 py-4 border-b border-gray-100 flex items-center justify-between">
                 <h2 className="text-lg font-bold text-gray-900">Top Products</h2>
-                <Link to="/admin/products" className="text-teal-600 text-sm font-medium hover:text-teal-700 flex items-center gap-1 transition-colors">
+                <Link to="/dashboard/products" className="text-teal-600 text-sm font-medium hover:text-teal-700 flex items-center gap-1 transition-colors">
                     View All <ArrowRight className="w-4 h-4" />
                 </Link>
             </div>

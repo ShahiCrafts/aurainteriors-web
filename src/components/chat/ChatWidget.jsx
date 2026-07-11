@@ -46,9 +46,9 @@ const ChatWidget = () => {
       if (chatsData?.data?.chats?.length > 0) {
         const recentChat = chatsData.data.chats.find(c => c.status === 'active' || c.status === 'waiting');
         if (recentChat) setActiveChatId(recentChat._id);
-        else handleStartNewChat();
+        else setActiveChatId(null);
       } else {
-        handleStartNewChat();
+        setActiveChatId(null);
       }
     } else {
       setIsOpen(false);
@@ -79,7 +79,7 @@ const ChatWidget = () => {
   if (user && user.role === 'admin') return null;
 
   return (
-    <div className="fixed bottom-6 right-6 z-[60] flex flex-col items-end gap-4 pointer-events-none">
+    <div className="fixed bottom-6 right-6 z-60 flex flex-col items-end gap-4 pointer-events-none">
       <AnimatePresence>
         {!isOpen && showGreeting && (
           <motion.div
@@ -127,8 +127,7 @@ const ChatWidget = () => {
             initial={{ opacity: 0, scale: 0.95, y: 20 }}
             animate={{ opacity: 1, scale: 1, y: 0 }}
             exit={{ opacity: 0, scale: 0.95, y: 20 }}
-            className="fixed inset-4 sm:fixed sm:inset-auto sm:bottom-24 sm:right-6 sm:w-[400px] sm:h-[600px] sm:max-h-[80vh] bg-white rounded-2xl border border-stone-200/60 overflow-hidden pointer-events-auto"
-          >
+className="fixed inset-4 sm:fixed sm:inset-auto sm:bottom-24 sm:right-6 sm:w-[430px] sm:h-[650px] sm:max-h-[82vh] bg-white rounded-2xl border border-stone-200/60 overflow-hidden pointer-events-auto"          >
             <ChatWindow
               chat={activeChat}
               onClose={() => setIsOpen(false)}

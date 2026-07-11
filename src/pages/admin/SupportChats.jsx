@@ -3,6 +3,7 @@ import { MessageCircle, ArrowLeft, ShieldCheck, Zap } from "lucide-react";
 import { useAllChats, useWaitingQueue } from "../../hooks/chat/useChatTan";
 import ChatList from "../../components/admin/chat/ChatList";
 import ChatConversation from "../../components/admin/chat/ChatConversation";
+import AiAssistantPanel from "../../components/admin/chat/AiAssistantPanel";
 
 const SupportChats = () => {
   const [selectedChat, setSelectedChat] = useState(null);
@@ -30,15 +31,6 @@ const SupportChats = () => {
 
   return (
     <div className="flex flex-col h-[calc(100vh-130px)] gap-4 overflow-hidden">
-      {/* Main Page Title */}
-      <div className="shrink-0 px-1">
-        <h1 className="text-2xl font-bold text-gray-900 tracking-tight">
-          Support Chats
-        </h1>
-        <p className="text-gray-500 mt-0.5 text-sm">
-          Manage and resolve customer inquiries in real-time
-        </p>
-      </div>
 
       <div className="flex-1 flex overflow-hidden gap-6 min-h-0">
         {/* Sidebar: Chat List */}
@@ -98,7 +90,7 @@ const SupportChats = () => {
           ) : (
             /* Empty State */
             <div className="flex items-center justify-center h-full text-gray-500 w-full relative overflow-hidden bg-gray-50/30">
-              <div className="absolute inset-0 opacity-[0.03] bg-[radial-gradient(#0d9488_1px,transparent_1px)] [background-size:20px_20px]" />
+              <div className="absolute inset-0 opacity-[0.03] bg-[radial-gradient(#0066ff_1px,transparent_1px)] [background-size:20px_20px]" />
               <div className="text-center p-8 relative z-10 max-w-sm">
                 <div className="w-20 h-20 rounded-3xl bg-white shadow-sm border border-gray-100 flex items-center justify-center mx-auto mb-6 transform rotate-3">
                   <MessageCircle className="w-10 h-10 text-teal-600" />
@@ -127,6 +119,17 @@ const SupportChats = () => {
             </div>
           )}
         </div>
+        
+        {/* Column 3: AI Assistant (only visible when chat is selected) */}
+        {selectedChat && (
+          <div className="hidden xl:flex bg-white rounded-xl border border-gray-100 overflow-hidden shadow-sm h-full max-w-sm w-full">
+             <AiAssistantPanel 
+                chat={selectedChat}
+                onUseReply={(text) => console.log("Use text:", text)} 
+                onEditReply={(text) => console.log("Edit text:", text)}
+             />
+          </div>
+        )}
       </div>
     </div>
   );

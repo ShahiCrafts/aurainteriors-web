@@ -3,7 +3,7 @@ import io from "socket.io-client";
 import { SOCKET_URL } from "../../config/constants";
 
 const useNotificationSocket = (token, userId) => {
-  const socketRef = useRef(null);
+  const [socket, setSocket] = useState(null);
   const [connected, setConnected] = useState(false);
   const [notifications, setNotifications] = useState([]);
   const [unreadCount, setUnreadCount] = useState(0);
@@ -20,7 +20,7 @@ const useNotificationSocket = (token, userId) => {
 
     try {
       // Create socket instance with authentication
-      const socket = io(SOCKET_URL, {
+      const ioSocket = io(SOCKET_URL, {
         auth: { token },
         transports: ["websocket", "polling"], // Fallback to polling
         reconnection: true,
@@ -29,16 +29,15 @@ const useNotificationSocket = (token, userId) => {
         reconnectionAttempts: 10,
       });
 
-
-      socket.on("connect", () => {
+      ioSocket.on("connect", () => {
         setConnected(true);
         setError(null);
 
         // Start heartbeat
-        startHeartbeat(socket);
+        startHeartbeat(ioSocket);
       });
 
-      socket.on("disconnect", (reason) => {
+      ioSocket.on("disconnect", (reason) => {
         setConnected(false);
 
         // Stop heartbeat
@@ -47,77 +46,56 @@ const useNotificationSocket = (token, userId) => {
         }
       });
 
-      socket.on("error", (error) => {
+      ioSocket.on("error", (error) => {
         setError(error);
       });
 
-      socket.on("notification:new", (notification) => {
+      ioSocket.on("notification:new", (notification) => {
         setNotifications((prev) => [notification, ...prev]);
         setUnreadCount((prev) => prev + 1);
       });
 
-      /**
-       * BROADCAST NOTIFICATION
-       * System-wide announcements
-       */
-      socket.on("notification:broadcast", (notification) => {
+      ioSocket.on("notification:broadcast", (notification) => {
         setNotifications((prev) => [notification, ...prev]);
         setUnreadCount((prev) => prev + 1);
       });
 
-      /**
-       * BADGE UPDATE
-       * Unread count sync
-       */
-      socket.on("badge:update", (data) => {
+      ioSocket.on("badge:update", (data) => {
         setUnreadCount(data.unreadCount);
       });
 
-      /**
-       * NOTIFICATION LIST SYNC
-       * Periodic sync of notification list
-       */
-      socket.on("notifications:list", (data) => {
+      ioSocket.on("notifications:list", (data) => {
         setNotifications(data.notifications);
       });
 
-      /**
-       * SUBSCRIPTION CONFIRMATION
-       */
-      socket.on("subscribed", (data) => {
+      ioSocket.on("subscribed", (data) => {
         // Subscribed to topic
       });
 
-      socket.on("unsubscribed", (data) => {
+      ioSocket.on("unsubscribed", (data) => {
         // Unsubscribed from topic
       });
 
-      /**
-       * ACTION CONFIRMATIONS
-       */
-      socket.on("notification:read:success", (data) => {
+      ioSocket.on("notification:read:success", (data) => {
         // Notification marked as read
       });
 
-      socket.on("notification:archive:success", (data) => {
+      ioSocket.on("notification:archive:success", (data) => {
         // Notification archived
       });
 
-      /**
-       * HEARTBEAT ACKNOWLEDGMENT
-       */
-      socket.on("heartbeat:ack", (data) => {
+      ioSocket.on("heartbeat:ack", (data) => {
         // Heartbeat acknowledged
       });
 
-      socketRef.current = socket;
+      setSocket(ioSocket);
 
       // Cleanup on unmount
       return () => {
         if (heartbeatIntervalRef.current) {
           clearInterval(heartbeatIntervalRef.current);
         }
-        socket.disconnect();
+        ioSocket.disconnect();
       };
     } catch (err) {
       setError(err.message);
@@ -128,14 +106,14 @@ const useNotificationSocket = (token, userId) => {
    * START HEARTBEAT
    * Keep-alive signal every 30 seconds
    */
-  const startHeartbeat = useCallback((socket) => {
+  const startHeartbeat = useCallback((activeSocket) => {
     if (heartbeatIntervalRef.current) {
       clearInterval(heartbeatIntervalRef.current);
     }
 
     heartbeatIntervalRef.current = setInterval(() => {
-      if (socket.connected) {
-        socket.emit("heartbeat");
+      if (activeSocket.connected) {
+        activeSocket.emit("heartbeat");
       }
     }, 30000); // Every 30 seconds
   }, []);
@@ -144,46 +122,46 @@ const useNotificationSocket = (token, userId) => {
    * SUBSCRIBE TO TOPIC
    */
   const subscribeTopic = useCallback((topic) => {
-    if (socketRef.current && socketRef.current.connected) {
-      socketRef.current.emit("subscribe:topic", { topic });
+    if (socket && socket.connected) {
+      socket.emit("subscribe:topic", { topic });
     }
-  }, []);
+  }, [socket]);
 
   /**
    * UNSUBSCRIBE FROM TOPIC
    */
   const unsubscribeTopic = useCallback((topic) => {
-    if (socketRef.current && socketRef.current.connected) {
-      socketRef.current.emit("unsubscribe:topic", { topic });
+    if (socket && socket.connected) {
+      socket.emit("unsubscribe:topic", { topic });
     }
-  }, []);
+  }, [socket]);
 
   /**
    * MARK NOTIFICATION AS READ (via socket)
    */
   const markAsReadSocket = useCallback((userNotificationId) => {
-    if (socketRef.current && socketRef.current.connected) {
-      socketRef.current.emit("notification:read", { userNotificationId });
+    if (socket && socket.connected) {
+      socket.emit("notification:read", { userNotificationId });
     }
-  }, []);
+  }, [socket]);
 
   /**
    * ARCHIVE NOTIFICATION (via socket)
    */
   const archiveNotificationSocket = useCallback((userNotificationId) => {
-    if (socketRef.current && socketRef.current.connected) {
-      socketRef.current.emit("notification:archive", { userNotificationId });
+    if (socket && socket.connected) {
+      socket.emit("notification:archive", { userNotificationId });
     }
-  }, []);
+  }, [socket]);
 
   /**
    * REQUEST NOTIFICATIONS SYNC
    */
   const requestNotificationsSync = useCallback((page = 1, limit = 10) => {
-    if (socketRef.current && socketRef.current.connected) {
-      socketRef.current.emit("request:notifications", { page, limit });
+    if (socket && socket.connected) {
+      socket.emit("request:notifications", { page, limit });
     }
-  }, []);
+  }, [socket]);
 
   return {
     connected,
@@ -195,7 +173,7 @@ const useNotificationSocket = (token, userId) => {
     markAsReadSocket,
     archiveNotificationSocket,
     requestNotificationsSync,
-    socket: socketRef.current,
+    socket,
   };
 };
 

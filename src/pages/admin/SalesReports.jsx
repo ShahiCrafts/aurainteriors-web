@@ -44,7 +44,7 @@ export default function SalesReports() {
     const categorySales = categoryData?.data?.salesByCategory || [];
     const topProducts = topProductsData?.data?.topProducts || [];
 
-    const COLORS = ["#0d9488", "#0ea5e9", "#6366f1", "#8b5cf6", "#d946ef", "#f43f5e"];
+    const COLORS = ["#0066ff", "#0ea5e9", "#6366f1", "#8b5cf6", "#d946ef", "#f43f5e"];
 
     const exportToExcel = () => {
         if (!chartData.length) return;
@@ -171,8 +171,8 @@ export default function SalesReports() {
                             <AreaChart data={chartData}>
                                 <defs>
                                     <linearGradient id="colorRev" x1="0" y1="0" x2="0" y2="1">
-                                        <stop offset="5%" stopColor="#0d9488" stopOpacity={0.1} />
-                                        <stop offset="95%" stopColor="#0d9488" stopOpacity={0} />
+                                        <stop offset="5%" stopColor="#0066ff" stopOpacity={0.1} />
+                                        <stop offset="95%" stopColor="#0066ff" stopOpacity={0} />
                                     </linearGradient>
                                 </defs>
                                 <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#f1f5f9" />
@@ -199,7 +199,7 @@ export default function SalesReports() {
                                 <Area
                                     type="monotone"
                                     dataKey="revenue"
-                                    stroke="#0d9488"
+                                    stroke="#0066ff"
                                     strokeWidth={3}
                                     fillOpacity={1}
                                     fill="url(#colorRev)"
@@ -299,7 +299,7 @@ export default function SalesReports() {
                                         fontFamily: 'DM Sans'
                                     }}
                                 />
-                                <Bar dataKey="orders" fill="#0d9488" radius={[4, 4, 0, 0]} barSize={range === 'year' ? 20 : 10} />
+                                <Bar dataKey="orders" fill="#0066ff" radius={[4, 4, 0, 0]} barSize={range === 'year' ? 20 : 10} />
                             </BarChart>
                         </ResponsiveContainer>
                     </div>

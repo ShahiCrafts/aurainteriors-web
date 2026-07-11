@@ -131,62 +131,7 @@ export default function CheckoutPage() {
   const [fName, lName, mail, ph] = watchedGuestInfo;
   const [addr1, cty, zip, cntry, st] = watchedShippingFields;
 
-  useEffect(() => {
-    if (currentStep === 1) {
-      const state = useCheckoutStore.getState();
-      if (
-        fName !== state.guestInfo.firstName ||
-        lName !== state.guestInfo.lastName ||
-        mail !== state.guestInfo.email ||
-        ph !== state.guestInfo.phone
-      ) {
-        setGuestInfo({
-          firstName: fName || "",
-          lastName: lName || "",
-          email: mail || "",
-          phone: ph || "",
-        });
-      }
 
-      if (state.shippingAddressId) {
-        return;
-      }
-
-      const shippingUpdates = {
-        addressLine1: addr1 || "",
-        city: cty || "",
-        postalCode: zip || "",
-        country: cntry || "",
-        state: st || "",
-      };
-      const hasShippingOverride = Object.entries(shippingUpdates).some(
-        ([key, value]) => value !== state.shippingAddress[key],
-      );
-
-      if (hasShippingOverride && state.shippingAddressId) {
-        setShippingAddressId(null);
-      }
-
-      Object.entries(shippingUpdates).forEach(([key, value]) => {
-        if (value !== state.shippingAddress[key]) {
-          state.updateShippingField(key, value);
-        }
-      });
-    }
-  }, [
-    fName,
-    lName,
-    mail,
-    ph,
-    addr1,
-    cty,
-    zip,
-    cntry,
-    st,
-    currentStep,
-    setGuestInfo,
-    setShippingAddressId,
-  ]);
 
   const cart = cartData?.data?.cart;
   const cartItems = isAuthenticated ? cart?.items || [] : guestCartItems;
@@ -263,6 +208,12 @@ export default function CheckoutPage() {
   const getImageUrl = (product) => getProductImageUrl(product);
 
   useEffect(() => {
+    reset(); // Reset checkout state when entering checkout page to pull latest defaults
+    setStep(1);
+    setPaymentMethod("cod");
+  }, []);
+
+  useEffect(() => {
     if (isAuthenticated && user) {
       const userData = {
         email: user.email || "",
@@ -304,7 +255,6 @@ export default function CheckoutPage() {
       shippingAddress.addressLine1 ||
         shippingAddress.city ||
         shippingAddress.postalCode ||
-        shippingAddress.country ||
         shippingAddress.state ||
         shippingAddress.phone,
     );
@@ -346,10 +296,7 @@ export default function CheckoutPage() {
     user,
   ]);
 
-  useEffect(() => {
-    setStep(1);
-    if (!paymentMethod) setPaymentMethod("cod");
-  }, [setStep, setPaymentMethod]);
+  
 
   useEffect(() => {
     if (isSubmitting) return;
@@ -424,18 +371,13 @@ export default function CheckoutPage() {
   const handleGoToPayment = () => {
     if (!ensureItemsSelected()) return;
 
-    // Authenticated users who have a saved address selected: the checkout API
-    // uses shippingAddressId directly, so running shippingSchema validation
-    // against the hidden form fields is both wrong and the reason nextStep()
-    // was never being called. Skip validation and advance immediately.
-    if (isAuthenticated && shippingAddressId) {
+    const currentShippingAddressId = useCheckoutStore.getState().shippingAddressId;
+    if (currentShippingAddressId) {
       nextStep();
       return;
     }
 
-    // Guest users (or authenticated users manually entering a new address):
-    // validate the form before advancing to payment.
-    handleFormSubmit(() => nextStep())();
+    toast.error("Please select a shipping address to proceed.");
   };
 
   const handlePlaceOrder = async () => {
@@ -684,40 +626,38 @@ export default function CheckoutPage() {
 
                 {/* Main Steps Content */}
                 <div className="bg-white">
-                  <FormProvider {...methods}>
-                    <form
-                      onSubmit={(e) => {
-                        e.preventDefault();
-                        currentStep === 1
-                          ? handleGoToPayment()
-                          : handlePlaceOrder();
-                      }}
-                    >
-                      <div className="space-y-6">
-                        <h2 className="text-[20px] font-semibold text-[#1A1714] font-dm-sans mt-12">
-                          {currentStep === 1 ? "Shipping Information" : "Payment Method"}
-                        </h2>
+                  <form
+                    onSubmit={(e) => {
+                      e.preventDefault();
+                      currentStep === 1
+                        ? handleGoToPayment()
+                        : handlePlaceOrder();
+                    }}
+                  >
+                    <div className="space-y-6">
+                      <h2 className="text-[20px] font-semibold text-[#1A1714] font-dm-sans mt-12">
+                        Shipping Information
+                      </h2>
 
-                        <div className="bg-white">
-                          {currentStep === 1 ? <ShippingStep /> : <PaymentStep />}
-                        </div>
+                      <div className="bg-white">
+                        <ShippingStep />
                       </div>
+                    </div>
 
-                      {/* Back Navigation — "Return to Shipping" only. */}
-                      {currentStep === 2 && (
-                        <div className="pt-12 flex items-center">
-                          <button
-                            type="button"
-                            onClick={prevStep}
-                            className="text-[16px] font-medium text-neutral-500 hover:text-[#1A1714] transition-colors flex items-center gap-2"
-                          >
-                            <ChevronLeft size={18} />
-                            Return to Shipping
-                          </button>
-                        </div>
-                      )}
-                    </form>
-                  </FormProvider>
+                    {/* Back Navigation — "Return to Shipping" only. */}
+                    {currentStep === 2 && (
+                      <div className="pt-12 flex items-center">
+                        <button
+                          type="button"
+                          onClick={prevStep}
+                          className="text-[16px] font-medium text-neutral-500 hover:text-[#1A1714] transition-colors flex items-center gap-2"
+                        >
+                          <ChevronLeft size={18} />
+                          Return to Shipping
+                        </button>
+                      </div>
+                    )}
+                  </form>
                 </div>
               </div>
             </div>
@@ -862,7 +802,10 @@ export default function CheckoutPage() {
                       className="flex-1 bg-[#F27318] hover:bg-[#cd5704] text-white h-12 rounded-xl font-medium text-[15px] transition-all flex items-center justify-center gap-2 disabled:opacity-50 group"
                     >
                       {isSubmitting ? (
-                        <Loader2 size={20} className="animate-spin" />
+                        <div className="flex items-center gap-2">
+                          <Loader2 size={18} className="animate-spin" />
+                          <span>Processing...</span>
+                        </div>
                       ) : (
                         <>
                           {currentStep === 1 ? "Next: Payment" : "Place Order"}

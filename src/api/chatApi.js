@@ -89,3 +89,8 @@ export const getChatStats = async () => {
     const response = await api.get('/chats/admin/stats');
     return response.data;
 };
+
+export const toggleBot = async ({ chatId, botActive }) => {
+    const response = await api.patch(`/chats/${chatId}/toggle-bot`, { botActive });
+    return response.data;
+};

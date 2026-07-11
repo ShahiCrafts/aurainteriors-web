@@ -1,4 +1,6 @@
 import { create } from "zustand";
+import useCheckoutStore from "./checkoutStore";
+import useGuestCartStore from "./guestCartStore";
 
 const useAuthStore = create((set) => {
   const storedToken = localStorage.getItem("token");
@@ -51,6 +53,11 @@ const useAuthStore = create((set) => {
     logout: () => {
       localStorage.removeItem("token");
       localStorage.removeItem("user");
+
+      // Reset checkout store & guest cart to prevent guest session pollution
+      useCheckoutStore.getState().reset();
+      useGuestCartStore.getState().clearCart();
+
       set({
         user: null,
         token: null,
