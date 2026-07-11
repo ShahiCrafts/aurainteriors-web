@@ -44,7 +44,7 @@ const ChatWidget = () => {
         localStorage.setItem('aura_chat_greeted', 'true');
       }
       if (chatsData?.data?.chats?.length > 0) {
-        const recentChat = chatsData.data.chats.find(c => c.status === 'active' || c.status === 'waiting');
+        const recentChat = chatsData.data.chats.find(c => ['ai_handling', 'escalated', 'agent_handling'].includes(c.status));
         if (recentChat) setActiveChatId(recentChat._id);
         else setActiveChatId(null);
       } else {
