@@ -13,6 +13,7 @@ import {
   Menu,
   X,
   Loader2,
+  ChevronDown,
 } from "lucide-react";
 import { useQueryClient } from "@tanstack/react-query";
 import useAuthStore from "../../store/authStore";
@@ -21,6 +22,7 @@ import { useCart } from "../../hooks/cart/useCartTan";
 import { useWishlist } from "../../hooks/cart/useWishlistTan";
 import useDebounce from "../../hooks/useDebounce";
 import { useProducts } from "../../hooks/product/useProductTan";
+import { getAvatarUrl } from "../../utils/imageUrl";
 
 // Lazy: CartSlider is 10KB + its own deps. Mount it only after the first time
 // the user opens the cart so it never appears in the initial HTML paint.
@@ -34,10 +36,14 @@ export default function Navbar() {
   const [cartEverOpened, setCartEverOpened] = useState(false);
   const [isProfileOpen, setIsProfileOpen] = useState(false);
   const queryClient = useQueryClient();
-  const { isAuthenticated, logout, openAuthModal } = useAuthStore();
+  const { isAuthenticated, logout, openAuthModal, user } = useAuthStore();
   const { data: cartData } = useCart({ enabled: isAuthenticated });
   const { data: wishlistData } = useWishlist({ enabled: isAuthenticated });
   const guestCartItems = useGuestCartStore((state) => state.items);
+
+  const getInitials = (firstName, lastName) => {
+    return `${firstName?.charAt(0) || ""}${lastName?.charAt(0) || ""}`.toUpperCase() || "U";
+  };
 
   const cartCount = isAuthenticated
     ? cartData?.data?.cart?.totalItems || 0
@@ -249,7 +255,7 @@ export default function Navbar() {
           </div>
 
           {/* Desktop Action Icons */}
-          <div className="hidden md:flex items-center gap-[6px] shrink-0">
+          <div className="hidden md:flex items-start gap-[6px] shrink-0">
             <button
               onClick={() =>
                 !isAuthenticated
@@ -259,7 +265,7 @@ export default function Navbar() {
               className="flex flex-col items-center gap-[4px] px-2 md:px-[14px] py-[6px] rounded-[10px] cursor-pointer transition-colors duration-[180ms] text-[#6A6058] hover:text-[#1A1714] border-none bg-transparent font-sans relative group"
             >
               <Heart className="w-5 h-5 md:w-[22px] md:h-[22px]" />
-              <span className="hidden md:block text-[11px] font-medium text-[#6A6058] group-hover:text-[#1A1714] whitespace-nowrap">
+              <span className="hidden md:block text-[12px] font-medium text-[#6A6058] group-hover:text-[#1A1714] whitespace-nowrap">
                 Wishlist ({wishlistCount})
               </span>
             </button>
@@ -268,7 +274,7 @@ export default function Navbar() {
               className="flex flex-col items-center gap-[4px] px-2 md:px-[14px] py-[6px] rounded-[10px] cursor-pointer transition-colors duration-[180ms] text-[#6A6058] hover:text-[#1A1714] border-none bg-transparent font-sans relative group"
             >
               <ShoppingCart className="w-5 h-5 md:w-[22px] md:h-[22px]" />
-              <span className="hidden md:block text-[11px] font-medium text-[#6A6058] group-hover:text-[#1A1714] whitespace-nowrap">
+              <span className="hidden md:block text-[12px] font-medium text-[#6A6058] group-hover:text-[#1A1714] whitespace-nowrap">
                 Cart ({cartCount})
               </span>
               {cartCount > 0 && (
@@ -284,10 +290,29 @@ export default function Navbar() {
                 onClick={() => setIsProfileOpen(!isProfileOpen)}
                 className="flex flex-col items-center gap-[4px] px-2 md:px-[14px] py-[6px] rounded-[10px] cursor-pointer transition-colors duration-[180ms] text-[#6A6058] hover:text-[#1A1714] border-none bg-transparent font-sans relative group"
               >
-                <User className="w-5 h-5 md:w-[22px] md:h-[22px]" />
-                <span className="hidden md:block text-[11px] font-medium text-[#6A6058] group-hover:text-[#1A1714] whitespace-nowrap">
-                  Profile
-                </span>
+                {isAuthenticated && user ? (
+                  <div className="flex items-center gap-1">
+                    {user.avatar ? (
+                      <img
+                        src={getAvatarUrl(user)}
+                        alt="Profile"
+                        className="w-10 h-10 rounded-full object-cover"
+                      />
+                    ) : (
+                      <div className="w-5 h-5 rounded-full bg-[#F27318] text-white flex items-center justify-center font-bold text-[9px] md:text-[10px] font-dm-sans">
+                        {getInitials(user.firstName, user.lastName)}
+                      </div>
+                    )}
+                    <ChevronDown size={12} className="text-[#6A6058] group-hover:text-[#1A1714] transition-colors" />
+                  </div>
+                ) : (
+                  <User className="w-5 h-5" />
+                )}
+                {!isAuthenticated && (
+                  <span className="hidden md:block text-[11px] font-medium text-[#6A6058] group-hover:text-[#1A1714] whitespace-nowrap">
+                    Profile
+                  </span>
+                )}
               </button>
 
               {isProfileOpen && (
@@ -296,7 +321,32 @@ export default function Navbar() {
                     className="fixed inset-0 z-40"
                     onClick={() => setIsProfileOpen(false)}
                   />
-                  <div className="absolute right-0 mt-2 w-56 bg-white border border-[#F0EFED] rounded-[12px] shadow-[0_10px_40px_rgba(0,0,0,0.08)] z-50 py-1 overflow-hidden animate-in fade-in zoom-in duration-200">
+                  <div className="absolute right-0 mt-2 w-64 bg-white border border-[#F0EFED] rounded-[12px] shadow-[0_10px_40px_rgba(0,0,0,0.08)] z-50 py-1 overflow-hidden animate-in fade-in zoom-in duration-200">
+                    {/* User Info Header if Logged In */}
+                    {isAuthenticated && user && (
+                      <div className="px-4 py-3 border-b border-[#F0EFED] bg-[#FAFAFA] flex items-center gap-3">
+                        {user.avatar ? (
+                          <img
+                            src={getAvatarUrl(user)}
+                            alt="Profile"
+                            className="w-10 h-10 rounded-full object-cover border border-neutral-100"
+                          />
+                        ) : (
+                          <div className="w-10 h-10 rounded-full bg-[#F27318] text-white flex items-center justify-center font-bold text-xs font-dm-sans">
+                            {getInitials(user.firstName, user.lastName)}
+                          </div>
+                        )}
+                        <div className="min-w-0">
+                          <p className="text-[14px] font-bold text-[#1A1714] truncate mb-0.5">
+                            {user.firstName} {user.lastName}
+                          </p>
+                          <p className="text-[12px] text-[#8C8782] truncate">
+                            {user.email}
+                          </p>
+                        </div>
+                      </div>
+                    )}
+
                     {/* Auth Action if NOT Logged In */}
                     {!isAuthenticated && (
                       <div className="p-4 border-b border-[#F0EFED]">

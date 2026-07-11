@@ -2,7 +2,6 @@ import { useEffect, useState, useMemo } from "react";
 import { X, ExternalLink, Camera } from "lucide-react";
 import { QRCodeSVG } from "qrcode.react";
 import { MdViewInAr } from "react-icons/md";
-import { API_BASE_URL } from "../../config/constants";
 
 export default function ARViewModal({ isOpen, onClose, product }) {
   const [isMobile, setIsMobile] = useState(false);
@@ -12,7 +11,7 @@ export default function ARViewModal({ isOpen, onClose, product }) {
   useEffect(() => {
     const fetchIp = async () => {
       try {
-        const response = await fetch(`${API_BASE_URL}/api/v1/system/info`);
+        const response = await fetch(`${import.meta.env.VITE_API_BASE_URL || "http://localhost:8080"}/api/v1/system/info`);
         const result = await response.json();
         if (result.status === "success") {
           setLocalIp(result.data.localIp);
