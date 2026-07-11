@@ -7,19 +7,7 @@ import fs from "fs";
 export default defineConfig(({ mode }) => {
   const isAdmin = mode === "admin";
 
-  const keyPath = path.resolve(__dirname, "../certificates/key.pem");
-  const certPath = path.resolve(__dirname, "../certificates/cert.pem");
-  const hasCerts = fs.existsSync(keyPath) && fs.existsSync(certPath);
-
   return {
-    server: {
-      host: true,
-      port: isAdmin ? 5174 : 5173,
-      https: hasCerts ? {
-        key: fs.readFileSync(keyPath),
-        cert: fs.readFileSync(certPath),
-      } : undefined,
-    },
   // ── Plugins ────────────────────────────────────────────────────────────────
   // adminHtmlEntry: dev-server only plugin.
   // Vite always serves index.html for the root request regardless of --mode.
