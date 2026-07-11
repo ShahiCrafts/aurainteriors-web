@@ -63,3 +63,18 @@ html::-webkit-scrollbar {
   from { transform: scaleX(1); }
   to   { transform: scaleX(0); }
 }
+
+/* Admin Theme Override (changes all teal elements to blue) */
+.admin-theme {
+  --color-teal-50: #F0F5FF;
+  --color-teal-100: #E5EEFF;
+  --color-teal-200: #cce0ff;
+  --color-teal-300: #99c2ff;
+  --color-teal-400: #66a3ff;
+  --color-teal-500: #3385ff;
+  --color-teal-600: #0066ff;
+  --color-teal-700: #0052cc;
+  --color-teal-800: #003d99;
+  --color-teal-900: #002966;
+  --color-teal-950: #001433;
+}

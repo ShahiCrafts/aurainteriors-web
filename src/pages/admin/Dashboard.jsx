@@ -2,20 +2,36 @@ import { Loader2, Download, DollarSign, ShoppingBag, Box, Users } from 'lucide-r
 import * as XLSX from 'xlsx';
 import { useDashboardStats, useRevenueAnalytics, useCategorySales, useTopProducts } from '../../hooks/admin/useAnalyticsTan';
 import { useAllOrders } from '../../hooks/order/useOrderTan';
+import useAuthStore from '../../store/authStore';
 
 // Extracted Components
 import StatCard from '../../components/admin/dashboard/StatCard';
 import RevenueChart from '../../components/admin/dashboard/RevenueChart';
 import CategorySalesChart from '../../components/admin/dashboard/CategorySalesChart';
-import TopProductsTable from '../../components/admin/dashboard/TopProductsTable';
+import SupportOverview from '../../components/admin/dashboard/SupportOverview';
 import RecentOrdersTable from '../../components/admin/dashboard/RecentOrdersTable';
+import AIInsights from '../../components/admin/dashboard/AIInsights';
+import QuickActions from '../../components/admin/dashboard/QuickActions';
+
+// Generates a small, stable (non-random) trend shape around a base value.
+// Used only for metrics that don't yet have a real historical series.
+function generatePlaceholderSparkline(baseValue, trendUp, points = 7) {
+  const safeBase = Math.max(baseValue, 1);
+  return Array.from({ length: points }, (_, i) => {
+    const progress = i / (points - 1);
+    const wave = Math.sin((i + safeBase) * 1.3) * 0.08;
+    const direction = trendUp ? progress * 0.25 : -progress * 0.25;
+    return Math.round(safeBase * (0.85 + direction + wave));
+  });
+}
 
 export default function Dashboard() {
+  const { user } = useAuthStore();
   const { data: statsData, isLoading: statsLoading } = useDashboardStats();
   const { data: revenueData, isLoading: revenueLoading } = useRevenueAnalytics(30);
   const { data: categoryData, isLoading: categoryLoading } = useCategorySales();
   const { data: topProductsData, isLoading: productsLoading } = useTopProducts();
-  const { data: recentOrdersData, isLoading: ordersLoading } = useAllOrders({ limit: 5 });
+  const { data: recentOrdersData, isLoading: ordersLoading } = useAllOrders({ limit: 6 });
 
   const stats = statsData?.data || {
     totalRevenue: 0,
@@ -26,8 +42,17 @@ export default function Dashboard() {
 
   const chartData = revenueData?.data?.chartData || [];
   const pieData = categoryData?.data?.salesByCategory || [];
-  const topProducts = topProductsData?.data?.topProducts || [];
   const recentOrders = recentOrdersData?.data?.orders || [];
+
+  // Real trend: last 7 days of actual revenue data
+  const revenueSparkline = chartData.slice(-7).map((d) => d.revenue);
+
+  const getGreeting = () => {
+    const hour = new Date().getHours();
+    if (hour < 12) return 'Good morning';
+    if (hour < 17) return 'Good afternoon';
+    return 'Good evening';
+  };
 
   const handleDownloadReport = () => {
     try {
@@ -38,6 +63,7 @@ export default function Dashboard() {
         { Metric: 'Total Customers', Value: stats.totalUsers },
       ];
 
+      const topProducts = topProductsData?.data?.topProducts || [];
       const productsData = topProducts.map(p => ({
         Name: p.name,
         Deals: p.sales,
@@ -86,7 +112,8 @@ export default function Dashboard() {
       trendUp: true,
       trendLabel: 'vs last month',
       icon: DollarSign,
-      color: 'emerald'
+      color: 'emerald',
+      sparklineData: revenueSparkline.length > 1 ? revenueSparkline : generatePlaceholderSparkline(stats.totalRevenue, true),
     },
     {
       label: 'Total Orders',
@@ -95,7 +122,8 @@ export default function Dashboard() {
       trendUp: true,
       trendLabel: 'vs last quarter',
       icon: ShoppingBag,
-      color: 'blue'
+      color: 'blue',
+      sparklineData: generatePlaceholderSparkline(stats.totalOrders, true),
     },
     {
       label: 'Products',
@@ -104,7 +132,8 @@ export default function Dashboard() {
       trendUp: true,
       trendLabel: 'Goal: 100',
       icon: Box,
-      color: 'orange'
+      color: 'orange',
+      sparklineData: generatePlaceholderSparkline(stats.totalProducts, true),
     },
     {
       label: 'Customers',
@@ -113,7 +142,8 @@ export default function Dashboard() {
       trendUp: true,
       trendLabel: 'vs last quarter',
       icon: Users,
-      color: 'purple'
+      color: 'purple',
+      sparklineData: generatePlaceholderSparkline(stats.totalUsers, true),
     },
   ];
 
@@ -140,12 +170,15 @@ export default function Dashboard() {
   }
 
   return (
-    <div className="space-y-6">
+    <div className="p-6 lg:p-6 space-y-5">
       {/* Page Header */}
       <div className="flex items-center justify-between">
         <div>
-          <h1 className="text-2xl font-bold text-gray-900">Overview</h1>
-          <p className="text-gray-500 mt-0.5 text-sm">Welcome back! Here's what's happening today.</p>
+          <h1 className="text-2xl font-bold text-gray-900 flex items-center gap-2">
+            {getGreeting()}, {user?.firstName || 'Admin'}
+            <span role="img" aria-label="wave">👋</span>
+          </h1>
+          <p className="text-gray-500 mt-0.5 text-sm">Here's what's happening with your store today.</p>
         </div>
         <button
           onClick={handleDownloadReport}
@@ -163,16 +196,25 @@ export default function Dashboard() {
         ))}
       </div>
 
-      {/* Main Charts Section */}
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+      {/* Main Charts Section - Sales Overview, Sales by Category, Support Overview */}
+      {/* Main Charts Section - Sales Overview, Sales by Category, Support Overview */}
+      <div className="grid grid-cols-1 lg:grid-cols-[1.4fr_1fr_1fr] gap-5">
         <RevenueChart data={chartData} />
         <CategorySalesChart data={pieData} />
+        <SupportOverview />
       </div>
+      
+      
 
-      {/* Bottom Section: Tables */}
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-        <TopProductsTable products={topProducts} />
-        <RecentOrdersTable orders={recentOrders} />
+      {/* Bottom Section: Recent Orders (2 cols) + AI Insights / Quick Actions (1 col) */}
+      <div className="grid grid-cols-1 lg:grid-cols-3 gap-5">
+        <div className="lg:col-span-2">
+          <RecentOrdersTable orders={recentOrders} />
+        </div>
+        <div className="flex flex-col gap-6">
+          <AIInsights />
+          <QuickActions />
+        </div>
       </div>
     </div>
   );

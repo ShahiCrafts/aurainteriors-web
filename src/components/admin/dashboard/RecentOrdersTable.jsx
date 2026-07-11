@@ -1,15 +1,15 @@
 import { Link } from "react-router-dom";
-import { ArrowRight, Eye } from "lucide-react";
+import { ArrowRight } from "lucide-react";
 
 export default function RecentOrdersTable({ orders = [] }) {
   return (
     <div className="bg-white rounded-2xl border border-gray-100 overflow-hidden shadow-[0_2px_10px_-4px_rgba(0,0,0,0.05)]">
       {/* Header */}
-      <div className="px-6 py-4 border-b border-gray-100 flex items-center justify-between">
+      <div className="px-6 py-5 border-b border-gray-100 flex items-center justify-between">
         <h2 className="text-lg font-bold text-gray-900">Recent Orders</h2>
 
         <Link
-          to="/admin/orders"
+          to="/dashboard/orders"
           className="text-teal-600 text-sm font-medium hover:text-teal-700 flex items-center gap-1 transition-colors"
         >
           View All <ArrowRight className="w-4 h-4" />
@@ -21,20 +21,20 @@ export default function RecentOrdersTable({ orders = [] }) {
         <table className="w-full text-sm">
           <thead className="bg-gray-50/60">
             <tr className="text-left text-gray-500">
-              <th className="px-6 py-3 text-xs font-semibold uppercase tracking-wider">
+              <th className="px-6 py-4 text-xs font-semibold uppercase tracking-wider">
                 Order ID
               </th>
-              <th className="px-6 py-3 text-xs font-semibold uppercase tracking-wider">
+              <th className="px-6 py-4 text-xs font-semibold uppercase tracking-wider">
                 Customer
               </th>
-              <th className="px-6 py-3 text-xs font-semibold uppercase tracking-wider">
+              <th className="px-6 py-4 text-xs font-semibold uppercase tracking-wider">
+                Date
+              </th>
+              <th className="px-6 py-4 text-xs font-semibold uppercase tracking-wider">
                 Status
               </th>
-              <th className="px-6 py-3 text-right text-xs font-semibold uppercase tracking-wider">
+              <th className="px-6 py-4 text-right text-xs font-semibold uppercase tracking-wider">
                 Total
-              </th>
-              <th className="px-6 py-3 text-right text-xs font-semibold uppercase tracking-wider">
-                Action
               </th>
             </tr>
           </thead>
@@ -75,6 +75,15 @@ export default function RecentOrdersTable({ orders = [] }) {
                     </div>
                   </td>
 
+                  {/* Date */}
+                  <td className="px-6 py-4 text-gray-600 whitespace-nowrap">
+                    {new Date(order.createdAt).toLocaleDateString(undefined, {
+                      month: "short",
+                      day: "numeric",
+                      year: "numeric",
+                    })}
+                  </td>
+
                   {/* Status (NO DOT) */}
                   <td className="px-6 py-4">
                     <span
@@ -87,17 +96,6 @@ export default function RecentOrdersTable({ orders = [] }) {
                   {/* Total */}
                   <td className="px-6 py-4 text-right font-semibold text-gray-900">
                     NRs. {order.total.toLocaleString()}
-                  </td>
-
-                  {/* Action */}
-                  <td className="px-6 py-4 text-right">
-                    <Link
-                      to={`/admin/orders/${order._id}`}
-                      className="inline-flex items-center gap-1.5 text-xs font-medium text-gray-500 hover:text-teal-600 opacity-0 group-hover:opacity-100 transition-all"
-                    >
-                      <Eye className="w-4 h-4" />
-                      View
-                    </Link>
                   </td>
                 </tr>
               );

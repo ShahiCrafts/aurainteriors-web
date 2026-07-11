@@ -1,7 +1,9 @@
 import { useEffect } from "react";
+import { createPortal } from "react-dom";
 import { motion, AnimatePresence } from "framer-motion";
 import { X, Home, Building2, Users, MapPin, Loader2, Check, Truck, Receipt } from "lucide-react";
 import { toast } from "react-toastify";
+import * as yup from "yup";
 import {
   useCreateAddress,
   useUpdateAddress,
@@ -23,8 +25,21 @@ const typeOptions = [
   { value: "billing", label: "Billing Address", icon: Receipt },
 ];
 
-export default function AddEditAddressModal({ isOpen, onClose, address }) {
+export default function AddEditAddressModal({
+  isOpen,
+  onClose,
+  address,
+  isGuest = false,
+  onSubmitOverride,
+  isPendingOverride,
+}) {
   const isEditing = !!address;
+
+  const schema = isGuest
+    ? addressSchema.shape({
+        email: yup.string().email("Invalid email").required("Email is required"),
+      })
+    : addressSchema;
 
   const {
     register,
@@ -34,13 +49,14 @@ export default function AddEditAddressModal({ isOpen, onClose, address }) {
     watch,
     formState: { errors },
   } = useForm({
-    resolver: yupResolver(addressSchema),
+    resolver: yupResolver(schema),
     mode: "onTouched",
     defaultValues: {
       label: "home",
       customLabel: "",
       type: "delivery",
       fullName: "",
+      email: "",
       phone: "",
       addressLine1: "",
       addressLine2: "",
@@ -55,7 +71,7 @@ export default function AddEditAddressModal({ isOpen, onClose, address }) {
   const { mutate: createAddress, isPending: isCreating } = useCreateAddress();
   const { mutate: updateAddress, isPending: isUpdating } = useUpdateAddress();
 
-  const isPending = isCreating || isUpdating;
+  const isPending = isPendingOverride ?? (isCreating || isUpdating);
   const currentLabel = watch("label");
   const currentType = watch("type");
   const currentIsDefault = watch("isDefault");
@@ -68,6 +84,7 @@ export default function AddEditAddressModal({ isOpen, onClose, address }) {
           customLabel: address.customLabel || "",
           type: address.type || "delivery",
           fullName: address.fullName || "",
+          email: address.email || "",
           phone: address.phone || "",
           addressLine1: address.addressLine1 || "",
           addressLine2: address.addressLine2 || "",
@@ -83,6 +100,7 @@ export default function AddEditAddressModal({ isOpen, onClose, address }) {
           customLabel: "",
           type: "delivery",
           fullName: "",
+          email: "",
           phone: "",
           addressLine1: "",
           addressLine2: "",
@@ -100,6 +118,11 @@ export default function AddEditAddressModal({ isOpen, onClose, address }) {
     const payload = { ...data };
     if (payload.label !== "other") {
       payload.customLabel = "";
+    }
+
+    if (onSubmitOverride) {
+      onSubmitOverride(payload);
+      return;
     }
 
     if (isEditing) {
@@ -128,10 +151,10 @@ export default function AddEditAddressModal({ isOpen, onClose, address }) {
     }
   };
 
-  return (
+  return createPortal(
     <AnimatePresence>
       {isOpen && (
-        <div className="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-[#0B0D12]/60 backdrop-blur-sm">
+        <div className="fixed inset-0 z-100 flex items-center justify-center p-4 bg-[#0B0D12]/60 backdrop-blur-sm">
           <motion.div
             initial={{ opacity: 0, scale: 0.97, y: 12 }}
             animate={{ opacity: 1, scale: 1, y: 0 }}
@@ -154,7 +177,7 @@ export default function AddEditAddressModal({ isOpen, onClose, address }) {
               <button
                 onClick={onClose}
                 aria-label="Close"
-                className="w-9 h-9 flex items-center justify-center bg-[#F5F6F8] text-[#6B7280] hover:bg-[#14151A] hover:text-white transition-colors rounded-[8px] border-none cursor-pointer shrink-0"
+                className="w-9 h-9 flex items-center justify-center bg-[#F5F6F8] text-[#6B7280] hover:bg-[#14151A] hover:text-white transition-colors rounded-lg border-none cursor-pointer shrink-0"
               >
                 <X size={17} />
               </button>
@@ -179,38 +202,42 @@ export default function AddEditAddressModal({ isOpen, onClose, address }) {
                         <button
                           key={option.value}
                           type="button"
-                          onClick={() => setValue("label", option.value, { shouldValidate: true })}
-                          className={`flex flex-col items-center justify-center gap-1.5 py-3 rounded-[8px] border text-center transition-all ${
+                          onClick={() => setValue("label", option.value)}
+                          className={`h-11 px-4 rounded-lg border flex items-center gap-2.5 text-[13.5px] font-semibold transition-all cursor-pointer ${
                             isSelected
-                              ? "border-[#F27318] bg-[#FFF4EC] text-[#F27318]"
-                              : "border-[#E5E7EB] bg-white hover:border-[#C7CBD1] text-[#6B7280]"
+                              ? "bg-white border-[#F27318] text-[#F27318] shadow-[0_2px_8px_rgba(242,115,24,0.08)]"
+                              : "bg-transparent border-[#E5E7EB] text-[#4B5563] hover:border-[#D1D5DB] hover:bg-white"
                           }`}
                         >
-                          <Icon size={17} strokeWidth={isSelected ? 2.4 : 2} />
-                          <span className="text-[11px] font-semibold">
-                            {option.label}
-                          </span>
+                          <Icon
+                            size={16}
+                            className={isSelected ? "text-[#F27318]" : "text-[#9CA3AF]"}
+                          />
+                          {option.label}
                         </button>
                       );
                     })}
                   </div>
-
-                  {currentLabel === "other" && (
-                    <div className="flex flex-col gap-1.5 mt-3">
-                      <input
-                        type="text"
-                        {...register("customLabel")}
-                        placeholder="Custom label, e.g. Parents' Home"
-                        className="w-full h-[40px] px-3.5 border border-[#E5E7EB] rounded-[8px] focus:border-[#F27318] focus:ring-1 focus:ring-[#F27318] outline-none transition-all text-[13.5px] bg-white"
-                      />
-                      {errors.customLabel && (
-                        <p className="text-[11.5px] text-red-500 font-medium">
-                          {errors.customLabel.message}
-                        </p>
-                      )}
-                    </div>
-                  )}
                 </div>
+
+                {currentLabel === "other" && (
+                  <div className="mb-6 animate-in fade-in slide-in-from-top-2 duration-200">
+                    <label className="text-[11px] font-bold uppercase tracking-wider text-[#9AA1AC]">
+                      Custom Label
+                    </label>
+                    <input
+                      type="text"
+                      {...register("customLabel")}
+                      placeholder="e.g. Vacation House"
+                      className="w-full h-[42px] px-3.5 mt-2 border border-[#E5E7EB] rounded-lg focus:border-[#F27318] focus:ring-1 focus:ring-[#F27318] outline-none transition-all text-[14px]"
+                    />
+                    {errors.customLabel && (
+                      <p className="text-[11.5px] text-red-500 font-medium mt-1">
+                        {errors.customLabel.message}
+                      </p>
+                    )}
+                  </div>
+                )}
 
                 <div className="mb-6">
                   <span className="text-[11px] font-bold uppercase tracking-wider text-[#9AA1AC]">
@@ -221,197 +248,204 @@ export default function AddEditAddressModal({ isOpen, onClose, address }) {
                       const Icon = option.icon;
                       const isSelected = currentType === option.value;
                       return (
-                        <label
+                        <button
                           key={option.value}
-                          className={`flex items-center gap-3 pl-3 pr-3.5 py-2.5 rounded-[8px] border cursor-pointer transition-all ${
+                          type="button"
+                          onClick={() => setValue("type", option.value)}
+                          className={`h-12 px-4 rounded-lg border flex items-center justify-between text-[13.5px] font-semibold transition-all cursor-pointer ${
                             isSelected
-                              ? "border-[#F27318] bg-[#FFF4EC]"
-                              : "border-[#E5E7EB] bg-white hover:border-[#C7CBD1]"
+                              ? "bg-white border-[#F27318] text-[#F27318] shadow-[0_2px_8px_rgba(242,115,24,0.08)]"
+                              : "bg-transparent border-[#E5E7EB] text-[#4B5563] hover:border-[#D1D5DB] hover:bg-white"
                           }`}
                         >
-                          <span
-                            className={`w-8 h-8 shrink-0 flex items-center justify-center rounded-[7px] border transition-all ${
-                              isSelected
-                                ? "border-[#F27318] bg-white text-[#F27318]"
-                                : "border-[#E5E7EB] bg-[#FAFAFB] text-[#9AA1AC]"
-                            }`}
-                          >
-                            <Icon size={15} strokeWidth={isSelected ? 2.4 : 2} />
-                          </span>
-                          <span
-                            className={`flex-1 text-[13px] font-semibold ${
-                              isSelected ? "text-[#F27318]" : "text-[#6B7280]"
-                            }`}
-                          >
-                            {option.label}
-                          </span>
-                          <input
-                            type="radio"
-                            value={option.value}
-                            {...register("type")}
-                            className="sr-only"
-                          />
-                          {isSelected && (
-                            <Check
-                              size={15}
-                              strokeWidth={2.6}
-                              className="text-[#F27318] shrink-0"
+                          <div className="flex items-center gap-2.5">
+                            <Icon
+                              size={16}
+                              className={isSelected ? "text-[#F27318]" : "text-[#9CA3AF]"}
                             />
+                            {option.label}
+                          </div>
+                          {isSelected && (
+                            <div className="w-5 h-5 rounded-full bg-[#FFF8F2] flex items-center justify-center">
+                              <Check size={11} className="text-[#F27318]" strokeWidth={3} />
+                            </div>
                           )}
-                        </label>
+                        </button>
                       );
                     })}
                   </div>
                 </div>
 
-                <label
-                  className={`flex items-start gap-2.5 px-3.5 py-3 rounded-[8px] border cursor-pointer transition-all ${
-                    currentIsDefault
-                      ? "border-[#F27318] bg-[#FFF4EC]"
-                      : "border-[#E5E7EB] bg-white hover:border-[#C7CBD1]"
-                  }`}
-                >
-                  <input
-                    type="checkbox"
-                    {...register("isDefault")}
-                    className="w-4 h-4 mt-0.5 rounded border-[#D1D5DB] text-[#F27318] focus:ring-[#F27318] cursor-pointer accent-[#F27318]"
-                  />
-                  <span className="text-[13px] leading-snug text-[#4B5563]">
-                    <span className="block font-semibold text-[#14151A]">
-                      Set as default
+                <div className="pt-2">
+                  <button
+                    type="button"
+                    onClick={() => setValue("isDefault", !currentIsDefault)}
+                    className="flex items-center gap-3 text-left bg-transparent border-none cursor-pointer p-0 group"
+                  >
+                    <div
+                      className={`w-[18px] h-[18px] rounded-sm border flex items-center justify-center transition-all ${
+                        currentIsDefault
+                          ? "bg-[#F27318] border-[#F27318]"
+                          : "border-[#D1D5DB] group-hover:border-[#9CA3AF]"
+                      }`}
+                    >
+                      {currentIsDefault && <Check size={12} className="text-white" strokeWidth={3} />}
+                    </div>
+                    <span className="text-[13.5px] font-semibold text-[#374151] select-none">
+                      Set as Default Address
                     </span>
-                    Used automatically at checkout.
-                  </span>
-                </label>
+                  </button>
+                </div>
               </div>
 
-              {/* Right — details */}
-              <div className="flex-1 min-w-0 flex flex-col">
-                <div className="flex-1 overflow-y-auto px-7 py-6">
-                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-x-4 gap-y-5">
-                    <div className="flex flex-col gap-1.5">
-                      <label className="text-[13px] font-semibold text-[#374151]">
+              {/* Right rail — form details */}
+              <div className="flex-1 flex flex-col min-h-0 bg-white">
+                <div className="flex-1 p-7 overflow-y-auto space-y-5">
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                    <div>
+                      <label className="text-[11px] font-bold uppercase tracking-wider text-[#9AA1AC]">
                         Full Name
                       </label>
                       <input
                         type="text"
                         {...register("fullName")}
                         placeholder="John Doe"
-                        className="w-full h-[42px] px-3.5 border border-[#E5E7EB] rounded-[8px] focus:border-[#F27318] focus:ring-1 focus:ring-[#F27318] outline-none transition-all text-[14px]"
+                        className="w-full h-[42px] px-3.5 mt-2 border border-[#E5E7EB] rounded-lg focus:border-[#F27318] focus:ring-1 focus:ring-[#F27318] outline-none transition-all text-[14px]"
                       />
                       {errors.fullName && (
-                        <p className="text-[11.5px] text-red-500 font-medium">
+                        <p className="text-[11.5px] text-red-500 font-medium mt-1">
                           {errors.fullName.message}
                         </p>
                       )}
                     </div>
 
-                    <div className="flex flex-col gap-1.5">
-                      <label className="text-[13px] font-semibold text-[#374151]">
+                    <div>
+                      <label className="text-[11px] font-bold uppercase tracking-wider text-[#9AA1AC]">
                         Phone Number
                       </label>
                       <input
-                        type="tel"
+                        type="text"
                         {...register("phone")}
-                        placeholder="+977 98XXXXXXXX"
-                        className="w-full h-[42px] px-3.5 border border-[#E5E7EB] rounded-[8px] focus:border-[#F27318] focus:ring-1 focus:ring-[#F27318] outline-none transition-all text-[14px]"
+                        placeholder="98XXXXXXXX"
+                        className="w-full h-[42px] px-3.5 mt-2 border border-[#E5E7EB] rounded-lg focus:border-[#F27318] focus:ring-1 focus:ring-[#F27318] outline-none transition-all text-[14px]"
                       />
                       {errors.phone && (
-                        <p className="text-[11.5px] text-red-500 font-medium">
+                        <p className="text-[11.5px] text-red-500 font-medium mt-1">
                           {errors.phone.message}
                         </p>
                       )}
                     </div>
+                  </div>
 
-                    <div className="flex flex-col gap-1.5 sm:col-span-2">
-                      <label className="text-[13px] font-semibold text-[#374151]">
-                        Address Line 1
+                  {isGuest && (
+                    <div>
+                      <label className="text-[11px] font-bold uppercase tracking-wider text-[#9AA1AC]">
+                        Email Address
                       </label>
                       <input
-                        type="text"
-                        {...register("addressLine1")}
-                        placeholder="Street address, P.O. box"
-                        className="w-full h-[42px] px-3.5 border border-[#E5E7EB] rounded-[8px] focus:border-[#F27318] focus:ring-1 focus:ring-[#F27318] outline-none transition-all text-[14px]"
+                        type="email"
+                        {...register("email")}
+                        placeholder="guest@example.com"
+                        className="w-full h-[42px] px-3.5 mt-2 border border-[#E5E7EB] rounded-lg focus:border-[#F27318] focus:ring-1 focus:ring-[#F27318] outline-none transition-all text-[14px]"
                       />
-                      {errors.addressLine1 && (
-                        <p className="text-[11.5px] text-red-500 font-medium">
-                          {errors.addressLine1.message}
+                      {errors.email && (
+                        <p className="text-[11.5px] text-red-500 font-medium mt-1">
+                          {errors.email.message}
                         </p>
                       )}
                     </div>
+                  )}
 
-                    <div className="flex flex-col gap-1.5 sm:col-span-2">
-                      <label className="text-[13px] font-semibold text-[#374151]">
-                        Address Line 2{" "}
-                        <span className="text-[#9AA1AC] font-normal">(Optional)</span>
-                      </label>
-                      <input
-                        type="text"
-                        {...register("addressLine2")}
-                        placeholder="Apartment, suite, unit, floor, etc."
-                        className="w-full h-[42px] px-3.5 border border-[#E5E7EB] rounded-[8px] focus:border-[#F27318] focus:ring-1 focus:ring-[#F27318] outline-none transition-all text-[14px]"
-                      />
-                    </div>
+                  <div>
+                    <label className="text-[11px] font-bold uppercase tracking-wider text-[#9AA1AC]">
+                      Address Line 1
+                    </label>
+                    <input
+                      type="text"
+                      {...register("addressLine1")}
+                      placeholder="Street address, P.O. box, company name"
+                      className="w-full h-[42px] px-3.5 mt-2 border border-[#E5E7EB] rounded-lg focus:border-[#F27318] focus:ring-1 focus:ring-[#F27318] outline-none transition-all text-[14px]"
+                    />
+                    {errors.addressLine1 && (
+                      <p className="text-[11.5px] text-red-500 font-medium mt-1">
+                        {errors.addressLine1.message}
+                      </p>
+                    )}
+                  </div>
 
-                    <div className="flex flex-col gap-1.5">
-                      <label className="text-[13px] font-semibold text-[#374151]">
+                  <div>
+                    <label className="text-[11px] font-bold uppercase tracking-wider text-[#9AA1AC]">
+                      Address Line 2 (Optional)
+                    </label>
+                    <input
+                      type="text"
+                      {...register("addressLine2")}
+                      placeholder="Apartment, suite, unit, building, floor, etc."
+                      className="w-full h-[42px] px-3.5 mt-2 border border-[#E5E7EB] rounded-lg focus:border-[#F27318] focus:ring-1 focus:ring-[#F27318] outline-none transition-all text-[14px]"
+                    />
+                  </div>
+
+                  <div className="grid grid-cols-2 gap-4">
+                    <div>
+                      <label className="text-[11px] font-bold uppercase tracking-wider text-[#9AA1AC]">
                         City
                       </label>
                       <input
                         type="text"
                         {...register("city")}
                         placeholder="Kathmandu"
-                        className="w-full h-[42px] px-3.5 border border-[#E5E7EB] rounded-[8px] focus:border-[#F27318] focus:ring-1 focus:ring-[#F27318] outline-none transition-all text-[14px]"
+                        className="w-full h-[42px] px-3.5 mt-2 border border-[#E5E7EB] rounded-lg focus:border-[#F27318] focus:ring-1 focus:ring-[#F27318] outline-none transition-all text-[14px]"
                       />
                       {errors.city && (
-                        <p className="text-[11.5px] text-red-500 font-medium">
+                        <p className="text-[11.5px] text-red-500 font-medium mt-1">
                           {errors.city.message}
                         </p>
                       )}
                     </div>
 
-                    <div className="flex flex-col gap-1.5">
-                      <label className="text-[13px] font-semibold text-[#374151]">
-                        Postal Code
-                      </label>
-                      <input
-                        type="text"
-                        {...register("postalCode")}
-                        placeholder="44600"
-                        className="w-full h-[42px] px-3.5 border border-[#E5E7EB] rounded-[8px] focus:border-[#F27318] focus:ring-1 focus:ring-[#F27318] outline-none transition-all text-[14px]"
-                      />
-                      {errors.postalCode && (
-                        <p className="text-[11.5px] text-red-500 font-medium">
-                          {errors.postalCode.message}
-                        </p>
-                      )}
-                    </div>
-
-                    <div className="flex flex-col gap-1.5">
-                      <label className="text-[13px] font-semibold text-[#374151]">
-                        State / Province{" "}
-                        <span className="text-[#9AA1AC] font-normal">(Optional)</span>
+                    <div>
+                      <label className="text-[11px] font-bold uppercase tracking-wider text-[#9AA1AC]">
+                        State / Province
                       </label>
                       <input
                         type="text"
                         {...register("state")}
                         placeholder="Bagmati"
-                        className="w-full h-[42px] px-3.5 border border-[#E5E7EB] rounded-[8px] focus:border-[#F27318] focus:ring-1 focus:ring-[#F27318] outline-none transition-all text-[14px]"
+                        className="w-full h-[42px] px-3.5 mt-2 border border-[#E5E7EB] rounded-lg focus:border-[#F27318] focus:ring-1 focus:ring-[#F27318] outline-none transition-all text-[14px]"
                       />
                     </div>
+                  </div>
 
-                    <div className="flex flex-col gap-1.5">
-                      <label className="text-[13px] font-semibold text-[#374151]">
+                  <div className="grid grid-cols-2 gap-4">
+                    <div>
+                      <label className="text-[11px] font-bold uppercase tracking-wider text-[#9AA1AC]">
+                        Postal / ZIP Code
+                      </label>
+                      <input
+                        type="text"
+                        {...register("postalCode")}
+                        placeholder="44600"
+                        className="w-full h-[42px] px-3.5 mt-2 border border-[#E5E7EB] rounded-lg focus:border-[#F27318] focus:ring-1 focus:ring-[#F27318] outline-none transition-all text-[14px]"
+                      />
+                      {errors.postalCode && (
+                        <p className="text-[11.5px] text-red-500 font-medium mt-1">
+                          {errors.postalCode.message}
+                        </p>
+                      )}
+                    </div>
+
+                    <div>
+                      <label className="text-[11px] font-bold uppercase tracking-wider text-[#9AA1AC]">
                         Country
                       </label>
                       <input
                         type="text"
                         {...register("country")}
                         placeholder="Nepal"
-                        className="w-full h-[42px] px-3.5 border border-[#E5E7EB] rounded-[8px] focus:border-[#F27318] focus:ring-1 focus:ring-[#F27318] outline-none transition-all text-[14px]"
+                        className="w-full h-[42px] px-3.5 mt-2 border border-[#E5E7EB] rounded-lg focus:border-[#F27318] focus:ring-1 focus:ring-[#F27318] outline-none transition-all text-[14px]"
                       />
                       {errors.country && (
-                        <p className="text-[11.5px] text-red-500 font-medium">
+                        <p className="text-[11.5px] text-red-500 font-medium mt-1">
                           {errors.country.message}
                         </p>
                       )}
@@ -424,14 +458,14 @@ export default function AddEditAddressModal({ isOpen, onClose, address }) {
                   <button
                     type="button"
                     onClick={onClose}
-                    className="h-[42px] px-5 border border-[#E5E7EB] rounded-[8px] text-[#4B5563] font-semibold text-[13.5px] hover:bg-[#F5F6F8] transition-all cursor-pointer bg-transparent"
+                    className="h-[42px] px-5 border border-[#E5E7EB] rounded-lg text-[#4B5563] font-semibold text-[13.5px] hover:bg-[#F5F6F8] transition-all cursor-pointer bg-transparent"
                   >
                     Cancel
                   </button>
                   <button
                     type="submit"
                     disabled={isPending}
-                    className="h-[42px] px-6 bg-[#F27318] hover:bg-[#D9620E] text-white font-semibold text-[13.5px] rounded-[8px] transition-all disabled:opacity-50 disabled:cursor-not-allowed border-none cursor-pointer flex items-center justify-center gap-2 min-w-[140px]"
+                    className="h-[42px] px-6 bg-[#F27318] hover:bg-[#D9620E] text-white font-semibold text-[13.5px] rounded-lg transition-all disabled:opacity-50 disabled:cursor-not-allowed border-none cursor-pointer flex items-center justify-center gap-2 min-w-[140px]"
                   >
                     {isPending ? (
                       <Loader2 size={16} className="animate-spin" />
@@ -447,6 +481,7 @@ export default function AddEditAddressModal({ isOpen, onClose, address }) {
           </motion.div>
         </div>
       )}
-    </AnimatePresence>
+    </AnimatePresence>,
+    document.body
   );
 }

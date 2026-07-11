@@ -40,7 +40,7 @@ export const useCreateAddress = () => {
         const response = await createAddress(data);
         return response.data;
       } catch (error) {
-        throw error.displayMessage;
+        throw error;
       }
     },
     onSuccess: () => {
@@ -58,7 +58,7 @@ export const useUpdateAddress = () => {
         const response = await updateAddress(id, data);
         return response.data;
       } catch (error) {
-        throw error.displayMessage;
+        throw error;
       }
     },
     onSuccess: () => {
@@ -76,7 +76,7 @@ export const useDeleteAddress = () => {
         const response = await deleteAddress(id);
         return response.data;
       } catch (error) {
-        throw error.displayMessage;
+        throw error;
       }
     },
     onSuccess: () => {
@@ -88,7 +88,7 @@ export const useDeleteAddress = () => {
 export const useDefaultAddress = () => {
   const { isAuthenticated } = useAuthStore();
   const { data: addresses, isLoading } = useAddresses({ enabled: isAuthenticated });
-  const defaultAddress = addresses?.find((addr) => addr.isDefault);
+  const defaultAddress = addresses?.find((addr) => addr.isDefault) || addresses?.[0];
   return { defaultAddress, isLoading };
 };
 
@@ -101,7 +101,7 @@ export const useSetDefaultAddress = () => {
         const response = await setDefaultAddress(id);
         return response.data;
       } catch (error) {
-        throw error.displayMessage;
+        throw error;
       }
     },
     onSuccess: () => {

@@ -79,7 +79,7 @@ export default function CartSlider({ isOpen, onClose }) {
   return (
     <>
       <div
-        className={`fixed inset-0 z-[100] bg-black/40 h-[100vh] transition-opacity duration-300 ${
+        className={`fixed inset-0 z-100 bg-black/40 h-screen transition-opacity duration-300 ${
       isOpen
         ? "opacity-100 visible pointer-events-auto"
         : "opacity-0 invisible pointer-events-none"
@@ -88,12 +88,12 @@ export default function CartSlider({ isOpen, onClose }) {
       />
 
       <div
-        className={`fixed top-0 right-0 z-[101] h-full w-full sm:max-w-[480px] bg-white shadow-2xl transition-transform duration-300 ease-out flex flex-col font-sans ${isOpen ? "translate-x-0" : "translate-x-full"
+        className={`fixed top-0 right-0 z-101 h-full w-full sm:max-w-[480px] bg-white shadow-2xl transition-transform duration-300 ease-out flex flex-col font-sans ${isOpen ? "translate-x-0" : "translate-x-full"
           }`}
       >
         <div className="flex items-start justify-between px-6 py-6 border-b border-gray-100 bg-white">
           <div className="flex items-start gap-4">
-            <div className="w-10 h-10 rounded-[8px] bg-[#F27318]/10 flex items-center justify-center shrink-0">
+            <div className="w-10 h-10 rounded-lg bg-[#F27318]/10 flex items-center justify-center shrink-0">
               <ShoppingBag size={20} className="text-[#F27318]" />
             </div>
             <div>
@@ -101,7 +101,7 @@ export default function CartSlider({ isOpen, onClose }) {
                 <h2 className="text-xl font-bold text-gray-900 tracking-tight">
                   Your Cart
                 </h2>
-                <span className="text-[12px] font-bold text-white bg-[#F27318] px-2 py-0.5 rounded-[4px]">
+                <span className="text-[12px] font-bold text-white bg-[#F27318] px-2 py-0.5 rounded-sm">
                   {totalItems}
                 </span>
               </div>
@@ -112,7 +112,7 @@ export default function CartSlider({ isOpen, onClose }) {
           </div>
           <button
             onClick={onClose}
-            className="w-8 h-8 flex items-center justify-center bg-gray-100 text-gray-600 hover:bg-black hover:text-white transition-colors rounded-[8px]"
+            className="w-8 h-8 flex items-center justify-center bg-gray-100 text-gray-600 hover:bg-black hover:text-white transition-colors rounded-lg"
           >
             <X size={18} strokeWidth={2} />
           </button>
@@ -125,7 +125,7 @@ export default function CartSlider({ isOpen, onClose }) {
             </div>
           ) : cartItems.length === 0 ? (
             <div className="flex flex-col items-center justify-center h-full px-6 text-center">
-              <div className="w-16 h-16 bg-gray-100 flex items-center justify-center rounded-[8px] mb-6">
+              <div className="w-16 h-16 bg-gray-100 flex items-center justify-center rounded-lg mb-6">
                 <ShoppingBag size={28} className="text-gray-400" />
               </div>
               <h3 className="text-2xl font-bold text-gray-900 mb-2">
@@ -134,12 +134,13 @@ export default function CartSlider({ isOpen, onClose }) {
               <p className="text-[14px] text-gray-500 mb-8 max-w-[280px]">
                 Looks like you haven't added any items yet. Start exploring our premium collection.
               </p>
-              <button 
+              <Link 
+                to="/shop"
                 onClick={onClose}
-                className="bg-[#F27318] text-white px-8 py-3 font-bold text-[14px] rounded-[8px] hover:bg-[#D9620E] transition-colors"
+                className="bg-[#F27318] text-white px-8 py-3 font-bold text-[14px] rounded-lg hover:bg-[#D9620E] transition-colors inline-flex items-center justify-center"
               >
                 Continue Shopping
-              </button>
+              </Link>
             </div>
           ) : (
             <div className="p-6 space-y-5">
@@ -150,12 +151,12 @@ export default function CartSlider({ isOpen, onClose }) {
                 return (
                   <div
                     key={item._id}
-                    className="flex gap-5 bg-white p-4 border border-gray-100 shadow-sm rounded-[8px]"
+                    className="flex gap-5 bg-white p-4 border border-gray-100 shadow-sm rounded-lg"
                   >
                     <Link
                       to={`/product/${product.slug || product._id}`}
                       onClick={onClose}
-                      className="w-[84px] h-[84px] shrink-0 rounded-[8px] overflow-hidden bg-gray-100"
+                      className="w-[84px] h-[84px] shrink-0 rounded-lg overflow-hidden bg-gray-100"
                     >
                       <img
                         src={getImageUrl(product)}
@@ -179,7 +180,7 @@ export default function CartSlider({ isOpen, onClose }) {
                           <button
                             onClick={() => handleRemoveItem(item._id)}
                             disabled={isRemoving}
-                            className="w-7 h-7 shrink-0 flex items-center justify-center bg-gray-50 text-gray-400 hover:text-red-500 hover:bg-red-50 transition-colors disabled:opacity-50 rounded-[6px]"
+                            className="w-7 h-7 shrink-0 flex items-center justify-center bg-gray-50 text-gray-400 hover:text-red-500 hover:bg-red-50 transition-colors disabled:opacity-50 rounded-md"
                           >
                             <Trash2 size={14} />
                           </button>
@@ -192,7 +193,7 @@ export default function CartSlider({ isOpen, onClose }) {
                       </div>
 
                       <div className="flex items-end justify-between mt-3">
-                        <div className="flex items-center border border-gray-200 rounded-[6px] overflow-hidden bg-white">
+                        <div className="flex items-center border border-gray-200 rounded-md overflow-hidden bg-white">
                           <button
                             onClick={() =>
                               handleUpdateQuantity(item._id, item.quantity - 1)
@@ -245,17 +246,18 @@ export default function CartSlider({ isOpen, onClose }) {
             <Link
               to="/checkout"
               onClick={onClose}
-              className="w-full flex items-center justify-center py-4 bg-[#F27318] hover:bg-[#D9620E] text-white text-[15px] font-bold rounded-[8px] transition-all duration-200 shadow-sm"
+              className="w-full flex items-center justify-center py-4 bg-[#F27318] hover:bg-[#D9620E] text-white text-[15px] font-bold rounded-lg transition-all duration-200 shadow-sm"
             >
               Proceed to Checkout
             </Link>
 
-            <button
+            <Link
+              to="/shop"
               onClick={onClose}
               className="w-full flex items-center justify-center mt-3 py-3 text-[14px] font-bold text-gray-500 hover:text-black transition-colors"
             >
               Continue Shopping
-            </button>
+            </Link>
           </div>
         )}
       </div>

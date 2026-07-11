@@ -176,12 +176,12 @@ export default function PersonalInformation() {
 
   return (
     <div className="space-y-6">
-      <div className="bg-white rounded-2xl shadow-sm border border-neutral-100 p-6 sm:p-8">
+      <div className="bg-white rounded-xl border border-gray-200 p-6 sm:p-8">
         <div className="mb-6">
-          <h2 className="text-xl font-bold text-[#1A1714] font-dm-sans">
+          <h2 className="text-[18px] font-semibold text-[#1A1714] font-dm-sans">
             Profile Picture
           </h2>
-          <p className="text-neutral-500 font-dm-sans text-sm mt-1">
+          <p className="text-neutral-500 font-dm-sans text-[14px] mt-1">
             Update your profile photo
           </p>
         </div>
@@ -202,10 +202,10 @@ export default function PersonalInformation() {
           </div>
 
           <div className="flex-1 text-center sm:text-left">
-            <p className="font-medium text-neutral-800 font-dm-sans mb-1">
+            <p className="font-semibold text-neutral-800 font-dm-sans mb-1 text-[16px]">
               Upload a new photo
             </p>
-            <p className="text-sm text-neutral-500 font-dm-sans mb-4">
+            <p className="text-sm text-neutral-500 font-dm-sans mb-3">
               Recommended: Square image, at least 400x400 pixels. Max file size:
               5MB
             </p>
@@ -252,9 +252,9 @@ export default function PersonalInformation() {
         </div>
       </div>
 
-      <div className="bg-white rounded-2xl shadow-sm border border-neutral-100 p-6 sm:p-8">
+      <div className="bg-white rounded-2xl border border-gray-200 p-6 sm:p-8">
         <div className="mb-6">
-          <h2 className="text-xl font-bold text-[#1A1714] font-dm-sans">
+          <h2 className="text-[18px] font-semibold text-[#1A1714] font-dm-sans">
             Personal Information
           </h2>
           <p className="text-neutral-500 font-dm-sans text-sm mt-1">

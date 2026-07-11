@@ -9,7 +9,7 @@ export const useSendMagicLink = () => {
         const response = await sendMagicLink(data);
         return response.data;
       } catch (error) {
-        throw error.displayMessage;
+        throw error;
       }
     },
   });
@@ -23,7 +23,7 @@ export const useVerifyMagicLink = () => {
         const response = await verifyMagicLink(token);
         return response.data;
       } catch (error) {
-        throw error.displayMessage;
+        throw error;
       }
     },
     onError: (error) => {

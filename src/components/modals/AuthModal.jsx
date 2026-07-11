@@ -101,19 +101,19 @@ export default function AuthModal() {
 
   return (
     <AnimatePresence>
-      <div className="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm">
+      <div className="fixed inset-0 z-100 flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm">
         <motion.div
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
           exit={{ opacity: 0 }}
           transition={{ duration: 0.2 }}
-          className="bg-white w-full max-w-[840px] h-full max-h-[560px] rounded-[16px] overflow-hidden flex relative shadow-[0_24px_70px_rgba(0,0,0,0.35)] font-dm-sans"
+          className="bg-white w-full max-w-[840px] h-full max-h-[560px] rounded-2xl overflow-hidden flex relative shadow-[0_24px_70px_rgba(0,0,0,0.35)] font-dm-sans"
         >
           {/* Close Button */}
           {showCloseButton && (
             <button
               onClick={closeAuthModal}
-              className="absolute top-4 right-4 z-20 w-8 h-8 flex items-center justify-center bg-gray-100 text-gray-600 hover:bg-black hover:text-white transition-all duration-200 rounded-[8px] border-none cursor-pointer"
+              className="absolute top-4 right-4 z-20 w-8 h-8 flex items-center justify-center bg-gray-100 text-gray-600 hover:bg-black hover:text-white transition-all duration-200 rounded-lg border-none cursor-pointer"
             >
               <X size={18} />
             </button>
@@ -164,7 +164,7 @@ export default function AuthModal() {
                             setEmail(e.target.value);
                             if (isWelcomeBack) setIsWelcomeBack(false);
                           }}
-                          className="w-full h-[46px] px-4 border border-[#E2E8F0] rounded-[8px] focus:border-[#F27318] focus:ring-1 focus:ring-[#F27318] outline-none transition-all duration-200 text-[15px]"
+                          className="w-full h-[46px] px-4 border border-[#E2E8F0] rounded-lg focus:border-[#F27318] focus:ring-1 focus:ring-[#F27318] outline-none transition-all duration-200 text-[15px]"
                           placeholder="e.g. name@example.com"
                           required
                         />
@@ -173,7 +173,7 @@ export default function AuthModal() {
                       <button
                         type="submit"
                         disabled={isSending}
-                        className="w-full h-[46px] bg-[#F27318] hover:bg-[#D9620E] text-white font-semibold text-[14px] rounded-[8px] mt-1 transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed border-none cursor-pointer flex items-center justify-center gap-2 shadow-sm"
+                        className="w-full h-[46px] bg-[#F27318] hover:bg-[#D9620E] text-white font-semibold text-[14px] rounded-lg mt-1 transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed border-none cursor-pointer flex items-center justify-center gap-2 shadow-sm"
                       >
                         {isSending ? (
                           <>
@@ -198,7 +198,7 @@ export default function AuthModal() {
                       <button
                         onClick={handleGoogleAuth}
                         type="button"
-                        className="w-full h-[46px] bg-white border border-[#E2E8F0] hover:bg-gray-50 rounded-[8px] flex items-center justify-center gap-3 transition-all duration-200 font-semibold text-[#1A1714] cursor-pointer shadow-sm"
+                        className="w-full h-[46px] bg-white border border-[#E2E8F0] hover:bg-gray-50 rounded-lg flex items-center justify-center gap-3 transition-all duration-200 font-semibold text-[#1A1714] cursor-pointer shadow-sm"
                       >
                         <FcGoogle size={20} />
                         <span className="text-[14px]">Continue with Google</span>
@@ -241,7 +241,7 @@ export default function AuthModal() {
                     <div className="flex flex-col gap-3 w-full">
                       <button
                         onClick={() => window.open(`mailto:${email}`)}
-                        className="w-full h-[46px] bg-[#F27318] hover:bg-[#D9620E] text-white font-semibold text-[14px] rounded-[8px] transition-all duration-200 border-none cursor-pointer shadow-sm"
+                        className="w-full h-[46px] bg-[#F27318] hover:bg-[#D9620E] text-white font-semibold text-[14px] rounded-lg transition-all duration-200 border-none cursor-pointer shadow-sm"
                       >
                         Open Mail App
                       </button>
@@ -288,7 +288,7 @@ export default function AuthModal() {
                             type="text"
                             value={fullName}
                             onChange={(e) => setFullName(e.target.value)}
-                            className="w-full h-[46px] pl-10 pr-4 border border-[#E2E8F0] rounded-[8px] focus:border-[#F27318] focus:ring-1 focus:ring-[#F27318] outline-none transition-all duration-200 text-[15px]"
+                            className="w-full h-[46px] pl-10 pr-4 border border-[#E2E8F0] rounded-lg focus:border-[#F27318] focus:ring-1 focus:ring-[#F27318] outline-none transition-all duration-200 text-[15px]"
                             placeholder="e.g. John Doe"
                             required
                             autoFocus
@@ -300,7 +300,7 @@ export default function AuthModal() {
                       <button
                         type="submit"
                         disabled={isUpdating || !fullName.trim()}
-                        className="w-full h-[46px] bg-[#F27318] hover:bg-[#D9620E] text-white font-semibold text-[14px] rounded-[8px] mt-1 transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed border-none cursor-pointer flex items-center justify-center gap-2 shadow-sm"
+                        className="w-full h-[46px] bg-[#F27318] hover:bg-[#D9620E] text-white font-semibold text-[14px] rounded-lg mt-1 transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed border-none cursor-pointer flex items-center justify-center gap-2 shadow-sm"
                       >
                         {isUpdating ? (
                           <>

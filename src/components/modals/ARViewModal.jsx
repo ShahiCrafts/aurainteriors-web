@@ -106,14 +106,14 @@ export default function ARViewModal({ isOpen, onClose, product }) {
 
   // Unified Responsive View
   return (
-    <div className="fixed inset-0 z-[100] overflow-y-auto font-sans">
+    <div className="fixed inset-0 z-100 overflow-y-auto font-sans">
       <div
         className="fixed inset-0 bg-black/70 backdrop-blur-sm"
         onClick={onClose}
       />
       <div className="min-h-full flex items-center justify-center p-4 sm:p-6">
         <div
-          className="relative w-full max-w-[440px] bg-white shadow-2xl flex flex-col items-center justify-center p-8 md:p-12 rounded-[12px]"
+          className="relative w-full max-w-[440px] bg-white shadow-2xl flex flex-col items-center justify-center p-8 md:p-12 rounded-xl"
           style={{
             animation: "fadeInScale 0.3s cubic-bezier(0.4, 0, 0.2, 1) forwards",
           }}
@@ -121,7 +121,7 @@ export default function ARViewModal({ isOpen, onClose, product }) {
           {/* Close Button */}
           <button
             onClick={onClose}
-            className="absolute top-4 right-4 z-10 w-8 h-8 flex items-center justify-center rounded-[8px] bg-gray-100 text-gray-600 hover:bg-black hover:text-white transition-colors"
+            className="absolute top-4 right-4 z-10 w-8 h-8 flex items-center justify-center rounded-lg bg-gray-100 text-gray-600 hover:bg-black hover:text-white transition-colors"
           >
             <X size={18} strokeWidth={2} />
           </button>
@@ -183,7 +183,7 @@ export default function ARViewModal({ isOpen, onClose, product }) {
               <div className="w-16 h-16 bg-gray-100 flex items-center justify-center rounded-none border border-gray-200 mb-4">
                 <MdViewInAr size={24} className="text-gray-400" />
               </div>
-              <p className="text-[14px] text-gray-500 max-w-[240px]">
+              <p className="text-[14px] text-gray-500 max-w-60">
                 AR model is currently unavailable for this product.
               </p>
             </div>

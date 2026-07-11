@@ -123,3 +123,17 @@ export const useChatStats = (options = {}) => {
     ...options,
   });
 };
+
+export const useToggleBot = () => {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: chatApi.toggleBot,
+    onSuccess: (data, variables) => {
+      const { chatId } = variables;
+      queryClient.invalidateQueries({ queryKey: ['chats', chatId] });
+      queryClient.invalidateQueries({ queryKey: ['chats', 'my'] });
+      queryClient.invalidateQueries({ queryKey: ['chats', 'admin', 'all'] });
+    },
+  });
+};

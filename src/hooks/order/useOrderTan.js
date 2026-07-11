@@ -10,8 +10,13 @@ const ORDER_KEYS = {
 
 // Guest checkout
 export const useGuestCheckout = () => {
+  const queryClient = useQueryClient();
+
   return useMutation({
     mutationFn: (data) => orderApi.guestCheckout(data),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ORDER_KEYS.all });
+    },
   });
 };
 
@@ -23,6 +28,7 @@ export const useCheckout = () => {
     mutationFn: (data) => orderApi.checkout(data),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["cart"] });
+      queryClient.invalidateQueries({ queryKey: ORDER_KEYS.all });
     },
   });
 };

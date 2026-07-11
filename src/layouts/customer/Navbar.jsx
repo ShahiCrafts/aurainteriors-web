@@ -14,6 +14,7 @@ import {
   X,
   Loader2,
 } from "lucide-react";
+import { useQueryClient } from "@tanstack/react-query";
 import useAuthStore from "../../store/authStore";
 import useGuestCartStore from "../../store/guestCartStore";
 import { useCart } from "../../hooks/cart/useCartTan";
@@ -32,6 +33,7 @@ export default function Navbar() {
   // Latch: once true, CartSlider stays in the DOM so close animation works.
   const [cartEverOpened, setCartEverOpened] = useState(false);
   const [isProfileOpen, setIsProfileOpen] = useState(false);
+  const queryClient = useQueryClient();
   const { isAuthenticated, logout, openAuthModal } = useAuthStore();
   const { data: cartData } = useCart({ enabled: isAuthenticated });
   const { data: wishlistData } = useWishlist({ enabled: isAuthenticated });
@@ -63,6 +65,7 @@ export default function Navbar() {
   );
 
   const searchResults = searchResultsData?.data?.products || [];
+
   const showDropdown =
     isSearchFocused && debouncedSearch.length >= 2 && !isSearchLoading;
 
@@ -92,7 +95,7 @@ export default function Navbar() {
   };
 
   const profileMenuItems = [
-    { label: "My Profile", icon: <User size={16} />, path: "/profile", state: null },
+    { label: "My Profile", icon: <User size={16} />, path: "/profile", state: { activeTab: "personal-information" } },
     { label: "My Wishlist", icon: <Heart size={16} />, path: "/profile", state: { activeTab: "wishlist" } },
     { label: "My Orders", icon: <Package size={16} />, path: "/profile", state: { activeTab: "orders" } },
     {
@@ -101,11 +104,11 @@ export default function Navbar() {
       path: "/profile",
       state: { activeTab: "saved-addresses" },
     },
-    { label: "Settings", icon: <Settings size={16} />, path: "/settings", state: null },
   ];
 
   const handleLogout = () => {
     logout();
+    queryClient.clear();
     setIsProfileOpen(false);
   };
 

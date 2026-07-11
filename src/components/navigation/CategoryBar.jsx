@@ -14,16 +14,8 @@ import {
 } from "lucide-react";
 import { useCategoryTree } from "../../hooks/product/useCategoryTan";
 
-// Lazy: ARViewModal is only needed when the user clicks "Try AR View".
-// Keeping it in a lazy import removes it (and its 7.5KB) from the initial
-// CategoryBar bundle, which is eagerly loaded on every page.
 const ARViewModal = lazy(() => import("../modals/ARViewModal"));
 
-/**
- * Maps a category name (case-insensitive substring match) to a lucide-react
- * icon. All icons come from lucide-react — react-icons is no longer needed
- * in this component.
- */
 const iconMap = {
   sofa: <Armchair size={15} />,
   bed: <BedDouble size={15} />,
@@ -74,7 +66,7 @@ export default function CategoryBar() {
 
   return (
     <>
-      <div className="sticky top-[64px] md:top-[80px] z-30 bg-white/85 backdrop-blur-md border-b border-[#F0EFED] shadow-[0_2px_16px_rgba(0,0,0,0.06)] flex items-center font-dm-sans">
+      <div className="sticky top-16 md:top-20 z-30 bg-white/85 backdrop-blur-md border-b border-[#F0EFED] shadow-[0_2px_16px_rgba(0,0,0,0.06)] flex items-center font-dm-sans">
         {/* Scrollable category list */}
         <div className="flex items-center overflow-x-auto no-scrollbar flex-1 px-4 md:px-6 lg:px-8">
           {displayCategories.map((cat) => {
@@ -85,11 +77,10 @@ export default function CategoryBar() {
             return (
               <div
                 key={cat.label}
-                className={`flex items-center gap-[6px] md:gap-[8px] pr-[16px] md:pr-[36px] py-[12px] md:py-[16px] text-[14px] md:text-[15px] whitespace-nowrap cursor-pointer transition-all duration-[180ms] select-none hover:text-[#1A1714] shrink-0 ${
-                  isActive
-                    ? "text-[#F27318] font-semibold"
-                    : "text-[#7A7068] font-medium"
-                }`}
+                className={`flex items-center gap-1.5 md:gap-2 pr-4 md:pr-9 py-3 md:py-4 text-[14px] md:text-[15px] whitespace-nowrap cursor-pointer transition-all duration-180 select-none hover:text-[#1A1714] shrink-0 ${isActive
+                  ? "text-[#F27318] font-semibold"
+                  : "text-[#7A7068] font-medium"
+                  }`}
                 onClick={() => handleCategoryClick(cat)}
               >
                 {cat.icon}
@@ -101,7 +92,9 @@ export default function CategoryBar() {
 
         {/* AR button — outside the scroll container so it's always visible */}
         <div
-          className="flex items-center gap-[4px] md:gap-[6px] px-[12px] md:px-[18px] py-[8px] md:py-[10px] text-[12px] md:text-[13px] font-semibold text-[#F27318] hover:text-[#D9620E] whitespace-nowrap cursor-pointer transition-all duration-[180ms] select-none border-l border-[#F0EFED] shrink-0 bg-white/85 backdrop-blur-md"
+          className="flex items-center gap-1 md:gap-1.5 px-3 md:px-[18px] py-2 md:py-2.5 text-[12px] md:text-[13px] font-semibold text-[#F27318] hover:text-[#D9620E] whitespace-nowrap cursor-pointer transition-all duration-200 border-l border-[#F0EFED] shrink-0
+  "
+
           onClick={() => setIsArModalOpen(true)}
         >
           <Scan size={16} />
