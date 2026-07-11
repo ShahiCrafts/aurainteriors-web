@@ -229,7 +229,7 @@ const ChatWindow = ({ chat, onClose, onStartNew, onResetView, isCreatingChat }) 
           )}
         </AnimatePresence>
 
-        {chat && (chat.status === 'waiting' || chat.status === 'active') && (
+        {chat && ['ai_handling', 'escalated', 'agent_handling'].includes(chat.status) && (
           <ChatInput
             chatId={chat._id}
             onTyping={(isTyping) => sendTypingIndicator(isTyping)}
