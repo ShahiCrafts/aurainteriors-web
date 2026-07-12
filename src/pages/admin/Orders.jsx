@@ -1,4 +1,5 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
+import { useLocation } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
 import {
   Search,
@@ -45,6 +46,23 @@ export default function Orders() {
   const orders = ordersData?.data?.orders || [];
   const pagination = ordersData?.data?.pagination || { total: 0, pages: 1 };
   const stats = ordersData?.data?.stats || { totalRevenue: 0, paidRevenue: 0, pendingRevenue: 0 };
+
+  const location = useLocation();
+  const searchParams = new URLSearchParams(location.search);
+  const highlightOrderId = searchParams.get('highlight');
+
+  useEffect(() => {
+    if (highlightOrderId && orders.length > 0) {
+      // Adding a small delay to make sure DOM is painted
+      const timer = setTimeout(() => {
+        const element = document.getElementById(`order-${highlightOrderId}`);
+        if (element) {
+          element.scrollIntoView({ behavior: 'smooth', block: 'center' });
+        }
+      }, 300);
+      return () => clearTimeout(timer);
+    }
+  }, [highlightOrderId, orders]);
 
   const handleStatusChange = (order) => {
     setSelectedOrder(order);
@@ -152,7 +170,16 @@ export default function Orders() {
   }
 
   return (
-    <div className="space-y-6">
+    <div className="p-6 lg:p-6 space-y-6">
+      <style>{`
+        @keyframes order-highlight-blink {
+          0%, 100% { background-color: transparent; }
+          25%, 75% { background-color: rgb(240 253 250); }
+        }
+        .animate-blink-twice {
+          animation: order-highlight-blink 1.5s ease-in-out 2;
+        }
+      `}</style>
       {/* Page Header */}
       <div>
         <h1 className="text-2xl font-bold text-gray-900">Orders</h1>
@@ -279,9 +306,10 @@ export default function Orders() {
                 {orders.map((order) => (
                   <motion.tr
                     key={order._id}
+                    id={`order-${order._id}`}
                     initial={{ opacity: 0 }}
                     animate={{ opacity: 1 }}
-                    className="hover:bg-gray-50/50 transition-colors"
+                    className={`transition-colors hover:bg-gray-50/50 ${order._id === highlightOrderId ? 'animate-blink-twice' : ''}`}
                   >
                     <td className="px-6 py-4">
                       <div>

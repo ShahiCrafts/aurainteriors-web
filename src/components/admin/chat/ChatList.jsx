@@ -130,24 +130,13 @@ const ChatList = ({
                       </span>
                     </div>
 
-                    {/* Middle Row: Subject and Urgency */}
                     <div className="flex items-center justify-between gap-2 mb-2">
-                      <p className="text-[13px] text-gray-900 font-medium truncate flex-1">
-                        {chat.subject || "General Inquiry"}
+                      <p className="text-[13px] text-gray-500 font-normal truncate flex-1">
+                        {chat.lastMessageText || chat.subject || "General Inquiry"}
                       </p>
                       <span className={`px-2 py-0.5 rounded-sm text-[10px] font-bold tracking-wide shrink-0 ${urgencyColor}`}>
                         {priorityText}
                       </span>
-                    </div>
-
-                    {/* Bottom Row: AI Confidence */}
-                    <div className="flex flex-col gap-1.5">
-                      <span className="text-[11px] font-semibold text-gray-500">
-                        AI Confidence: {confidence}%
-                      </span>
-                      <div className="w-full h-1 bg-gray-100 rounded-full overflow-hidden">
-                        <div className={`h-full ${barColor}`} style={{ width: `${confidence}%` }} />
-                      </div>
                     </div>
                   </div>
                 </div>

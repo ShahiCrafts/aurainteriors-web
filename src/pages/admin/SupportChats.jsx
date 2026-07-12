@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { MessageCircle, ArrowLeft, ShieldCheck, Zap } from "lucide-react";
 import { useAllChats, useWaitingQueue } from "../../hooks/chat/useChatTan";
 import ChatList from "../../components/admin/chat/ChatList";
@@ -21,6 +21,13 @@ const SupportChats = () => {
     sortBy: "lastMessageAt",
   });
 
+  useEffect(() => {
+    const chats = chatsData?.data?.chats || [];
+    if (!selectedChat && chats.length > 0) {
+      setSelectedChat(chats[0]);
+    }
+  }, [chatsData, selectedChat]);
+
   const handleSelectChat = (chat) => {
     setSelectedChat(chat);
   };
@@ -30,20 +37,16 @@ const SupportChats = () => {
   };
 
   return (
-    <div className="flex flex-col h-[calc(100vh-130px)] gap-4 overflow-hidden">
+    <div className="flex flex-col h-[calc(100vh-80px)] gap-4 overflow-hidden">
 
-      <div className="flex-1 flex overflow-hidden gap-6 min-h-0">
+      <div className="flex-1 flex overflow-hidden gap-4 min-h-0">
         {/* Sidebar: Chat List */}
         <div
-          className={`w-full lg:w-96 flex-col flex shrink-0 min-h-0 ${
+          className={`w-full lg:w-86 flex-col flex shrink-0 min-h-0 ${
             selectedChat ? "hidden lg:flex" : "flex"
           }`}
         >
-          <div className="bg-white rounded-xl flex-1 flex flex-col overflow-hidden shadow-sm">
-            {/* REMOVED: The redundant "Conversations" header block.
-               The title is now handled solely by ChatList or the page title.
-            */}
-            <div className="flex-1 overflow-hidden flex flex-col min-h-0">
+            <div className="flex-1 overflow-hidden flex flex-col min-h-0 border-r border-r-gray-100">
               <ChatList
                 chats={chatsData?.data?.chats || []}
                 pagination={chatsData?.data?.pagination}
@@ -57,12 +60,11 @@ const SupportChats = () => {
                 hideTitle={false} // Set to true if ChatList still shows a title internally
               />
             </div>
-          </div>
         </div>
 
         {/* Conversation Area */}
         <div
-          className={`flex-1 bg-white rounded-xl border border-gray-100 overflow-hidden shadow-sm flex flex-col min-h-0 ${
+          className={`flex-1 bg-white border border-gray-100 overflow-hidden flex flex-col min-h-0 ${
             !selectedChat ? "hidden lg:flex" : "flex"
           }`}
         >
@@ -122,7 +124,7 @@ const SupportChats = () => {
         
         {/* Column 3: AI Assistant (only visible when chat is selected) */}
         {selectedChat && (
-          <div className="hidden xl:flex bg-white rounded-xl border border-gray-100 overflow-hidden shadow-sm h-full max-w-sm w-full">
+          <div className="hidden xl:flex h-full shrink-0">
              <AiAssistantPanel 
                 chat={selectedChat}
                 onUseReply={(text) => console.log("Use text:", text)} 

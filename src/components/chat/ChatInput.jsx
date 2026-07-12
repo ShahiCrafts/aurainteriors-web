@@ -38,7 +38,7 @@ const ChatInput = ({ chatId, onTyping }) => {
     !sendMessageMutation.isPending;
 
   return (
-<div className="rounded-b-xl rounded-t-none bg-white shadow-2xl p-3 border-t border-gray-100">      <AnimatePresence>
+    <div className="bg-white px-4 py-3 border-t border-gray-100/35">      <AnimatePresence>
         {selectedFiles.length > 0 && (
           <div className="flex flex-wrap gap-2 pb-3">
             {selectedFiles.map((file, index) => (

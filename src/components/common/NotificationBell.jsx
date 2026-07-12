@@ -108,7 +108,7 @@ const NotificationBell = ({ user, token }) => {
       </button>
 
       {showDropdown && (
-        <div className="absolute right-0 mt-2 z-50 min-w-[320px] sm:min-w-[380px] bg-white rounded-2xl border border-slate-200 shadow-2xl overflow-hidden origin-top-right">
+        <div className="absolute right-0 sm:right-[-60px] mt-2 z-50 min-w-[320px] sm:min-w-[380px] bg-white rounded-2xl border border-slate-200 shadow-2xl overflow-hidden origin-top-right">
           <NotificationDropdown
             notifications={adminNotifications}
             loading={loading}
@@ -119,10 +119,15 @@ const NotificationBell = ({ user, token }) => {
               }
 
               if (notification.actionUrl) {
-                const targetUrl = notification.actionUrl.replace(
+                let targetUrl = notification.actionUrl.replace(
                   "/admin",
                   "/dashboard"
                 );
+
+                const orderId = notification.data?.orderId;
+                if (orderId) {
+                  targetUrl += `?highlight=${orderId}`;
+                }
 
                 navigate(targetUrl);
               }
