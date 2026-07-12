@@ -484,7 +484,12 @@ export default function AdminLayout() {
               {toast.actionUrl && (
                 <button
                   onClick={() => {
-                    navigate(toast.actionUrl.replace("/admin", "/dashboard"));
+                    let targetUrl = toast.actionUrl.replace("/admin", "/dashboard");
+                    const orderId = toast.data?.orderId;
+                    if (orderId) {
+                      targetUrl += `?highlight=${orderId}`;
+                    }
+                    navigate(targetUrl);
                     removeToast(toast.id);
                   }}
                   className="text-xs text-teal-600 font-medium mt-1 hover:text-teal-700"

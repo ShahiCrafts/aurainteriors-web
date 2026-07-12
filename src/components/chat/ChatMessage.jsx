@@ -30,10 +30,16 @@ const BotMessageContent = ({ content }) => (
     unwrapDisallowed
     components={{
       a: MarkdownLink,
-      p: ({ children }) => <span className="block">{children}</span>,
-      ul: ({ children }) => <ul className="list-disc list-inside mt-2 space-y-1 ml-2">{children}</ul>,
-      ol: ({ children }) => <ol className="list-decimal list-inside mt-2 space-y-1 ml-2">{children}</ol>,
-      strong: ({ children }) => <strong className="font-bold">{children}</strong>,
+      p: ({ children }) => <p className="m-0 p-0 leading-snug text-[14px]">{children}</p>,
+      li: ({ children }) => <li className="m-0 p-0 leading-snug text-[14px]">{children}</li>,
+      ul: ({ children }) => <ul className="list-none m-0 p-0 space-y-0.5">{children}</ul>,
+      ol: ({ children }) => <ol className="list-decimal list-inside m-0 p-0 space-y-0.5">{children}</ol>,
+      strong: ({ children }) => <strong className="font-semibold text-gray-900">{children}</strong>,
+      hr: () => <hr className="border-t border-gray-200 my-2 w-full" />,
+      h1: ({ children }) => <h1 className="text-base font-extrabold mt-1 mb-0.5">{children}</h1>,
+      h2: ({ children }) => <h2 className="text-sm font-bold mt-1 mb-0.5">{children}</h2>,
+      h3: ({ children }) => <h3 className="text-sm font-bold mt-1 mb-0.5">{children}</h3>,
+      h4: ({ children }) => <h4 className="text-xs font-bold mt-0.5 mb-0.5">{children}</h4>,
     }}
   >
     {content}
@@ -61,7 +67,7 @@ const ChatMessage = ({ message, isOwnMessage, isAdminView = false }) => {
   }
 
   return (
-    <div className={`flex w-full mb-6 px-4 ${isOwnMessage ? "justify-end" : "justify-start"}`}>
+    <div className={`flex w-full mb-3 px-4 ${isOwnMessage ? "justify-end" : "justify-start"}`}>
       <div className={`flex max-w-full gap-4 items-start ${isOwnMessage ? "flex-row-reverse" : "flex-row"}`}>
 
         {/* Avatar */}
@@ -122,17 +128,13 @@ const ChatMessage = ({ message, isOwnMessage, isAdminView = false }) => {
           {message.content && (
             <div
               className={`px-3 py-2 rounded-xl text-[14.5px] leading-[1.6]
-                w-fit min-w-[180px] max-w-[85%] sm:max-w-[80%] wrap-break-word whitespace-pre-wrap
+                w-fit min-w-[50px] max-w-[85%] sm:max-w-[80%] wrap-break-word whitespace-pre-wrap
                 ${
                   message.isInternalNote
                     ? "bg-[#FFF9E6] text-[#8C6D1F]"
-                    : isBot
-                    ? "bg-gray-200/60 text-gray-800"
-                    : isAdmin 
-                    ? "bg-white text-gray-800"
                     : isOwnMessage
-                    ? "bg-[#F27318] text-white" // Own customer message (light purple)
-                    : "bg-[#F27318] text-white" // Other customer's message
+                    ? "bg-[#F27318] text-white"
+                    : "bg-gray-100 text-gray-800"
                 }`}
             >
               {isBot ? (
@@ -154,14 +156,20 @@ const ChatMessage = ({ message, isOwnMessage, isAdminView = false }) => {
 
           {/* Delivery status (own messages only) */}
           {isOwnMessage && !isBot && !message.isInternalNote && (
-            <div className="flex items-center gap-1 px-1 mt-0.5">
-              <span className={message.isRead ? "text-indigo-400" : "text-gray-300"}>
-                {message.isRead ? (
+            <div className="flex items-center gap-1 px-1 mt-0.5 select-none">
+              {message.isRead ? (
+                <span className="text-sky-500">
                   <CheckCheck size={14} strokeWidth={3} />
-                ) : (
+                </span>
+              ) : message.deliveredAt ? (
+                <span className="text-gray-400">
+                  <CheckCheck size={14} strokeWidth={3} />
+                </span>
+              ) : (
+                <span className="text-gray-400">
                   <Check size={14} strokeWidth={3} />
-                )}
-              </span>
+                </span>
+              )}
             </div>
           )}
         </div>

@@ -1,7 +1,8 @@
 import { useRef, useEffect, useState } from 'react';
-import { Loader2, MessageCircle, Sparkles, ChevronDown } from 'lucide-react';
+import { Loader2, MessageCircle, Sparkles, ChevronDown, User, Bot } from 'lucide-react';
 import ChatMessage from './ChatMessage';
 import useAuthStore from '../../store/authStore';
+import { getAvatarUrl } from '../../utils/imageUrl';
 
 
 const ChatMessageList = ({
@@ -13,6 +14,7 @@ const ChatMessageList = ({
   currentUserId,
   streamingMessage,
   isAdminView = false,
+  typingStatus,
 }) => {
   const { user } = useAuthStore();
   const messagesEndRef = useRef(null);
@@ -26,13 +28,28 @@ const ChatMessageList = ({
 
 
   // FIX 1: Auto-scroll only when near bottom OR on first load
+  const isFirstLoadRef = useRef(true);
+  const prevFirstMessageIdRef = useRef(null);
+
+  useEffect(() => {
+    const firstMsgId = messages[0]?._id;
+    if (firstMsgId !== prevFirstMessageIdRef.current) {
+      isFirstLoadRef.current = true;
+      prevFirstMessageIdRef.current = firstMsgId;
+    }
+  }, [messages]);
+
   useEffect(() => {
     const currentCount = messages.length + (streamingMessage ? 1 : 0);
     const prevCount = prevContentCountRef.current;
     const isNewContent = currentCount > prevCount;
 
     if (!isFetchingMore && isNewContent) {
-      if (isNearBottomRef.current) {
+      if (isFirstLoadRef.current) {
+        messagesEndRef.current?.scrollIntoView({ behavior: 'auto' });
+        isFirstLoadRef.current = false;
+        setHasNewMessages(false);
+      } else if (isNearBottomRef.current) {
         messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
         setHasNewMessages(false);
       } else {
@@ -43,6 +60,12 @@ const ChatMessageList = ({
 
     prevContentCountRef.current = currentCount;
   }, [messages.length, isFetchingMore, streamingMessage]);
+
+  useEffect(() => {
+    if (typingStatus?.isTyping && isNearBottomRef.current) {
+      messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
+    }
+  }, [typingStatus?.isTyping]);
 
   // Handle infinite scroll (load older messages) + track scroll position
   const handleScroll = () => {
@@ -70,6 +93,11 @@ const ChatMessageList = ({
       container.scrollTop = scrollHeightDiff;
     }
   }, [isFetchingMore, messages.length]);
+
+  const showTypingBubble = typingStatus?.isTyping && (
+    (isAdminView && (typingStatus.userRole === "customer" || (typingStatus.userRole === "ai" && !streamingMessage))) ||
+    (!isAdminView && (typingStatus.userRole === "admin" || (typingStatus.userRole === "ai" && !streamingMessage)))
+  );
 
   if (isLoading) {
     return (
@@ -147,7 +175,7 @@ const ChatMessageList = ({
 
       {/* FIX 2: Streaming message bubble — renders as tokens arrive, disappears when real message loads */}
       {streamingMessage && (
-        <div className="flex w-full mb-4 px-1 justify-start">
+        <div className="flex w-full mb-3 px-1 justify-start">
           <div className="flex max-w-full gap-3 flex-row items-start">
             {/* AI avatar top aligned (Fix 1) */}
             <div className="flex flex-col justify-start pt-[18px] shrink-0">
@@ -168,6 +196,45 @@ const ChatMessageList = ({
           </div>
         </div>
       )}
+
+      {showTypingBubble && (() => {
+        const isAiTyping = typingStatus.userRole === 'ai';
+        const matchedMsg = messages.find(m => m.senderRole === typingStatus.userRole);
+        const userObj = matchedMsg?.sender;
+        
+        return (
+          <div className="flex w-full mb-3 px-4 justify-start animate-fade-in">
+            <div className="flex max-w-full gap-3 flex-row items-center">
+              {/* Avatar */}
+              {isAiTyping ? (
+                <div className="w-8 h-8 rounded-full bg-slate-800 text-teal-400 border border-slate-700 flex items-center justify-center shrink-0">
+                  <Bot size={16} />
+                </div>
+              ) : (
+                <div className="w-8 h-8 rounded-full flex items-center justify-center border shadow-xs shrink-0 overflow-hidden bg-gray-50 border-gray-100">
+                  <img
+                    src={getAvatarUrl(userObj)}
+                    alt={typingStatus.userRole === 'admin' ? "Admin" : userObj?.firstName || "User"}
+                    className="w-full h-full object-cover"
+                    onError={(e) => {
+                      e.target.onerror = null;
+                      e.target.src = `https://ui-avatars.com/api/?name=${encodeURIComponent(
+                        typingStatus.userRole === 'admin' ? "Admin" : userObj?.firstName || "U"
+                      )}&background=${typingStatus.userRole === 'admin' ? 'E0E7FF' : 'F3F4F6'}&color=${typingStatus.userRole === 'admin' ? '4338CA' : '9CA3AF'}`;
+                    }}
+                  />
+                </div>
+              )}
+              {/* Bubble */}
+              <div className="bg-gray-100 px-4 py-2.5 rounded-2xl flex gap-1 items-center justify-center w-fit">
+                <span className="w-1.5 h-1.5 bg-gray-500 rounded-full animate-bounce" style={{ animationDelay: '0ms', animationDuration: '600ms' }} />
+                <span className="w-1.5 h-1.5 bg-gray-500 rounded-full animate-bounce" style={{ animationDelay: '150ms', animationDuration: '600ms' }} />
+                <span className="w-1.5 h-1.5 bg-gray-500 rounded-full animate-bounce" style={{ animationDelay: '300ms', animationDuration: '600ms' }} />
+              </div>
+            </div>
+          </div>
+        );
+      })()}
 
       <div ref={messagesEndRef} />
 

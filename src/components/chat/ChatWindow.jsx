@@ -104,6 +104,7 @@ const ChatWindow = ({ chat, onClose, onStartNew, onResetView, isCreatingChat }) 
                   isFetchingMore={isFetchingNextPage}
                   currentUserId={user?._id}
                   streamingMessage={streamingMessage}
+                  typingStatus={typingStatus}
                 />
               )}
             </div>
@@ -205,29 +206,7 @@ const ChatWindow = ({ chat, onClose, onStartNew, onResetView, isCreatingChat }) 
       </div>
 
       <div className="shrink-0 bg-white">
-        <AnimatePresence>
-          {typingStatus.isTyping && (typingStatus.userRole === 'admin' || typingStatus.userRole === 'ai') && (
-            <motion.div
-              initial={{ opacity: 0, y: 5 }}
-              animate={{ opacity: 1, y: 0 }}
-              exit={{ opacity: 0, y: -5 }}
-              className="px-5 pt-3"
-            >
-              <div className="inline-flex items-center gap-3 px-4 py-1.5 bg-gray-50 rounded-full border border-gray-100 shadow-xs">
-                <div className="flex gap-1">
-                  <span className="w-1.5 h-1.5 bg-[#F27318] rounded-full animate-bounce" style={{ animationDelay: '0ms' }} />
-                  <span className="w-1.5 h-1.5 bg-[#F27318] rounded-full animate-bounce" style={{ animationDelay: '150ms' }} />
-                  <span className="w-1.5 h-1.5 bg-[#F27318] rounded-full animate-bounce" style={{ animationDelay: '300ms' }} />
-                </div>
-                <span className="text-[10px] font-black text-gray-400 uppercase tracking-widest">
-                  {typingStatus.userRole === 'ai'
-                    ? aiStillWorking ? 'Still working on it…' : 'AI is thinking'
-                    : 'Agent is typing'}
-                </span>
-              </div>
-            </motion.div>
-          )}
-        </AnimatePresence>
+
 
         {chat && ['ai_handling', 'escalated', 'agent_handling'].includes(chat.status) && (
           <ChatInput

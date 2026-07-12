@@ -1,4 +1,4 @@
-import { useState, useRef } from 'react';
+import { useState, useRef, useMemo } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import {
   Plus,
@@ -14,6 +14,8 @@ import {
   ChevronDown,
   Upload,
   Loader2,
+  GitFork,
+  Layers,
 } from 'lucide-react';
 import Skeleton from "../../components/common/Skeleton";
 import ConfirmationDialog from "../../components/modals/ConfirmationDialog";
@@ -30,6 +32,10 @@ export default function Categories() {
   const fileInputRef = useRef(null);
 
   const [searchQuery, setSearchQuery] = useState('');
+  const [statusFilter, setStatusFilter] = useState('all');
+  const [typeFilter, setTypeFilter] = useState('all');
+  const [densityFilter, setDensityFilter] = useState('all');
+  const [sortBy, setSortBy] = useState('sortOrder');
   const [showModal, setShowModal] = useState(false);
   const [editingCategory, setEditingCategory] = useState(null);
   const [expandedCategories, setExpandedCategories] = useState([]);
@@ -150,12 +156,65 @@ export default function Categories() {
     }
   };
 
-  const filteredCategories = categories.filter(cat =>
-    cat.name.toLowerCase().includes(searchQuery.toLowerCase())
-  );
+  const filteredCategories = useMemo(() => {
+    let result = [...categories];
+
+    // 1. Search Query
+    if (searchQuery.trim()) {
+      const q = searchQuery.toLowerCase();
+      result = result.filter(cat => 
+        cat.name.toLowerCase().includes(q) || 
+        cat.slug.toLowerCase().includes(q) || 
+        (cat.description && cat.description.toLowerCase().includes(q))
+      );
+    }
+
+    // 2. Status Filter
+    if (statusFilter !== 'all') {
+      result = result.filter(cat => cat.status === statusFilter);
+    }
+
+    // 3. Type Filter
+    if (typeFilter !== 'all') {
+      if (typeFilter === 'parent') {
+        result = result.filter(cat => !cat.parent);
+      } else if (typeFilter === 'subcategory') {
+        result = result.filter(cat => !!cat.parent);
+      }
+    }
+
+    // 4. Density Filter (Assigned / Empty)
+    if (densityFilter !== 'all') {
+      if (densityFilter === 'assigned') {
+        result = result.filter(cat => (cat.productCount || 0) > 0);
+      } else if (densityFilter === 'empty') {
+        result = result.filter(cat => (cat.productCount || 0) === 0);
+      }
+    }
+
+    // 5. Sorting
+    result.sort((a, b) => {
+      if (sortBy === 'name') {
+        return a.name.localeCompare(b.name);
+      }
+      if (sortBy === 'products') {
+        return (b.productCount || 0) - (a.productCount || 0);
+      }
+      return (a.sortOrder || 0) - (b.sortOrder || 0);
+    });
+
+    return result;
+  }, [categories, searchQuery, statusFilter, typeFilter, densityFilter, sortBy]);
 
   // Get parent categories (those without parent)
-  const parentCategories = categories.filter(cat => !cat.parent);
+  const parentCategories = useMemo(() => {
+    return categories.filter(cat => !cat.parent);
+  }, [categories]);
+
+  // Compute Stats Card Values
+  const parentCategoriesCount = useMemo(() => categories.filter(c => !c.parent).length, [categories]);
+  const subcategoriesCount = useMemo(() => categories.filter(c => !!c.parent).length, [categories]);
+  const totalProductsCount = useMemo(() => categories.reduce((acc, cat) => acc + (cat.productCount || 0), 0), [categories]);
 
   if (isLoading) {
     return (
@@ -214,44 +273,151 @@ export default function Categories() {
   }
 
   return (
-    <div className="space-y-6">
+    <div className="p-6 lg:p-6 space-y-6">
       {/* Page Header */}
       <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
         <div>
           <h1 className="text-2xl font-bold text-gray-900">Categories</h1>
-          <p className="text-gray-500 mt-1">Manage product categories and hierarchy.</p>
+          <p className="text-gray-500 mt-0.5 text-sm">
+            Manage product categories and hierarchy.
+          </p>
         </div>
         <button
           onClick={handleAddCategory}
-          className="flex items-center gap-2 px-4 py-2 bg-teal-600 text-white rounded-lg text-sm font-medium hover:bg-teal-700 transition-colors"
+          className="inline-flex items-center gap-2 px-4 py-2 bg-teal-600 hover:bg-teal-700 text-white rounded-lg text-sm font-medium transition-colors shadow-sm cursor-pointer"
         >
           <Plus className="w-4 h-4" />
           Add Category
         </button>
       </div>
 
-      {/* Search & Stats */}
-      <div className="flex flex-col sm:flex-row gap-4">
-        <div className="flex-1 relative">
-          <Search className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400" />
-          <input
-            type="text"
-            placeholder="Search categories..."
-            value={searchQuery}
-            onChange={(e) => setSearchQuery(e.target.value)}
-            className="w-full pl-12 pr-4 py-3 bg-white border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-[#025E5D]/20 focus:border-[#025E5D]"
-          />
-        </div>
-        <div className="flex items-center gap-4">
-          <div className="px-4 py-3 bg-white border border-gray-200 rounded-xl">
-            <span className="text-sm text-gray-500">Total Categories: </span>
-            <span className="font-semibold text-gray-900">{categories.length}</span>
+      {/* Stats Cards */}
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+        {/* Total Categories */}
+        <div className="bg-white rounded-xl p-5 border border-gray-100 shadow-[0_2px_10px_-4px_rgba(0,0,0,0.05)] relative overflow-hidden">
+          <div className="flex items-start justify-between">
+            <div>
+              <p className="text-sm font-medium text-gray-500 mb-1">Total Categories</p>
+              <p className="text-2xl font-bold text-gray-900 tracking-tight">{categories.length}</p>
+            </div>
+            <div className="p-2.5 rounded-xl bg-blue-600 text-white shadow-sm">
+              <FolderTree size={20} />
+            </div>
           </div>
-          <div className="px-4 py-3 bg-white border border-gray-200 rounded-xl">
-            <span className="text-sm text-gray-500">Total Products: </span>
-            <span className="font-semibold text-gray-900">
-              {categories.reduce((acc, cat) => acc + (cat.productCount || 0), 0)}
-            </span>
+          <div className="flex items-center gap-1.5 mt-4 text-xs text-gray-400 font-medium">
+            <span>Organizational structures</span>
+          </div>
+        </div>
+
+        {/* Parent Categories */}
+        <div className="bg-white rounded-xl p-5 border border-gray-100 shadow-[0_2px_10px_-4px_rgba(0,0,0,0.05)] relative overflow-hidden">
+          <div className="flex items-start justify-between">
+            <div>
+              <p className="text-sm font-medium text-gray-500 mb-1">Parent Groups</p>
+              <p className="text-2xl font-bold text-gray-900 tracking-tight">{parentCategoriesCount}</p>
+            </div>
+            <div className="p-2.5 rounded-xl bg-purple-600 text-white shadow-sm">
+              <Layers size={20} />
+            </div>
+          </div>
+          <div className="flex items-center gap-1.5 mt-4 text-xs text-gray-400 font-medium">
+            <span>Top-level divisions</span>
+          </div>
+        </div>
+
+        {/* Subcategories */}
+        <div className="bg-white rounded-xl p-5 border border-gray-100 shadow-[0_2px_10px_-4px_rgba(0,0,0,0.05)] relative overflow-hidden">
+          <div className="flex items-start justify-between">
+            <div>
+              <p className="text-sm font-medium text-gray-500 mb-1">Subcategories</p>
+              <p className="text-2xl font-bold text-gray-900 tracking-tight">{subcategoriesCount}</p>
+            </div>
+            <div className="p-2.5 rounded-xl bg-pink-600 text-white shadow-sm">
+              <GitFork size={20} />
+            </div>
+          </div>
+          <div className="flex items-center gap-1.5 mt-4 text-xs text-gray-400 font-medium">
+            <span>Nested sub-groups</span>
+          </div>
+        </div>
+
+        {/* Total Products */}
+        <div className="bg-white rounded-xl p-5 border border-gray-100 shadow-[0_2px_10px_-4px_rgba(0,0,0,0.05)] relative overflow-hidden">
+          <div className="flex items-start justify-between">
+            <div>
+              <p className="text-sm font-medium text-gray-500 mb-1">Total Products</p>
+              <p className="text-2xl font-bold text-gray-900 tracking-tight">{totalProductsCount}</p>
+            </div>
+            <div className="p-2.5 rounded-xl bg-emerald-600 text-white shadow-sm">
+              <Package size={20} />
+            </div>
+          </div>
+          <div className="flex items-center gap-1.5 mt-4 text-xs text-gray-400 font-medium">
+            <span>Assigned catalog items</span>
+          </div>
+        </div>
+      </div>
+
+      {/* Search & Filters Toolbar */}
+      <div className="bg-white rounded-xl border border-gray-100 overflow-hidden shadow-[0_2px_10px_-4px_rgba(0,0,0,0.05)]">
+        <div className="p-6 bg-[#FAFAFA]/40 flex flex-col lg:flex-row gap-3">
+          {/* Search Input */}
+          <div className="flex-1 relative">
+            <Search className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
+            <input
+              type="text"
+              placeholder="Search categories by name, slug or description..."
+              value={searchQuery}
+              onChange={(e) => setSearchQuery(e.target.value)}
+              className="w-full pl-10 pr-4 py-2 bg-white border border-gray-200 rounded-lg text-sm focus:outline-none focus:border-teal-500 focus:ring-2 focus:ring-teal-500/10 transition-all placeholder:text-gray-400 font-medium text-gray-800"
+            />
+          </div>
+
+          {/* Select Dropdown Filters */}
+          <div className="flex flex-wrap gap-2">
+            {/* Status Filter */}
+            <select
+              value={statusFilter}
+              onChange={(e) => setStatusFilter(e.target.value)}
+              className="px-3.5 py-2 bg-white border border-gray-200 rounded-lg text-sm font-medium text-gray-600 focus:outline-none focus:border-teal-500 transition-colors cursor-pointer hover:border-gray-300"
+            >
+              <option value="all">Status: All</option>
+              <option value="active">Active</option>
+              <option value="inactive">Inactive</option>
+            </select>
+
+            {/* Type Filter */}
+            <select
+              value={typeFilter}
+              onChange={(e) => setTypeFilter(e.target.value)}
+              className="px-3.5 py-2 bg-white border border-gray-200 rounded-lg text-sm font-medium text-gray-600 focus:outline-none focus:border-teal-500 transition-colors cursor-pointer hover:border-gray-300"
+            >
+              <option value="all">Hierarchy: All</option>
+              <option value="parent">Parent Groups</option>
+              <option value="subcategory">Subcategories</option>
+            </select>
+
+            {/* Product Density Filter */}
+            <select
+              value={densityFilter}
+              onChange={(e) => setDensityFilter(e.target.value)}
+              className="px-3.5 py-2 bg-white border border-gray-200 rounded-lg text-sm font-medium text-gray-600 focus:outline-none focus:border-teal-500 transition-colors cursor-pointer hover:border-gray-300"
+            >
+              <option value="all">Density: All</option>
+              <option value="assigned">Has Products</option>
+              <option value="empty">Empty Groups</option>
+            </select>
+
+            {/* Sort Filter */}
+            <select
+              value={sortBy}
+              onChange={(e) => setSortBy(e.target.value)}
+              className="px-3.5 py-2 bg-white border border-gray-200 rounded-lg text-sm font-medium text-gray-600 focus:outline-none focus:border-teal-500 transition-colors cursor-pointer hover:border-gray-300"
+            >
+              <option value="sortOrder">Sort: Default Order</option>
+              <option value="name">Sort: Name A-Z</option>
+              <option value="products">Sort: Most Products</option>
+            </select>
           </div>
         </div>
       </div>
@@ -264,11 +430,11 @@ export default function Categories() {
             layout
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
-            className="bg-white rounded-2xl border border-gray-100 overflow-hidden"
+            className="bg-white rounded-2xl border border-gray-100 overflow-hidden shadow-[0_2px_10px_-4px_rgba(0,0,0,0.05)] flex flex-col justify-between"
           >
             <div className="flex items-start gap-4 p-5">
               {/* Category Image */}
-              <div className="w-20 h-20 rounded-xl overflow-hidden bg-gray-100 flex-shrink-0">
+              <div className="w-20 h-20 rounded-xl overflow-hidden bg-gray-50 border border-gray-100 shadow-sm shrink-0">
                 {category.image ? (
                   <ImageWithFallback
                     src={getCategoryImageUrl(category.image)}
@@ -277,7 +443,7 @@ export default function Categories() {
                   />
                 ) : (
                   <div className="w-full h-full flex items-center justify-center">
-                    <Image className="w-8 h-8 text-gray-400" />
+                    <Image className="w-6 h-6 text-gray-400" />
                   </div>
                 )}
               </div>
@@ -286,43 +452,46 @@ export default function Categories() {
               <div className="flex-1 min-w-0">
                 <div className="flex items-start justify-between">
                   <div>
-                    <h3 className="font-semibold text-gray-900">{category.name}</h3>
-                    <p className="text-sm text-gray-500 mt-0.5">/{category.slug}</p>
+                    <h3 className="font-bold text-gray-900 text-[16px]">{category.name}</h3>
+                    <p className="font-mono text-xs text-gray-400 mt-0.5">/{category.slug}</p>
                   </div>
-                  <span className={`px-2.5 py-1 rounded-full text-xs font-medium ${category.status === 'active'
-                    ? 'bg-emerald-100 text-emerald-700'
-                    : 'bg-gray-100 text-gray-600'
-                    }`}>
+                  <span className={`inline-flex items-center px-3 py-1 rounded-full text-xs font-semibold capitalize ${
+                    category.status === 'active'
+                      ? 'bg-emerald-50 text-emerald-700'
+                      : 'bg-slate-100 text-slate-600'
+                  }`}>
                     {category.status === 'active' ? 'Active' : 'Inactive'}
                   </span>
                 </div>
-                <p className="text-sm text-gray-600 mt-2 line-clamp-2">{category.description}</p>
-                <div className="flex items-center gap-4 mt-3">
-                  <span className="flex items-center gap-1.5 text-sm text-gray-500">
-                    <Package className="w-4 h-4" />
+                <p className="text-sm text-gray-500 mt-2 line-clamp-2 leading-relaxed">{category.description}</p>
+                <div className="flex items-center gap-2 mt-3.5">
+                  <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-[10px] font-bold uppercase tracking-wider bg-blue-50 text-blue-700 border border-blue-100">
+                    <Package className="w-3.5 h-3.5" />
                     {category.productCount || 0} products
                   </span>
-                  <span className="flex items-center gap-1.5 text-sm text-gray-500">
-                    <FolderTree className="w-4 h-4" />
+                  <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-[10px] font-bold uppercase tracking-wider bg-purple-50 text-purple-700 border border-purple-100">
+                    <FolderTree className="w-3.5 h-3.5" />
                     {category.subcategories?.length || 0} subcategories
                   </span>
                 </div>
               </div>
 
               {/* Actions */}
-              <div className="flex items-center gap-2">
+              <div className="flex items-center gap-1">
                 <button
                   onClick={() => handleEditCategory(category)}
-                  className="p-2 hover:bg-gray-100 rounded-lg transition-colors"
+                  className="p-2 hover:bg-slate-100 text-gray-500 rounded-full transition-colors duration-150"
+                  title="Edit"
                 >
-                  <Edit2 className="w-4 h-4 text-gray-500" />
+                  <Edit2 className="w-4 h-4" />
                 </button>
                 <button
                   onClick={() => confirmDelete(category._id)}
-                  className="p-2 hover:bg-red-50 rounded-lg transition-colors"
+                  className="p-2 hover:bg-red-50 text-red-500 rounded-full transition-colors duration-150"
                   disabled={deleteMutation.isPending}
+                  title="Delete"
                 >
-                  <Trash2 className="w-4 h-4 text-red-500" />
+                  <Trash2 className="w-4 h-4" />
                 </button>
               </div>
             </div>
@@ -332,7 +501,7 @@ export default function Categories() {
               <div className="border-t border-gray-100">
                 <button
                   onClick={() => toggleExpand(category._id)}
-                  className="w-full flex items-center justify-between px-5 py-3 text-sm font-medium text-gray-600 hover:bg-gray-50 transition-colors"
+                  className="w-full flex items-center justify-between px-5 py-3 text-sm font-semibold text-gray-600 hover:bg-gray-50/50 transition-colors"
                 >
                   <span>Subcategories ({category.subcategories.length})</span>
                   {expandedCategories.includes(category._id) ? (
@@ -353,30 +522,31 @@ export default function Categories() {
                         {category.subcategories.map((sub) => (
                           <div
                             key={sub._id}
-                            className="flex items-center justify-between p-3 bg-gray-50 rounded-xl"
+                            className="flex items-center justify-between p-3 bg-gray-50/70 border border-gray-100/50 rounded-xl"
                           >
                             <div className="flex items-center gap-3">
                               <GripVertical className="w-4 h-4 text-gray-400" />
-                              <span className="text-sm font-medium text-gray-700">{sub.name}</span>
-                              <span className={`px-2 py-0.5 rounded-full text-xs ${sub.status === 'active'
-                                ? 'bg-emerald-100 text-emerald-700'
-                                : 'bg-gray-100 text-gray-600'
-                                }`}>
+                              <span className="text-sm font-semibold text-gray-700">{sub.name}</span>
+                              <span className={`inline-flex items-center px-2 py-0.5 rounded-full text-[10px] font-bold capitalize ${
+                                sub.status === 'active'
+                                  ? 'bg-emerald-50 text-emerald-700'
+                                  : 'bg-slate-100 text-slate-600'
+                              }`}>
                                 {sub.status === 'active' ? 'Active' : 'Inactive'}
                               </span>
                             </div>
-                            <div className="flex items-center gap-2">
+                            <div className="flex items-center gap-1">
                               <button
                                 onClick={() => handleEditCategory(sub)}
-                                className="p-1.5 hover:bg-gray-200 rounded-lg transition-colors"
+                                className="p-1.5 hover:bg-slate-200 text-gray-500 rounded-full transition-colors"
                               >
-                                <Edit2 className="w-3.5 h-3.5 text-gray-500" />
+                                <Edit2 className="w-3.5 h-3.5" />
                               </button>
                               <button
                                 onClick={() => confirmDelete(sub._id)}
-                                className="p-1.5 hover:bg-red-100 rounded-lg transition-colors"
+                                className="p-1.5 hover:bg-red-50 text-red-500 rounded-full transition-colors"
                               >
-                                <Trash2 className="w-3.5 h-3.5 text-red-500" />
+                                <Trash2 className="w-3.5 h-3.5" />
                               </button>
                             </div>
                           </div>
@@ -392,9 +562,9 @@ export default function Categories() {
       </div>
 
       {filteredCategories.length === 0 && (
-        <div className="text-center py-12 bg-white rounded-2xl border border-gray-100">
-          <FolderTree className="w-12 h-12 text-gray-300 mx-auto mb-3" />
-          <h3 className="font-medium text-gray-900 mb-1">No categories found</h3>
+        <div className="text-center py-16 bg-white rounded-2xl border border-gray-100 shadow-[0_2px_10px_-4px_rgba(0,0,0,0.05)]">
+          <FolderTree className="w-12 h-12 text-gray-300 mx-auto mb-4" />
+          <h3 className="font-semibold text-gray-900 mb-1">No categories found</h3>
           <p className="text-sm text-gray-500">
             {searchQuery ? 'Try adjusting your search' : 'Create your first category to get started'}
           </p>
@@ -432,7 +602,7 @@ export default function Categories() {
               </div>
 
               {/* Modal Body */}
-              <form onSubmit={handleSubmit} className="p-5 space-y-4">
+              <form onSubmit={handleSubmit} className="p-5 space-y-4 text-sm">
                 {/* Image Upload */}
                 <div>
                   <label className="block text-sm font-medium text-gray-700 mb-1.5">
@@ -440,14 +610,14 @@ export default function Categories() {
                   </label>
                   <div
                     onClick={() => fileInputRef.current?.click()}
-                    className="border-2 border-dashed border-gray-200 rounded-xl p-4 text-center hover:border-[#025E5D] transition-colors cursor-pointer"
+                    className="border-2 border-dashed border-gray-200 rounded-lg p-4 text-center hover:border-teal-500 transition-colors cursor-pointer"
                   >
                     {imagePreview ? (
                       <div className="relative inline-block">
                         <img
                           src={imagePreview}
                           alt="Preview"
-                          className="w-32 h-32 object-cover rounded-xl mx-auto"
+                          className="w-32 h-32 object-cover rounded-lg mx-auto"
                         />
                         <button
                           type="button"
@@ -486,7 +656,7 @@ export default function Categories() {
                     type="text"
                     value={categoryForm.name}
                     onChange={(e) => setCategoryForm({ ...categoryForm, name: e.target.value })}
-                    className="w-full px-4 py-2.5 bg-gray-50 border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-[#025E5D]/20 focus:border-[#025E5D]"
+                    className="w-full px-4 py-2 bg-white border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-teal-500/10 focus:border-teal-500 text-sm font-medium text-gray-800"
                     required
                   />
                 </div>
@@ -499,7 +669,7 @@ export default function Categories() {
                     value={categoryForm.description}
                     onChange={(e) => setCategoryForm({ ...categoryForm, description: e.target.value })}
                     rows={3}
-                    className="w-full px-4 py-2.5 bg-gray-50 border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-[#025E5D]/20 focus:border-[#025E5D] resize-none"
+                    className="w-full px-4 py-2 bg-white border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-teal-500/10 focus:border-teal-500 text-sm font-medium text-gray-800 resize-none"
                   />
                 </div>
 
@@ -510,7 +680,7 @@ export default function Categories() {
                   <select
                     value={categoryForm.parent}
                     onChange={(e) => setCategoryForm({ ...categoryForm, parent: e.target.value })}
-                    className="w-full px-4 py-2.5 bg-gray-50 border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-[#025E5D]/20 focus:border-[#025E5D]"
+                    className="w-full px-4 py-2 bg-white border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-teal-500/10 focus:border-teal-500 text-sm font-medium text-gray-600 cursor-pointer"
                   >
                     <option value="">None (Top Level)</option>
                     {parentCategories
@@ -530,7 +700,7 @@ export default function Categories() {
                     <select
                       value={categoryForm.status}
                       onChange={(e) => setCategoryForm({ ...categoryForm, status: e.target.value })}
-                      className="w-full px-4 py-2.5 bg-gray-50 border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-[#025E5D]/20 focus:border-[#025E5D]"
+                      className="w-full px-4 py-2 bg-white border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-teal-500/10 focus:border-teal-500 text-sm font-medium text-gray-600 cursor-pointer"
                     >
                       <option value="active">Active</option>
                       <option value="inactive">Inactive</option>
@@ -544,7 +714,7 @@ export default function Categories() {
                       type="number"
                       value={categoryForm.sortOrder}
                       onChange={(e) => setCategoryForm({ ...categoryForm, sortOrder: parseInt(e.target.value) || 0 })}
-                      className="w-full px-4 py-2.5 bg-gray-50 border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-[#025E5D]/20 focus:border-[#025E5D]"
+                      className="w-full px-4 py-2 bg-white border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-teal-500/10 focus:border-teal-500 text-sm font-medium text-gray-800"
                     />
                   </div>
                 </div>
@@ -553,14 +723,14 @@ export default function Categories() {
                   <button
                     type="button"
                     onClick={() => setShowModal(false)}
-                    className="flex-1 px-4 py-2.5 bg-gray-100 text-gray-700 rounded-xl font-medium hover:bg-gray-200 transition-colors"
+                    className="flex-1 px-4 py-2 bg-gray-100 text-gray-700 rounded-lg font-medium hover:bg-gray-200 transition-colors text-sm"
                   >
                     Cancel
                   </button>
                   <button
                     type="submit"
                     disabled={createMutation.isPending || updateMutation.isPending}
-                    className="flex-1 px-4 py-2.5 bg-[#025E5D] text-white rounded-xl font-medium hover:bg-[#014d4b] transition-colors disabled:opacity-50"
+                    className="flex-1 px-4 py-2 bg-teal-600 text-white rounded-lg font-medium hover:bg-teal-700 transition-colors disabled:opacity-50 text-sm cursor-pointer"
                   >
                     {(createMutation.isPending || updateMutation.isPending) ? (
                       <Loader2 className="w-5 h-5 animate-spin mx-auto" />
