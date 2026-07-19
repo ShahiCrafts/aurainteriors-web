@@ -92,115 +92,81 @@ const faqData = [
 ];
 
 export default function FAQPage() {
-    const [searchQuery, setSearchQuery] = useState("");
     const [activeId, setActiveId] = useState(null);
 
     const toggleAccordion = (id) => {
         setActiveId(activeId === id ? null : id);
     };
 
-    const filteredFaqs = faqData.map(cat => ({
-        ...cat,
-        questions: cat.questions.filter(q =>
-            q.q.toLowerCase().includes(searchQuery.toLowerCase()) ||
-            q.a.toLowerCase().includes(searchQuery.toLowerCase())
-        )
-    })).filter(cat => cat.questions.length > 0);
-
     return (
         <>
             <Navbar />
-            <main className="min-h-screen bg-white font-dm-sans pt-32 pb-20">
-                <div className="max-w-4xl mx-auto px-6">
+            <main className="min-h-screen bg-white font-dm-sans pt-32 pb-24">
+                <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8">
                     {/* Header */}
-                    <div className="text-center mb-16">
+                    <div className="text-center mb-14">
                         <motion.h1
                             initial={{ opacity: 0, y: -20 }}
                             animate={{ opacity: 1, y: 0 }}
-                            className="text-3xl sm:text-4xl md:text-5xl font-light text-zinc-900 mb-4 tracking-tight font-playfair"
+                            className="text-[32px] sm:text-[44px] md:text-[52px] font-bold text-[#1A1714] mb-3 tracking-tight leading-[1.1]"
                         >
-                            Frequently Asked <span className="italic text-teal-700">Questions</span>
+                            Frequently Asked <span className="text-[#F27318]">Questions</span>
                         </motion.h1>
-                        <p className="text-zinc-600 text-base md:text-lg max-w-2xl mx-auto leading-relaxed font-dm-sans mb-10">
+                        <p className="text-gray-500 text-[14px] sm:text-[16px] max-w-xl mx-auto leading-relaxed mb-8">
                             Find answers to common questions about our products, ordering process, shipping, and augmented reality features.
                         </p>
-
-                        {/* Search Bar */}
-                        <div className="relative max-w-xl mx-auto">
-                            <Search className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-400 w-5 h-5" />
-                            <input
-                                type="text"
-                                placeholder="Search for answers..."
-                                value={searchQuery}
-                                onChange={(e) => setSearchQuery(e.target.value)}
-                                className="w-full pl-12 pr-6 py-4 bg-white rounded-xl shadow-sm border border-gray-200 focus:border-teal-700 focus:ring-1 focus:ring-teal-700 outline-none transition-all"
-                            />
-                        </div>
                     </div>
 
                     {/* FAQ Sections */}
-                    <div className="space-y-12 max-w-3xl mx-auto">
-                        {filteredFaqs.length > 0 ? (
-                            filteredFaqs.map((category) => (
-                                <div key={category.category} className="space-y-6">
-                                    <div className="flex items-center gap-3">
-                                        <div className="w-10 h-10 rounded-xl bg-teal-50 flex items-center justify-center text-teal-700">
-                                            <category.icon size={20} />
-                                        </div>
-                                        <h2 className="text-2xl font-playfair font-semibold text-gray-900">
-                                            {category.category}
-                                        </h2>
+                    <div className="space-y-10 max-w-2xl mx-auto">
+                        {faqData.map((category) => (
+                            <div key={category.category} className="space-y-4">
+                                <div className="flex items-center gap-3">
+                                    <div className="w-9 h-9 rounded-xl bg-[#F27318]/10 flex items-center justify-center text-[#F27318]">
+                                        <category.icon size={18} />
                                     </div>
-
-                                    <div className="border border-gray-200 divide-y divide-gray-200 rounded-lg overflow-hidden">
-                                        {category.questions.map((item) => (
-                                            <div
-                                                key={item.id}
-                                                className="bg-white overflow-hidden transition-all duration-300"
-                                            >
-                                                <button
-                                                    onClick={() => toggleAccordion(item.id)}
-                                                    className="w-full px-6 py-5 flex items-start justify-between text-left group hover:bg-gray-50/50 transition-colors"
-                                                >
-                                                    <span className={`text-base font-medium transition-colors duration-300 pr-4 leading-relaxed ${activeId === item.id ? 'text-teal-700' : 'text-zinc-800'}`}>
-                                                        {item.q}
-                                                    </span>
-                                                    <div className={`shrink-0 w-6 h-6 flex items-center justify-center transition-all duration-300 ${activeId === item.id ? 'text-teal-700 rotate-180' : 'text-zinc-400 group-hover:text-teal-700'}`}>
-                                                        <ChevronDown size={20} />
-                                                    </div>
-                                                </button>
-
-                                                <AnimatePresence>
-                                                    {activeId === item.id && (
-                                                        <motion.div
-                                                            initial={{ height: 0, opacity: 0 }}
-                                                            animate={{ height: "auto", opacity: 1 }}
-                                                            exit={{ height: 0, opacity: 0 }}
-                                                            transition={{ duration: 0.3, ease: "easeInOut" }}
-                                                        >
-                                                            <div className="px-6 pb-6 text-zinc-600 leading-relaxed pt-2">
-                                                                {item.a}
-                                                            </div>
-                                                        </motion.div>
-                                                    )}
-                                                </AnimatePresence>
-                                            </div>
-                                        ))}
-                                    </div>
+                                    <h2 className="text-lg sm:text-xl font-bold text-[#1A1714]">
+                                        {category.category}
+                                    </h2>
                                 </div>
-                            ))
-                        ) : (
-                            <div className="text-center py-20 bg-white rounded-3xl border border-dashed border-gray-200">
-                                <HelpCircle className="w-16 h-16 text-gray-300 mx-auto mb-4" />
-                                <p className="text-gray-500 text-lg">No results found for "{searchQuery}"</p>
-                                <button
-                                    onClick={() => setSearchQuery("")}
-                                    className="mt-4 text-teal-700 font-medium hover:underline"
-                                >
-                                    Clear search
-                                </button>
+
+                                <div className="border border-gray-100 divide-y divide-gray-100 rounded-2xl overflow-hidden shadow-xs bg-white">
+                                    {category.questions.map((item) => (
+                                        <div
+                                            key={item.id}
+                                            className="bg-white overflow-hidden transition-all duration-300"
+                                        >
+                                            <button
+                                                onClick={() => toggleAccordion(item.id)}
+                                                className="w-full px-5 py-4.5 flex items-start justify-between text-left group hover:bg-[#FFF8F3]/40 transition-colors"
+                                            >
+                                                <span className={`text-[15px] font-semibold transition-colors duration-300 pr-4 leading-normal ${activeId === item.id ? 'text-[#F27318]' : 'text-gray-800'}`}>
+                                                    {item.q}
+                                                </span>
+                                                <div className={`shrink-0 w-6 h-6 flex items-center justify-center transition-all duration-300 ${activeId === item.id ? 'text-[#F27318] rotate-180' : 'text-gray-400 group-hover:text-[#F27318]'}`}>
+                                                    <ChevronDown size={18} />
+                                                </div>
+                                            </button>
+
+                                            <AnimatePresence>
+                                                {activeId === item.id && (
+                                                    <motion.div
+                                                        initial={{ height: 0, opacity: 0 }}
+                                                        animate={{ height: "auto", opacity: 1 }}
+                                                        exit={{ height: 0, opacity: 0 }}
+                                                        transition={{ duration: 0.25, ease: "easeInOut" }}
+                                                    >
+                                                        <div className="px-5 pb-5 text-gray-500 text-[14px] leading-relaxed pt-1.5">
+                                                             {item.a}
+                                                        </div>
+                                                    </motion.div>
+                                                )}
+                                            </AnimatePresence>
+                                        </div>
+                                    ))}
+                                </div>
                             </div>
-                        )}
+                        ))}
                     </div>
 
 
