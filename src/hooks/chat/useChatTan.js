@@ -51,13 +51,91 @@ export const useSendMessage = () => {
 
   return useMutation({
     mutationFn: chatApi.sendMessage,
-    onSuccess: (data, variables) => {
+    // PERF-OPT 2: Optimistic update - show message immediately before server confirms
+    onMutate: async (variables) => {
+      const { chatId, content, attachments } = variables;
+
+      // Cancel any outgoing refetches so they don't overwrite our optimistic update
+      await queryClient.cancelQueries({ queryKey: ['chats', chatId, 'messages'] });
+
+      // Snapshot the previous value
+      const previousData = queryClient.getQueryData(['chats', chatId, 'messages']);
+
+      // Create optimistic message object
+      const optimisticMessage = {
+        _id: `optimistic-${Date.now()}`, // Temporary ID until server confirms
+        content,
+        attachments: attachments || [],
+        senderRole: 'customer',
+        sender: {
+          _id: 'current-user',
+          firstName: 'You',
+          role: 'customer',
+        },
+        messageType: attachments && attachments.length > 0 ? 'image' : 'text',
+        createdAt: new Date().toISOString(),
+        deliveredAt: new Date().toISOString(),
+        isRead: false,
+        isPending: true, // Flag to indicate this is optimistic (not yet confirmed by server)
+      };
+
+      // Update the messages cache with optimistic message
+      queryClient.setQueryData(['chats', chatId, 'messages'], (old) => {
+        if (!old) return old;
+        return {
+          ...old,
+          pages: old.pages.map((page, idx) => {
+            if (idx === 0) {
+              return {
+                ...page,
+                data: {
+                  ...page.data,
+                  messages: [...(page.data?.messages || []), optimisticMessage],
+                },
+              };
+            }
+            return page;
+          }),
+        };
+      });
+
+      return { previousData, optimisticMessage };
+    },
+    onSuccess: (data, variables, context) => {
       const { chatId } = variables;
+      // Server confirmed the message - remove optimistic flag and update with real data
+      queryClient.setQueryData(['chats', chatId, 'messages'], (old) => {
+        if (!old) return old;
+        return {
+          ...old,
+          pages: old.pages.map((page, idx) => {
+            if (idx === 0) {
+              return {
+                ...page,
+                data: {
+                  ...page.data,
+                  messages: page.data.messages.map((msg) =>
+                    msg._id === context.optimisticMessage._id
+                      ? { ...data.data.message, isPending: false }
+                      : msg
+                  ),
+                },
+              };
+            }
+            return page;
+          }),
+        };
+      });
 
-      queryClient.invalidateQueries({ queryKey: ['chats', chatId, 'messages'] });
-
+      // Invalidate other queries to refresh chat lists
       queryClient.invalidateQueries({ queryKey: ['chats', 'my'] });
       queryClient.invalidateQueries({ queryKey: ['chats', 'admin', 'all'] });
+    },
+    onError: (error, variables, context) => {
+      // Rollback to previous data on error
+      if (context?.previousData) {
+        queryClient.setQueryData(['chats', variables.chatId, 'messages'], context.previousData);
+      }
     },
   });
 };

@@ -157,7 +157,12 @@ const ChatMessage = ({ message, isOwnMessage, isAdminView = false }) => {
           {/* Delivery status (own messages only) */}
           {isOwnMessage && !isBot && !message.isInternalNote && (
             <div className="flex items-center gap-1 px-1 mt-0.5 select-none">
-              {message.isRead ? (
+              {/* PERF-OPT 2: Show pending dot for optimistic messages until confirmed by server */}
+              {message.isPending ? (
+                <span className="text-gray-300">
+                  <div className="w-3 h-3 rounded-full bg-gray-300 animate-pulse" />
+                </span>
+              ) : message.isRead ? (
                 <span className="text-sky-500">
                   <CheckCheck size={14} strokeWidth={3} />
                 </span>
