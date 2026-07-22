@@ -66,7 +66,7 @@ export default function CategoryBar() {
 
   return (
     <>
-      <div className="sticky top-16 md:top-20 z-30 bg-white/85 backdrop-blur-md border-b border-[#F0EFED] shadow-[0_2px_16px_rgba(0,0,0,0.06)] flex items-center font-dm-sans">
+      <div className="sticky top-16 md:top-20 z-30 bg-white border-b border-[#F0EFED] shadow-[0_2px_16px_rgba(0,0,0,0.06)] flex items-center font-dm-sans">
         {/* Scrollable category list */}
         <div className="flex items-center overflow-x-auto no-scrollbar flex-1 px-4 md:px-6 lg:px-8">
           {displayCategories.map((cat) => {

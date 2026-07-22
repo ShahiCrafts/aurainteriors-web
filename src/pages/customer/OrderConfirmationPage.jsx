@@ -133,11 +133,11 @@ export default function OrderConfirmationPage() {
                       <div className="flex flex-col gap-1.5">
                         <img
                           src="/logo.png"
-                          alt="GuchaaDecor Logo"
+                          alt="AuraInteriors Logo"
                           className="h-6 w-auto object-contain self-start"
                         />
                         <p className="text-[15px] text-neutral-700 leading-relaxed max-w-[220px]">
-                          GuchaaDecor Pvt. Ltd.<br />
+                          Aura Interiors Pvt. Ltd.<br />
                           Lalitpur 44600, Nepal
                         </p>
                       </div>

@@ -44,7 +44,7 @@ const footerLinks = [
       { name: "Interior Design", href: "/interior-design" },
       { name: "Bulk Orders", href: "/bulk-orders" },
       { name: "Custom Furniture", href: "/custom" },
-      { name: "DecorX Business", href: "/business" },
+      { name: "Aura Interiors Business", href: "/business" },
       { name: "Experience Stores", href: "/stores" }
     ]
   }
@@ -63,9 +63,13 @@ export default function Footer() {
           {/* COLUMN 1: BRAND & CONTACT */}
           <div className="flex flex-col gap-6 col-span-2 lg:col-span-1">
             <div className="flex flex-col gap-4">
-              <Link to="/" className="text-[24px] font-bold text-[#1A1714] tracking-[-0.03em] leading-none no-underline">
-                Guchaa<em className="text-[#F27318] not-italic">Decor</em>
-              </Link>
+              <Link to="/" className="no-underline">
+              <img 
+                src="/logo.png" 
+                alt="AuraInteriors Logo"
+                className="h-12 w-auto object-contain"
+              />
+            </Link>
               <div className="flex flex-col gap-2.5">
                  <div className="flex items-start gap-3">
                    <Phone size={14} className="text-[#F27318] mt-0.5" />
@@ -73,7 +77,7 @@ export default function Footer() {
                  </div>
                  <div className="flex items-start gap-3">
                    <Mail size={14} className="text-[#F27318] mt-0.5" />
-                   <p className="text-[14px] text-black/50">care@decorx.com</p>
+                   <p className="text-[14px] text-black/50">care@aurainteriors.live</p>
                  </div>
                  <div className="flex items-start gap-3">
                    <MapPin size={14} className="text-[#F27318] mt-0.5" />
@@ -125,7 +129,7 @@ export default function Footer() {
            {/* NEWSLETTER (LEFT) */}
            <div className="flex flex-col sm:flex-row items-center gap-6 w-full lg:w-auto">
               <div className="flex flex-col gap-1 text-center sm:text-left min-w-[200px]">
-                <h4 className="text-[18px] font-semibold text-[#1A1714]">Join the DecorX Circle</h4>
+                <h4 className="text-[18px] font-semibold text-[#1A1714]">Join the Aura Interiors Circle</h4>
                 <p className="text-[14px] text-black/40">Subscribe for the latest collections and trends.</p>
               </div>
               <div className="flex items-center gap-2 w-full sm:w-auto">
@@ -166,7 +170,7 @@ export default function Footer() {
         {/* FINAL STRIP: COPYRIGHT */}
         <div className="py-6 border-t border-black/[0.05] text-center">
            <p className="text-[13px] text-black/40 tracking-wide">
-             &copy; 2024 DecorX Private Limited. All rights reserved.
+             &copy; 2024 Aura Interiors Private Limited. All rights reserved.
            </p>
         </div>
 

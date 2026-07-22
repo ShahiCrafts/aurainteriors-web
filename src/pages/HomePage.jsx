@@ -10,6 +10,7 @@ import Hero from "../components/sections/Hero";
 
 // Below-the-fold — lazy loaded; each in its own Suspense with a height-matched skeleton
 const TrustBanner = lazy(() => import("../components/sections/TrustBanner"));
+const ShopByCategory = lazy(() => import("../components/sections/ShopByCategory"));
 const FeaturedPieces = lazy(() => import("../components/sections/FeaturedPieces"));
 const BlogSection = lazy(() => import("../components/sections/BlogSection"));
 const Testimonials = lazy(() => import("../components/sections/Testimonials"));
@@ -56,6 +57,14 @@ export default function HomePage() {
         */}
         <Suspense fallback={<SectionSkeleton minHeight="120px" />}>
           <TrustBanner />
+        </Suspense>
+
+        {/*
+          ShopByCategory: category grid display.
+          Skeleton ~300px to match the category card grid height.
+        */}
+        <Suspense fallback={<SectionSkeleton minHeight="300px" />}>
+          <ShopByCategory />
         </Suspense>
 
         {/*

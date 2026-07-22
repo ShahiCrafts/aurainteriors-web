@@ -7,7 +7,7 @@ const testimonials = [
     name: "Sarah Jenkins",
     location: "London, UK",
     date: "12 Mar 2024",
-    text: "The Albus sofa completely transformed my living room. The quality of the fabric and the minimalist design is exactly what I was looking for. DecorX truly understands modern living.",
+    text: "The Albus sofa completely transformed my living room. The quality of the fabric and the minimalist design is exactly what I was looking for. Aura Interiors truly understands modern living.",
     rating: 5,
     avatar: "https://api.dicebear.com/7.x/avataaars/svg?seed=Sarah"
   },
@@ -25,7 +25,7 @@ const testimonials = [
     name: "Elena Rodriguez",
     location: "Madrid, Spain",
     date: "15 Feb 2024",
-    text: "DecorX is my go-to for interior inspiration. Their pieces are not just furniture; they are works of art. The customer service was exceptionally helpful and professional.",
+    text: "Aura Interiors is my go-to for interior inspiration. Their pieces are not just furniture; they are works of art. The customer service was exceptionally helpful and professional.",
     rating: 5,
     avatar: "https://api.dicebear.com/7.x/avataaars/svg?seed=Elena"
   },

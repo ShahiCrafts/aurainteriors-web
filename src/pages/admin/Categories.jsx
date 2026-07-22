@@ -610,14 +610,14 @@ export default function Categories() {
                   </label>
                   <div
                     onClick={() => fileInputRef.current?.click()}
-                    className="border-2 border-dashed border-gray-200 rounded-lg p-4 text-center hover:border-teal-500 transition-colors cursor-pointer"
+                    className="border-2 border-dashed border-gray-200 rounded-lg p-4 text-center hover:border-teal-500 transition-colors cursor-pointer bg-gray-50"
                   >
                     {imagePreview ? (
                       <div className="relative inline-block">
                         <img
                           src={imagePreview}
                           alt="Preview"
-                          className="w-32 h-32 object-cover rounded-lg mx-auto"
+                          className="max-w-full max-h-64 object-contain mx-auto"
                         />
                         <button
                           type="button"

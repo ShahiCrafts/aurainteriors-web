@@ -62,7 +62,7 @@ export default function ProfilePage() {
               {/* Account Summary */}
               <div>
                 <h3 className="text-[15px] font-medium text-[#1A1714]/30 mb-4">
-                  DecorX Account
+                  Aura Interiors Account
                 </h3>
                 <div className="flex items-center gap-3.5">
                   <div className="w-12 h-12 rounded-full overflow-hidden flex items-center justify-center bg-[#F27318] text-white text-[15px] font-black shadow-sm shrink-0">
