@@ -19,9 +19,12 @@ const ChatWidget = () => {
     localStorage.setItem('aura_chat_greeted', 'true');
   };
 
+  // CHAT-FIXES-9: Removed 5000ms polling on useMyChats.
+  // Real-time chat list updates come from socket events (chat:message:new, chat:status:changed, etc.)
+  // which automatically invalidate the 'chats/my' query key in useChatSocket.
   const { data: chatsData } = useMyChats(
     { page: 1, limit: 10 },
-    { enabled: !!user && user.role !== 'admin', refetchInterval: 5000 }
+    { enabled: !!user && user.role !== 'admin' }
   );
 
   const startChatMutation = useStartChat();
