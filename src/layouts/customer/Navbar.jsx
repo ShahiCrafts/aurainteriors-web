@@ -128,7 +128,7 @@ export default function Navbar() {
           >
             <img
               src="/logo.png"
-              alt="DecorX"
+              alt="AuraInteriors Logo"
               className="h-8 md:h-10 w-auto object-contain"
             />
           </Link>

@@ -79,7 +79,7 @@ export default function AuthModal() {
           const updatedUser = data?.data?.user || data?.user;
           if (updatedUser) {
             setUser(updatedUser);
-            toast.success(`Welcome to DecorX Studio, ${updatedUser.firstName}!`);
+            toast.success(`Welcome to Aura Interiors, ${updatedUser.firstName}!`);
           } else {
             toast.success("Profile setup completed successfully!");
           }
@@ -143,7 +143,7 @@ export default function AuthModal() {
                   >
                     <div className="mb-6">
                       <h3 className="text-[24px] font-bold text-[#1A1714] mb-1">
-                        {isWelcomeBack ? "Welcome Back" : "Continue to DecorX Studio"}
+                        {isWelcomeBack ? "Welcome Back" : "Continue to Aura Interiors"}
                       </h3>
                       <p className="text-[#64748B] text-[14px]">
                         {isWelcomeBack
@@ -271,7 +271,7 @@ export default function AuthModal() {
                         <CheckSquare size={24} />
                       </div>
                       <h3 className="text-[24px] font-bold text-[#1A1714] mb-1">
-                        Welcome to DecorX
+                        Welcome to Aura Interiors
                       </h3>
                       <p className="text-[#64748B] text-[14px]">
                         Your email is verified! Tell us your full name to personalize your experience.

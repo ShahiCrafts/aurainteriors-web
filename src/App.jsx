@@ -35,12 +35,7 @@ const NotFoundPage        = lazy(() => import("./pages/info/NotFoundPage"));
 const AnnouncementsPage   = lazy(() => import("./pages/info/AnnouncementsPage"));
 
 function LoadingSpinner() {
-  return (
-    <div className="flex flex-col items-center justify-center min-h-screen bg-white font-dm-sans">
-      <div className="animate-spin rounded-full h-10 w-10 border-b-2 border-[#F27318] mb-4"></div>
-      <p className="text-[#1A1714] text-[14px] font-bold tracking-widest uppercase opacity-20">Loading</p>
-    </div>
-  );
+  return null;
 }
 
 function App() {

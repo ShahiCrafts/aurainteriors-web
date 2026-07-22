@@ -12,7 +12,7 @@ const blogPosts = [
     image: "https://images.unsplash.com/photo-1494438639946-1ebd1d20bf85?q=80&w=2067&auto=format&fit=crop",
     author: {
       name: "Saugat Shahi",
-      email: "saugat@decorx.com",
+      email: "saugat@aurainteriors.live",
       avatar: "https://api.dicebear.com/7.x/avataaars/svg?seed=Saugat"
     }
   },
@@ -25,7 +25,7 @@ const blogPosts = [
     image: "https://images.unsplash.com/photo-1540518614846-7eded433c457?q=80&w=2039&auto=format&fit=crop",
     author: {
       name: "Aakriti KC",
-      email: "aakriti@decorx.com",
+      email: "aakriti@aurainteriors.live",
       avatar: "https://api.dicebear.com/7.x/avataaars/svg?seed=Aakriti"
     }
   },
@@ -38,7 +38,7 @@ const blogPosts = [
     image: "https://images.unsplash.com/photo-1586023492125-27b2c045efd7?q=80&w=2158&auto=format&fit=crop",
     author: {
       name: "Rohan Tamang",
-      email: "rohan@decorx.com",
+      email: "rohan@aurainteriors.live",
       avatar: "https://api.dicebear.com/7.x/avataaars/svg?seed=Rohan"
     }
   },
@@ -51,32 +51,45 @@ const blogPosts = [
     image: "https://images.unsplash.com/photo-1513519245088-0e12902e5a38?q=80&w=2070&auto=format&fit=crop",
     author: {
       name: "Ishani Rai",
-      email: "ishani@decorx.com",
+      email: "ishani@aurainteriors.live",
       avatar: "https://api.dicebear.com/7.x/avataaars/svg?seed=Ishani"
+    }
+  },
+  {
+    id: 5,
+    title: "Minimalist Spaces",
+    excerpt: "Less is more: curating a living environment with intention and purpose...",
+    date: "01 April",
+    category: "Living",
+    image: "https://images.unsplash.com/photo-1523821741446-edb766ce0a41?q=80&w=2070&auto=format&fit=crop",
+    author: {
+      name: "Saugat Shahi",
+      email: "saugat@aurainteriors.live",
+      avatar: "https://api.dicebear.com/7.x/avataaars/svg?seed=Saugat"
     }
   }
 ];
 
 export default function BlogSection() {
   return (
-    <section className="bg-[#f6f6f6] py-12 font-dm-sans">
+    <section className="bg-[#FAFAFA] py-8 md:py-12 font-dm-sans">
       <div className="max-w-[1440px] mx-auto px-6 lg:px-8">
 
         {/* HEADER: COMPACT & REFINED */}
-        <div className="flex items-center justify-between gap-8 mb-10">
+        <div className="flex items-center justify-between gap-8 mb-6 md:mb-8">
           <div>
-            <h2 className="text-[28px] md:text-[36px] font-semibold text-[#1A1714]">
+            <h2 className="text-[24px] md:text-[32px] font-semibold text-[#1A1714]">
               Design stories from Guchaa<em className="text-[#F27318] not-italic">Decor</em>
             </h2>
-            <p className="text-[15px] text-black/40">Insights and inspiration for a curated lifestyle</p>
+            <p className="text-[14px] md:text-[15px] text-black/40 mt-1">Insights and inspiration for a curated lifestyle</p>
           </div>
-          <Link to="/shop" className="flex items-center gap-2 text-[14px] font-semibold text-[#1A1714] hover:text-[#F27318] transition-all group pb-1.5 border-b-2 border-black/5 hover:border-[#F27318]">
+          <Link to="/shop" className="flex items-center gap-2 text-[13px] md:text-[14px] font-semibold text-[#1A1714] hover:text-[#F27318] transition-all group pb-1.5 border-b-2 border-black/5 hover:border-[#F27318]">
             Explore All <MoveRight size={18} className="transition-transform group-hover:translate-x-2" />
           </Link>
         </div>
 
-        {/* BLOG GRID: HIGH DENSITY (4 COLUMNS) */}
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6 lg:gap-8">
+        {/* BLOG GRID: 5 COLUMNS */}
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-6 lg:gap-6">
           {blogPosts.map((post) => (
             <article key={post.id} className="flex flex-col group cursor-pointer">
               {/* IMAGE: PERMANENT OVERLAYS */}

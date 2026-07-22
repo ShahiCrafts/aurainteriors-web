@@ -260,7 +260,7 @@ export default function OrdersSection() {
           </p>
           <Link
             to="/shop"
-            className="inline-flex items-center gap-2 px-6 py-2.5 bg-[#F27318] hover:bg-[#E6651B] text-white text-[14px] font-medium rounded-lg transition-colors"
+            className="inline-flex items-center gap-2 px-6 py-2.5 bg-[#F27318] hover:bg-[#D9620E] text-white text-[14px] font-medium rounded-lg transition-colors"
           >
             Start Shopping
             <ArrowRight size={13} />
