@@ -98,7 +98,7 @@ export default function CategoryBar() {
           onClick={() => setIsArModalOpen(true)}
         >
           <Scan size={16} />
-          <span className="hidden sm:inline">Try AR View</span>
+          <span className="hidden sm:inline pr-5">Try AR View</span>
           <span className="sm:hidden">AR</span>
         </div>
       </div>
