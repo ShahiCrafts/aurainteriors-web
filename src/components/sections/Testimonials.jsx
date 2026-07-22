@@ -98,7 +98,7 @@ export default function Testimonials() {
         {/* HEADER */}
         <div className="flex flex-col items-center text-center mb-6">
           <h2 className="text-[28px] md:text-[36px] font-semibold text-[#1A1714]">
-            Voices of Guchaa<em className="text-[#F27318] not-italic">Decor</em>
+            Voices of Aura <em className="text-[#F27318] not-italic">Interiors</em>
           </h2>
           <p className="text-[15px] text-black/40 max-w-[500px]">
             Hear from our global community about their journey in creating a curated, soul-filled home.

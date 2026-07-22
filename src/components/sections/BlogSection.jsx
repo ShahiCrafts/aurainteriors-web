@@ -79,7 +79,7 @@ export default function BlogSection() {
         <div className="flex items-center justify-between gap-8 mb-6 md:mb-8">
           <div>
             <h2 className="text-[24px] md:text-[32px] font-semibold text-[#1A1714]">
-              Design stories from Guchaa<em className="text-[#F27318] not-italic">Decor</em>
+              Design stories from Aura <em className="text-[#F27318] not-italic">Interiors</em>
             </h2>
             <p className="text-[14px] md:text-[15px] text-black/40 mt-1">Insights and inspiration for a curated lifestyle</p>
           </div>
