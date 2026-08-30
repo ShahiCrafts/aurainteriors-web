@@ -1,5 +1,6 @@
 import { Link } from "react-router-dom";
-import { X, ShoppingBag, Plus, Minus, Trash2, Loader2 } from "lucide-react";
+import { X, ShoppingBag, Plus, Minus, Trash2 } from "lucide-react";
+import { CartItemSkeleton } from "../common/Skeleton";
 import { useEffect } from "react";
 import {
   useCart,
@@ -120,8 +121,10 @@ export default function CartSlider({ isOpen, onClose }) {
 
         <div className="flex-1 overflow-y-auto bg-gray-50/30">
           {isAuthenticated && isLoading ? (
-            <div className="flex items-center justify-center h-full">
-              <Loader2 size={28} className="text-[#F27318] animate-spin" />
+            <div className="p-6 space-y-4">
+              <CartItemSkeleton />
+              <CartItemSkeleton />
+              <CartItemSkeleton />
             </div>
           ) : cartItems.length === 0 ? (
             <div className="flex flex-col items-center justify-center h-full px-6 text-center">

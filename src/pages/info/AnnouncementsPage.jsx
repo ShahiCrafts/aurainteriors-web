@@ -18,6 +18,7 @@ import {
 import Navbar from "../../layouts/customer/Navbar";
 import Footer from "../../layouts/customer/Footer";
 import { usePublicAnnouncements, usePublicAnnouncement } from "../../hooks/admin/useAnnouncementTan";
+import Skeleton from "../../components/common/Skeleton";
 
 const TYPE_CONFIG = {
   general: { icon: Info, color: "bg-blue-500", label: "General" },
@@ -264,8 +265,11 @@ export default function AnnouncementsPage() {
                 exit={{ opacity: 0 }}
               >
                 {detailLoading ? (
-                  <div className="flex items-center justify-center py-12">
-                    <Loader2 className="w-8 h-8 animate-spin text-amber-600" />
+                  <div className="bg-white rounded-2xl p-6 md:p-8 space-y-4">
+                    <Skeleton className="w-32 h-8 rounded-full" />
+                    <Skeleton className="w-3/4 h-8 rounded-lg" />
+                    <Skeleton className="w-full h-48 rounded-xl" />
+                    <Skeleton className="w-full h-24 rounded-lg" />
                   </div>
                 ) : (
                   <AnnouncementDetail
@@ -312,8 +316,17 @@ export default function AnnouncementsPage() {
 
                 {/* Loading State */}
                 {isLoading ? (
-                  <div className="flex items-center justify-center py-12">
-                    <Loader2 className="w-8 h-8 animate-spin text-amber-600" />
+                  <div className="space-y-4">
+                    {[1, 2, 3].map((i) => (
+                      <div key={i} className="bg-white rounded-xl p-5 border border-gray-100 flex items-start gap-4">
+                        <Skeleton className="w-11 h-11 rounded-lg shrink-0" />
+                        <div className="flex-1 space-y-2">
+                          <Skeleton className="w-1/3 h-4 rounded" />
+                          <Skeleton className="w-3/4 h-5 rounded" />
+                          <Skeleton className="w-full h-4 rounded" />
+                        </div>
+                      </div>
+                    ))}
                   </div>
                 ) : error ? (
                   <div className="text-center py-12 bg-white rounded-xl border border-gray-100">

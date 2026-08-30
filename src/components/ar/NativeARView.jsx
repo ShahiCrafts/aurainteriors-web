@@ -549,19 +549,13 @@ const NativeARView = ({
   if (isSupported === null || isLoading) {
     return (
       <div className="fixed inset-0 flex flex-col items-center justify-center gap-8 bg-black">
-        <div className="relative">
-          <div className="w-20 h-20 border border-gray-700 rounded-full flex items-center justify-center">
-            <div className="absolute inset-0">
-              <div className="w-full h-full border-2 border-transparent border-t-teal-500 rounded-full animate-spin" />
-            </div>
+        <div className="w-full max-w-sm p-8 bg-zinc-900 border border-zinc-800 rounded-3xl text-center space-y-4">
+          <div className="w-16 h-16 rounded-full bg-zinc-800 relative overflow-hidden shimmer-element mx-auto flex items-center justify-center">
             <MdOutlineViewInAr size={28} className="text-teal-500" />
           </div>
-        </div>
-        <div className="text-center">
-          <p className="text-white font-medium">Loading AR Experience</p>
-          <p className="text-gray-500 text-sm mt-2">
-            Checking device support...
-          </p>
+          <div className="w-3/4 h-5 rounded bg-zinc-800 relative overflow-hidden shimmer-element mx-auto" />
+          <div className="w-1/2 h-3 rounded bg-zinc-800 relative overflow-hidden shimmer-element mx-auto" />
+          <p className="text-gray-400 text-xs mt-2">Initializing AR Environment...</p>
         </div>
       </div>
     );

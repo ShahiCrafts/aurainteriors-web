@@ -3,6 +3,7 @@ import { useNavigate, useSearchParams } from "react-router-dom";
 import useAuthStore from "../../store/authStore";
 import { toast } from "react-toastify";
 import { getProfile } from "../../api/profileApi";
+import Skeleton from "../common/Skeleton";
 
 export default function AuthCallback() {
   const signIn = useAuthStore((state) => state.signIn);
@@ -63,14 +64,15 @@ export default function AuthCallback() {
           </h1>
         </div>
 
-        {/* Spinner */}
-        <div className="relative w-12 h-12 mx-auto mb-6">
-          <div className="absolute inset-0 rounded-full border-2 border-neutral-200"></div>
-          <div className="absolute inset-0 rounded-full border-2 border-teal-600 border-t-transparent animate-spin"></div>
+        {/* Skeleton Card */}
+        <div className="w-64 p-6 bg-white border border-neutral-100 rounded-2xl shadow-sm mx-auto space-y-3">
+          <Skeleton className="w-12 h-12 rounded-full mx-auto" />
+          <Skeleton className="w-3/4 h-4 rounded mx-auto" />
+          <Skeleton className="w-1/2 h-3 rounded mx-auto" />
         </div>
 
         {/* Text */}
-        <p className="text-neutral-600 font-dm-sans text-sm">
+        <p className="text-neutral-600 font-dm-sans text-sm mt-4">
           Signing you in...
         </p>
       </div>

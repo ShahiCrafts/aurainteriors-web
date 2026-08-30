@@ -16,6 +16,7 @@ import {
 import useAuthStore from "../../store/authStore";
 import Navbar from "../../layouts/customer/Navbar";
 import notificationApi from "../../api/notificationApi";
+import Skeleton from "../../components/common/Skeleton";
 import useNotificationSocket from "../../hooks/notification/useNotificationSocket";
 import { Link } from "react-router-dom";
 
@@ -213,9 +214,17 @@ export default function NotificationsPage() {
           {/* Notifications List */}
           <div className="space-y-4">
             {loading ? (
-              <div className="flex flex-col items-center justify-center py-20 text-center">
-                <div className="w-10 h-10 border-4 border-gray-200 border-t-teal-600 rounded-full animate-spin mb-4" />
-                <p className="text-gray-500">Loading your updates...</p>
+              <div className="space-y-4">
+                {[1, 2, 3, 4].map((i) => (
+                  <div key={i} className="flex gap-4 p-5 rounded-2xl bg-white border border-gray-100 shadow-sm">
+                    <Skeleton className="w-12 h-12 rounded-xl shrink-0" />
+                    <div className="flex-1 space-y-2">
+                      <Skeleton className="w-1/2 h-5 rounded" />
+                      <Skeleton className="w-full h-4 rounded" />
+                      <Skeleton className="w-1/4 h-3 rounded" />
+                    </div>
+                  </div>
+                ))}
               </div>
             ) : filteredNotifications.length === 0 ? (
               <div className="flex flex-col items-center justify-center py-20 bg-white rounded-2xl border border-gray-100 shadow-sm text-center">

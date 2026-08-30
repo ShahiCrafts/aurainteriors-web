@@ -1,5 +1,6 @@
 import { useState } from 'react';
 import { ChevronDown, MessageCircle, User, Filter } from 'lucide-react';
+import Skeleton from '../../common/Skeleton';
 import { getAvatarUrl } from "../../../utils/imageUrl";
 
 const ChatList = ({
@@ -66,9 +67,16 @@ const ChatList = ({
       {/* Chat List */}
       <div className="flex-1 overflow-y-auto">
         {isLoading ? (
-          <div className="p-6 text-center">
-            <div className="w-8 h-8 rounded-full border-2 border-indigo-600 border-t-transparent animate-spin mx-auto mb-3" />
-            <p className="text-sm text-gray-500">Loading...</p>
+          <div className="p-4 space-y-3">
+            {[1, 2, 3, 4].map((i) => (
+              <div key={i} className="flex items-center gap-3">
+                <Skeleton className="w-10 h-10 rounded-full shrink-0" />
+                <div className="flex-1 space-y-2">
+                  <Skeleton className="w-3/4 h-4 rounded" />
+                  <Skeleton className="w-1/2 h-3 rounded" />
+                </div>
+              </div>
+            ))}
           </div>
         ) : filteredChats.length === 0 ? (
           <div className="p-8 text-center">

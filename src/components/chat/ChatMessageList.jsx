@@ -1,5 +1,6 @@
 import { useRef, useEffect, useState } from 'react';
 import { Loader2, MessageCircle, Sparkles, ChevronDown, User, Bot } from 'lucide-react';
+import { ChatMessageSkeleton } from '../common/Skeleton';
 import ChatMessage from './ChatMessage';
 import useAuthStore from '../../store/authStore';
 import { getAvatarUrl } from '../../utils/imageUrl';
@@ -101,11 +102,10 @@ const ChatMessageList = ({
 
   if (isLoading) {
     return (
-      <div className="flex flex-col items-center justify-center h-full gap-3">
-        <div className="w-12 h-12 rounded-2xl bg-teal-100 flex items-center justify-center">
-          <Loader2 className="w-6 h-6 animate-spin text-teal-600" />
-        </div>
-        <p className="text-sm text-neutral-500">Loading messages...</p>
+      <div className="p-4 space-y-4 h-full">
+        <ChatMessageSkeleton isUser={false} />
+        <ChatMessageSkeleton isUser={true} />
+        <ChatMessageSkeleton isUser={false} />
       </div>
     );
   }

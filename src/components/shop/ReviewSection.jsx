@@ -1,5 +1,6 @@
 import { useState } from "react";
 import { Star, ChevronDown, Loader2, ThumbsUp, CheckCircle, MoreVertical, Edit2, Trash2 } from "lucide-react";
+import { ReviewSkeleton } from "../common/Skeleton";
 import {
   useProductReviews,
   useMarkHelpful,
@@ -137,8 +138,10 @@ export default function ReviewSection({ productId, productName, onEditReview }) 
 
           {/* Reviews List */}
           {isLoadingReviews ? (
-            <div className="flex items-center justify-center py-24">
-              <Loader2 size={28} className="text-[#F27318] animate-spin" />
+            <div className="space-y-4 py-4">
+              <ReviewSkeleton />
+              <ReviewSkeleton />
+              <ReviewSkeleton />
             </div>
           ) : reviews.length > 0 ? (
             <div>

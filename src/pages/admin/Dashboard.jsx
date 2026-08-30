@@ -1,4 +1,5 @@
-import { Loader2, Download, DollarSign, ShoppingBag, Box, Users } from 'lucide-react';
+import { Download, DollarSign, ShoppingBag, Box, Users } from 'lucide-react';
+import { DashboardSkeleton } from '../../components/common/Skeleton';
 import * as XLSX from 'xlsx';
 import { useDashboardStats, useRevenueAnalytics, useCategorySales, useTopProducts } from '../../hooks/admin/useAnalyticsTan';
 import { useAllOrders } from '../../hooks/order/useOrderTan';
@@ -149,8 +150,8 @@ export default function Dashboard() {
 
   if (statsLoading || revenueLoading || categoryLoading || productsLoading || ordersLoading) {
     return (
-      <div className="flex items-center justify-center min-h-[400px]">
-        <Loader2 className="w-8 h-8 animate-spin text-teal-600" />
+      <div className="p-6 space-y-5">
+        <DashboardSkeleton />
       </div>
     );
   }

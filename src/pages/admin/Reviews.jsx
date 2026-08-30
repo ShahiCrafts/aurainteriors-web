@@ -18,6 +18,7 @@ import {
   ChevronRight,
   User as UserIcon,
 } from "lucide-react";
+import { TableSkeleton } from "../../components/common/Skeleton";
 import {
   useAllReviews,
   useAddAdminResponse,
@@ -178,8 +179,8 @@ export default function Reviews() {
         </div>
 
         {isLoading ? (
-          <div className="flex items-center justify-center py-16">
-            <Loader2 className="w-8 h-8 animate-spin text-teal-600" />
+          <div className="p-4">
+            <TableSkeleton rows={5} cols={6} />
           </div>
         ) : reviews.length === 0 ? (
           <div className="flex flex-col items-center justify-center py-20 bg-white">

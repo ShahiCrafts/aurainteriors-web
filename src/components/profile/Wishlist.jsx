@@ -6,13 +6,13 @@ import {
   ShoppingCart,
   ChevronDown,
   Star,
-  Loader2,
   ArrowRight,
   X,
   ChevronLeft,
   ChevronRight,
   Filter,
 } from "lucide-react";
+import { ProductCardSkeleton } from "../common/Skeleton";
 import { toast } from "react-toastify";
 import {
   useWishlist,
@@ -111,11 +111,10 @@ export default function Wishlist() {
 
   if (isLoading) {
     return (
-      <div className="flex flex-col items-center justify-center h-80 gap-3">
-        <Loader2 size={32} className="text-[#F27318] animate-spin" />
-        <p className="text-[14px] text-neutral-400 font-medium tracking-wide">
-          Loading your wishlist items...
-        </p>
+      <div className="grid grid-cols-2 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
+        {[1, 2, 3, 4].map((i) => (
+          <ProductCardSkeleton key={i} />
+        ))}
       </div>
     );
   }

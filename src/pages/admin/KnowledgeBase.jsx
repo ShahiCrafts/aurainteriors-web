@@ -11,6 +11,7 @@ import {
   CloudLightning,
   AlertTriangle
 } from "lucide-react";
+import { TableSkeleton } from "../../components/common/Skeleton";
 import { 
   listDocuments, 
   uploadDocument, 
@@ -184,9 +185,8 @@ const KnowledgeBase = () => {
         </div>
 
         {loading && documents.length === 0 ? (
-          <div className="flex flex-col items-center justify-center py-20">
-            <Loader className="w-10 h-10 text-teal-600 animate-spin" />
-            <p className="text-gray-400 text-sm mt-4">Loading knowledge documents...</p>
+          <div className="p-4">
+            <TableSkeleton rows={4} cols={5} />
           </div>
         ) : documents.length === 0 ? (
           <div className="flex flex-col items-center justify-center py-20 text-center px-4">

@@ -1,6 +1,7 @@
 import { useEffect, useRef } from "react";
 import { useNavigate, useSearchParams } from "react-router-dom";
 import { verifyMagicLink as verifyMagicLinkApi } from "../../api/authApi";
+import Skeleton from "../../components/common/Skeleton";
 import useAuthStore from "../../store/authStore";
 import { toast } from "react-toastify";
 
@@ -52,9 +53,13 @@ export default function VerifyMagicLinkPage() {
 
   return (
     <div className="flex flex-col items-center justify-center min-h-screen bg-[#F8F9FA] font-dm-sans">
-      <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-[#F27318] mb-4"></div>
-      <h2 className="text-[20px] font-bold text-[#1A1714]">Verifying your sign-in link...</h2>
-      <p className="text-[#64748B] mt-2 text-[14px]">Please wait while we authenticate you.</p>
+      <div className="p-8 bg-white border border-neutral-100 rounded-2xl shadow-sm text-center max-w-sm w-full mx-4 space-y-4">
+        <Skeleton className="w-12 h-12 rounded-full mx-auto" />
+        <Skeleton className="w-3/4 h-6 rounded mx-auto" />
+        <Skeleton className="w-1/2 h-4 rounded mx-auto" />
+        <h2 className="text-[18px] font-bold text-[#1A1714] pt-2">Verifying your sign-in link...</h2>
+        <p className="text-[#64748B] text-[13px]">Please wait while we authenticate you.</p>
+      </div>
     </div>
   );
 }
