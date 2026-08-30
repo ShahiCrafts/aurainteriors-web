@@ -19,6 +19,7 @@ import {
   Tag,
   Flag,
 } from "lucide-react";
+import { TableSkeleton } from "../../components/common/Skeleton";
 import {
   useContacts,
   useContact,
@@ -193,8 +194,8 @@ export default function Contacts() {
         </div>
 
         {isLoading ? (
-          <div className="flex items-center justify-center py-16">
-            <Loader2 className="w-8 h-8 animate-spin text-teal-600" />
+          <div className="p-4">
+            <TableSkeleton rows={5} cols={6} />
           </div>
         ) : contacts.length === 0 ? (
           <div className="p-16 text-center">

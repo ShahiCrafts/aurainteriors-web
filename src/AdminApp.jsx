@@ -25,11 +25,16 @@ const AdminContacts      = lazy(() => import("./pages/admin/Contacts"));
 const AdminUsers         = lazy(() => import("./pages/admin/Users"));
 const NotFoundPage       = lazy(() => import("./pages/info/NotFoundPage"));
 
+import Skeleton, { DashboardSkeleton } from "./components/common/Skeleton";
+
 function LoadingSpinner() {
   return (
-    <div className="flex flex-col items-center justify-center min-h-screen bg-[#1A1714] font-dm-sans">
-      <div className="animate-spin rounded-full h-10 w-10 border-b-2 border-[#0066FF] mb-4"></div>
-      <p className="text-[#0066FF] text-[12px] font-bold tracking-widest uppercase opacity-40">Loading</p>
+    <div className="p-8 min-h-screen bg-neutral-900 font-dm-sans space-y-6">
+      <div className="flex justify-between items-center pb-6 border-b border-neutral-800">
+        <Skeleton className="w-48 h-8 rounded-lg" />
+        <Skeleton className="w-10 h-10 rounded-full" />
+      </div>
+      <DashboardSkeleton />
     </div>
   );
 }

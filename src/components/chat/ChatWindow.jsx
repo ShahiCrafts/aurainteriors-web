@@ -2,12 +2,12 @@ import { useEffect } from 'react';
 import { DotLottieReact } from '@lottiefiles/dotlottie-react';
 import {
   Plus,
-  Loader2,
   Headset,
   Package,
   Sofa,
   ArrowRight,
 } from "lucide-react";
+import Skeleton, { ChatMessageSkeleton } from '../common/Skeleton';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useChatMessages, useMarkMessagesRead, useSendMessage } from '../../hooks/chat/useChatTan';
 import useChatSocket from '../../hooks/chat/useChatSocket';
@@ -92,8 +92,9 @@ const ChatWindow = ({ chat, onClose, onStartNew, onResetView, isCreatingChat }) 
           <div className="h-full flex flex-col">
             <div className="flex-1 overflow-hidden relative">
               {isLoading ? (
-                <div className="flex items-center justify-center h-full">
-                  <Loader2 className="w-8 h-8 text-[#F27318] animate-spin" />
+                <div className="p-4 space-y-4">
+                  <ChatMessageSkeleton isUser={false} />
+                  <ChatMessageSkeleton isUser={true} />
                 </div>
               ) : (
                 <ChatMessageList
@@ -112,11 +113,9 @@ const ChatWindow = ({ chat, onClose, onStartNew, onResetView, isCreatingChat }) 
         ) : (
           <div className="h-full relative bg-white">
             {isCreatingChat ? (
-              <div className="flex items-center justify-center h-full text-center px-6">
-                <div>
-                  <Loader2 className="w-10 h-10 text-[#F27318] animate-spin mx-auto mb-4" />
-                  <p className="text-gray-500 font-medium animate-pulse">Starting conversation...</p>
-                </div>
+              <div className="flex flex-col items-center justify-center h-full text-center p-6 space-y-4">
+                <Skeleton className="w-12 h-12 rounded-full" />
+                <Skeleton className="w-48 h-5 rounded" />
               </div>
             ) : (
               <div className="absolute inset-0 flex flex-col justify-between bg-gray-50/30">

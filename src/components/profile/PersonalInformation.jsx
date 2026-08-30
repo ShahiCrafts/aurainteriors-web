@@ -1,5 +1,6 @@
 import { useState, useRef, useEffect } from "react";
 import { Upload, Trash2, Lock, Check, Camera, Loader } from "lucide-react";
+import Skeleton from "../common/Skeleton";
 import { toast } from "react-toastify";
 import useAuthStore from "../../store/authStore";
 import {
@@ -165,9 +166,25 @@ export default function PersonalInformation() {
   if (isLoading) {
     return (
       <div className="space-y-6">
-        <div className="bg-white rounded-2xl shadow-sm border border-neutral-100 p-8">
-          <div className="flex items-center justify-center h-64">
-            <div className="w-8 h-8 border-2 border-[#F27318] border-t-transparent rounded-full animate-spin" />
+        <div className="bg-white rounded-xl border border-gray-200 p-6 sm:p-8 space-y-4">
+          <Skeleton className="w-36 h-6 rounded" />
+          <Skeleton className="w-48 h-4 rounded" />
+          <div className="flex items-center gap-6 pt-2">
+            <Skeleton className="w-24 h-24 rounded-2xl shrink-0" />
+            <div className="flex-1 space-y-2">
+              <Skeleton className="w-40 h-5 rounded" />
+              <Skeleton className="w-full h-4 rounded" />
+              <Skeleton className="w-32 h-10 rounded-lg mt-2" />
+            </div>
+          </div>
+        </div>
+        <div className="bg-white rounded-2xl border border-gray-200 p-6 sm:p-8 space-y-4">
+          <Skeleton className="w-48 h-6 rounded" />
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 pt-2">
+            <Skeleton className="w-full h-11 rounded-lg" />
+            <Skeleton className="w-full h-11 rounded-lg" />
+            <Skeleton className="w-full h-11 rounded-lg" />
+            <Skeleton className="w-full h-11 rounded-lg" />
           </div>
         </div>
       </div>

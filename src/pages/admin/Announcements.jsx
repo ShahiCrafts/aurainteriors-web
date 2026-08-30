@@ -24,6 +24,7 @@ import {
   Image,
   Tag,
 } from "lucide-react";
+import { TableSkeleton } from "../../components/common/Skeleton";
 import ConfirmationDialog from "../../components/modals/ConfirmationDialog";
 import {
   useAnnouncements,
@@ -386,8 +387,8 @@ export default function Announcements() {
 
       {/* Announcements List */}
       {isLoading ? (
-        <div className="flex items-center justify-center py-12">
-          <Loader2 className="w-8 h-8 animate-spin text-teal-600" />
+        <div className="py-4">
+          <TableSkeleton rows={5} cols={6} />
         </div>
       ) : filteredAnnouncements.length === 0 ? (
         <div className="text-center py-12 bg-white rounded-2xl border border-gray-200">

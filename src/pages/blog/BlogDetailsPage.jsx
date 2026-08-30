@@ -8,13 +8,13 @@ import {
   Linkedin,
   Link as LinkIcon,
   ArrowLeft,
-  Loader2,
   Eye,
   Heart,
 } from "lucide-react";
 import Navbar from "../../layouts/customer/Navbar";
 import Footer from "../../layouts/customer/Footer";
 import { useBlog, useRelatedBlogs } from "../../hooks/blog/useBlogTan";
+import Skeleton from "../../components/common/Skeleton";
 import { getBlogImageUrl, getAvatarUrl } from "../../utils/imageUrl";
 
 export default function BlogDetailsPage() {
@@ -94,8 +94,16 @@ export default function BlogDetailsPage() {
     return (
       <>
         <Navbar />
-        <main className="min-h-screen bg-white font-dm-sans flex items-center justify-center">
-          <Loader2 className="w-8 h-8 animate-spin text-teal-700" />
+        <main className="min-h-screen bg-white font-dm-sans max-w-4xl mx-auto pt-32 px-4 space-y-6">
+          <Skeleton className="w-24 h-6 rounded-full" />
+          <Skeleton className="w-3/4 h-10 rounded-lg" />
+          <Skeleton className="w-full h-6 rounded" />
+          <Skeleton className="w-full h-80 rounded-2xl" />
+          <div className="space-y-3">
+            <Skeleton className="w-full h-4 rounded" />
+            <Skeleton className="w-full h-4 rounded" />
+            <Skeleton className="w-2/3 h-4 rounded" />
+          </div>
         </main>
       </>
     );

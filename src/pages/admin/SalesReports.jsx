@@ -9,10 +9,10 @@ import {
     Download,
     Filter,
     ArrowRight,
-    Loader2,
     PieChart as PieChartIcon,
     BarChart as BarChartIcon
 } from "lucide-react";
+import Skeleton, { DashboardSkeleton } from "../../components/common/Skeleton";
 import {
     AreaChart,
     Area,
@@ -90,9 +90,12 @@ export default function SalesReports() {
 
     if (reportsLoading || categoryLoading || topProductsLoading) {
         return (
-            <div className="flex flex-col items-center justify-center min-h-[60vh]">
-                <Loader2 className="w-10 h-10 text-teal-600 animate-spin mb-4" />
-                <p className="text-neutral-500 font-medium font-dm-sans">Generating your reports...</p>
+            <div className="p-6 space-y-8 bg-white min-h-screen font-dm-sans">
+                <div className="flex justify-between items-center">
+                    <Skeleton className="w-48 h-8 rounded-lg" />
+                    <Skeleton className="w-32 h-10 rounded-xl" />
+                </div>
+                <DashboardSkeleton />
             </div>
         );
     }

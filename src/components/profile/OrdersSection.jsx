@@ -3,7 +3,6 @@ import {
   Package,
   ChevronLeft,
   ChevronRight,
-  Loader2,
   AlertCircle,
   Search,
   ChevronDown,
@@ -13,6 +12,7 @@ import {
 } from "lucide-react";
 import { useMyOrders } from "../../hooks/order/useOrderTan";
 import OrderCard from "./OrderCard";
+import { OrderItemSkeleton } from "../common/Skeleton";
 import OrderStatsCards from "./OrderStatsCards";
 import { Link, useLocation } from "react-router-dom";
 
@@ -77,11 +77,10 @@ export default function OrdersSection() {
 
   if (isLoading && !rawOrders.length) {
     return (
-      <div className="flex flex-col items-center justify-center h-80 gap-3">
-        <Loader2 size={28} className="text-[#F27318] animate-spin" />
-        <p className="text-[14px] text-neutral-400 font-medium tracking-wide">
-          Loading your purchase history...
-        </p>
+      <div className="space-y-4">
+        <OrderItemSkeleton />
+        <OrderItemSkeleton />
+        <OrderItemSkeleton />
       </div>
     );
   }

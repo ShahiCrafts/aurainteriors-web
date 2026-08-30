@@ -26,6 +26,7 @@ import {
   ChevronRight,
   Loader2,
 } from "lucide-react";
+import Skeleton from "../../components/common/Skeleton";
 import { getProductImageUrl } from "../../utils/imageUrl";
 import formatError from "../../utils/errorHandler";
 import { useForm, FormProvider } from "react-hook-form";
@@ -436,9 +437,22 @@ export default function CheckoutPage() {
     return (
       <>
         <Navbar />
-        <div className="min-h-screen flex items-center justify-center pt-20">
-          <Loader2 size={48} className="text-[#F27318] animate-spin" />
-        </div>
+        <main className="min-h-screen bg-white font-dm-sans">
+          <div className="flex flex-col lg:flex-row items-stretch">
+            <div className="flex-1 p-6 lg:p-12 space-y-6">
+              <Skeleton className="w-48 h-8 rounded-lg" />
+              <div className="space-y-4">
+                <Skeleton className="w-full h-16 rounded-xl" />
+                <Skeleton className="w-full h-16 rounded-xl" />
+                <Skeleton className="w-full h-16 rounded-xl" />
+              </div>
+            </div>
+            <div className="w-full lg:w-[380px] xl:w-[512px] p-6 lg:p-12 bg-gray-100 space-y-6">
+              <Skeleton className="w-40 h-7 rounded-lg" />
+              <Skeleton className="w-full h-64 rounded-xl" />
+            </div>
+          </div>
+        </main>
       </>
     );
   }

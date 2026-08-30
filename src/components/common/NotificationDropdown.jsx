@@ -4,7 +4,6 @@ import {
   BellOff, 
   CheckCheck, 
   Archive, 
-  Loader,
   ShoppingCart,
   XCircle,
   RotateCcw,
@@ -13,6 +12,7 @@ import {
   MessageSquare,
   Bell
 } from "lucide-react";
+import Skeleton from "./Skeleton";
 
 const getNotificationIcon = (type) => {
   switch (type) {
@@ -95,8 +95,16 @@ const NotificationDropdown = ({
 
       <div className="flex-1 overflow-y-auto max-h-[400px]">
         {loading && notifications.length === 0 ? (
-          <div className="p-10 flex justify-center text-gray-500">
-            <Loader className="animate-spin text-teal-600" size={24} />
+          <div className="p-4 space-y-3">
+            {[1, 2, 3].map((i) => (
+              <div key={i} className="flex items-start gap-3">
+                <Skeleton className="w-9 h-9 rounded-lg shrink-0" />
+                <div className="flex-1 space-y-2">
+                  <Skeleton className="w-3/4 h-4 rounded" />
+                  <Skeleton className="w-full h-3 rounded" />
+                </div>
+              </div>
+            ))}
           </div>
         ) : notifications.length === 0 ? (
           <div className="p-10 text-center text-gray-400">

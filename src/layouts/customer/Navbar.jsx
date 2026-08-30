@@ -12,9 +12,9 @@ import {
   Bell,
   Menu,
   X,
-  Loader2,
   ChevronDown,
 } from "lucide-react";
+import Skeleton from "../../components/common/Skeleton";
 import { useQueryClient } from "@tanstack/react-query";
 import useAuthStore from "../../store/authStore";
 import useGuestCartStore from "../../store/guestCartStore";
@@ -162,7 +162,7 @@ export default function Navbar() {
                   </button>
                 )}
                 {isSearchLoading && (
-                  <Loader2 size={16} className="text-[#F27318] animate-spin" />
+                  <Skeleton className="w-4 h-4 rounded-full shrink-0" />
                 )}
                 <button
                   type="submit"

@@ -19,6 +19,7 @@ import {
 import AddEditAddressModal from "../modals/AddEditAddressModal";
 import ConfirmationDialog from "../modals/ConfirmationDialog";
 import formatError from "../../utils/errorHandler";
+import Skeleton from "../common/Skeleton";
 
 const labelIcons = {
   home: Home,
@@ -97,9 +98,21 @@ export default function SavedAddresses() {
 
   if (isLoading) {
     return (
-      <div className="flex flex-col items-center justify-center h-80 gap-3">
-        <div className="w-8 h-8 border-2 border-t-transparent border-[#F27318] rounded-full animate-spin" />
-        <p className="text-[14px] text-neutral-400 font-medium">Loading saved addresses...</p>
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+        {[1, 2].map((i) => (
+          <div key={i} className="bg-white rounded-xl border border-neutral-200 p-5 space-y-4">
+            <div className="flex items-center gap-3">
+              <Skeleton className="w-10 h-10 rounded-lg shrink-0" />
+              <div className="space-y-1 flex-1">
+                <Skeleton className="w-24 h-4 rounded" />
+                <Skeleton className="w-16 h-3 rounded" />
+              </div>
+            </div>
+            <Skeleton className="w-3/4 h-4 rounded" />
+            <Skeleton className="w-full h-4 rounded" />
+            <Skeleton className="w-1/2 h-4 rounded" />
+          </div>
+        ))}
       </div>
     );
   }

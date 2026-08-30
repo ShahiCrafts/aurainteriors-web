@@ -1,6 +1,7 @@
 import { useState, useEffect } from "react";
 import { useParams, useNavigate } from "react-router-dom";
-import { Loader2, AlertCircle, ArrowLeft } from "lucide-react";
+import { AlertCircle, ArrowLeft } from "lucide-react";
+import Skeleton from "../../components/common/Skeleton";
 import { Link } from "react-router-dom";
 import { useProduct, useProducts } from "../../hooks/product/useProductTan";
 import { useCategories } from "../../hooks/product/useCategoryTan";
@@ -95,8 +96,13 @@ export default function ARViewPage() {
 
   if (isLoading) {
     return (
-      <div className="min-h-screen bg-neutral-50 flex items-center justify-center font-dm-sans">
-        <Loader2 size={40} className="text-teal-700 animate-spin" />
+      <div className="min-h-screen bg-neutral-900 flex items-center justify-center font-dm-sans p-6">
+        <div className="w-full max-w-md p-8 bg-neutral-800 rounded-3xl border border-neutral-700 space-y-6 text-center">
+          <Skeleton className="w-24 h-24 rounded-full mx-auto" />
+          <Skeleton className="w-3/4 h-6 rounded mx-auto" />
+          <Skeleton className="w-1/2 h-4 rounded mx-auto" />
+          <p className="text-neutral-400 text-sm">Preparing 3D AR Experience...</p>
+        </div>
       </div>
     );
   }

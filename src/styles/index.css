@@ -65,6 +65,33 @@ html::-webkit-scrollbar {
 }
 
 /* Admin Theme Override (changes all teal elements to blue) */
+/* Shimmer overlay animation for skeleton loading elements */
+@keyframes shimmer-sweep {
+  0% { transform: translateX(-100%); }
+  100% { transform: translateX(100%); }
+}
+
+.shimmer-element::after {
+  content: "";
+  position: absolute;
+  top: 0; right: 0; bottom: 0; left: 0;
+  transform: translateX(-100%);
+  background-image: linear-gradient(
+    90deg,
+    rgba(255, 255, 255, 0) 0%,
+    rgba(255, 255, 255, 0.4) 50%,
+    rgba(255, 255, 255, 0) 100%
+  );
+  animation: shimmer-sweep 1.8s infinite ease-in-out;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .shimmer-element::after {
+    animation: none !important;
+    display: none !important;
+  }
+}
+
 .admin-theme {
   --color-teal-50: #F0F5FF;
   --color-teal-100: #E5EEFF;

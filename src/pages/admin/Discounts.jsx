@@ -12,6 +12,7 @@ import {
   Ticket,
   ChevronDown,
 } from "lucide-react";
+import { TableSkeleton } from "../../components/common/Skeleton";
 import ConfirmationDialog from "../../components/modals/ConfirmationDialog";
 import {
   useDiscounts,
@@ -246,8 +247,8 @@ export default function Discounts() {
         </div>
 
         {isLoading ? (
-          <div className="flex items-center justify-center py-20">
-            <Loader2 className="w-8 h-8 animate-spin text-teal-600" />
+          <div className="p-4">
+            <TableSkeleton rows={5} cols={6} />
           </div>
         ) : error ? (
           <div className="py-20 text-center">

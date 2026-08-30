@@ -5,6 +5,7 @@ import {
   Mail, Calendar, Tag, DollarSign, Package, Compass, Copy, ArrowUpRight,
   Shield, Check, UserCheck, ShieldAlert
 } from "lucide-react";
+import Skeleton from "../../common/Skeleton";
 import { getAvatarUrl } from "../../../utils/imageUrl";
 import { useToggleBot } from "../../../hooks/chat/useChatTan";
 import { useAllOrders } from "../../../hooks/order/useOrderTan";
@@ -191,9 +192,9 @@ const AiAssistantPanel = ({ chat, onClose, onUseReply, onEditReply }) => {
             </div>
 
             {isLoadingOrders ? (
-              <div className="bg-white rounded-xl border border-gray-100 p-6 text-center text-xs text-gray-400">
-                <div className="w-4 h-4 rounded-full border border-teal-600 border-t-transparent animate-spin mx-auto mb-2" />
-                Fetching client order history...
+              <div className="bg-white rounded-xl border border-gray-100 p-4 space-y-3">
+                <Skeleton className="w-full h-12 rounded-lg" />
+                <Skeleton className="w-full h-12 rounded-lg" />
               </div>
             ) : customerOrders.length === 0 ? (
               <div className="bg-white rounded-xl border border-gray-100 p-4 text-center text-xs text-gray-400">
