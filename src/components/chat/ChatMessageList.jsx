@@ -201,6 +201,7 @@ const ChatMessageList = ({
         const isAiTyping = typingStatus.userRole === 'ai';
         const matchedMsg = messages.find(m => m.senderRole === typingStatus.userRole);
         const userObj = matchedMsg?.sender;
+        const isGuest = userObj?.firstName === "Guest" && userObj?.lastName === "User";
         
         return (
           <div className="flex w-full mb-3 px-4 justify-start animate-fade-in">
@@ -209,6 +210,10 @@ const ChatMessageList = ({
               {isAiTyping ? (
                 <div className="w-8 h-8 rounded-full bg-slate-800 text-teal-400 border border-slate-700 flex items-center justify-center shrink-0">
                   <Bot size={16} />
+                </div>
+              ) : isGuest ? (
+                <div className="w-8 h-8 rounded-full bg-gray-100 border border-gray-200 text-gray-500 flex items-center justify-center shrink-0">
+                  <User size={14} strokeWidth={1.5} />
                 </div>
               ) : (
                 <div className="w-8 h-8 rounded-full flex items-center justify-center border shadow-xs shrink-0 overflow-hidden bg-gray-50 border-gray-100">

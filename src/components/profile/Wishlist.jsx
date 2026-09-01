@@ -12,7 +12,7 @@ import {
   ChevronRight,
   Filter,
 } from "lucide-react";
-import { ProductCardSkeleton } from "../common/Skeleton";
+import { ProductCardSkeleton, WishlistSkeleton } from "../common/Skeleton";
 import { toast } from "react-toastify";
 import {
   useWishlist,
@@ -110,13 +110,7 @@ export default function Wishlist() {
   const getImageUrl = (product) => getProductImageUrl(product);
 
   if (isLoading) {
-    return (
-      <div className="grid grid-cols-2 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
-        {[1, 2, 3, 4].map((i) => (
-          <ProductCardSkeleton key={i} />
-        ))}
-      </div>
-    );
+    return <WishlistSkeleton />;
   }
 
   if (error) {

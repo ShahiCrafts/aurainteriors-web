@@ -12,7 +12,7 @@ import {
 } from "lucide-react";
 import { useMyOrders } from "../../hooks/order/useOrderTan";
 import OrderCard from "./OrderCard";
-import { OrderItemSkeleton } from "../common/Skeleton";
+import { OrderItemSkeleton, default as Skeleton } from "../common/Skeleton";
 import OrderStatsCards from "./OrderStatsCards";
 import { Link, useLocation } from "react-router-dom";
 
@@ -77,10 +77,44 @@ export default function OrdersSection() {
 
   if (isLoading && !rawOrders.length) {
     return (
-      <div className="space-y-4">
-        <OrderItemSkeleton />
-        <OrderItemSkeleton />
-        <OrderItemSkeleton />
+      <div className="h-full flex flex-col space-y-6">
+        {/* Header */}
+        <div className="flex flex-wrap items-start justify-between gap-4 shrink-0">
+          <div>
+            <h2 className="text-[18px] font-semibold text-[#1A1714]">Order History</h2>
+            <p className="text-[14px] text-neutral-400 mt-1">
+              View your orders, track deliveries, download invoices and more.
+            </p>
+          </div>
+        </div>
+
+        {/* Stats Cards Skeleton */}
+        <div className="shrink-0">
+          <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">
+            {[0, 1, 2, 3].map((idx) => (
+              <div key={idx} className="bg-white rounded-2xl border border-neutral-200 p-4 space-y-2">
+                <Skeleton className="w-16 h-4 rounded" />
+                <Skeleton className="w-20 h-6 rounded" />
+              </div>
+            ))}
+          </div>
+        </div>
+
+        {/* Controls Skeleton */}
+        <div className="flex flex-col sm:flex-row gap-3 items-stretch sm:items-center sm:justify-end shrink-0">
+          <Skeleton className="w-full sm:w-auto sm:max-w-xs h-11 rounded-xl" />
+          <Skeleton className="w-full sm:w-auto sm:min-w-[150px] h-11 rounded-xl" />
+          <Skeleton className="w-full sm:w-auto sm:min-w-[170px] h-11 rounded-xl" />
+        </div>
+
+        {/* Orders Skeleton */}
+        <div className="flex-1 min-h-0 overflow-y-auto space-y-5">
+          <div className="border border-neutral-200 rounded-xl overflow-hidden divide-y divide-neutral-100">
+            <OrderItemSkeleton />
+            <OrderItemSkeleton />
+            <OrderItemSkeleton />
+          </div>
+        </div>
       </div>
     );
   }

@@ -1,6 +1,8 @@
-import { Suspense, lazy } from "react";
-import { Navigate } from "react-router-dom";
+import { Suspense, lazy, useEffect } from "react";
+import { Navigate, useNavigate } from "react-router-dom";
+import { useQueryClient } from "@tanstack/react-query";
 import useAuthStore from "../store/authStore";
+import { prefetchHomeData } from "../utils/prefetchHome";
 
 // Above-the-fold — always eager, needed for first paint
 import TopBar from "../layouts/customer/TopBar";
@@ -32,6 +34,14 @@ function SectionSkeleton({ minHeight, className = "" }) {
 // ─── HomePage ────────────────────────────────────────────────────────────────
 export default function HomePage() {
   const { isAuthenticated, user } = useAuthStore();
+  const queryClient = useQueryClient();
+
+  // OPTIMIZATION: Phase 2c - Prefetch home page data on component mount
+  // This starts the data fetch immediately instead of waiting for useInView
+  // Result: Data arrives faster (parallel fetch with other page loads)
+  useEffect(() => {
+    prefetchHomeData(queryClient);
+  }, [queryClient]);
 
   // Redirect admin users to admin dashboard
   if (isAuthenticated && user?.role === "admin") {

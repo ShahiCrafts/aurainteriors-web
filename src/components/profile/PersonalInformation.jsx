@@ -166,25 +166,86 @@ export default function PersonalInformation() {
   if (isLoading) {
     return (
       <div className="space-y-6">
-        <div className="bg-white rounded-xl border border-gray-200 p-6 sm:p-8 space-y-4">
-          <Skeleton className="w-36 h-6 rounded" />
-          <Skeleton className="w-48 h-4 rounded" />
-          <div className="flex items-center gap-6 pt-2">
+        {/* Profile Picture Section Skeleton */}
+        <div className="bg-white rounded-xl border border-gray-200 p-6 sm:p-8">
+          <div className="mb-6">
+            <Skeleton className="w-36 h-6 rounded mb-2" />
+            <Skeleton className="w-48 h-4 rounded" />
+          </div>
+
+          <div className="flex flex-col sm:flex-row items-center sm:items-start gap-6">
+            {/* Avatar Skeleton */}
             <Skeleton className="w-24 h-24 rounded-2xl shrink-0" />
-            <div className="flex-1 space-y-2">
-              <Skeleton className="w-40 h-5 rounded" />
-              <Skeleton className="w-full h-4 rounded" />
-              <Skeleton className="w-32 h-10 rounded-lg mt-2" />
+
+            {/* Upload Info Skeleton */}
+            <div className="flex-1 text-center sm:text-left w-full">
+              <Skeleton className="w-40 h-5 rounded mb-3" />
+              <Skeleton className="w-full h-4 rounded mb-2" />
+              <Skeleton className="w-4/5 h-4 rounded mb-6" />
+              <div className="flex flex-wrap items-center justify-center sm:justify-start gap-3">
+                <Skeleton className="w-32 h-10 rounded-lg" />
+                <Skeleton className="w-24 h-10 rounded-lg" />
+              </div>
             </div>
           </div>
         </div>
-        <div className="bg-white rounded-2xl border border-gray-200 p-6 sm:p-8 space-y-4">
-          <Skeleton className="w-48 h-6 rounded" />
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 pt-2">
-            <Skeleton className="w-full h-11 rounded-lg" />
-            <Skeleton className="w-full h-11 rounded-lg" />
-            <Skeleton className="w-full h-11 rounded-lg" />
-            <Skeleton className="w-full h-11 rounded-lg" />
+
+        {/* Personal Information Section Skeleton */}
+        <div className="bg-white rounded-2xl border border-gray-200 p-6 sm:p-8">
+          <div className="mb-6">
+            <Skeleton className="w-48 h-6 rounded mb-2" />
+            <Skeleton className="w-64 h-4 rounded" />
+          </div>
+
+          <div className="space-y-5">
+            {/* First Name & Last Name Row */}
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+              <div className="space-y-2">
+                <Skeleton className="w-28 h-4 rounded" />
+                <Skeleton className="w-full h-11 rounded-lg" />
+              </div>
+              <div className="space-y-2">
+                <Skeleton className="w-28 h-4 rounded" />
+                <Skeleton className="w-full h-11 rounded-lg" />
+              </div>
+            </div>
+
+            {/* Email & Phone Row */}
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+              <div className="space-y-2">
+                <Skeleton className="w-32 h-4 rounded" />
+                <Skeleton className="w-full h-11 rounded-lg" />
+              </div>
+              <div className="space-y-2">
+                <Skeleton className="w-28 h-4 rounded" />
+                <div className="flex gap-2">
+                  <Skeleton className="w-20 h-11 rounded-lg" />
+                  <Skeleton className="flex-1 h-11 rounded-lg" />
+                </div>
+              </div>
+            </div>
+
+            {/* Gender & Date of Birth Row */}
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+              <div className="space-y-2">
+                <Skeleton className="w-20 h-4 rounded mb-2" />
+                <div className="flex flex-wrap gap-2">
+                  <Skeleton className="flex-1 sm:flex-none min-w-[80px] h-10 rounded-lg" />
+                  <Skeleton className="flex-1 sm:flex-none min-w-[80px] h-10 rounded-lg" />
+                  <Skeleton className="flex-1 sm:flex-none min-w-[80px] h-10 rounded-lg" />
+                </div>
+              </div>
+              <div className="space-y-2">
+                <Skeleton className="w-32 h-4 rounded" />
+                <Skeleton className="w-full h-11 rounded-lg" />
+              </div>
+            </div>
+
+            {/* Submit & Cancel Buttons */}
+            <div className="flex flex-col-reverse sm:flex-row justify-end gap-3 pt-4">
+              <Skeleton className="w-full sm:w-24 h-10 rounded-lg" />
+              <Skeleton className="w-full sm:w-32 h-10 rounded-lg" />
+            </div>
           </div>
         </div>
       </div>

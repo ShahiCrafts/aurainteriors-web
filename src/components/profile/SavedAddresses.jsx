@@ -19,7 +19,7 @@ import {
 import AddEditAddressModal from "../modals/AddEditAddressModal";
 import ConfirmationDialog from "../modals/ConfirmationDialog";
 import formatError from "../../utils/errorHandler";
-import Skeleton from "../common/Skeleton";
+import Skeleton, { AddressSkeleton } from "../common/Skeleton";
 
 const labelIcons = {
   home: Home,
@@ -98,21 +98,24 @@ export default function SavedAddresses() {
 
   if (isLoading) {
     return (
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-        {[1, 2].map((i) => (
-          <div key={i} className="bg-white rounded-xl border border-neutral-200 p-5 space-y-4">
-            <div className="flex items-center gap-3">
-              <Skeleton className="w-10 h-10 rounded-lg shrink-0" />
-              <div className="space-y-1 flex-1">
-                <Skeleton className="w-24 h-4 rounded" />
-                <Skeleton className="w-16 h-3 rounded" />
-              </div>
-            </div>
-            <Skeleton className="w-3/4 h-4 rounded" />
-            <Skeleton className="w-full h-4 rounded" />
-            <Skeleton className="w-1/2 h-4 rounded" />
+      <div className="h-full flex flex-col space-y-6">
+        {/* Header Info */}
+        <div className="flex items-center justify-between shrink-0">
+          <div>
+            <h2 className="text-[18px] font-semibold text-[#1A1714]">Saved Addresses</h2>
+            <p className="text-[14px] text-neutral-400 mt-1">
+              Manage your delivery locations and billing addresses for quick checkout.
+            </p>
           </div>
-        ))}
+          <Skeleton className="w-10 h-10 rounded-lg" />
+        </div>
+
+        {/* Address Cards Skeleton */}
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+          {[1, 2].map((i) => (
+            <AddressSkeleton key={i} />
+          ))}
+        </div>
       </div>
     );
   }

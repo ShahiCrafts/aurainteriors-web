@@ -2,7 +2,7 @@ import React, { useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { MoveRight, ChevronLeft, ChevronRight } from "lucide-react";
 import { useCategoryTree } from "../../hooks/product/useCategoryTan";
-import Skeleton from "../common/Skeleton";
+import Skeleton, { CategoryCardSkeleton } from "../common/Skeleton";
 import useInView from "../../hooks/useInView";
 
 export default function ShopByCategory() {
@@ -69,11 +69,7 @@ export default function ShopByCategory() {
           <div className="grid grid-cols-3 md:grid-cols-4 lg:grid-cols-8 gap-4 md:gap-5">
             {isLoading ? (
               [...Array(6)].map((_, i) => (
-                <div key={i} className="flex flex-col">
-                  <Skeleton className="w-full rounded-lg" style={{ height: '160px' }} />
-                  <Skeleton className="w-3/4 h-4 mx-auto mt-3 mb-2" />
-                  <Skeleton className="w-1/2 h-3 mx-auto" />
-                </div>
+                <CategoryCardSkeleton key={i} />
               ))
             ) : (
               categories.slice(0, 6).map((category) => (

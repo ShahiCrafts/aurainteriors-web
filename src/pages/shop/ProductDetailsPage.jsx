@@ -24,6 +24,8 @@ import {
   Sparkles,
   Layers,
   LayoutGrid,
+  MessageCircle,
+  FileText,
 } from "lucide-react";
 import Navbar from "../../layouts/customer/Navbar";
 import Footer from "../../layouts/customer/Footer";
@@ -52,34 +54,38 @@ function DimensionDiagram({ dimensions }) {
   const depth = dimensions.depth || "–";
 
   return (
-    <svg viewBox="0 0 320 260" className="w-full max-w-[280px] h-auto" fill="none" xmlns="http://www.w3.org/2000/svg">
-      {/* Silhouette */}
-      <rect x="40" y="92" width="220" height="86" rx="10" stroke="#1A1714" strokeWidth="1.5" opacity="0.55" />
-      <rect x="40" y="72" width="56" height="28" rx="6" stroke="#1A1714" strokeWidth="1.5" opacity="0.55" />
-      <rect x="204" y="72" width="56" height="28" rx="6" stroke="#1A1714" strokeWidth="1.5" opacity="0.55" />
-      <line x1="54" y1="178" x2="54" y2="196" stroke="#1A1714" strokeWidth="1.5" opacity="0.55" />
-      <line x1="246" y1="178" x2="246" y2="196" stroke="#1A1714" strokeWidth="1.5" opacity="0.55" />
+    <svg viewBox="-20 0 640 380" className="w-full h-auto -mt-2" fill="none" xmlns="http://www.w3.org/2000/svg">
+      {/* Sofa silhouette */}
+      <rect x="120" y="80" width="360" height="140" rx="16" stroke="#3d3d3d" strokeWidth="1.5" />
+      {/* Left armrest */}
+      <rect x="120" y="60" width="70" height="50" rx="8" stroke="#3d3d3d" strokeWidth="1.5" />
+      {/* Right armrest */}
+      <rect x="410" y="60" width="70" height="50" rx="8" stroke="#3d3d3d" strokeWidth="1.5" />
+      {/* Legs */}
+      <line x1="150" y1="220" x2="150" y2="240" stroke="#3d3d3d" strokeWidth="1.5" />
+      <line x1="430" y1="220" x2="430" y2="240" stroke="#3d3d3d" strokeWidth="1.5" />
 
-      {/* Width dimension (bottom) */}
-      <line x1="40" y1="216" x2="260" y2="216" stroke="#B0B0B0" strokeWidth="1" />
-      <line x1="40" y1="211" x2="40" y2="221" stroke="#B0B0B0" strokeWidth="1" />
-      <line x1="260" y1="211" x2="260" y2="221" stroke="#B0B0B0" strokeWidth="1" />
-      <text x="150" y="238" textAnchor="middle" fontSize="13" fill="#1A1714" fontWeight="700">
-        {width} {unit}
-      </text>
+      {/* HEIGHT dimension (right side) - Orange */}
+      <line x1="520" y1="60" x2="520" y2="220" stroke="#F27318" strokeWidth="1.5" />
+      <circle cx="520" cy="60" r="5" fill="#F27318" />
+      <circle cx="520" cy="220" r="5" fill="#F27318" />
+      <text x="560" y="145" fontSize="16" fontWeight="700" fill="#1A1714">{height} cm</text>
+      <text x="560" y="170" fontSize="12" fill="#9a9a9a" fontWeight="500">Height</text>
 
-      {/* Height dimension (right) */}
-      <line x1="280" y1="72" x2="280" y2="178" stroke="#B0B0B0" strokeWidth="1" />
-      <line x1="275" y1="72" x2="285" y2="72" stroke="#B0B0B0" strokeWidth="1" />
-      <line x1="275" y1="178" x2="285" y2="178" stroke="#B0B0B0" strokeWidth="1" />
-      <text x="300" y="125" fontSize="13" fill="#1A1714" fontWeight="700" transform="rotate(90 300 125)" textAnchor="middle">
-        {height} {unit}
-      </text>
+      {/* DEPTH dimension (left side) - Orange dashed */}
+      <line x1="80" y1="240" x2="130" y2="240" stroke="#F27318" strokeWidth="1.5" strokeDasharray="5,5" />
+      <line x1="80" y1="240" x2="80" y2="270" stroke="#F27318" strokeWidth="1.5" strokeDasharray="5,5" />
+      <circle cx="80" cy="240" r="5" fill="#F27318" />
+      <circle cx="130" cy="240" r="5" fill="#F27318" />
+      <text x="35" y="295" fontSize="16" fontWeight="700" fill="#1A1714">{depth} cm</text>
+      <text x="35" y="320" fontSize="12" fill="#9a9a9a" fontWeight="500">Depth</text>
 
-      {/* Depth label */}
-      <text x="52" y="205" fontSize="11" fill="#9a9a9a" fontWeight="600">
-        {depth} {unit} depth
-      </text>
+      {/* WIDTH dimension (bottom) - Orange */}
+      <line x1="120" y1="300" x2="480" y2="300" stroke="#F27318" strokeWidth="1.5" />
+      <circle cx="120" cy="300" r="5" fill="#F27318" />
+      <circle cx="480" cy="300" r="5" fill="#F27318" />
+      <text x="240" y="355" fontSize="16" fontWeight="700" fill="#1A1714" textAnchor="middle">{width} cm</text>
+      <text x="240" y="380" fontSize="12" fill="#9a9a9a" fontWeight="500" textAnchor="middle">Width</text>
     </svg>
   );
 }
@@ -90,7 +96,6 @@ export default function ProductDetailsPage() {
 
   const [selectedImage, setSelectedImage] = useState(0);
   const [selectedColor, setSelectedColor] = useState(null);
-  const [selectedSize, setSelectedSize] = useState(null);
   const [quantity, setQuantity] = useState(1);
   const [activeMainTab, setActiveMainTab] = useState("description");
   const [isARModalOpen, setIsARModalOpen] = useState(false);
@@ -98,6 +103,7 @@ export default function ProductDetailsPage() {
   const [editingReview, setEditingReview] = useState(null);
   const [scrolledPastAction, setScrolledPastAction] = useState(false);
   const [isLightboxOpen, setIsLightboxOpen] = useState(false);
+  const [isDescriptionExpanded, setIsDescriptionExpanded] = useState(false);
   const reviewsSectionRef = useRef(null);
 
   useEffect(() => {
@@ -165,7 +171,6 @@ export default function ProductDetailsPage() {
   const handleAddToCart = () => {
     const variant = {};
     if (selectedColor) variant.color = typeof selectedColor === "object" ? selectedColor.name : selectedColor;
-    if (selectedSize) variant.size = typeof selectedSize === "object" ? selectedSize.name : selectedSize;
 
     if (!isAuthenticated) {
       addToGuestCart(product, quantity, variant);
@@ -230,7 +235,6 @@ export default function ProductDetailsPage() {
   useEffect(() => {
     if (product) {
       if (product.colors?.length > 0 && !selectedColor) setSelectedColor(product.colors[0]);
-      if (product.sizes?.length > 0 && !selectedSize) setSelectedSize(product.sizes[0]);
     }
   }, [product]);
 
@@ -254,7 +258,14 @@ export default function ProductDetailsPage() {
     return product.images;
   };
   const images = getImages();
-  const getImageUrl = (image) => getImageUrlUtil(image?.url, "products");
+  const getImageUrl = (image) => {
+    // Backend returns full Cloudinary URLs, just return them directly
+    if (image?.url?.startsWith("http")) {
+      return image.url;
+    }
+    // Fallback for relative paths
+    return getImageUrlUtil(image?.url, "products");
+  };
 
   const formatPrice = (price) => new Intl.NumberFormat("en-NP", { minimumFractionDigits: 0 }).format(price);
 
@@ -304,7 +315,6 @@ export default function ProductDetailsPage() {
   ].filter(Boolean);
 
   const colors = product?.colors || [];
-  const sizes = product?.sizes || [];
 
   const detailIcons = [Sparkles, Layers, ShieldCheck, LayoutGrid];
 
@@ -395,10 +405,35 @@ export default function ProductDetailsPage() {
           </nav>
 
           {/* Product Section */}
-          <div className="grid grid-cols-1 lg:grid-cols-12 gap-10 lg:gap-16 mb-14">            {/* Image Gallery */}
-            <div className="lg:col-span-6 space-y-6">
+          <div className="flex gap-10 mb-14">            {/* Image Gallery */}
+            <div className="flex-[1.2] flex gap-3 justify-end overflow-hidden">
+              {/* Thumbnails - left side */}
+              <div className="flex flex-col gap-3 overflow-y-auto no-scrollbar">
+                {images.slice(0, 5).map((image, index) => {
+                  const isLastVisible = index === 4 && images.length > 5;
+                  return (
+                    <button
+                      key={index}
+                      onClick={() => setSelectedImage(index)}
+                      className={`relative shrink-0 w-20 h-20 rounded-lg overflow-hidden border-2 transition-all ${selectedImage === index ? "border-[#F27318]" : "border-transparent hover:border-black/10"
+                        }`}
+                    >
+                      <img src={getImageUrl(image)} alt={`${product.name} thumbnail ${index + 1}`} className="w-full h-full object-cover" />
+                      {isLastVisible && (
+                        <div className="absolute inset-0 bg-black/50 flex items-center justify-center">
+                          <span className="text-white text-xs font-bold">+{images.length - 5}</span>
+                        </div>
+                      )}
+                    </button>
+                  );
+                })}
+              </div>
+
+              {/* Main image and details - right side */}
+              <div className="space-y-6 flex-1">
               {/* Main Image */}
-              <div className="relative rounded-xl overflow-hidden bg-black/[0.02] border border-black/[0.05]">
+              <div className="w-full overflow-hidden">
+              <div className="relative rounded-xl overflow-hidden bg-black/[0.02] border border-black/[0.05] w-full h-[444px]">
                 {/* Bestseller badge on image */}
                 {product.isFeatured && (
                   <div className="absolute top-4 left-4 z-10 flex items-center gap-1.5 bg-white text-[#1A1714] text-[13px] font-bold px-3 py-1.5 rounded-md shadow-sm">
@@ -412,7 +447,7 @@ export default function ProductDetailsPage() {
                   alt={product.name}
                   magnifierSize={180}
                   zoomLevel={2.5}
-                  className="aspect-[4/3] w-full"
+                  className="w-full h-full object-cover"
                 />
 
                 {/* Fullscreen button - top right */}
@@ -446,32 +481,12 @@ export default function ProductDetailsPage() {
                   ))}
                 </div>
               </div>
-
-              {/* Thumbnails - below main image */}
-              <div className="flex gap-3 mt-4 overflow-x-auto no-scrollbar">
-                {images.slice(0, 5).map((image, index) => {
-                  const isLastVisible = index === 4 && images.length > 5;
-                  return (
-                    <button
-                      key={index}
-                      onClick={() => setSelectedImage(index)}
-                      className={`relative shrink-0 w-20 h-20 rounded-lg overflow-hidden border-2 transition-all ${selectedImage === index ? "border-[#F27318]" : "border-transparent hover:border-black/10"
-                        }`}
-                    >
-                      <img src={getImageUrl(image)} alt={`${product.name} thumbnail ${index + 1}`} className="w-full h-full object-cover" />
-                      {isLastVisible && (
-                        <div className="absolute inset-0 bg-black/50 flex items-center justify-center">
-                          <span className="text-white text-[14px] font-bold">+{images.length - 5}</span>
-                        </div>
-                      )}
-                    </button>
-                  );
-                })}
+              </div>
               </div>
             </div>
 
             {/* Product Info */}
-            <div className="lg:col-span-6">              {/* Bestseller badge */}
+            <div className="flex-1">              {/* Bestseller badge */}
               {product.isFeatured && (
                 <div className="bg-[#F27318] text-white text-[11px] font-bold px-3 py-1 rounded uppercase tracking-widest mb-5 w-fit">
                   Bestseller
@@ -506,43 +521,76 @@ export default function ProductDetailsPage() {
                 {product.originalPrice && product.originalPrice > product.price && (
                   <>
                     <span className="text-[16px] text-black/35 line-through font-medium">Rs. {formatPrice(product.originalPrice)}</span>
-                    <span className="text-[15px] font-bold text-[#F27318]">{discount}% OFF</span>
+                    <span className="bg-[#F27318]/[0.08] text-[#F27318] px-2.5 py-1 rounded text-[13px] font-bold">{discount}% OFF</span>
                   </>
                 )}
               </div>
-              <p className="text-[14px] text-black/50 mb-5">Inclusive of all taxes</p>
+              <p className="text-[14px] text-black/50 mb-4">Inclusive of all taxes</p>
 
-              {/* Trust Icons */}
-              <div className="grid grid-cols-4 gap-5 mb-8 mt-8">
-                <div className="flex items-start gap-3">
-                  <Truck size={18} className="text-[#F27318] shrink-0 mt-0.5" />
-                  <div>
-                    <h4 className="text-[14px] font-bold text-[#1A1714] leading-tight">Free Delivery</h4>
-                    <p className="text-[13px] text-black/50 leading-tight mt-0.5">above Rs. 5,000</p>
+              {/* Product Description */}
+              {product.description && (
+                <div className="mb-6">
+                  {!isDescriptionExpanded ? (
+                    <p className="text-[14px] text-black/60 leading-relaxed text-justify">
+                      {product.description.length > 150
+                        ? `${product.description.substring(0, 150)}... `
+                        : product.description}
+                      {product.description.length > 150 && (
+                        <button
+                          onClick={() => setIsDescriptionExpanded(true)}
+                          className="text-[#F27318] font-semibold hover:underline text-[14px] inline"
+                        >
+                          View More
+                        </button>
+                      )}
+                    </p>
+                  ) : (
+                    <p className="text-[14px] text-black/60 leading-relaxed text-justify">
+                      {product.description}
+                      <button
+                        onClick={() => setIsDescriptionExpanded(false)}
+                        className="text-[#F27318] font-semibold hover:underline text-[14px] inline ml-1"
+                      >
+                        View Less
+                      </button>
+                    </p>
+                  )}
+                </div>
+              )}
+
+              {/* Trust Icons - with card background */}
+              {/* <div className="bg-[#F27318]/5 rounded-lg px-4 py-6 mb-8 mt-8">
+                <div className="grid grid-cols-4 gap-5">
+                  <div className="flex items-start gap-3">
+                    <Truck size={18} className="text-[#F27318] shrink-0 mt-0.5" />
+                    <div>
+                      <h4 className="text-[14px] font-bold text-[#1A1714] leading-tight">Free Delivery</h4>
+                      <p className="text-[13px] text-black/50 leading-tight mt-0.5">above Rs. 5,000</p>
+                    </div>
+                  </div>
+                  <div className="flex items-start gap-2">
+                    <Hammer size={18} className="text-[#F27318] shrink-0 mt-0.5" />
+                    <div>
+                      <h4 className="text-[14px] font-bold text-[#1A1714] leading-tight">Free Installation</h4>
+                      <p className="text-[13px] text-black/50 leading-tight mt-0.5">on all orders</p>
+                    </div>
+                  </div>
+                  <div className="flex items-start gap-2">
+                    <ShieldCheck size={18} className="text-[#F27318] shrink-0 mt-0.5" />
+                    <div>
+                      <h4 className="text-[14px] font-bold text-[#1A1714] leading-tight">10 Year Warranty</h4>
+                      <p className="text-[13px] text-black/50 leading-tight mt-0.5">on frame</p>
+                    </div>
+                  </div>
+                  <div className="flex items-start gap-2">
+                    <RotateCcw size={18} className="text-[#F27318] shrink-0 mt-0.5" />
+                    <div>
+                      <h4 className="text-[14px] font-bold text-[#1A1714] leading-tight">Easy Returns</h4>
+                      <p className="text-[13px] text-black/50 leading-tight mt-0.5">within 7 days</p>
+                    </div>
                   </div>
                 </div>
-                <div className="flex items-start gap-2">
-                  <Hammer size={18} className="text-[#F27318] shrink-0 mt-0.5" />
-                  <div>
-                    <h4 className="text-[14px] font-bold text-[#1A1714] leading-tight">Free Installation</h4>
-                    <p className="text-[13px] text-black/50 leading-tight mt-0.5">on all orders</p>
-                  </div>
-                </div>
-                <div className="flex items-start gap-2">
-                  <ShieldCheck size={18} className="text-[#F27318] shrink-0 mt-0.5" />
-                  <div>
-                    <h4 className="text-[14px] font-bold text-[#1A1714] leading-tight">10 Year Warranty</h4>
-                    <p className="text-[13px] text-black/50 leading-tight mt-0.5">on frame</p>
-                  </div>
-                </div>
-                <div className="flex items-start gap-2">
-                  <RotateCcw size={18} className="text-[#F27318] shrink-0 mt-0.5" />
-                  <div>
-                    <h4 className="text-[14px] font-bold text-[#1A1714] leading-tight">Easy Returns</h4>
-                    <p className="text-[13px] text-black/50 leading-tight mt-0.5">within 7 days</p>
-                  </div>
-                </div>
-              </div>
+              </div> */}
 
               {/* Color Selector */}
               {colors.length > 0 && (
@@ -561,42 +609,14 @@ export default function ProductDetailsPage() {
                         <button
                           key={index}
                           onClick={() => setSelectedColor(color)}
-                          className={`w-10 h-10 rounded-full border-2 transition-all duration-200 flex items-center justify-center ${isSelected ? "border-[#F27318]" : "border-transparent hover:border-black/10"
+                          className={`w-10 h-10 rounded-full border-2 transition-all duration-200 flex items-center justify-center overflow-hidden ${isSelected ? "border-[#F27318]" : "border-transparent hover:border-black/10"
                             }`}
                           title={typeof color === "object" ? color.name : color}
                         >
                           <div
-                            className="w-full h-full rounded-full border border-black/10"
-                            style={{ backgroundColor: colorValue, margin: isSelected ? "3px" : "0" }}
+                            className="w-full h-full rounded-full"
+                            style={{ backgroundColor: colorValue }}
                           />
-                        </button>
-                      );
-                    })}
-                  </div>
-                </div>
-              )}
-
-              {/* Size Selector */}
-              {sizes.length > 0 && (
-                <div className="mb-6">
-                  <h3 className="text-[15px] font-semibold text-black/80 mb-3">
-                    Select Size:{" "}
-                    <span className="font-bold text-[#1A1714]">{selectedSize?.name || selectedSize}</span>
-                  </h3>
-                  <div className="flex flex-wrap gap-2.5">
-                    {sizes.map((size, index) => {
-                      const sizeName = typeof size === "object" ? size.name : size;
-                      const isSelected = (selectedSize?.name || selectedSize) === sizeName;
-                      return (
-                        <button
-                          key={index}
-                          onClick={() => setSelectedSize(size)}
-                          className={`px-5 py-2.5 rounded-lg border font-semibold text-[14px] transition-all duration-200 ${isSelected
-                            ? "border-[#F27318] text-[#F27318] bg-[#F27318]/5"
-                            : "border-black/10 text-black/50 hover:border-black/25 bg-white"
-                            }`}
-                        >
-                          {sizeName}
                         </button>
                       );
                     })}
@@ -664,59 +684,42 @@ export default function ProductDetailsPage() {
             </div>
           </div>
 
-          {/* Delivery Checker — full-width bar above the tabs */}
-          <div className="bg-neutral-100/70 rounded-xl p-5 sm:p-6 flex flex-col sm:flex-row sm:items-center gap-4 sm:gap-6 mb-10">
-            <div className="flex items-center gap-2.5 shrink-0">
-              <MapPin size={18} className="text-[#1A1714]" />
-              <h3 className="text-[15px] font-bold text-[#1A1714] whitespace-nowrap">Check Delivery &amp; Availability</h3>
-            </div>
-            <div className="flex gap-2 w-full sm:max-w-xs">
-              <input
-                type="text"
-                placeholder="Enter your pincode"
-                className="flex-1 min-w-0 px-3.5 py-2.5 border border-black/[0.08] rounded-lg text-[14px] font-medium placeholder:text-black/30 focus:outline-none focus:border-[#F27318] focus:ring-1 focus:ring-[#F27318]/20 transition-all bg-white"
-              />
-              <button className="bg-[#F27318] text-white px-5 py-2.5 rounded-lg font-bold text-[14px] hover:bg-[#D9620E] transition-colors whitespace-nowrap shrink-0">
-                Check
-              </button>
-            </div>
-            <div className="sm:ml-auto text-[14px] font-medium sm:text-right">
-              <p className="text-[#1A1714]">Deliver to Lalitpur 44600</p>
-              <p>
-                <span className="text-[#4CAF50] font-bold">In Stock</span>
-                <span className="text-black/30"> • </span>
-                <span className="text-black/50">Delivery by 22 May - 24 May</span>
-              </p>
-            </div>
-          </div>
-
           {/* Tabs + Content — full width */}
           <div className="mb-16">
-            <div className="border-b border-black/[0.06] flex items-center justify-between">
-              <div className="flex gap-7 overflow-x-auto min-w-min">
+            <div className="border-b border-black/[0.08] flex items-center justify-between">
+              <div className="flex gap-0 overflow-x-auto min-w-min">
                 {[
-                  { id: "description", label: "Description" },
-                  { id: "specifications", label: "Specifications" },
-                  { id: "materials", label: "Materials" },
-                  { id: "reviews", label: `Reviews (${product?.rating?.count || 0})` },
-                  { id: "delivery", label: "Delivery & Returns" },
-                ].map((tab) => (
-                  <button
-                    key={tab.id}
-                    onClick={() => setActiveMainTab(tab.id)}
-                    className={`py-4 text-[15px] font-semibold transition-all relative bg-transparent border-none cursor-pointer whitespace-nowrap ${activeMainTab === tab.id ? "text-[#F27318]" : "text-black/40 hover:text-black/60"
-                      }`}
-                  >
-                    {tab.label}
-                    {activeMainTab === tab.id && (
-                      <motion.div
-                        layoutId="activeMainTabUnderline"
-                        className="absolute bottom-0 left-0 right-0 h-[2px] bg-[#F27318]"
-                        transition={{ type: "spring", bounce: 0.2, duration: 0.6 }}
+                  { id: "description", label: "Description", Icon: FileText },
+                  { id: "specifications", label: "Specifications", Icon: Edit2 },
+                  { id: "materials", label: "Materials", Icon: Layers },
+                  { id: "reviews", label: `Reviews (${product?.rating?.count || 0})`, Icon: Star },
+                  { id: "delivery", label: "Delivery & Returns", Icon: Truck },
+                ].map((tab) => {
+                  const { Icon } = tab;
+                  const isActive = activeMainTab === tab.id;
+                  return (
+                    <button
+                      key={tab.id}
+                      onClick={() => setActiveMainTab(tab.id)}
+                      className={`px-6 py-5 text-[14px] font-semibold transition-all relative bg-transparent border-none cursor-pointer whitespace-nowrap flex items-center gap-2.5 group ${isActive ? "text-[#1A1714]" : "text-black/50 hover:text-black/70"
+                        }`}
+                    >
+                      <Icon 
+                        size={16} 
+                        strokeWidth={isActive ? 2.5 : 2}
+                        className={`transition-all ${isActive ? "text-[#F27318]" : "text-black/40 group-hover:text-black/60"}`} 
                       />
-                    )}
-                  </button>
-                ))}
+                      {tab.label}
+                      {isActive && (
+                        <motion.div
+                          layoutId="activeMainTabUnderline"
+                          className="absolute bottom-0 left-0 right-0 h-0.5 bg-[#F27318]"
+                          transition={{ type: "spring", bounce: 0.2, duration: 0.6 }}
+                        />
+                      )}
+                    </button>
+                  );
+                })}
               </div>
 
               {activeMainTab === "reviews" && (
@@ -725,7 +728,7 @@ export default function ProductDetailsPage() {
                     hasReviewed ? (
                       <button
                         onClick={() => handleOpenReviewModal(userReview)}
-                        className="inline-flex items-center gap-2 text-[#F27318] text-[15px] font-semibold hover:underline underline-offset-4 transition-all cursor-pointer bg-transparent border-none p-0 whitespace-nowrap"
+                        className="inline-flex items-center gap-2 text-[#F27318] text-[14px] font-semibold hover:underline underline-offset-4 transition-all cursor-pointer bg-transparent border-none p-0 whitespace-nowrap"
                       >
                         <Edit2 size={14} />
                         Edit Your Review
@@ -733,7 +736,7 @@ export default function ProductDetailsPage() {
                     ) : (
                       <button
                         onClick={() => handleOpenReviewModal()}
-                        className="inline-flex items-center gap-2 text-[#F27318] text-[15px] font-semibold hover:underline underline-offset-4 transition-all cursor-pointer bg-transparent border-none p-0 whitespace-nowrap"
+                        className="inline-flex items-center gap-2 text-[#F27318] text-[14px] font-semibold hover:underline underline-offset-4 transition-all cursor-pointer bg-transparent border-none p-0 whitespace-nowrap"
                       >
                         <PenLine size={15} />
                         Write a Review
@@ -742,7 +745,7 @@ export default function ProductDetailsPage() {
                   ) : (
                     <button
                       onClick={() => useAuthStore.getState().openAuthModal("login")}
-                      className="inline-flex items-center gap-2 text-[#F27318] text-[15px] font-semibold hover:underline underline-offset-4 transition-all cursor-pointer bg-transparent border-none p-0 whitespace-nowrap"
+                      className="inline-flex items-center gap-2 text-[#F27318] text-[14px] font-semibold hover:underline underline-offset-4 transition-all cursor-pointer bg-transparent border-none p-0 whitespace-nowrap"
                     >
                       <PenLine size={14} />
                       Write a Review
@@ -762,17 +765,27 @@ export default function ProductDetailsPage() {
                     exit={{ opacity: 0, y: -10 }}
                     transition={{ duration: 0.4, ease: [0.23, 1, 0.32, 1] }}
                   >
-                    <div className="grid grid-cols-1 lg:grid-cols-2 gap-10 items-start">
-                      <div className="text-[15px] text-black/55 leading-[1.8] font-medium space-y-5">
-                        <p>{product.description}</p>
+                    <div className="grid grid-cols-1 lg:grid-cols-2 gap-12 items-start">
+                      {/* Left Column - Description & Features */}
+                      <div>
+                        <h3 className="text-[18px] font-bold text-[#1A1714] mb-6">{product.name}</h3>
+                        <div className="text-[15px] text-black/60 leading-[1.8] font-medium space-y-5 mb-8 text-justify">
+                          <p>{product.description}</p>
+                        </div>
+
                         {product.materials?.length > 0 && (
-                          <ul className="space-y-3 pt-1">
+                          <ul className="space-y-5 pt-2">
                             {product.materials.map((material, idx) => {
                               const Icon = detailIcons[idx % detailIcons.length];
                               return (
-                                <li key={idx} className="flex items-start gap-3">
-                                  <Icon size={17} className="text-[#F27318] mt-0.5 shrink-0" />
-                                  <span>{material}</span>
+                                <li key={idx} className="flex items-start gap-4">
+                                  <div className="flex items-center justify-center w-14 h-14 rounded-full bg-[#F27318]/8 shrink-0">
+                                    <Icon size={22} className="text-[#F27318]" />
+                                  </div>
+                                  <div>
+                                    <p className="text-[15px] font-semibold text-[#1A1714] mb-0.5 capitalize">{material.split('-')[0]}</p>
+                                    <p className="text-[14px] text-black/50">{material}</p>
+                                  </div>
                                 </li>
                               );
                             })}
@@ -780,10 +793,17 @@ export default function ProductDetailsPage() {
                         )}
                       </div>
 
+                      {/* Right Column - Dimensions */}
                       {product?.dimensions &&
                         (product.dimensions.width || product.dimensions.height || product.dimensions.depth) && (
-                          <div className="flex items-center justify-center bg-black/[0.02] rounded-xl border border-black/[0.05] p-8">
-                            <DimensionDiagram dimensions={product.dimensions} />
+                          <div className="flex flex-col bg-[#F27318]/4 rounded-2xl p-8">
+                            <h4 className="text-[15px] font-bold text-[#1A1714] mb-0 flex items-center gap-2.5">
+                              <Edit2 size={16} className="text-[#F27318]" />
+                              Dimensions
+                            </h4>
+                            <div className="w-full">
+                              <DimensionDiagram dimensions={product.dimensions} />
+                            </div>
                           </div>
                         )}
                     </div>
@@ -813,22 +833,125 @@ export default function ProductDetailsPage() {
                     exit={{ opacity: 0, y: -10 }}
                     transition={{ duration: 0.4, ease: [0.23, 1, 0.32, 1] }}
                   >
-                    <div className="text-[15px] text-black/55 leading-[1.8] font-medium space-y-4">
-                      {product.materials?.length > 0 ? (
-                        <>
-                          <p>This piece is meticulously crafted using premium materials selected for their durability and natural beauty.</p>
-                          <ul className="space-y-2">
-                            {product.materials.map((material, idx) => (
-                              <li key={idx} className="text-[15px] text-black/55">
-                                {material}
-                              </li>
-                            ))}
-                          </ul>
-                          <p className="text-[14px] text-black/35">{product.careInstructions || "Follow care instructions provided with your product."}</p>
-                        </>
-                      ) : (
-                        <p>Premium, sustainably sourced materials selected for their durability and natural beauty. Every joint is handcrafted for structural integrity.</p>
-                      )}
+                    <div className="grid grid-cols-1 lg:grid-cols-2 gap-12">
+                      {/* Left Column - Materials List */}
+                      <div>
+                        <h3 className="text-[20px] font-bold text-[#1A1714] mb-2">Premium materials. Built to last.</h3>
+                        <p className="text-[14px] text-black/60 leading-relaxed mb-8 text-justify">
+                          Thoughtfully selected materials and a sturdy build ensure lasting comfort, durability, and timeless style.
+                        </p>
+
+                        {product.materials?.length > 0 ? (
+                          <div className="space-y-6">
+                            {product.materials.map((material, idx) => {
+                              const Icon = detailIcons[idx % detailIcons.length];
+                              return (
+                                <div key={idx} className="flex gap-4">
+                                  {/* Material Image Placeholder */}
+                                  <div className="w-28 h-28 rounded-lg bg-gradient-to-br from-orange-100 to-orange-50 shrink-0 flex items-center justify-center border border-black/5">
+                                    <Icon size={32} className="text-[#F27318]/40" />
+                                  </div>
+                                  {/* Material Info */}
+                                  <div className="flex-1">
+                                    <h4 className="text-[15px] font-bold text-[#1A1714] mb-1">{material.split('-')[0]}</h4>
+                                    <p className="text-[13px] text-black/50 mb-3">{material}</p>
+                                    <div className="flex gap-4 text-[12px]">
+                                      {idx === 0 && (
+                                        <>
+                                          <div className="flex items-center gap-1.5 text-black/60">
+                                            <Sparkles size={14} className="text-[#F27318]" />
+                                            <span>Breathable</span>
+                                          </div>
+                                          <div className="flex items-center gap-1.5 text-black/60">
+                                            <ShieldCheck size={14} className="text-[#F27318]" />
+                                            <span>Stain-Resistant</span>
+                                          </div>
+                                        </>
+                                      )}
+                                      {idx === 1 && (
+                                        <>
+                                          <div className="flex items-center gap-1.5 text-black/60">
+                                            <Hammer size={14} className="text-[#F27318]" />
+                                            <span>Solid & Durable</span>
+                                          </div>
+                                          <div className="flex items-center gap-1.5 text-black/60">
+                                            <Layers size={14} className="text-[#F27318]" />
+                                            <span>Sustainably Sourced</span>
+                                          </div>
+                                        </>
+                                      )}
+                                      {idx === 2 && (
+                                        <>
+                                          <div className="flex items-center gap-1.5 text-black/60">
+                                            <Sparkles size={14} className="text-[#F27318]" />
+                                            <span>High Resilience</span>
+                                          </div>
+                                          <div className="flex items-center gap-1.5 text-black/60">
+                                            <RotateCcw size={14} className="text-[#F27318]" />
+                                            <span>Lasting Comfort</span>
+                                          </div>
+                                        </>
+                                      )}
+                                    </div>
+                                  </div>
+                                </div>
+                              );
+                            })}
+                          </div>
+                        ) : (
+                          <p className="text-[14px] text-black/60">Premium, sustainably sourced materials selected for their durability and natural beauty.</p>
+                        )}
+                      </div>
+
+                      {/* Right Column - Product Image with Callouts */}
+                      <div className="flex flex-col">
+                        {/* Product Image */}
+                        <div className="mb-8 relative">
+                          <img 
+                            src={getImageUrl(images[selectedImage])} 
+                            alt={product.name}
+                            className="w-full h-auto rounded-lg object-cover"
+                          />
+                          
+                          {/* Callout Points */}
+                          <div className="absolute top-1/4 right-4 w-48 bg-white rounded-lg p-4 shadow-lg">
+                            <p className="text-[13px] font-bold text-[#1A1714] mb-1">Cotton Fabric</p>
+                            <p className="text-[12px] text-black/60">Soft-touch cotton fabric for a refined look and everyday comfort.</p>
+                          </div>
+                          <div className="absolute top-1/2 right-4 w-48 bg-white rounded-lg p-4 shadow-lg">
+                            <p className="text-[13px] font-bold text-[#1A1714] mb-1">Pine Wood Frame</p>
+                            <p className="text-[12px] text-black/60">Sturdy pine wood frame for reliable strength and stability.</p>
+                          </div>
+                          <div className="absolute bottom-1/4 right-4 w-48 bg-white rounded-lg p-4 shadow-lg">
+                            <p className="text-[13px] font-bold text-[#1A1714] mb-1">High-Density Foam</p>
+                            <p className="text-[12px] text-black/60">Plush cushioning that maintains its shape and support over time.</p>
+                          </div>
+                        </div>
+
+                        {/* Benefits Row */}
+                        <div className="grid grid-cols-2 gap-4">
+                          <div className="flex flex-col items-center text-center p-4 bg-black/[0.02] rounded-lg">
+                            <ShieldCheck size={24} className="text-[#F27318] mb-2" />
+                            <p className="text-[12px] font-bold text-[#1A1714] mb-1">Built to Last</p>
+                            <p className="text-[11px] text-black/50">Premium materials for long-lasting durability.</p>
+                          </div>
+                          <div className="flex flex-col items-center text-center p-4 bg-black/[0.02] rounded-lg">
+                            <Sparkles size={24} className="text-[#F27318] mb-2" />
+                            <p className="text-[12px] font-bold text-[#1A1714] mb-1">Easy to Maintain</p>
+                            <p className="text-[11px] text-black/50">Materials chosen for easy cleaning and care.</p>
+                          </div>
+                          <div className="flex flex-col items-center text-center p-4 bg-black/[0.02] rounded-lg">
+                            <Layers size={24} className="text-[#F27318] mb-2" />
+                            <p className="text-[12px] font-bold text-[#1A1714] mb-1">Sustainably Sourced</p>
+                            <p className="text-[11px] text-black/50">Responsibly sourced wood for a better future.</p>
+                          </div>
+                          <div className="flex flex-col items-center text-center p-4 bg-black/[0.02] rounded-lg">
+                            <Star size={24} className="text-[#F27318] mb-2" />
+                            <p className="text-[12px] font-bold text-[#1A1714] mb-1">Quality Assured</p>
+                            <p className="text-[11px] text-black/50">Rigorous quality checks for your peace of mind.</p>
+                          </div>
+                        </div>
+                      </div>
                     </div>
                   </motion.div>
                 ) : activeMainTab === "delivery" ? (
@@ -990,68 +1113,6 @@ export default function ProductDetailsPage() {
       </AnimatePresence>
 
       {/* Floating Sticky Add to Cart Bar — desktop + mobile */}
-      <div
-        className={`fixed bottom-0 left-0 right-0 z-50 px-4 pb-4 sm:pb-6 pt-2 transition-all duration-300 ${scrolledPastAction ? "translate-y-0 opacity-100 visible" : "translate-y-full opacity-0 invisible"
-          }`}
-      >
-        <div className="max-w-7xl mx-auto bg-white rounded-2xl border border-black/[0.06] shadow-[0_8px_30px_rgba(0,0,0,0.10)] p-3 sm:p-4 flex items-center gap-3 sm:gap-5 pointer-events-auto">
-          {/* Thumbnail — hidden on small screens */}
-          <img
-            src={getImageUrl(images[0])}
-            alt={product.name}
-            className="w-14 h-14 rounded-lg object-cover hidden sm:block shrink-0"
-          />
-
-          {/* Name + variant — hidden on small screens */}
-          <div className="min-w-0 hidden sm:block">
-            <p className="text-[14px] font-bold text-[#1A1714] truncate max-w-[220px]">{product.name}</p>
-            <p className="text-[12px] text-black/45 font-medium truncate max-w-[220px]">
-              {[
-                selectedColor && (typeof selectedColor === "object" ? selectedColor.name : selectedColor),
-                selectedSize && (typeof selectedSize === "object" ? selectedSize.name : selectedSize),
-              ]
-                .filter(Boolean)
-                .join(" • ")}
-            </p>
-          </div>
-
-          {/* Price */}
-          <div className="flex-1 sm:flex-none">
-            <p className="text-[11px] text-black/40 uppercase tracking-widest font-bold mb-0.5 sm:hidden">Total</p>
-            <p className="text-[17px] sm:text-[18px] font-bold text-[#1A1714]">Rs. {formatPrice(product.price * quantity)}</p>
-          </div>
-
-          {/* Quantity stepper — desktop only */}
-          <div className="hidden md:flex items-center bg-white border border-black/10 rounded-lg h-[44px] shrink-0">
-            <button
-              onClick={() => handleQuantityChange(-1)}
-              disabled={quantity <= 1}
-              className="w-9 h-full flex items-center justify-center text-black/40 hover:text-black/90 disabled:opacity-20 transition-all"
-            >
-              <Minus size={14} />
-            </button>
-            <span className="w-8 text-center font-bold text-[14px] text-[#1A1714]">{quantity}</span>
-            <button
-              onClick={() => handleQuantityChange(1)}
-              disabled={quantity >= (product.stock || 10)}
-              className="w-9 h-full flex items-center justify-center text-black/40 hover:text-black/90 disabled:opacity-20 transition-all"
-            >
-              <Plus size={14} />
-            </button>
-          </div>
-
-          {/* Add to cart button */}
-          <button
-            onClick={handleAddToCart}
-            disabled={isAddingToCart}
-            className="flex-[2] sm:flex-none bg-[#F27318] text-white h-[48px] sm:h-[52px] px-6 sm:px-10 rounded-xl font-bold text-[15px] hover:bg-[#D9620E] transition-all flex items-center justify-center gap-2"
-          >
-            {isAddingToCart ? <Loader2 className="animate-spin" size={20} /> : <ShoppingCart size={17} />}
-            {isAddingToCart ? "Adding..." : "Add to Cart"}
-          </button>
-        </div>
-      </div>
-
       <style>{`
         .no-scrollbar::-webkit-scrollbar { display: none; }
         .no-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
