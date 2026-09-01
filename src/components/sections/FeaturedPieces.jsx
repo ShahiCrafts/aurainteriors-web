@@ -3,7 +3,7 @@ import { Link } from "react-router-dom";
 import { MoveRight, ChevronLeft, ChevronRight } from "lucide-react";
 import { useProducts } from "../../hooks/product/useProductTan";
 import ProductCard from "../shop/ProductCard";
-import Skeleton from "../common/Skeleton";
+import Skeleton, { ProductCardSkeleton } from "../common/Skeleton";
 import useInView from "../../hooks/useInView";
 
 export default function FeaturedPieces() {
@@ -94,13 +94,8 @@ export default function FeaturedPieces() {
             >
               {isLoading ? (
                 [...Array(12)].map((_, i) => (
-                  <div key={i} className="flex flex-col gap-4 min-w-[calc(100%-0px)] md:min-w-[calc(33.333%-11px)] lg:min-w-[calc(16.667%-17px)]">
-                    <Skeleton className="w-full aspect-[16/11] rounded-md" />
-                    <div className="space-y-3">
-                      <Skeleton className="w-3/4 h-6" />
-                      <Skeleton className="w-full h-4" />
-                      <Skeleton className="w-1/2 h-6" />
-                    </div>
+                  <div key={i} className="min-w-[calc(100%-0px)] md:min-w-[calc(33.333%-11px)] lg:min-w-[calc(16.667%-17px)]">
+                    <ProductCardSkeleton />
                   </div>
                 ))
               ) : (

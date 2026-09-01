@@ -89,6 +89,11 @@ export const getProductImageUrl = (product, fallback = null) => {
     product?.primaryImage ||
     product?.image;
 
+  // If it's already a full URL, return as-is
+  if (primaryImage?.startsWith("http")) {
+    return primaryImage;
+  }
+
   return getImageUrl(primaryImage, "products", fallback || FALLBACK_IMAGES.product);
 };
 

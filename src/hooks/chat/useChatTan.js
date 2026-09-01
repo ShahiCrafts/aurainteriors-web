@@ -61,9 +61,9 @@ export const useSendMessage = () => {
       // Snapshot the previous value
       const previousData = queryClient.getQueryData(['chats', chatId, 'messages']);
 
-      // Create optimistic message object
+      // Create optimistic message object with already-uploaded attachments
       const optimisticMessage = {
-        _id: `optimistic-${Date.now()}`, // Temporary ID until server confirms
+        _id: `optimistic-${Date.now()}`,
         content,
         attachments: attachments || [],
         senderRole: 'customer',
@@ -76,7 +76,7 @@ export const useSendMessage = () => {
         createdAt: new Date().toISOString(),
         deliveredAt: new Date().toISOString(),
         isRead: false,
-        isPending: true, // Flag to indicate this is optimistic (not yet confirmed by server)
+        isPending: true,
       };
 
       // Update the messages cache with optimistic message
@@ -103,7 +103,8 @@ export const useSendMessage = () => {
     },
     onSuccess: (data, variables, context) => {
       const { chatId } = variables;
-      // Server confirmed the message - remove optimistic flag and update with real data
+      // Server confirmed the message - update optimistic message with real data from DB
+      // This ensures any blob URLs are replaced with real Cloudinary URLs
       queryClient.setQueryData(['chats', chatId, 'messages'], (old) => {
         if (!old) return old;
         return {
@@ -116,7 +117,16 @@ export const useSendMessage = () => {
                   ...page.data,
                   messages: page.data.messages.map((msg) =>
                     msg._id === context.optimisticMessage._id
-                      ? { ...data.data.message, isPending: false }
+                      ? { 
+                          ...data.data.message, 
+                          isPending: false,
+                          // Ensure attachments use real URLs, clearing any blob markers
+                          attachments: (data.data.message.attachments || []).map(att => ({
+                            ...att,
+                            _localBlobUrl: undefined, // Clear blob marker
+                            _uploadStatus: 'complete',
+                          }))
+                        }
                       : msg
                   ),
                 },

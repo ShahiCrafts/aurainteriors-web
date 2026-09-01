@@ -1,4 +1,4 @@
-import { Check, CheckCheck, Info, Bot, Sparkles } from "lucide-react";
+import { Check, CheckCheck, Info, Bot, Sparkles, User, AlertCircle, RotateCcw } from "lucide-react";
 import ReactMarkdown from "react-markdown";
 import remarkGfm from "remark-gfm";
 import ChatAttachment from "./ChatAttachment";
@@ -50,6 +50,7 @@ const ChatMessage = ({ message, isOwnMessage, isAdminView = false }) => {
   const isBot = message.senderRole === "bot" || message.isAiGenerated === true;
   const isAdmin = message.senderRole === "admin" && !isBot;
   const isSystem = message.senderRole === "system" || message.messageType === "system";
+  const isGuest = message.sender?.firstName === "Guest" && message.sender?.lastName === "User";
 
   if (message.isInternalNote && !isAdminView) {
     return null;
@@ -75,6 +76,10 @@ const ChatMessage = ({ message, isOwnMessage, isAdminView = false }) => {
           {isBot ? (
             <div className="w-10 h-10 rounded-full bg-slate-800 text-teal-400 border border-slate-700 flex items-center justify-center shrink-0">
               <Bot size={20} />
+            </div>
+          ) : isGuest ? (
+            <div className="w-10 h-10 rounded-full bg-gray-100 border border-gray-200 text-gray-500 flex items-center justify-center shrink-0">
+              <User size={18} strokeWidth={1.5} />
             </div>
           ) : (
             <div
@@ -113,6 +118,8 @@ const ChatMessage = ({ message, isOwnMessage, isAdminView = false }) => {
                 ? "AI Assistant"
                 : isAdmin
                 ? "You"
+                : isGuest
+                ? "You"
                 : message.sender?.firstName || "Customer"}
             </span>
             <span className="text-[11px] text-gray-400 font-medium">
@@ -148,9 +155,29 @@ const ChatMessage = ({ message, isOwnMessage, isAdminView = false }) => {
           {/* Attachments */}
           {message.attachments && message.attachments.length > 0 && (
             <div className="flex flex-col gap-2 w-full max-w-[300px] mt-1">
-              {message.attachments.map((attachment, index) => (
-                <ChatAttachment key={index} attachment={attachment} />
-              ))}
+              {message.attachments
+                .filter((attachment) => attachment && attachment.fileUrl && attachment.fileName)
+                .map((attachment, index) => {
+                  const isOptimistic = attachment._localBlobUrl === attachment.fileUrl;
+                  return (
+                    <div key={index} className="relative">
+                      <ChatAttachment 
+                        attachment={attachment} 
+                        isOwnMessage={isOwnMessage}
+                        isOptimistic={isOptimistic}
+                      />
+                      {/* PERF-OPT 1: Show subtle upload indicator overlay for optimistic attachments */}
+                      {isOptimistic && (
+                        <div className="absolute inset-0 rounded-xl bg-black/5 flex items-center justify-center pointer-events-none">
+                          <div className="flex items-center gap-1 bg-white/90 px-2 py-1 rounded-full text-[10px] font-bold text-gray-600 shadow-sm backdrop-blur-sm">
+                            <div className="w-2.5 h-2.5 rounded-full border-2 border-[#F27318] border-t-transparent animate-spin" />
+                            Uploading
+                          </div>
+                        </div>
+                      )}
+                    </div>
+                  );
+                })}
             </div>
           )}
 

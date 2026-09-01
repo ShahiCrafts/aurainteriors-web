@@ -2,7 +2,7 @@ import { useEffect, useRef, useCallback, useState } from "react";
 import io from "socket.io-client";
 import { SOCKET_URL } from "../../config/constants";
 
-const useNotificationSocket = (token, userId) => {
+const useNotificationSocket = (token, userId, guestSessionId) => {
   const [socket, setSocket] = useState(null);
   const [connected, setConnected] = useState(false);
   const [notifications, setNotifications] = useState([]);
@@ -16,12 +16,19 @@ const useNotificationSocket = (token, userId) => {
    * INITIALIZE SOCKET CONNECTION
    */
   useEffect(() => {
-    if (!token || !userId) return;
+    // For authenticated users: need token and userId
+    // For guests: need guestSessionId
+    if (!token && !guestSessionId) return;
+    if (token && !userId) return;
 
     try {
       // Create socket instance with authentication
+      const authPayload = token 
+        ? { token } 
+        : { guestSessionId }; // Guests auth with guestSessionId instead
+      
       const ioSocket = io(SOCKET_URL, {
-        auth: { token },
+        auth: authPayload,
         transports: ["websocket", "polling"], // Fallback to polling
         reconnection: true,
         reconnectionDelay: 1000,
@@ -100,7 +107,7 @@ const useNotificationSocket = (token, userId) => {
     } catch (err) {
       setError(err.message);
     }
-  }, [token, userId]);
+  }, [token, userId, guestSessionId]);
 
   /**
    * START HEARTBEAT

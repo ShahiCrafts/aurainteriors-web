@@ -138,96 +138,100 @@ const ProductCard = memo(function ProductCard({ product, viewMode = "grid" }) {
     return (
       <Link
         to={`/product/${slug || _id}`}
-        className="group flex h-36 sm:h-40 lg:h-48 bg-white rounded-md p-1.5 lg:p-3 shadow-[0_4px_20px_rgba(0,0,0,0.08)] hover:shadow-[0_10px_35px_rgba(0,0,0,0.12)] transition-all duration-500 relative border-none"
+        className="group flex flex-col sm:flex-row gap-3 sm:gap-4 bg-white rounded-lg p-3 sm:p-4 shadow-sm hover:shadow-[0_12px_40px_rgba(0,0,0,0.12)] transition-all duration-500"
       >
-        <div className="relative w-28 sm:w-44 lg:w-64 shrink-0 overflow-hidden rounded-md bg-[#FAFAFA]">
+        {/* Image Container - Separate and fully rounded */}
+        <div className="relative w-full sm:w-40 lg:w-52 shrink-0 aspect-video sm:aspect-auto sm:h-32 lg:h-40 rounded-lg overflow-hidden bg-gradient-to-br from-[#FAFAFA] to-[#F5F5F5]">
           <img
             src={imageUrl}
             alt={name}
             loading="lazy"
             decoding="async"
-            className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-700"
+            className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-110"
           />
+
+          {/* AR Badge */}
           {arAvailable && (
-            <div className="absolute top-1.5 left-1.5 sm:top-2 sm:left-2 bg-[#F27318] text-white text-[8px] sm:text-[10px] font-semibold px-1.5 sm:px-2 py-0.5 sm:py-1 rounded font-dm-sans z-10 uppercase tracking-wide">
-              AR View
+            <div className="absolute top-2 left-2 sm:top-2.5 sm:left-2.5 bg-white/95 backdrop-blur-sm text-[#F27318] text-[8px] sm:text-[9px] font-bold px-2 sm:px-2.5 py-1 sm:py-1.5 rounded-full z-10 uppercase tracking-wider shadow-md">
+              ✦ AR View
             </div>
           )}
+
+          {/* Wishlist Button - Top Right Corner */}
+          <button
+            onClick={handleWishlistToggle}
+            disabled={isWishlistLoading}
+            className={`absolute top-2 right-2 sm:top-2.5 sm:right-2.5 w-7 h-7 sm:w-8 sm:h-8 rounded-full flex items-center justify-center transition-all duration-300 shadow-sm backdrop-blur-sm z-10 ${
+              isInWishlist
+                ? "bg-[#F27318] text-white"
+                : "bg-white/90 text-black/40 hover:text-red-500"
+            }`}
+          >
+            <Heart
+              size={14}
+              className={`sm:w-[16px] sm:h-[16px] ${isInWishlist ? "fill-white" : ""}`}
+            />
+          </button>
         </div>
 
-        <div className="flex-1 min-w-0 px-2.5 sm:px-4 lg:px-5 py-1 flex flex-col justify-center relative">
-          <div className="absolute top-0 right-0 flex flex-col gap-1.5 sm:gap-2 z-10">
-            <button
-              onClick={(e) => {
-                e.preventDefault();
-                handleWishlistToggle(e);
-              }}
-              disabled={isWishlistLoading}
-              className={`w-7 h-7 sm:w-8 sm:h-8 rounded-md shadow-sm flex items-center justify-center transition-all shrink-0 ${
-                isInWishlist
-                  ? "bg-[#F27318] text-white"
-                  : "bg-white/90 backdrop-blur-md text-black/40 hover:text-red-500 hover:bg-white"
-              }`}
-            >
-              <Heart
-                size={12}
-                className={`sm:w-[14px] sm:h-[14px] ${isInWishlist ? "fill-white" : ""}`}
-              />
-            </button>
-            <button
-              onClick={(e) => {
-                e.preventDefault();
-                handleAddToCart(e);
-              }}
-              disabled={isAddingToCart}
-              className="w-7 h-7 sm:w-8 sm:h-8 rounded-md bg-white/90 backdrop-blur-md shadow-sm flex items-center justify-center text-black/40 hover:text-[#F27318] hover:bg-white transition-all shrink-0"
-            >
-              <ShoppingBag size={12} className="sm:w-[14px] sm:h-[14px]" />
-            </button>
-          </div>
+        {/* Details Container - Separate section */}
+        <div className="flex flex-col flex-1 min-w-0">
+          {/* Category */}
+          <p className="text-[11px] sm:text-[12px] text-black/50 font-medium tracking-wide uppercase mb-2">
+            {category?.name || "Furniture"}
+          </p>
 
-          <h3 className="text-[13px] sm:text-[16px] font-semibold text-[#1A1714] group-hover:text-[#F27318] transition-colors duration-300 leading-snug line-clamp-2 mb-1 pr-8 sm:pr-9">
+          {/* Product Name */}
+          <h3 className="text-[13px] sm:text-[15px] font-semibold text-[#1A1714] group-hover:text-[#F27318] transition-colors duration-300 truncate mb-2 sm:mb-3">
             {name}
           </h3>
 
-          <p className="text-[11px] sm:text-[14px] text-black/40 line-clamp-2 mb-1.5 sm:mb-3 leading-tight max-w-xl">
+          {/* Short Description */}
+          <p className="text-[11px] sm:text-[13px] text-black/40 line-clamp-2 mb-2 sm:mb-3 leading-snug">
             {shortDescription ||
               "Minimalist design meeting ultimate comfort for your modern home."}
           </p>
 
-          <div className="flex items-center gap-1 text-[9px] sm:text-[11px] text-black/40 mb-1.5 sm:mb-3">
-            <div className="flex items-center text-[#F27318] gap-0.5">
+          {/* Rating */}
+          <div className="flex items-center gap-1.5 sm:gap-2 mb-3 sm:mb-4">
+            <div className="flex items-center gap-0.5">
               {[...Array(5)].map((_, i) => (
                 <Star
                   key={i}
-                  size={8}
-                  className={`sm:w-[10px] sm:h-[10px] ${
+                  size={12}
+                  className={`sm:w-[14px] sm:h-[14px] transition-colors ${
                     i < Math.round(displayRating)
-                      ? "fill-[#F27318]"
-                      : "fill-black/10 text-transparent"
+                      ? "fill-[#F27318] text-[#F27318]"
+                      : "fill-gray-200 text-gray-200"
                   }`}
                 />
               ))}
             </div>
-            <span className="ml-1 font-medium">
-              ({displayRating.toFixed(1)})
+            <span className="text-[10px] sm:text-[11px] font-semibold text-black">
+              {displayRating.toFixed(1)}
+            </span>
+            <span className="text-[10px] sm:text-[11px] text-black/40">
+              ({product.rating?.count || 0})
             </span>
           </div>
 
-          <div className="flex flex-wrap items-center gap-1 lg:gap-2">
-            <span className="text-[12px] sm:text-[14px] lg:text-[16px] font-bold text-black">
-              {formattedPrice}
-            </span>
-            {product.originalPrice && product.originalPrice > price && (
-              <>
-                <span className="text-[9px] sm:text-[11px] text-black/20 line-through">
-                  ₹{product.originalPrice.toLocaleString()}
-                </span>
-                <span className="text-[9px] sm:text-[11px] text-[#28a745] font-bold">
-                  {discountPercentage}% OFF
-                </span>
-              </>
-            )}
+          {/* Price Section */}
+          <div className="mt-auto">
+            <div className="flex items-center gap-2 sm:gap-3">
+              <span className="text-[14px] sm:text-[16px] lg:text-[18px] font-bold text-[#1A1714]">
+                {formattedPrice}
+              </span>
+              {product.originalPrice && product.originalPrice > price && (
+                <>
+                  <span className="text-[10px] sm:text-[11px] text-black/30 line-through">
+                    {`NRs. ${product.originalPrice.toLocaleString()}`}
+                  </span>
+                  <span className="text-[10px] sm:text-[11px] text-[#28a745] font-bold">
+                    {discountPercentage}% OFF
+                  </span>
+                </>
+              )}
+            </div>
           </div>
         </div>
       </Link>
@@ -235,89 +239,94 @@ const ProductCard = memo(function ProductCard({ product, viewMode = "grid" }) {
   }
 
   return (
-    <div className="group bg-white rounded-md transition-all duration-500 relative flex flex-col">
+    <div className="group flex flex-col gap-3 sm:gap-4">
+      {/* Image Container - Separate and fully rounded */}
       <Link
         to={`/product/${slug || _id}`}
-        className="relative aspect-[16/11] rounded-md overflow-hidden bg-[#FAFAFA] mb-2 sm:mb-3"
+        className="relative aspect-[5/3] rounded-lg overflow-hidden bg-gradient-to-br from-[#FAFAFA] to-[#F5F5F5] shadow-sm hover:shadow-[0_12px_40px_rgba(0,0,0,0.12)] transition-all duration-500"
       >
         <img
           src={imageUrl}
           alt={name}
           loading="lazy"
           decoding="async"
-          className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-105"
+          className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-110"
         />
 
+        {/* AR Badge */}
         {arAvailable && (
-          <div className="absolute top-1 left-1 sm:top-1.5 sm:left-1.5 bg-[#F27318] text-white text-[8px] sm:text-[10px] font-semibold px-1.5 sm:px-2 py-0.5 sm:py-1 rounded font-dm-sans z-10 uppercase tracking-wide">
-            AR View
+          <div className="absolute top-2 left-2 sm:top-3 sm:left-3 bg-white/95 backdrop-blur-sm text-[#F27318] text-[8px] sm:text-[9px] font-bold px-2 sm:px-2.5 py-1 sm:py-1.5 rounded-full z-10 uppercase tracking-wider shadow-md">
+            ✦ AR View
           </div>
         )}
 
-        <div className="absolute top-1 right-1 sm:top-1.5 sm:right-1.5 flex flex-col gap-1 sm:gap-1.5 z-10">
-          <button
-            onClick={handleWishlistToggle}
-            disabled={isWishlistLoading}
-            className={`w-7 h-7 sm:w-8 sm:h-8 rounded-md flex items-center justify-center transition-all ${
-              isInWishlist
-                ? "bg-[#F27318] text-white"
-                : "bg-white/90 backdrop-blur-md text-black/40 hover:text-red-500 hover:bg-white"
-            }`}
-          >
-            <Heart
-              size={12}
-              className={`sm:w-[14px] sm:h-[14px] ${isInWishlist ? "fill-white" : ""}`}
-            />
-          </button>
-          <button
-            onClick={handleAddToCart}
-            disabled={isAddingToCart}
-            className="w-7 h-7 sm:w-8 sm:h-8 rounded-md bg-white/90 backdrop-blur-md flex items-center justify-center text-black/40 hover:text-[#F27318] hover:bg-white transition-all"
-          >
-            <ShoppingBag size={12} className="sm:w-[14px] sm:h-[14px]" />
-          </button>
-        </div>
+        {/* Wishlist Button - Top Right Corner */}
+        <button
+          onClick={handleWishlistToggle}
+          disabled={isWishlistLoading}
+          className={`absolute top-2 right-2 sm:top-3 sm:right-3 w-7 h-7 sm:w-8 sm:h-8 rounded-full flex items-center justify-center transition-all duration-300 shadow-sm backdrop-blur-sm z-10 ${
+            isInWishlist
+              ? "bg-[#F27318] text-white"
+              : "bg-white/90 text-black/40 hover:text-red-500"
+          }`}
+        >
+          <Heart
+            size={14}
+            className={`sm:w-[16px] sm:h-[16px] ${isInWishlist ? "fill-white" : ""}`}
+          />
+        </button>
       </Link>
 
-      <div className="px-0 sm:px-0.5 pb-1 flex flex-col flex-1">
+      {/* Details Container - Separate section */}
+      <div className="flex flex-col flex-1">
+        {/* Category */}
+        <p className="text-[11px] sm:text-[12px] text-black/50 font-medium tracking-wide uppercase mb-2">
+          {category?.name || "Furniture"}
+        </p>
+
+        {/* Product Name */}
         <Link to={`/product/${slug || _id}`}>
-          <h3 className="text-[13px] sm:text-[16px] font-semibold text-[#1A1714] group-hover:text-[#F27318] transition-colors duration-300 leading-snug line-clamp-2 mb-1.5 sm:mb-2">
+          <h3 className="text-[13px] sm:text-[15px] font-semibold text-[#1A1714] group-hover:text-[#F27318] transition-colors duration-300 truncate mb-2 sm:mb-3">
             {name}
           </h3>
-
-          <div className="flex items-center gap-1.5 text-[11px] sm:text-[12px] text-black/60 mb-2 sm:mb-3">
-            <div className="flex items-center text-[#F27318] gap-0.5">
-              <Star
-                size={14}
-                className="sm:w-[16px] sm:h-[16px] fill-[#F27318]"
-              />
-            </div>
-            <span className="font-semibold text-black">
-              {displayRating.toFixed(1)}
-            </span>
-            <span className="text-black/40">
-              ({product.rating?.count || 0})
-            </span>
-          </div>
-
-          <div className="mt-auto pt-1.5 sm:pt-2">
-            <div className="flex flex-wrap items-center gap-1 lg:gap-2">
-              <span className="text-[12px] sm:text-[14px] lg:text-[16px] font-bold text-black">
-                {formattedPrice}
-              </span>
-              {product.originalPrice && product.originalPrice > price && (
-                <>
-                  <span className="text-[9px] sm:text-[11px] text-black/20 line-through">
-                    ₹{product.originalPrice.toLocaleString()}
-                  </span>
-                  <span className="hidden xl:inline text-[12px] text-[#28a745] font-bold">
-                    {discountPercentage}% OFF
-                  </span>
-                </>
-              )}
-            </div>
-          </div>
         </Link>
+
+        {/* Rating */}
+        <div className="flex items-center gap-1.5 sm:gap-2 mb-3 sm:mb-4">
+          <div className="flex items-center gap-0.5">
+            {[...Array(5)].map((_, i) => (
+              <Star
+                key={i}
+                size={12}
+                className={`sm:w-[14px] sm:h-[14px] transition-colors ${
+                  i < Math.round(displayRating)
+                    ? "fill-[#F27318] text-[#F27318]"
+                    : "fill-gray-200 text-gray-200"
+                }`}
+              />
+            ))}
+          </div>
+          <span className="text-[10px] sm:text-[11px] font-semibold text-black">
+            {displayRating.toFixed(1)}
+          </span>
+          <span className="text-[10px] sm:text-[11px] text-black/40">
+            ({product.rating?.count || 0})
+          </span>
+        </div>
+
+        {/* Price Section */}
+        <div className="mt-auto">
+          <div className="flex items-center gap-2 sm:gap-3">
+            <span className="text-[14px] sm:text-[16px] lg:text-[18px] font-bold text-[#1A1714]">
+              {formattedPrice}
+            </span>
+            {product.originalPrice && product.originalPrice > price && (
+              <span className="text-[11px] sm:text-[12px] text-black/30 line-through">
+                {`NRs. ${product.originalPrice.toLocaleString()}`}
+              </span>
+            )}
+          </div>
+        </div>
       </div>
     </div>
   );

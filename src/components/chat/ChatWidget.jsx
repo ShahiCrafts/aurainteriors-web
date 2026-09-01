@@ -1,8 +1,9 @@
-import { useState, useMemo } from 'react';
+import { useState, useMemo, useEffect } from 'react';
 import { MessageSquare, X } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useMyChats, useStartChat, useSendMessage } from '../../hooks/chat/useChatTan';
 import useAuthStore from '../../store/authStore';
+import { getGuestSessionId, setGuestSessionId, clearGuestSession } from '../../utils/guestSessionStorage';
 import ChatWindow from './ChatWindow';
 
 const ChatWidget = () => {
@@ -12,7 +13,24 @@ const ChatWidget = () => {
     return !localStorage.getItem('aura_chat_greeted');
   });
   const [activeChatId, setActiveChatId] = useState(null);
+  const [activeChatData, setActiveChatData] = useState(null); // Store guest chat data directly
   const { user } = useAuthStore();
+
+  // Handle guest session lifecycle
+  useEffect(() => {
+    if (user) {
+      // User logged in - clear guest session and cached chat
+      clearGuestSession();
+      setActiveChatData(null);
+      setActiveChatId(null);
+    } else {
+      // User is guest - ensure session exists
+      if (!getGuestSessionId()) {
+        const newSessionId = `guest_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
+        setGuestSessionId(newSessionId);
+      }
+    }
+  }, [user]);
 
   const handleCloseGreeting = () => {
     setShowGreeting(false);
@@ -22,6 +40,7 @@ const ChatWidget = () => {
   // CHAT-FIXES-9: Removed 5000ms polling on useMyChats.
   // Real-time chat list updates come from socket events (chat:message:new, chat:status:changed, etc.)
   // which automatically invalidate the 'chats/my' query key in useChatSocket.
+  // Guests don't have persistent lists, so this query is disabled for them
   const { data: chatsData } = useMyChats(
     { page: 1, limit: 10 },
     { enabled: !!user && user.role !== 'admin' }
@@ -30,14 +49,25 @@ const ChatWidget = () => {
   const startChatMutation = useStartChat();
 
   const activeChat = useMemo(() => {
-    if (!activeChatId || !chatsData?.data?.chats) return null;
-    return chatsData.data.chats.find(chat => chat._id === activeChatId) || null;
-  }, [activeChatId, chatsData]);
+    if (!activeChatId) return null;
+    // For guests: use stored chat data
+    if (activeChatData && activeChatData._id === activeChatId) {
+      return activeChatData;
+    }
+    // For auth users: lookup in chats list
+    if (chatsData?.data?.chats) {
+      return chatsData.data.chats.find(chat => chat._id === activeChatId) || null;
+    }
+    return null;
+  }, [activeChatId, activeChatData, chatsData]);
 
   const totalUnread = useMemo(() => {
-    if (!chatsData?.data?.chats) return 0;
-    return chatsData.data.chats.reduce((sum, chat) => sum + (chat.unreadCountCustomer || 0), 0);
-  }, [chatsData]);
+    // Only show unread count for the active chat
+    if (activeChat?.unreadCountCustomer) {
+      return activeChat.unreadCountCustomer;
+    }
+    return 0;
+  }, [activeChat]);
 
   const handleToggle = () => {
     if (!isOpen) {
@@ -70,15 +100,34 @@ const ChatWidget = () => {
       {
         onSuccess: (res) => {
           const newChatId = res.data.chat._id;
+          const guestSessionId = res.data.guestSessionId;
+          
+          // Store chat data for lookup
+          setActiveChatData(res.data.chat);
+          
+          // If guest, store the new session ID
+          if (guestSessionId) {
+            setGuestSessionId(guestSessionId);
+          }
+          
           setActiveChatId(newChatId);
           if (initialMessage) {
             sendMessage({ chatId: newChatId, content: initialMessage });
+          }
+        },
+        onError: (error) => {
+          const response = error.response?.data;
+          
+          // Handle RATE_LIMIT errors on chat creation
+          if (response?.code === "RATE_LIMIT_EXCEEDED") {
+            alert(`Too many chat sessions started. Please try again in ${Math.ceil(response.retryAfter / 60)} minutes.`);
           }
         }
       }
     );
   };
 
+  // Admin users don't see the chat widget
   if (user && user.role === 'admin') return null;
 
   return (

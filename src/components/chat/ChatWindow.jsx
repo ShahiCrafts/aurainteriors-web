@@ -13,13 +13,15 @@ import { useChatMessages, useMarkMessagesRead, useSendMessage } from '../../hook
 import useChatSocket from '../../hooks/chat/useChatSocket';
 import useNotificationSocket from '../../hooks/notification/useNotificationSocket';
 import useAuthStore from '../../store/authStore';
+import { getGuestSessionId } from '../../utils/guestSessionStorage';
 import ChatMessageList from './ChatMessageList';
 import ChatInput from './ChatInput';
 
 const ChatWindow = ({ chat, onClose, onStartNew, onResetView, isCreatingChat }) => {
   const { user } = useAuthStore();
   const token = localStorage.getItem('token');
-  const { socket } = useNotificationSocket(token, user?._id);
+  const guestSessionId = getGuestSessionId();
+  const { socket } = useNotificationSocket(token, user?._id, guestSessionId);
 
   const {
     data: messagesData,

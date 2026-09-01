@@ -1,14 +1,33 @@
-import { FileText, Download, Image as ImageIcon, ExternalLink } from 'lucide-react';
+import { FileText, Download, Image as ImageIcon, ExternalLink, AlertCircle } from 'lucide-react';
 import { API_BASE_URL } from '../../config/constants';
 
-const ChatAttachment = ({ attachment, isOwnMessage }) => {
+const ChatAttachment = ({ attachment, isOwnMessage, isOptimistic = false }) => {
+  // Handle missing or invalid attachment
+  if (!attachment || !attachment.fileUrl || !attachment.fileName) {
+    console.warn("⚠️ Invalid attachment:", attachment);
+    return null;
+  }
+
   const { fileName, fileUrl, fileType, fileSize } = attachment;
 
-  const baseURL = API_BASE_URL;
-  const fullUrl = fileUrl.startsWith('http') ? fileUrl : `${baseURL}${fileUrl}`;
+  // Determine full URL - don't append base URL if it's already absolute (http, https, blob)
+  const fullUrl = 
+    fileUrl.startsWith('http://') || 
+    fileUrl.startsWith('https://') || 
+    fileUrl.startsWith('blob:')
+      ? fileUrl
+      : `${API_BASE_URL}${fileUrl}`;
+
+  // Log for debugging
+  if (isOptimistic) {
+    console.log(`📎 Optimistic attachment loading: ${fileName} (blob URL)`);
+  } else {
+    console.log(`📎 Real attachment URL: ${fileName} → ${fullUrl}`);
+  }
 
   // Format file size
   const formatFileSize = (bytes) => {
+    if (!bytes) return "0 B";
     if (bytes < 1024) return `${bytes} B`;
     if (bytes < 1024 * 1024) return `${(bytes / 1024).toFixed(1)} KB`;
     return `${(bytes / (1024 * 1024)).toFixed(1)} MB`;
@@ -21,19 +40,32 @@ const ChatAttachment = ({ attachment, isOwnMessage }) => {
         href={fullUrl}
         target="_blank"
         rel="noopener noreferrer"
-        className="block rounded-xl overflow-hidden hover:opacity-95 transition-opacity group relative"
+        className={`block rounded-xl overflow-hidden transition-opacity group relative ${
+          isOptimistic ? 'opacity-75 pointer-events-none' : 'hover:opacity-95'
+        }`}
       >
         <img
           src={fullUrl}
           alt={fileName}
           className="max-w-full h-auto max-h-64 object-cover rounded-xl"
           loading="lazy"
+          onError={(e) => {
+            console.error(`❌ Failed to load image: ${fileName}`, { url: fullUrl, error: e });
+          }}
+          onLoad={() => {
+            if (!isOptimistic) {
+              console.log(`✓ Image loaded: ${fileName}`);
+            }
+          }}
         />
-        <div className="absolute inset-0 bg-black/0 group-hover:bg-black/10 transition-colors rounded-xl flex items-center justify-center">
-          <span className="opacity-0 group-hover:opacity-100 transition-opacity bg-white/90 backdrop-blur-sm p-2 rounded-lg shadow-lg">
-            <ExternalLink className="w-4 h-4 text-neutral-700" />
-          </span>
-        </div>
+        {/* Only show hover icon for non-optimistic images */}
+        {!isOptimistic && (
+          <div className="absolute inset-0 bg-black/0 group-hover:bg-black/10 transition-colors rounded-xl flex items-center justify-center">
+            <span className="opacity-0 group-hover:opacity-100 transition-opacity bg-white/90 backdrop-blur-sm p-2 rounded-lg shadow-lg">
+              <ExternalLink className="w-4 h-4 text-neutral-700" />
+            </span>
+          </div>
+        )}
       </a>
     );
   }
@@ -44,13 +76,23 @@ const ChatAttachment = ({ attachment, isOwnMessage }) => {
       target="_blank"
       rel="noopener noreferrer"
       download={fileName}
-      className={`flex items-center gap-3 p-3 rounded-xl transition-all duration-200 group ${isOwnMessage
-          ? 'bg-teal-800/50 hover:bg-teal-800/70 border border-teal-500/30'
-          : 'bg-neutral-50 hover:bg-neutral-100 border border-neutral-200'
-        }`}
+      className={`flex items-center gap-3 p-3 rounded-xl transition-all duration-200 group ${
+        isOwnMessage
+          ? isOptimistic 
+            ? 'bg-teal-800/30 border border-teal-500/20 opacity-75'
+            : 'bg-teal-800/50 hover:bg-teal-800/70 border border-teal-500/30'
+          : isOptimistic
+            ? 'bg-neutral-50 border border-neutral-200 opacity-75'
+            : 'bg-neutral-50 hover:bg-neutral-100 border border-neutral-200'
+      }`}
     >
-      <div className={`w-10 h-10 rounded-lg flex items-center justify-center shrink-0 ${isOwnMessage ? 'bg-teal-600/50' : 'bg-teal-100'
-        }`}>
+      <div className={`w-10 h-10 rounded-lg flex items-center justify-center shrink-0 ${
+        isOwnMessage 
+          ? isOptimistic
+            ? 'bg-teal-600/30'
+            : 'bg-teal-600/50'
+          : 'bg-teal-100'
+      }`}>
         <FileText className={`w-5 h-5 ${isOwnMessage ? 'text-white' : 'text-teal-600'}`} />
       </div>
       <div className="flex-1 min-w-0">
@@ -61,12 +103,16 @@ const ChatAttachment = ({ attachment, isOwnMessage }) => {
           {formatFileSize(fileSize)}
         </p>
       </div>
-      <div className={`w-8 h-8 rounded-lg flex items-center justify-center shrink-0 transition-colors ${isOwnMessage
-          ? 'bg-teal-600/30 group-hover:bg-teal-600/50'
-          : 'bg-neutral-200 group-hover:bg-neutral-300'
+      {/* Disable download button for optimistic attachments */}
+      {!isOptimistic && (
+        <div className={`w-8 h-8 rounded-lg flex items-center justify-center shrink-0 transition-colors ${
+          isOwnMessage
+            ? 'bg-teal-600/30 group-hover:bg-teal-600/50'
+            : 'bg-neutral-200 group-hover:bg-neutral-300'
         }`}>
-        <Download className={`w-4 h-4 ${isOwnMessage ? 'text-white' : 'text-neutral-600'}`} />
-      </div>
+          <Download className={`w-4 h-4 ${isOwnMessage ? 'text-white' : 'text-neutral-600'}`} />
+        </div>
+      )}
     </a>
   );
 };
