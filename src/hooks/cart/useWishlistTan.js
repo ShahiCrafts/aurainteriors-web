@@ -34,38 +34,59 @@ export const useCheckWishlist = (productId, options = {}) => {
   });
 };
 
-// Add product to wishlist
+// Capture the account at request start; only update data after server success.
+const mutationContext = (queryClient) => async () => {
+  const userId = useAuthStore.getState().user?._id || 'guest';
+  await queryClient.cancelQueries({ queryKey: [...WISHLIST_KEYS.all, 'list', userId] });
+  await queryClient.cancelQueries({ queryKey: [...WISHLIST_KEYS.all, 'check'] });
+  return { userId };
+};
+
+const applyConfirmedChange = (queryClient, response, productId, context, clear = false) => {
+  const userId = context?.userId;
+  if (!userId || userId !== (useAuthStore.getState().user?._id || 'guest')) return;
+  const inWishlist = response?.data?.inWishlist === true;
+  const item = response?.data?.item;
+  // Older servers cannot supply the added item; retain a compatibility refetch.
+  if (inWishlist && !item) {
+    queryClient.invalidateQueries({ queryKey: [...WISHLIST_KEYS.all, 'list', userId] });
+  } else {
+    queryClient.setQueryData([...WISHLIST_KEYS.all, 'list', userId], old => {
+      if (!old?.data?.wishlist) return old;
+      const previous = old.data.wishlist.items || [];
+      const items = clear ? [] : previous.filter(entry => String(entry.product?._id) !== String(productId));
+      if (inWishlist) items.push(item);
+      return { ...old, data: { ...old.data, wishlist: { ...old.data.wishlist, items, itemCount: items.length } } };
+    });
+  }
+  queryClient.setQueriesData({ queryKey: [...WISHLIST_KEYS.all, 'check'],
+    predicate: query => query.queryKey[3] === userId && (clear || String(query.queryKey[2]) === String(productId)),
+  }, old => old ? { ...old, data: { ...old.data, inWishlist: clear ? false : inWishlist } } : old);
+};
+
 export const useAddToWishlist = () => {
   const queryClient = useQueryClient();
-
   return useMutation({
-    mutationFn: (productId) => wishlistApi.addToWishlist(productId),
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: WISHLIST_KEYS.all });
-    },
+    mutationFn: productId => wishlistApi.addToWishlist(productId),
+    onMutate: mutationContext(queryClient),
+    onSuccess: (response, productId, context) => applyConfirmedChange(queryClient, response, productId, context),
   });
 };
 
-// Remove product from wishlist
 export const useRemoveFromWishlist = () => {
   const queryClient = useQueryClient();
-
   return useMutation({
-    mutationFn: (productId) => wishlistApi.removeFromWishlist(productId),
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: WISHLIST_KEYS.all });
-    },
+    mutationFn: productId => wishlistApi.removeFromWishlist(productId),
+    onMutate: mutationContext(queryClient),
+    onSuccess: (response, productId, context) => applyConfirmedChange(queryClient, response, productId, context),
   });
 };
 
-// Clear entire wishlist
 export const useClearWishlist = () => {
   const queryClient = useQueryClient();
-
   return useMutation({
     mutationFn: () => wishlistApi.clearWishlist(),
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: WISHLIST_KEYS.all });
-    },
+    onMutate: mutationContext(queryClient),
+    onSuccess: (response, _, context) => applyConfirmedChange(queryClient, response, null, context, true),
   });
 };
