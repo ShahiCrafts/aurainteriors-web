@@ -7,7 +7,7 @@ import Footer from "../../layouts/customer/Footer";
 import ProductCard from "../../components/shop/ProductCard";
 import FilterSidebar from "../../components/shop/FilterSidebar";
 import CategoryBar from "../../components/navigation/CategoryBar";
-import Skeleton from "../../components/common/Skeleton";
+import { ListingCardSkeleton } from "../../components/shop/ProductLoadingSkeletons";
 
 import {
   useCategory,
@@ -393,7 +393,7 @@ export default function ShopPage() {
                     {currentCategory ? pageTitle : "Collection"}
 
                     <span className="ml-3 sm:ml-5 text-[13px] sm:text-[15px] font-semibold text-black/40 tracking-normal lowercase">
-                      ({totalProducts} items)
+                      {isLoading ? <span className="inline-block align-middle w-16 h-4 rounded bg-[#F0EFED] motion-safe:animate-pulse" aria-label="Loading product count" /> : `(${totalProducts} items)`}
                     </span>
                   </h2>
                 </div>
@@ -497,17 +497,8 @@ export default function ShopPage() {
                       : "flex flex-col gap-4"
                   }
                 >
-                  {[...Array(8)].map((_, i) => (
-                    <div key={i} className="flex flex-col gap-3">
-                      <Skeleton className="w-full aspect-[16/11] rounded-md" />
-
-                      <div className="space-y-2">
-                        <Skeleton className="w-1/3 h-3" />
-                        <Skeleton className="w-3/4 h-5" />
-                        <Skeleton className="w-1/2 h-6" />
-                      </div>
-                    </div>
-                  ))}
+                  <span className="sr-only" role="status">Loading products</span>
+                  {Array.from({ length: limit }, (_, i) => <ListingCardSkeleton key={i} viewMode={viewMode} />)}
                 </div>
               ) : products.length === 0 ? (
                 <div className="text-center py-16 sm:py-24 bg-[#F9F8F6] rounded-2xl px-4">

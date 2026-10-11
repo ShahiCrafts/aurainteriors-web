@@ -1,3 +1,4 @@
+import { ProductDetailsSkeleton } from "../../components/shop/ProductLoadingSkeletons";
 import { useState, useEffect, useRef } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { useParams, Link } from "react-router-dom";
@@ -323,36 +324,7 @@ export default function ProductDetailsPage() {
       <>
         <Navbar />
         <CategoryBar />
-        <main className="min-h-screen bg-white pt-4 font-dm-sans pb-24 lg:pb-12">
-          <div className="mx-auto px-4 sm:px-6 lg:px-8 py-2 sm:py-4">
-            <nav className="flex flex-wrap items-center gap-y-1 gap-x-2 mb-6">
-              <div className="h-4 w-32 bg-black/[0.08] rounded animate-pulse"></div>
-            </nav>
-            <div className="grid grid-cols-1 lg:grid-cols-[1.02fr_0.90fr] gap-8 mb-2">
-              <div className="space-y-3">
-                <div className="aspect-[6/5] rounded-xl bg-black/[0.08] animate-pulse"></div>
-                <div className="flex gap-3">
-                  {[...Array(5)].map((_, i) => (
-                    <div key={i} className="w-16 h-16 rounded-lg bg-black/[0.08] animate-pulse"></div>
-                  ))}
-                </div>
-              </div>
-              <div className="space-y-5">
-                <div className="h-4 w-20 bg-black/[0.08] rounded animate-pulse"></div>
-                <div className="h-8 w-3/4 bg-black/[0.08] rounded animate-pulse"></div>
-                <div className="h-4 w-48 bg-black/[0.08] rounded animate-pulse"></div>
-                <div className="h-9 w-56 bg-black/[0.08] rounded animate-pulse"></div>
-                <div className="h-16 w-full bg-black/[0.08] rounded animate-pulse"></div>
-                <div className="flex gap-3">
-                  {[...Array(4)].map((_, i) => (
-                    <div key={i} className="w-10 h-10 rounded-full bg-black/[0.08] animate-pulse"></div>
-                  ))}
-                </div>
-                <div className="h-14 w-full bg-black/[0.08] rounded-lg animate-pulse"></div>
-              </div>
-            </div>
-          </div>
-        </main>
+        <ProductDetailsSkeleton />
         <Footer />
       </>
     );
