@@ -95,7 +95,7 @@ export default function BlogDetailsPage() {
     return (
       <>
         <Navbar />
-        <main className="min-h-screen bg-white font-dm-sans max-w-4xl mx-auto pt-32 px-4 space-y-6">
+        <main className="min-h-screen bg-white font-dm-sans max-w-7xl mx-auto pt-12 sm:pt-14 md:pt-16 px-4 sm:px-6 lg:px-8 space-y-6">
           <Skeleton className="w-24 h-6 rounded-full" />
           <Skeleton className="w-3/4 h-10 rounded-lg" />
           <Skeleton className="w-full h-6 rounded" />
@@ -115,13 +115,13 @@ export default function BlogDetailsPage() {
       <>
         <Navbar />
         <main className="min-h-screen bg-white font-dm-sans">
-          <div className="pt-32 pb-16 text-center">
-            <h1 className="text-2xl font-playfair text-neutral-900 mb-4">
+          <div className="pt-32 pb-16 px-4 sm:px-6 lg:px-8 text-center">
+            <h1 className="text-2xl font-playfair text-[#1A1714] mb-4">
               Blog post not found
             </h1>
             <Link
               to="/blog"
-              className="text-teal-700 hover:underline flex items-center justify-center gap-2"
+              className="text-[#F27318] hover:underline flex items-center justify-center gap-2"
             >
               <ArrowLeft size={16} />
               Back to Blog
@@ -150,12 +150,12 @@ export default function BlogDetailsPage() {
       <Navbar />
       <main className="min-h-screen bg-white font-dm-sans">
         {/* Header Section */}
-        <section className="pt-24 sm:pt-28 md:pt-32 pb-6 px-4 sm:px-6 lg:px-8 max-w-4xl mx-auto">
+        <section className="pt-12 sm:pt-14 md:pt-16 pb-6 px-4 sm:px-6 lg:px-8 max-w-7xl mx-auto">
           {/* Breadcrumb */}
           <div className="flex items-center gap-2 mb-6">
             <Link
               to="/blog"
-              className="text-neutral-500 hover:text-teal-700 text-sm flex items-center gap-1"
+              className="text-neutral-500 hover:text-[#F27318] text-sm flex items-center gap-1"
             >
               <ArrowLeft size={16} />
               Back to Blog
@@ -163,12 +163,12 @@ export default function BlogDetailsPage() {
           </div>
 
           {/* Category Badge */}
-          <span className="inline-block px-3 py-1 bg-teal-700 text-white text-xs font-semibold rounded-full uppercase tracking-wide mb-4">
+          <span className="inline-block px-3 py-1 bg-[#F27318] text-white text-xs font-semibold rounded-full uppercase tracking-wide mb-4">
             {blog.categoryName || blog.category}
           </span>
 
           {/* Title */}
-          <h1 className="text-2xl sm:text-3xl md:text-4xl lg:text-[42px] font-playfair font-medium text-neutral-900 mb-4 leading-tight">
+          <h1 className="text-2xl sm:text-3xl md:text-4xl lg:text-[42px] font-playfair font-medium text-[#1A1714] mb-4 leading-tight">
             {blog.title}
           </h1>
 
@@ -225,7 +225,7 @@ export default function BlogDetailsPage() {
               </button>
               <button
                 onClick={copyLink}
-                className="w-8 h-8 rounded-full bg-neutral-100 hover:bg-teal-100 hover:text-teal-700 flex items-center justify-center transition-colors relative"
+                className="w-8 h-8 rounded-full bg-neutral-100 hover:bg-orange-50 hover:text-[#F27318] flex items-center justify-center transition-colors relative"
               >
                 <LinkIcon size={16} />
                 {copied && (
@@ -240,11 +240,11 @@ export default function BlogDetailsPage() {
 
         {/* Featured Image */}
         {blog.featuredImage && (
-          <section className="px-4 sm:px-6 lg:px-8 max-w-4xl mx-auto mb-8">
+          <section className="px-4 sm:px-6 lg:px-8 max-w-7xl mx-auto mb-8">
             <img
               src={getImageUrl(blog.featuredImage)}
               alt={blog.title}
-              className="w-full h-64 sm:h-80 md:h-96 object-cover rounded-xl"
+              className="w-full max-h-[540px] aspect-[16/9] object-cover rounded-2xl"
             />
           </section>
         )}
@@ -253,20 +253,20 @@ export default function BlogDetailsPage() {
         <section className="px-4 sm:px-6 lg:px-8 max-w-7xl mx-auto pb-16">
           <div className="flex flex-col lg:flex-row gap-8 lg:gap-12">
             {/* Article Content */}
-            <article className="flex-1 max-w-4xl">
+            <article className="flex-1 min-w-0 max-w-3xl mx-auto lg:mx-0">
               {/* Content */}
               <div
                 className="prose prose-lg max-w-none text-neutral-700 leading-relaxed
-                  prose-headings:font-playfair prose-headings:text-neutral-900
+                  prose-headings:font-playfair prose-headings:text-[#1A1714]
                   prose-h2:text-2xl prose-h2:mt-8 prose-h2:mb-4
                   prose-h3:text-xl prose-h3:mt-6 prose-h3:mb-3
                   prose-p:mb-4
-                  prose-a:text-teal-700 prose-a:no-underline hover:prose-a:underline
+                  prose-a:text-[#F27318] prose-a:no-underline hover:prose-a:underline
                   prose-strong:text-neutral-800
                   prose-ul:my-4 prose-li:my-1
-                  prose-img:rounded-xl prose-img:my-6"
+                  prose-img:rounded-xl prose-img:my-6 prose-img:max-w-full prose-img:h-auto prose-figure:my-8 prose-blockquote:border-[#F27318] break-words [&_iframe]:max-w-full [&_p]:leading-8"
                 dangerouslySetInnerHTML={{
-                  __html: sanitizeBlogHtml(renderContent(blog.content)),
+                  __html: sanitizeBlogHtml(renderContent(blog.content || `<p>${blog.excerpt || "Full article available at the original publisher."}</p>`)),
                 }}
               />
 
@@ -308,7 +308,7 @@ export default function BlogDetailsPage() {
                         <p className="text-sm text-neutral-500">
                           Originally published on
                         </p>
-                        <p className="font-medium text-neutral-900">
+                        <p className="font-medium text-[#1A1714]">
                           {blog.source.name}
                         </p>
                       </div>
@@ -318,7 +318,7 @@ export default function BlogDetailsPage() {
                         href={blog.originalUrl}
                         target="_blank"
                         rel="noopener noreferrer"
-                        className="text-sm text-teal-700 hover:underline"
+                        className="text-sm text-[#F27318] hover:underline"
                       >
                         Read Original
                       </a>
@@ -328,13 +328,15 @@ export default function BlogDetailsPage() {
 
                 {/* Author Info */}
                 <div className="flex items-center gap-4">
-                  <img
-                    src={getAuthorAvatar(blog.author)}
-                    alt={blog.author?.name || "Author"}
-                    className="w-12 h-12 rounded-full object-cover"
-                  />
+                  {blog.author?.avatar ? (
+                    <img src={getAuthorAvatar(blog.author)} alt={blog.author?.name || "Author"} className="w-12 h-12 rounded-full object-cover" />
+                  ) : (
+                    <span className="w-12 h-12 rounded-full bg-[#F27318] text-white font-semibold flex items-center justify-center">
+                      {(blog.author?.name || "Editorial Team").split(/\s+/).map(part => part[0]).slice(0, 2).join("").toUpperCase()}
+                    </span>
+                  )}
                   <div>
-                    <p className="font-semibold text-neutral-900">
+                    <p className="font-semibold text-[#1A1714]">
                       {blog.author?.name || "Editorial Team"}
                     </p>
                     <p className="text-sm text-neutral-600">
@@ -350,7 +352,7 @@ export default function BlogDetailsPage() {
               <aside className="hidden lg:block w-72 shrink-0">
                 <div className="sticky top-28">
                   <div className="bg-white border border-neutral-200 rounded-2xl p-6">
-                    <h3 className="text-sm font-semibold text-neutral-900 mb-4 uppercase tracking-wide">
+                    <h3 className="text-sm font-semibold text-[#1A1714] mb-4 uppercase tracking-wide">
                       Table of Contents
                     </h3>
                     <nav className="space-y-1">
@@ -360,8 +362,8 @@ export default function BlogDetailsPage() {
                           onClick={() => scrollToSection(section.id)}
                           className={`block w-full text-left px-3 py-2 text-sm rounded-lg transition-all duration-200 ${
                             activeSection === section.id
-                              ? "bg-teal-50 text-teal-700 font-medium border-l-2 border-teal-700"
-                              : "text-neutral-600 hover:bg-neutral-50 hover:text-neutral-900"
+                              ? "bg-orange-50 text-[#F27318] font-medium border-l-2 border-[#F27318]"
+                              : "text-neutral-600 hover:bg-neutral-50 hover:text-[#1A1714]"
                           }`}
                         >
                           {section.title}
@@ -378,7 +380,7 @@ export default function BlogDetailsPage() {
         {/* Related Posts */}
         {relatedBlogs.length > 0 && (
           <section className="px-4 sm:px-6 lg:px-8 max-w-7xl mx-auto pb-16">
-            <h2 className="text-2xl font-playfair font-semibold text-neutral-900 mb-6">
+            <h2 className="text-2xl font-playfair font-semibold text-[#1A1714] mb-6">
               Related Articles
             </h2>
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
@@ -395,7 +397,7 @@ export default function BlogDetailsPage() {
                       className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
                     />
                   </div>
-                  <h3 className="font-semibold text-neutral-900 group-hover:text-teal-700 transition-colors line-clamp-2 mb-2">
+                  <h3 className="font-semibold text-[#1A1714] group-hover:text-[#F27318] transition-colors line-clamp-2 mb-2">
                     {relatedBlog.title}
                   </h3>
                   <p className="text-sm text-neutral-500">
