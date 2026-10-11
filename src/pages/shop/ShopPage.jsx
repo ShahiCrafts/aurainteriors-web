@@ -5,6 +5,7 @@ import { ChevronRight, ChevronDown, Grid3X3, List, Search, SlidersHorizontal, X 
 import Navbar from "../../layouts/customer/Navbar";
 import Footer from "../../layouts/customer/Footer";
 import ProductCard from "../../components/shop/ProductCard";
+import FilterSidebarSkeleton from "../../components/shop/FilterSidebarSkeleton";
 import FilterSidebar from "../../components/shop/FilterSidebar";
 import CategoryBar from "../../components/navigation/CategoryBar";
 import { ListingCardSkeleton } from "../../components/shop/ProductLoadingSkeletons";
@@ -73,7 +74,7 @@ export default function ShopPage() {
   ];
 
   // CATEGORY TREE
-  const { data: categoryTreeData } = useCategoryTree();
+  const { data: categoryTreeData, isLoading: isCategoryTreeLoading } = useCategoryTree();
 
   const categories = categoryTreeData?.data?.categories || [];
 
@@ -346,7 +347,7 @@ export default function ShopPage() {
 
               {/* SIDEBAR */}
               <div className="sticky top-28">
-                <FilterSidebar
+                {isCategoryTreeLoading || isLoading ? <FilterSidebarSkeleton /> : <FilterSidebar
                   categories={categories}
                   selectedCategories={selectedCategories}
                   onCategoryChange={setSelectedCategories}
@@ -360,7 +361,7 @@ export default function ShopPage() {
                   selectedRating={selectedRating}
                   onRatingChange={setSelectedRating}
                   onResetFilters={handleResetFilters}
-                />
+                />}
               </div>
             </aside>
 
@@ -627,7 +628,7 @@ export default function ShopPage() {
             </div>
 
             <div className="p-5">
-              <FilterSidebar
+              {isCategoryTreeLoading || isLoading ? <FilterSidebarSkeleton /> : <FilterSidebar
                 categories={categories}
                 selectedCategories={selectedCategories}
                 onCategoryChange={setSelectedCategories}
@@ -641,7 +642,7 @@ export default function ShopPage() {
                 selectedRating={selectedRating}
                 onRatingChange={setSelectedRating}
                 onResetFilters={handleResetFilters}
-              />
+              />}
             </div>
 
             <div className="sticky bottom-0 bg-white border-t border-black/[0.06] p-4">
