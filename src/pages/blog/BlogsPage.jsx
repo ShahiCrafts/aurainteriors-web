@@ -108,11 +108,11 @@ export default function BlogsPage() {
       <Navbar />
       <main className="min-h-screen bg-white font-dm-sans">
         {/* Hero Section */}
-        <section className="pt-24 sm:pt-28 md:pt-32 pb-8 sm:pb-12 px-4 sm:px-6 lg:px-8 max-w-7xl mx-auto">
+        <section className="pt-12 sm:pt-14 md:pt-16 pb-8 sm:pb-12 px-4 sm:px-6 lg:px-8 max-w-7xl mx-auto">
           <div className="max-w-3xl">
             <h1 className="text-3xl sm:text-4xl md:text-5xl font-playfair font-medium text-neutral-900 mb-4">
               Design Inspiration{" "}
-              <span className="italic text-teal-700">&amp; Ideas</span>
+              <span className="italic text-[#F27318]">&amp; Ideas</span>
             </h1>
             <p className="text-neutral-600 text-base sm:text-lg">
               Explore our collection of articles, tips, and trends to inspire
@@ -133,7 +133,7 @@ export default function BlogsPage() {
                     key={category.slug}
                     onClick={() => handleCategoryChange(category.slug)}
                     className={`px-4 py-2 rounded-full text-sm font-medium transition-all duration-200 whitespace-nowrap ${activeCategory === category.slug
-                      ? "bg-teal-700 text-white"
+                      ? "bg-[#F27318] text-white"
                       : "bg-neutral-100 text-neutral-700 hover:bg-neutral-200"
                       }`}
                   >
@@ -164,7 +164,7 @@ export default function BlogsPage() {
                 placeholder="Search articles..."
                 value={searchInput}
                 onChange={(e) => setSearchInput(e.target.value)}
-                className="w-full pl-10 pr-4 py-2 rounded-full border border-neutral-300 text-sm focus:outline-none focus:border-teal-700 focus:ring-1 focus:ring-teal-700 transition-all"
+                className="w-full pl-10 pr-4 py-2 rounded-full border border-neutral-300 text-sm focus:outline-none focus:border-[#F27318] focus:ring-1 focus:ring-[#F27318] transition-all"
               />
             </form>
           </div>
@@ -258,11 +258,11 @@ export default function BlogsPage() {
                       to={`/blog/${post.slug}`}
                       className="flex gap-3 group"
                     >
-                      <span className="text-teal-700 font-semibold text-sm">
+                      <span className="text-[#F27318] font-semibold text-sm">
                         0{index + 1}
                       </span>
                       <div className="flex-1">
-                        <h4 className="text-sm font-medium text-neutral-800 group-hover:text-teal-700 transition-colors line-clamp-2">
+                        <h4 className="text-sm font-medium text-neutral-800 group-hover:text-[#F27318] transition-colors line-clamp-2">
                           {post.title}
                         </h4>
                         <p className="text-xs text-neutral-500 mt-1">
@@ -275,11 +275,11 @@ export default function BlogsPage() {
               </div>
 
               {/* Newsletter */}
-              <div className="bg-teal-700 rounded-2xl p-6 text-white">
+              <div className="bg-[#F27318] rounded-2xl p-6 text-white">
                 <h3 className="text-lg font-semibold mb-2 font-playfair">
                   Join Our Newsletter
                 </h3>
-                <p className="text-teal-100 text-sm mb-4">
+                <p className="text-orange-50 text-sm mb-4">
                   Get the latest design tips and trends delivered to your inbox.
                 </p>
                 <form onSubmit={handleNewsletterSubmit}>
@@ -289,12 +289,12 @@ export default function BlogsPage() {
                     value={newsletterEmail}
                     onChange={(e) => setNewsletterEmail(e.target.value)}
                     required
-                    className="w-full px-4 py-2.5 rounded-lg bg-teal-600/50 border border-teal-500 text-white placeholder:text-teal-200 text-sm focus:outline-none focus:border-white transition-colors mb-3"
+                    className="w-full px-4 py-2.5 rounded-lg bg-orange-600/40 border border-orange-300 text-white placeholder:text-orange-100 text-sm focus:outline-none focus:border-white transition-colors mb-3"
                   />
                   <button
                     type="submit"
                     disabled={isSubscribing}
-                    className="w-full py-2.5 rounded-lg bg-white text-teal-700 font-semibold text-sm hover:bg-teal-50 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+                    className="w-full py-2.5 rounded-lg bg-white text-[#F27318] font-semibold text-sm hover:bg-orange-50 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
                   >
                     {isSubscribing ? 'Subscribing...' : 'Subscribe'}
                   </button>
@@ -332,7 +332,7 @@ function BlogCard({
     });
 
   return (
-    <article className="flex flex-col sm:flex-row gap-4 sm:gap-6 group">
+    <article className="flex flex-col sm:flex-row gap-4 sm:gap-6 group rounded-2xl border border-neutral-100 p-3 sm:p-4 hover:border-orange-200 hover:shadow-sm transition-all">
       {/* Image */}
       <Link
         to={`/blog/${post.slug}`}
@@ -366,7 +366,7 @@ function BlogCard({
       <div className="flex-1 flex flex-col justify-center py-1">
         {/* Meta */}
         <div className="flex items-center gap-3 mb-3">
-          <span className="px-3 py-1 bg-teal-700 text-white text-xs font-semibold rounded-full uppercase tracking-wide">
+          <span className="px-3 py-1 bg-[#F27318] text-white text-xs font-semibold rounded-full uppercase tracking-wide">
             {post.categoryName || post.category}
           </span>
           <span className="flex items-center gap-1 text-neutral-500 text-sm">
@@ -385,7 +385,7 @@ function BlogCard({
 
         {/* Title */}
         <Link to={`/blog/${post.slug}`}>
-          <h2 className="text-lg sm:text-xl font-semibold text-neutral-900 mb-2 group-hover:text-teal-700 transition-colors line-clamp-2 font-playfair">
+          <h2 className="text-lg sm:text-xl font-semibold text-neutral-900 mb-2 group-hover:text-[#F27318] transition-colors line-clamp-2 font-playfair">
             {post.title}
           </h2>
         </Link>
@@ -398,11 +398,13 @@ function BlogCard({
         {/* Source & Author */}
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-3">
-            <img
-              src={getAuthorAvatar(post.author)}
-              alt={post.author?.name || "Author"}
-              className="w-8 h-8 rounded-full object-cover"
-            />
+            {post.author?.avatar ? (
+              <img src={getAuthorAvatar(post.author)} alt={post.author?.name || "Author"} className="w-8 h-8 rounded-full object-cover" />
+            ) : (
+              <span className="w-8 h-8 shrink-0 rounded-full bg-[#F27318] text-white text-xs font-semibold flex items-center justify-center">
+                {(post.author?.name || "Editorial Team").split(/\s+/).map(part => part[0]).slice(0, 2).join("").toUpperCase()}
+              </span>
+            )}
             <div>
               <p className="text-sm font-medium text-neutral-800">
                 {post.author?.name || "Editorial Team"}
@@ -426,7 +428,7 @@ function BlogCard({
             </button>
             <Link
               to={`/blog/${post.slug}`}
-              className="flex items-center gap-1 text-teal-700 font-medium text-sm hover:gap-2 transition-all"
+              className="flex items-center gap-1 text-[#F27318] font-medium text-sm hover:gap-2 transition-all"
             >
               Read More
               <ArrowRight size={16} />
