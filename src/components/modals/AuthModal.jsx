@@ -1,5 +1,5 @@
-import { useState, useEffect } from "react";
-import { motion, AnimatePresence } from "framer-motion";
+import { useState, useLayoutEffect } from "react";
+import { motion, AnimatePresence, useReducedMotion } from "framer-motion";
 import { X, Mail, ArrowLeft, User, CheckSquare } from "lucide-react";
 import { FcGoogle } from "react-icons/fc";
 import { API_V1_URL } from "../../config/constants";
@@ -21,6 +21,7 @@ export default function AuthModal() {
     user,
   } = useAuthStore();
 
+  const reduceMotion = useReducedMotion();
   const [email, setEmail] = useState("");
   const [fullName, setFullName] = useState("");
   const [isWelcomeBack, setIsWelcomeBack] = useState(false);
@@ -29,9 +30,10 @@ export default function AuthModal() {
   const { mutate: updateProfile, isPending: isUpdating } = useUpdateProfile();
 
   // Prefill email on mount or when modal opens
-  useEffect(() => {
+  useLayoutEffect(() => {
     if (isAuthModalOpen) {
-      const lastEmail = localStorage.getItem("lastUsedEmail");
+      let lastEmail = null;
+      try { lastEmail = localStorage.getItem("lastUsedEmail"); } catch { /* Storage is optional. */ }
       if (lastEmail) {
         setEmail(lastEmail);
         setIsWelcomeBack(true);
@@ -43,7 +45,6 @@ export default function AuthModal() {
     }
   }, [isAuthModalOpen]);
 
-  if (!isAuthModalOpen) return null;
 
   const handleEmailSubmit = (e) => {
     e.preventDefault();
@@ -53,7 +54,7 @@ export default function AuthModal() {
       { email },
       {
         onSuccess: () => {
-          localStorage.setItem("lastUsedEmail", email);
+          try { localStorage.setItem("lastUsedEmail", email); } catch { /* Storage is optional. */ }
           setAuthModalView("sent");
         },
         onError: (error) => {
@@ -101,12 +102,19 @@ export default function AuthModal() {
 
   return (
     <AnimatePresence>
-      <div className="fixed inset-0 z-100 flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm">
+      {isAuthModalOpen && <motion.div
+        key="auth-modal"
+        initial={{ opacity: 0 }}
+        animate={{ opacity: 1 }}
+        exit={{ opacity: 0 }}
+        transition={{ duration: reduceMotion ? 0 : 0.22, ease: "easeOut" }}
+        className="fixed inset-0 z-100 flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm"
+      >
         <motion.div
-          initial={{ opacity: 0 }}
-          animate={{ opacity: 1 }}
-          exit={{ opacity: 0 }}
-          transition={{ duration: 0.2 }}
+          initial={{ y: reduceMotion ? 0 : 14, scale: reduceMotion ? 1 : 0.98 }}
+          animate={{ y: 0, scale: 1 }}
+          exit={{ y: reduceMotion ? 0 : 8, scale: reduceMotion ? 1 : 0.98 }}
+          transition={{ duration: reduceMotion ? 0 : 0.22, ease: [0.22, 1, 0.36, 1] }}
           className="bg-white w-full max-w-[840px] h-full max-h-[560px] rounded-2xl overflow-hidden flex relative shadow-[0_24px_70px_rgba(0,0,0,0.35)] font-dm-sans"
         >
           {/* Close Button */}
@@ -131,7 +139,7 @@ export default function AuthModal() {
           {/* Right Side: Identity-First State Machine Content */}
           <div className="w-full md:w-1/2 p-8 md:p-12 flex flex-col justify-center bg-white relative">
             <div className="w-full max-w-[340px] mx-auto">
-              <AnimatePresence mode="wait">
+              <AnimatePresence mode="wait" initial={false}>
                 {/* 1. EMAIL ENTRY VIEW */}
                 {authModalView === "email" && (
                   <motion.div
@@ -318,7 +326,7 @@ export default function AuthModal() {
             </div>
           </div>
         </motion.div>
-      </div>
+      </motion.div>}
     </AnimatePresence>
   );
 }
