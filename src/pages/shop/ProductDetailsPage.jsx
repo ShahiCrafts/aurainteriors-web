@@ -417,7 +417,7 @@ export default function ProductDetailsPage() {
                 <ImageMagnifier
                   src={getImageUrl(images[selectedImage])}
                   alt={product.name}
-                  magnifierSize={180}
+                  magnifierSize={120}
                   zoomLevel={2.5}
                   className="w-full h-full object-cover"
                 />
