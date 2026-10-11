@@ -239,10 +239,9 @@ const ProductCard = memo(function ProductCard({ product, viewMode = "grid" }) {
   }
 
   return (
-    <div className="group flex flex-col gap-3 sm:gap-4">
+    <div className="group relative flex flex-col gap-3 sm:gap-4 cursor-pointer">
       {/* Image Container - Separate and fully rounded */}
-      <Link
-        to={`/product/${slug || _id}`}
+      <div
         className="relative aspect-[5/3] rounded-lg overflow-hidden bg-gradient-to-br from-[#FAFAFA] to-[#F5F5F5] shadow-sm hover:shadow-[0_12px_40px_rgba(0,0,0,0.12)] transition-all duration-500"
       >
         <img
@@ -264,7 +263,7 @@ const ProductCard = memo(function ProductCard({ product, viewMode = "grid" }) {
         <button
           onClick={handleWishlistToggle}
           disabled={isWishlistLoading}
-          className={`absolute top-2 right-2 sm:top-3 sm:right-3 w-7 h-7 sm:w-8 sm:h-8 rounded-full flex items-center justify-center transition-all duration-300 shadow-sm backdrop-blur-sm z-10 ${
+          className={`absolute top-2 right-2 sm:top-3 sm:right-3 w-7 h-7 sm:w-8 sm:h-8 rounded-full flex items-center justify-center transition-all duration-300 shadow-sm backdrop-blur-sm z-20 ${
             isInWishlist
               ? "bg-[#F27318] text-white"
               : "bg-white/90 text-black/40 hover:text-red-500"
@@ -275,7 +274,7 @@ const ProductCard = memo(function ProductCard({ product, viewMode = "grid" }) {
             className={`sm:w-[16px] sm:h-[16px] ${isInWishlist ? "fill-white" : ""}`}
           />
         </button>
-      </Link>
+      </div>
 
       {/* Details Container - Separate section */}
       <div className="flex flex-col flex-1">
@@ -285,7 +284,7 @@ const ProductCard = memo(function ProductCard({ product, viewMode = "grid" }) {
         </p>
 
         {/* Product Name */}
-        <Link to={`/product/${slug || _id}`}>
+        <Link to={`/product/${slug || _id}`} className="after:absolute after:inset-0 after:z-10 after:rounded-lg focus-visible:outline-none focus-visible:after:ring-2 focus-visible:after:ring-[#F27318]">
           <h3 className="text-[13px] sm:text-[15px] font-semibold text-[#1A1714] group-hover:text-[#F27318] transition-colors duration-300 truncate mb-2 sm:mb-3">
             {name}
           </h3>
