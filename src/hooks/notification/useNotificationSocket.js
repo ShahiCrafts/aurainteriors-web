@@ -16,6 +16,11 @@ const useNotificationSocket = (token, userId, guestSessionId) => {
    * INITIALIZE SOCKET CONNECTION
    */
   useEffect(() => {
+    setSocket(null);
+    setConnected(false);
+    setNotifications([]);
+    setUnreadCount(0);
+    setError(null);
     // For authenticated users: need token and userId
     // For guests: need guestSessionId
     if (!token && !guestSessionId) return;
@@ -24,11 +29,12 @@ const useNotificationSocket = (token, userId, guestSessionId) => {
     try {
       // Create socket instance with authentication
       const authPayload = token 
-        ? { token } 
+        ? { ...(token !== "cookie" ? { token } : {}) } 
         : { guestSessionId }; // Guests auth with guestSessionId instead
       
       const ioSocket = io(SOCKET_URL, {
         auth: authPayload,
+        withCredentials: true,
         transports: ["websocket", "polling"], // Fallback to polling
         reconnection: true,
         reconnectionDelay: 1000,
@@ -51,6 +57,11 @@ const useNotificationSocket = (token, userId, guestSessionId) => {
         if (heartbeatIntervalRef.current) {
           clearInterval(heartbeatIntervalRef.current);
         }
+      });
+
+      ioSocket.on("connect_error", (error) => {
+        setConnected(false);
+        setError(error.message);
       });
 
       ioSocket.on("error", (error) => {
@@ -102,6 +113,7 @@ const useNotificationSocket = (token, userId, guestSessionId) => {
         if (heartbeatIntervalRef.current) {
           clearInterval(heartbeatIntervalRef.current);
         }
+        ioSocket.removeAllListeners();
         ioSocket.disconnect();
       };
     } catch (err) {

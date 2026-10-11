@@ -30,7 +30,7 @@ export const useNewsletterSubscribe = () => {
  */
 export const useNewsletterUnsubscribe = () => {
     return useMutation({
-        mutationFn: (email) => unsubscribeNewsletter(email),
+        mutationFn: (token) => unsubscribeNewsletter(token),
         onSuccess: (data) => {
             toast.success(data.message || 'Successfully unsubscribed from newsletter');
         },

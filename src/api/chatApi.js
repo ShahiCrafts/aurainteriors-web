@@ -11,80 +11,15 @@ const addGuestSessionId = (data = {}) => {
   return data;
 };
 
-/**
- * Get upload signature for direct Cloudinary uploads
- */
-export const getUploadSignature = async () => {
-  const response = await api.get('/chats/signature/upload');
-  return response.data;
-};
-
-/**
- * Upload file directly to Cloudinary with automatic retry on failure
- * - Compresses images before upload
- * - Retries failed uploads with exponential backoff (max 3 attempts)
- * - Returns immediately with public URL on success
- */
-export const uploadToCloudinary = async (file, uploadConfig, options = {}) => {
-  const { maxRetries = 1, timeoutMs = 8000 } = options;
-
-  // Compress image if applicable (reduces bandwidth significantly)
-  const fileToUpload = await compressFileIfNeeded(file);
-
-  const uploadUrl = `https://api.cloudinary.com/v1_1/${uploadConfig.cloudName}/auto/upload`;
-
-  // Retry logic with exponential backoff
-  let lastError;
-  for (let attempt = 0; attempt < maxRetries; attempt++) {
-    try {
-      // Create fresh FormData for each attempt (required for multipart/form-data)
-      const formData = new FormData();
-      formData.append('file', fileToUpload);
-      formData.append('upload_preset', uploadConfig.uploadPreset);
-      formData.append('folder', uploadConfig.folder);
-
-      const controller = new AbortController();
-      const timeoutId = setTimeout(() => controller.abort(), timeoutMs);
-      const response = await fetch(uploadUrl, {
-        method: 'POST',
-        signal: controller.signal,
-        body: formData,
-        // Note: keepalive not supported with multipart/form-data in all browsers
-        // Browser handles connection reuse automatically via HTTP/2
-      });
-
-      clearTimeout(timeoutId);
-      if (!response.ok) {
-        let errorMessage = response.statusText;
-        try {
-          const errorData = await response.json();
-          errorMessage = errorData.error?.message || response.statusText;
-        } catch (e) {
-          // Response wasn't JSON, use status text
-        }
-        throw new Error(`Upload failed (${response.status}): ${errorMessage}`);
-      }
-
-      const result = await response.json();
-      console.log(`✓ Upload success for ${file.name}:`, {
-        url: result.secure_url,
-        publicId: result.public_id,
-        size: result.bytes,
-      });
-      return result;
-    } catch (error) {
-      lastError = error;
-      console.warn(
-        `Upload attempt ${attempt + 1}/${maxRetries} failed for ${file.name}:`,
-        error.message
-      );
-
-
-    }
-  }
-
-  // All retries exhausted
-  throw lastError;
+export const uploadChatAttachment = async (chatId, file) => {
+  const formData = new FormData();
+  formData.append("file", await compressFileIfNeeded(file));
+  const guestSessionId = getGuestSessionId();
+  const response = await api.post(`/chats/${chatId}/attachments`, formData, {
+    params: guestSessionId ? { guestSessionId } : {},
+    headers: { "Content-Type": "multipart/form-data" }, timeout: 60000,
+  });
+  return response.data.data;
 };
 
 export const startChat = async (data) => {
@@ -192,8 +127,7 @@ export const updateMessageAttachments = async (chatId, messageId, attachments) =
 };
 
 export default {
-    getUploadSignature,
-    uploadToCloudinary,
+    uploadChatAttachment,
     startChat,
     getMyChats,
     getChatDetails,

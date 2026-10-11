@@ -41,6 +41,11 @@ const discountApi = {
         return response.data;
     },
 
+    preview: async (data) => {
+        const response = await api.post("/discounts/preview", data);
+        return response.data;
+    },
+
     // Validate discount code (User)
     validate: async (code) => {
         const response = await api.get(`/discounts/validate/${code}`);

@@ -99,7 +99,7 @@ export default function PersonalInformation() {
         // Reset form with new values to clear isDirty
         reset(data);
         if (resData?.data?.user) {
-          const token = localStorage.getItem("token");
+          const token = useAuthStore.getState().token;
           signIn(resData.data.user, token);
         }
       },
@@ -128,7 +128,7 @@ export default function PersonalInformation() {
         onSuccess: (data) => {
           toast.success("Avatar updated successfully");
           if (data?.data?.user) {
-            const token = localStorage.getItem("token");
+            const token = useAuthStore.getState().token;
             signIn(data.data.user, token);
           }
         },
@@ -144,7 +144,7 @@ export default function PersonalInformation() {
       onSuccess: (data) => {
         toast.success("Avatar removed successfully");
         if (data?.data?.user) {
-          const token = localStorage.getItem("token");
+          const token = useAuthStore.getState().token;
           signIn(data.data.user, token);
         }
       },

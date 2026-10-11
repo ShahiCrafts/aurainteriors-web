@@ -14,14 +14,15 @@ export const getGuestSessionId = () => {
   try {
     // Try localStorage first
     const sessionId = localStorage.getItem(GUEST_SESSION_KEY);
-    if (sessionId) return sessionId;
+    if (sessionId && /^guest_[a-f0-9]{64}$/.test(sessionId)) return sessionId;
 
     // Try cookie as fallback
     const cookies = document.cookie.split(';');
     for (const cookie of cookies) {
       const [name, value] = cookie.trim().split('=');
       if (name === 'guestSessionId' && value) {
-        return decodeURIComponent(value);
+        const decoded = decodeURIComponent(value);
+        if (/^guest_[a-f0-9]{64}$/.test(decoded)) return decoded;
       }
     }
 
@@ -39,6 +40,7 @@ export const getGuestSessionId = () => {
  */
 export const setGuestSessionId = (sessionId, email = null) => {
   try {
+    if (typeof sessionId !== "string" || !/^guest_[a-f0-9]{64}$/.test(sessionId)) return;
     // Store in localStorage
     localStorage.setItem(GUEST_SESSION_KEY, sessionId);
 

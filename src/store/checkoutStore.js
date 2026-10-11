@@ -121,8 +121,8 @@ const useCheckoutStore = create((set, get) => ({
     // Construct full shipping address with name and phone from guestInfo
     const fullShippingAddress = {
       ...state.shippingAddress,
-      fullName: `${state.guestInfo.firstName} ${state.guestInfo.lastName}`.trim(),
-      phone: state.guestInfo.phone,
+      fullName: state.shippingAddress.fullName || `${state.guestInfo.firstName} ${state.guestInfo.lastName}`.trim(),
+      phone: state.shippingAddress.phone || state.guestInfo.phone,
     };
 
     return {
@@ -146,7 +146,7 @@ const useCheckoutStore = create((set, get) => ({
     };
   },
 
-  getAuthenticatedCheckoutData: () => {
+  getAuthenticatedCheckoutData: (selectedItemIds) => {
     const state = get();
 
     // Construct full shipping address with name and phone from guestInfo
@@ -154,8 +154,8 @@ const useCheckoutStore = create((set, get) => ({
       ? undefined
       : {
           ...state.shippingAddress,
-          fullName: `${state.guestInfo.firstName} ${state.guestInfo.lastName}`.trim(),
-          phone: state.guestInfo.phone,
+          fullName: state.shippingAddress.fullName || `${state.guestInfo.firstName} ${state.guestInfo.lastName}`.trim(),
+          phone: state.shippingAddress.phone || state.guestInfo.phone,
         };
 
     // Construct full billing address if needed
@@ -165,13 +165,14 @@ const useCheckoutStore = create((set, get) => ({
         : state.billingAddress
         ? {
             ...state.billingAddress,
-            fullName: `${state.guestInfo.firstName} ${state.guestInfo.lastName}`.trim(),
-            phone: state.guestInfo.phone,
+            fullName: state.billingAddress.fullName || `${state.guestInfo.firstName} ${state.guestInfo.lastName}`.trim(),
+            phone: state.billingAddress.phone || state.guestInfo.phone,
           }
         : undefined;
 
     // Build checkout data, only including fields that have values
     const checkoutData = {
+      selectedItemIds,
       useSameAddress: state.useSameAddress,
       paymentMethod: state.paymentMethod,
       customerNote: state.customerNote,

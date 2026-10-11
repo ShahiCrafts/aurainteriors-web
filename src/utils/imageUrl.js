@@ -22,14 +22,14 @@ export const FALLBACK_IMAGES = {
  * Check if URL is an external URL (http/https)
  */
 const isExternalUrl = (url) => {
-  return url?.startsWith("http://") || url?.startsWith("https://");
+  return typeof url === "string" && (url.startsWith("http://") || url.startsWith("https://"));
 };
 
 /**
  * Check if URL is an Unsplash photo ID
  */
 const isUnsplashPhotoId = (url) => {
-  return url?.startsWith("photo-");
+  return typeof url === "string" && url.startsWith("photo-");
 };
 
 /**
@@ -41,9 +41,11 @@ const isUnsplashPhotoId = (url) => {
  */
 export const getImageUrl = (path, type = "products", fallback = null) => {
   // Return fallback if no path
-  if (!path) {
+  if (typeof path !== "string" || !path.trim()) {
     return fallback || FALLBACK_IMAGES[type.replace(/s$/, "")] || FALLBACK_IMAGES.product;
   }
+
+  path = path.trim();
 
   // If it's already a full URL, return as-is
   if (isExternalUrl(path)) {
@@ -90,7 +92,7 @@ export const getProductImageUrl = (product, fallback = null) => {
     product?.image;
 
   // If it's already a full URL, return as-is
-  if (primaryImage?.startsWith("http")) {
+  if (typeof primaryImage === "string" && isExternalUrl(primaryImage)) {
     return primaryImage;
   }
 

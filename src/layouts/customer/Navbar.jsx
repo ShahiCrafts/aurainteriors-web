@@ -112,8 +112,8 @@ export default function Navbar() {
     },
   ];
 
-  const handleLogout = () => {
-    logout();
+  const handleLogout = async () => {
+    try { await logout(); } catch { return; }
     queryClient.clear();
     setIsProfileOpen(false);
   };

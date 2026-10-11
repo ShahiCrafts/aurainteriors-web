@@ -86,11 +86,11 @@ export default function ShippingStep() {
 
   // Sync shippingAddress store state with default address on first fetch
   useEffect(() => {
-    if (isAuthenticated && selectedAddress && !shippingAddressId) {
+    if (isAuthenticated && selectedAddress && (shippingAddressId !== selectedAddress._id || shippingAddress !== selectedAddress)) {
       setShippingAddressId(selectedAddress._id);
       setShippingAddress(selectedAddress);
     }
-  }, [isAuthenticated, selectedAddress, shippingAddressId, setShippingAddressId, setShippingAddress]);
+  }, [isAuthenticated, selectedAddress, shippingAddress, shippingAddressId, setShippingAddressId, setShippingAddress]);
 
   const addressLabelIcons = {
     home: Home,
@@ -171,13 +171,6 @@ export default function ShippingStep() {
       title: "Standard Shipping",
       subtitle: "5-7 business days",
       price: "FREE",
-    },
-    {
-      id: "express",
-      icon: Truck,
-      title: "Express Priority",
-      subtitle: "2-3 business days",
-      price: "NRs. 100",
     },
   ];
 

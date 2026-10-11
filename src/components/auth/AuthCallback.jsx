@@ -1,5 +1,5 @@
 import { useEffect, useRef } from "react";
-import { useNavigate, useSearchParams } from "react-router-dom";
+import { useNavigate } from "react-router-dom";
 import useAuthStore from "../../store/authStore";
 import { toast } from "react-toastify";
 import { getProfile } from "../../api/profileApi";
@@ -8,20 +8,17 @@ import Skeleton from "../common/Skeleton";
 export default function AuthCallback() {
   const signIn = useAuthStore((state) => state.signIn);
   const navigate = useNavigate();
-  const [searchParams] = useSearchParams();
   const isProcessing = useRef(false);
 
   useEffect(() => {
     const handleOAuthCallback = async () => {
-      const token = searchParams.get("token");
+      window.history.replaceState({}, "", window.location.pathname);
 
-      if (token) {
+      {
         if (isProcessing.current) return;
         isProcessing.current = true;
 
         try {
-          localStorage.setItem("token", token);
-
           const response = await getProfile();
           const user = response.data?.data?.user;
 
@@ -29,7 +26,7 @@ export default function AuthCallback() {
             throw new Error("Failed to fetch user profile");
           }
 
-          signIn(user, token);
+          signIn(user);
           toast.success(
             `Welcome${user.firstName ? `, ${user.firstName}` : ""}!`
           );
@@ -45,13 +42,11 @@ export default function AuthCallback() {
           toast.error("Authentication failed. Please try again.");
           navigate("/", { replace: true });
         }
-      } else {
-        navigate("/", { replace: true });
       }
     };
 
     handleOAuthCallback();
-  }, [signIn, navigate, searchParams]);
+  }, [signIn, navigate]);
 
   return (
     <div className="min-h-screen flex items-center justify-center bg-[#FDFDFD]">

@@ -41,6 +41,7 @@ const useChatSocket = (socket, chatId) => {
 
   // Socket event listeners
   useEffect(() => {
+    setTypingStatus({ isTyping: false, userRole: null });
     if (!socket || !chatId) return;
 
     // ----- Standard message events -----
@@ -51,8 +52,10 @@ const useChatSocket = (socket, chatId) => {
       // Socket payload is already the canonical populated DB message. Merge it into
       // React Query instead of downloading the entire conversation again.
       queryClient.setQueryData(['chats', chatId, 'messages'], (old) => {
-        if (!old?.pages?.length) return old;
         const incoming = data.message;
+        if (!old?.pages?.length) {
+          return { pages: [{ data: { messages: [incoming], pagination: { page: 1, totalPages: 1 } } }], pageParams: [1] };
+        }
         let found = false;
         const pages = old.pages.map((page) => ({
           ...page,
@@ -73,7 +76,7 @@ const useChatSocket = (socket, chatId) => {
           if (incoming.senderRole === 'customer') {
             for (let i = 0; i < pages.length && optimisticIndex < 0; i += 1) {
               const list = pages[i].data?.messages || [];
-              const idx = list.findIndex((m) => (incoming.clientMessageId && m.clientMessageId === incoming.clientMessageId) || (String(m._id).startsWith('optimistic-') && m.content === incoming.content));
+              const idx = list.findIndex((m) => incoming.clientMessageId ? m.clientMessageId === incoming.clientMessageId : (!m.clientMessageId && String(m._id).startsWith('optimistic-') && m.content === incoming.content));
               if (idx >= 0) { optimisticPage = i; optimisticIndex = idx; }
             }
           }
@@ -82,7 +85,7 @@ const useChatSocket = (socket, chatId) => {
             list[optimisticIndex] = { ...incoming, isPending: false };
             pages[optimisticPage] = { ...pages[optimisticPage], data: { ...pages[optimisticPage].data, messages: list } };
           } else {
-            const target = pages.length - 1;
+            const target = 0;
             pages[target] = { ...pages[target], data: { ...pages[target].data, messages: [...(pages[target].data?.messages || []), incoming] } };
           }
         }
@@ -99,8 +102,9 @@ const useChatSocket = (socket, chatId) => {
       // A read receipt is metadata, not a reason to redownload the conversation.
       queryClient.setQueryData(['chats', chatId, 'messages'], (old) => {
         if (!old?.pages) return old;
-        const roleRead = data.userRole === 'admin' ? 'customer' : data.userRole === 'customer' ? 'admin' : null;
-        if (!roleRead) return old;
+        const readerRole = data.userRole || data.readerRole;
+        const rolesRead = readerRole === 'admin' ? ['customer'] : readerRole === 'customer' ? ['admin', 'bot'] : [];
+        if (!rolesRead.length) return old;
         return {
           ...old,
           pages: old.pages.map((page) => ({
@@ -108,7 +112,7 @@ const useChatSocket = (socket, chatId) => {
             data: {
               ...page.data,
               messages: (page.data?.messages || []).map((m) =>
-                m.senderRole === roleRead ? { ...m, isRead: true, readAt: m.readAt || new Date().toISOString() } : m
+                rolesRead.includes(m.senderRole) && !m.isPending ? { ...m, isRead: true, readAt: m.readAt || data.readAt || new Date().toISOString() } : m
               ),
             },
           })),
@@ -159,6 +163,10 @@ const useChatSocket = (socket, chatId) => {
 
     const handleAiThinkingStart = (data) => {
       if (data.chatId?.toString() !== chatId?.toString()) return;
+      if (humanTypingTimeoutRef.current) {
+        clearTimeout(humanTypingTimeoutRef.current);
+        humanTypingTimeoutRef.current = null;
+      }
       setTypingStatus({ isTyping: true, userRole: 'ai' });
     };
 

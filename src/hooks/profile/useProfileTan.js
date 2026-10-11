@@ -1,3 +1,4 @@
+import useAuthStore from "../../store/authStore";
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import {
   getProfile,
@@ -7,8 +8,10 @@ import {
 } from '../../api/profileApi';
 
 export const useProfile = () => {
+  const userId = useAuthStore(state => state.user?._id);
   return useQuery({
-    queryKey: ['profile'],
+    queryKey: ['profile', userId || 'guest'],
+    enabled: !!userId,
     queryFn: async () => {
       const response = await getProfile();
       return response.data;

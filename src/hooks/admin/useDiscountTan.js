@@ -98,3 +98,5 @@ export const useClearAppliedDiscount = () => {
     queryClient.removeQueries({ queryKey: DISCOUNT_KEYS.applied });
   };
 };
+
+export const usePreviewDiscount = () => useMutation({ mutationFn: discountApi.preview });

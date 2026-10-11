@@ -1,10 +1,12 @@
-import { defineConfig } from "vite";
+import { resolveApiConfig } from "./src/config/apiConfig.js";
+import { defineConfig, loadEnv } from "vite";
 import react from "@vitejs/plugin-react";
 import tailwindcss from "@tailwindcss/vite";
 import path from "path";
 import fs from "fs";
 
-export default defineConfig(({ mode }) => {
+export default defineConfig(({ mode, command }) => {
+  if (command === "build") resolveApiConfig({ ...loadEnv(mode, process.cwd(), "VITE_"), PROD: true });
   const isAdmin = mode === "admin";
 
   return {
@@ -15,6 +17,18 @@ export default defineConfig(({ mode }) => {
   // "/index.admin.html" so that the admin dev server (port 5174) loads
   // main.admin.jsx → AdminApp.jsx instead of main.jsx → customer App.jsx.
   plugins: [
+    isAdmin && {
+      name: "admin-production-entry",
+      apply: "build",
+      enforce: "post",
+      generateBundle(_options, bundle) {
+        const entry = bundle["index.admin.html"];
+        if (!entry) throw new Error("Admin HTML entry was not generated");
+        delete bundle["index.admin.html"];
+        entry.fileName = "index.html";
+        bundle["index.html"] = entry;
+      },
+    },
     react(),
     tailwindcss(),
     isAdmin && {
@@ -76,7 +90,7 @@ export default defineConfig(({ mode }) => {
 
     // Override the HTML entry point for the admin build.
     // The customer build uses the default index.html → src/main.jsx.
-    // The admin build uses index.html but we swap the script tag via rollupOptions.
+    // The admin entry is normalized to index.html by the build plugin.
     rollupOptions: {
       // Point Rollup at the correct JS entry for each build target.
       input: isAdmin

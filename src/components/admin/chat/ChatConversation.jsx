@@ -1,3 +1,4 @@
+import { chronologicalMessages } from "../../../utils/chatMessages";
 import { useState, useEffect } from "react";
 import { User, Mail, Info, MoreVertical, X, ArrowRightLeft, FileText, ShoppingBag, Clock, Diamond, Paperclip, Smile, Bookmark, Zap, Send, ChevronDown, Check, Tag } from "lucide-react";
 import {
@@ -14,8 +15,7 @@ import ChatInput from "../../chat/ChatInput";
 import TypingIndicator from "../../chat/TypingIndicator";
 
 const ChatConversation = ({ chat, onClose, onChatUpdated }) => {
-  const { user } = useAuthStore();
-  const token = localStorage.getItem("token");
+  const { user, token } = useAuthStore();
   const { socket } = useNotificationSocket(token, user?._id);
 
 
@@ -42,7 +42,7 @@ const ChatConversation = ({ chat, onClose, onChatUpdated }) => {
   }, [chat?._id]);
 
   const allMessages =
-    messagesData?.pages.flatMap((page) => page.data.messages) || [];
+    chronologicalMessages(messagesData?.pages);
 
   const isBotActive = chat?.status === "ai_handling";
 
@@ -102,7 +102,8 @@ const ChatConversation = ({ chat, onClose, onChatUpdated }) => {
       <div className="flex-1 overflow-hidden flex flex-col bg-white">
         <div className="flex-1 overflow-hidden">
           <ChatMessageList
-            messages={allMessages}
+            key={chat?._id}
+                  messages={allMessages}
             isLoading={isLoading}
             onLoadMore={() =>
               hasNextPage && !isFetchingNextPage && fetchNextPage()

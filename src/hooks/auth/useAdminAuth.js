@@ -18,9 +18,9 @@ export const useAdminLogin = () => {
 export const useAdminVerifyOtp = () => {
   return useMutation({
     mutationKey: ["adminVerifyOtp"],
-    mutationFn: async ({ email, otp }) => {
+    mutationFn: async ({ email, otp, challengeId }) => {
       try {
-        const response = await adminVerifyOtp(email, otp);
+        const response = await adminVerifyOtp(email, otp, challengeId);
         return response.data;
       } catch (error) {
         throw error;

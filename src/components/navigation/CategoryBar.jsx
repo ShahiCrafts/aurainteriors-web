@@ -14,6 +14,9 @@ import {
 } from "lucide-react";
 import { useCategoryTree } from "../../hooks/product/useCategoryTan";
 
+const categoryItemClasses = "flex items-center gap-1.5 md:gap-2 pr-4 md:pr-9 py-3 md:py-4 text-[14px] md:text-[15px] whitespace-nowrap shrink-0";
+const skeletonLabelWidths = [64, 72, 56, 80, 68, 76, 60];
+
 const ARViewModal = lazy(() => import("../modals/ARViewModal"));
 
 const iconMap = {
@@ -43,7 +46,7 @@ export default function CategoryBar() {
   const { categorySlug } = useParams();
   const [isArModalOpen, setIsArModalOpen] = useState(false);
 
-  const { data: categoryTreeData } = useCategoryTree();
+  const { data: categoryTreeData, isLoading } = useCategoryTree();
   const fetchedCategories = categoryTreeData?.data?.categories || [];
 
   const displayCategories = [
@@ -68,7 +71,7 @@ export default function CategoryBar() {
     <>
       <div className="sticky top-16 md:top-20 z-30 bg-white border-b border-[#F0EFED] shadow-[0_2px_16px_rgba(0,0,0,0.06)] flex items-center font-dm-sans">
         {/* Scrollable category list */}
-        <div className="flex items-center overflow-x-auto no-scrollbar flex-1 px-4 md:px-6 lg:px-8">
+        <div className="flex items-center overflow-x-auto no-scrollbar flex-1 px-4 md:px-6 lg:px-8" aria-busy={isLoading}>
           {displayCategories.map((cat) => {
             const isActive = cat.slug
               ? categorySlug === cat.slug
@@ -77,7 +80,7 @@ export default function CategoryBar() {
             return (
               <div
                 key={cat.label}
-                className={`flex items-center gap-1.5 md:gap-2 pr-4 md:pr-9 py-3 md:py-4 text-[14px] md:text-[15px] whitespace-nowrap cursor-pointer transition-all duration-180 select-none hover:text-[#1A1714] shrink-0 ${isActive
+                className={`${categoryItemClasses} cursor-pointer transition-all duration-180 select-none hover:text-[#1A1714] ${isActive
                   ? "text-[#F27318] font-semibold"
                   : "text-[#7A7068] font-medium"
                   }`}
@@ -88,6 +91,20 @@ export default function CategoryBar() {
               </div>
             );
           })}
+          {isLoading && (
+            <>
+              <span className="sr-only" role="status">Loading categories</span>
+              {skeletonLabelWidths.map((width, index) => (
+                <div key={`category-skeleton-${index}`} className={categoryItemClasses} aria-hidden="true">
+                  <span className="h-[15px] w-[15px] rounded bg-[#F0EFED] motion-safe:animate-pulse shrink-0" />
+                  <span className="relative" style={{ width }}>
+                    <span className="invisible">Category</span>
+                    <span className="absolute inset-x-0 top-1/2 -translate-y-1/2 h-3 md:h-3.5 rounded bg-[#F0EFED] motion-safe:animate-pulse" />
+                  </span>
+                </div>
+              ))}
+            </>
+          )}
         </div>
 
         {/* AR button — outside the scroll container so it's always visible */}

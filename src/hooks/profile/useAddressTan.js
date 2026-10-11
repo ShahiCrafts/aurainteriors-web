@@ -10,24 +10,27 @@ import {
 } from "../../api/addressApi";
 
 export const useAddresses = (options = {}) => {
+  const userId = useAuthStore(state => state.user?._id);
   return useQuery({
-    queryKey: ["addresses"],
+    queryKey: ["addresses", userId || "guest"],
     queryFn: async () => {
       const response = await getAllAddresses();
       return response.data.data.addresses;
     },
     ...options,
+    enabled: !!userId && options.enabled !== false,
   });
 };
 
 export const useAddress = (id) => {
+  const userId = useAuthStore(state => state.user?._id);
   return useQuery({
-    queryKey: ["address", id],
+    queryKey: ["address", id, userId || "guest"],
     queryFn: async () => {
       const response = await getAddress(id);
       return response.data;
     },
-    enabled: !!id,
+    enabled: !!id && !!userId,
   });
 };
 
@@ -45,6 +48,7 @@ export const useCreateAddress = () => {
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["addresses"] });
+      queryClient.invalidateQueries({ queryKey: ["address"] });
     },
   });
 };
@@ -63,6 +67,7 @@ export const useUpdateAddress = () => {
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["addresses"] });
+      queryClient.invalidateQueries({ queryKey: ["address"] });
     },
   });
 };
@@ -81,6 +86,7 @@ export const useDeleteAddress = () => {
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["addresses"] });
+      queryClient.invalidateQueries({ queryKey: ["address"] });
     },
   });
 };
@@ -106,6 +112,7 @@ export const useSetDefaultAddress = () => {
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["addresses"] });
+      queryClient.invalidateQueries({ queryKey: ["address"] });
     },
   });
 };

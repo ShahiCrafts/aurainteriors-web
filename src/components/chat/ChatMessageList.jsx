@@ -1,4 +1,4 @@
-import { useRef, useEffect, useState } from 'react';
+import { useRef, useEffect, useLayoutEffect, useState } from 'react';
 import { Loader2, MessageCircle, Sparkles, ChevronDown, User, Bot } from 'lucide-react';
 import { ChatMessageSkeleton } from '../common/Skeleton';
 import ChatMessage from './ChatMessage';
@@ -19,7 +19,6 @@ const ChatMessageList = ({
   const { user } = useAuthStore();
   const messagesEndRef = useRef(null);
   const messagesContainerRef = useRef(null);
-  const prevScrollHeightRef = useRef(0);
 
   // FIX 1: Scroll-position tracking (using refs to avoid re-renders on every scroll tick)
   const isNearBottomRef = useRef(true);
@@ -29,20 +28,22 @@ const ChatMessageList = ({
 
   // FIX 1: Auto-scroll only when near bottom OR on first load
   const isFirstLoadRef = useRef(true);
-  const prevFirstMessageIdRef = useRef(null);
+  const historyAnchorRef = useRef(null);
 
-  useEffect(() => {
-    const firstMsgId = messages[0]?._id;
-    if (firstMsgId !== prevFirstMessageIdRef.current) {
-      isFirstLoadRef.current = true;
-      prevFirstMessageIdRef.current = firstMsgId;
-    }
-  }, [messages]);
-
-  useEffect(() => {
+  useLayoutEffect(() => {
     const currentCount = messages.length;
     const prevCount = prevContentCountRef.current;
     const isNewContent = currentCount > prevCount;
+    if (historyAnchorRef.current) {
+      if (!isFetchingMore && messagesContainerRef.current) {
+        const container = messagesContainerRef.current;
+        const anchor = historyAnchorRef.current;
+        container.scrollTop = anchor.top + container.scrollHeight - anchor.height;
+        historyAnchorRef.current = null;
+      }
+      prevContentCountRef.current = currentCount;
+      return;
+    }
 
     if (!isFetchingMore && isNewContent) {
       if (isFirstLoadRef.current) {
@@ -80,19 +81,10 @@ const ChatMessageList = ({
 
     // Infinite scroll — load older messages when reaching the top
     if (container.scrollTop === 0 && hasMore && !isFetchingMore) {
-      prevScrollHeightRef.current = container.scrollHeight;
+      historyAnchorRef.current = { height: container.scrollHeight, top: container.scrollTop };
       onLoadMore();
     }
   };
-
-  // Maintain scroll position after loading older messages
-  useEffect(() => {
-    if (isFetchingMore && messagesContainerRef.current) {
-      const container = messagesContainerRef.current;
-      const scrollHeightDiff = container.scrollHeight - prevScrollHeightRef.current;
-      container.scrollTop = scrollHeightDiff;
-    }
-  }, [isFetchingMore, messages.length]);
 
   // One progress indicator per AI turn. This is status only; AI content is never
   // rendered token-by-token. The canonical persisted response still appears once.
