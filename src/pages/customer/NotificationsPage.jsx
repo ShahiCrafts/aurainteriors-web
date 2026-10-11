@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useCallback, useRef } from "react";
 import {
   Bell,
   Trash2,
@@ -21,7 +21,7 @@ import useNotificationSocket from "../../hooks/notification/useNotificationSocke
 import { Link } from "react-router-dom";
 
 export default function NotificationsPage() {
-  const { user } = useAuthStore();
+  const { user, token } = useAuthStore();
   const [notifications, setNotifications] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
@@ -29,52 +29,58 @@ export default function NotificationsPage() {
   const [totalPages, setTotalPages] = useState(1);
   const [filter, setFilter] = useState("all"); // all, unread, orders, promos, designs, system
 
-  // Real-time updates
-  const { unreadCount } = useNotificationSocket(
-    localStorage.getItem("authToken"),
-    user?._id
-  );
-
-  const fetchNotifications = async (pageNum = 1) => {
-    if (!user) return;
+  const { socket } = useNotificationSocket(token, user?._id);
+  const [unreadCount, setUnreadCount] = useState(0);
+  const requestSequence = useRef(0);
+  const fetchNotifications = useCallback(async (pageNum = 1) => {
+    if (!user?._id) return;
+    const sequence = ++requestSequence.current;
     setLoading(true);
+    setError(null);
     try {
-      // Map UI filters to backend params if needed, or filter client side if backend doesn't support specific 'category' well yet.
-      // Assuming backend supports 'category' or we fetch all and filter.
-      // For now, let's pass 'isRead' for unread filter, and everything else we might need to handle.
-
-      let params = { page: pageNum, limit: 20 };
-      if (filter === "unread") params.isRead = false;
-      // if (filter !== 'all' && filter !== 'unread') params.category = filter; // If backend supports it
-
-      const response = await notificationApi.getNotifications(params.page, params.limit, {
-        isRead: params.isRead
-      });
-
-      // FIX: handle API response structure correctly
-      const fetchedList = response?.data?.notifications || response?.notifications || [];
-      const pagination = response?.data?.pagination || response?.pagination || {};
-
-      setNotifications(fetchedList);
-      setPage(pagination.page || 1);
-      setTotalPages(pagination.totalPages || 1);
-
+      const categories = { orders: "order", promos: "promotion", designs: "design", system: "system" };
+      const filters = filter === "unread" ? { isRead: false } : categories[filter] ? { category: categories[filter] } : {};
+      const [response, countResponse] = await Promise.all([
+        notificationApi.getNotifications(pageNum, 20, filters),
+        notificationApi.getUnreadCount(),
+      ]);
+      if (sequence !== requestSequence.current) return;
+      const result = response.data;
+      const lastPage = Math.max(1, result.totalPages);
+      if (pageNum > lastPage) return fetchNotifications(lastPage);
+      setNotifications(result.notifications);
+      setPage(result.page);
+      setTotalPages(lastPage);
+      setUnreadCount(countResponse.data.unreadCount);
     } catch (err) {
-      console.error("Failed to load notifications:", err);
-      setError("Failed to load notifications");
+      if (sequence === requestSequence.current) setError("Failed to load notifications");
     } finally {
-      setLoading(false);
+      if (sequence === requestSequence.current) setLoading(false);
     }
-  };
+  }, [user?._id, filter]);
 
   useEffect(() => {
     fetchNotifications(1);
-  }, [filter]); // In a real app with backend filtering, this dep makes sense.
+    return () => { requestSequence.current++; };
+  }, [fetchNotifications]);
+
+  useEffect(() => {
+    if (!socket) return;
+    const refresh = () => fetchNotifications(1);
+    socket.on("notification:new", refresh);
+    socket.on("notification:broadcast", refresh);
+    socket.on("connect", refresh);
+    return () => {
+      socket.off("notification:new", refresh);
+      socket.off("notification:broadcast", refresh);
+      socket.off("connect", refresh);
+    };
+  }, [socket, fetchNotifications]);
 
   const handleMarkAsRead = async (id) => {
     try {
       await notificationApi.markAsRead(id);
-      setNotifications(prev => prev.map(n => n._id === id ? { ...n, isRead: true } : n));
+      await fetchNotifications(page);
     } catch (err) {
       console.error("Failed to mark read:", err);
     }
@@ -82,12 +88,12 @@ export default function NotificationsPage() {
 
   const handleMarkAllRead = async () => {
     try {
-      // Logic for marking all visible or all in DB
+      // Only mark the unread notifications on this page.
       const ids = notifications.filter(n => !n.isRead).map(n => n._id);
       if (ids.length === 0) return;
 
       await notificationApi.markMultipleAsRead(ids);
-      setNotifications(prev => prev.map(n => ({ ...n, isRead: true })));
+      await fetchNotifications(page);
     } catch (err) {
       console.error("Failed to mark all read:", err);
     }
@@ -96,7 +102,7 @@ export default function NotificationsPage() {
   const handleDelete = async (id) => {
     try {
       await notificationApi.archiveNotification(id);
-      setNotifications(prev => prev.filter(n => n._id !== id));
+      await fetchNotifications(page);
     } catch (err) {
       console.error("Failed to delete:", err);
     }
@@ -108,7 +114,7 @@ export default function NotificationsPage() {
     if (type?.includes("order") || category === "order") return <Box className="w-5 h-5 text-blue-600" />;
     if (type?.includes("promo") || category === "promotion") return <Percent className="w-5 h-5 text-emerald-600" />;
     if (category === "design") return <Palette className="w-5 h-5 text-purple-600" />;
-    if (type === "system") return <Settings className="w-5 h-5 text-gray-600" />;
+    if ((type === "system" || type === "announcement")) return <Settings className="w-5 h-5 text-gray-600" />;
 
     // Default fallback
     return <Package className="w-5 h-5 text-teal-600" />;
@@ -118,20 +124,11 @@ export default function NotificationsPage() {
     if (type?.includes("order") || category === "order") return "bg-blue-50";
     if (type?.includes("promo") || category === "promotion") return "bg-emerald-50";
     if (category === "design") return "bg-purple-50";
-    if (type === "system") return "bg-gray-50";
+    if ((type === "system" || type === "announcement")) return "bg-gray-50";
     return "bg-teal-50";
   };
 
-  const filteredNotifications = notifications.filter(n => {
-    if (filter === 'all') return true;
-    if (filter === 'unread') return !n.isRead;
-    // Simple client-side filtering for demo if backend param isn't strictly ready
-    if (filter === 'orders') return n.type?.includes('order') || n.category === 'order';
-    if (filter === 'promos') return n.type?.includes('promo') || n.category === 'promotion';
-    if (filter === 'designs') return n.category === 'design';
-    if (filter === 'system') return n.type === 'system';
-    return true;
-  });
+  const filteredNotifications = notifications;
 
   const formatTimeAgo = (date) => {
     const seconds = Math.floor((new Date() - new Date(date)) / 1000);
@@ -184,7 +181,7 @@ export default function NotificationsPage() {
                 className="flex items-center gap-2 px-4 py-2 bg-white border border-gray-200 rounded-lg text-sm font-medium text-gray-700 hover:bg-gray-50 transition-colors"
               >
                 <CheckCheck className="w-4 h-4" />
-                Mark all as read
+                Mark page as read
               </button>
             </div>
           </div>
@@ -225,6 +222,11 @@ export default function NotificationsPage() {
                     </div>
                   </div>
                 ))}
+              </div>
+            ) : error ? (
+              <div className="p-5 text-center text-red-600" role="alert">
+                <p>{error}</p>
+                <button onClick={() => fetchNotifications(page)} className="mt-3 underline">Try again</button>
               </div>
             ) : filteredNotifications.length === 0 ? (
               <div className="flex flex-col items-center justify-center py-20 bg-white rounded-2xl border border-gray-100 shadow-sm text-center">
@@ -312,13 +314,18 @@ export default function NotificationsPage() {
 
           {/* Load More / Pagination (Simple implementation) */}
           {totalPages > 1 && (
-            <div className="flex justify-center mt-10">
+            <div className="flex items-center justify-center gap-4 mt-10">
+              <button disabled={page <= 1 || loading} onClick={() => fetchNotifications(page - 1)}
+                className="px-6 py-2.5 bg-white border border-gray-200 rounded-xl disabled:opacity-50">
+                Previous
+              </button>
+              <span>Page {page} of {totalPages}</span>
               <button
-                disabled={page >= totalPages}
+                disabled={page >= totalPages || loading}
                 onClick={() => fetchNotifications(page + 1)}
                 className="px-6 py-2.5 bg-white border border-gray-200 text-gray-700 font-medium rounded-xl hover:bg-gray-50 shadow-sm disabled:opacity-50 disabled:cursor-not-allowed transition-all"
               >
-                Load More Notifications
+                Next
               </button>
             </div>
           )}

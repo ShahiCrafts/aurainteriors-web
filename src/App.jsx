@@ -13,6 +13,7 @@ import CustomerRoute from "./components/auth/CustomerRoute";
 // The admin portal has its own entry point: main.admin.jsx → AdminApp.jsx
 // ─────────────────────────────────────────────────────────────────────────────
 
+const NewsletterActionPage = lazy(() => import("./pages/NewsletterActionPage"));
 const HomePage            = lazy(() => import("./pages/HomePage"));
 const AuthModal           = lazy(() => import("./components/modals/AuthModal"));
 const ChatWidget           = lazy(() => import("./components/chat/ChatWidget"));
@@ -85,6 +86,8 @@ function App() {
         {/* ⚠️  Catch-all 404 — this includes /admin, /dashboard, and any
              admin-looking path. Customers hitting those paths see a standard
              404 page. There is no login form, no hint that an admin exists. */}
+        <Route path="/newsletter/confirm" element={<Suspense fallback={<LoadingSpinner />}><NewsletterActionPage /></Suspense>} />
+        <Route path="/newsletter/unsubscribe" element={<Suspense fallback={<LoadingSpinner />}><NewsletterActionPage /></Suspense>} />
         <Route path="*" element={<Suspense fallback={<LoadingSpinner />}><NotFoundPage /></Suspense>} />
       </Routes>
 

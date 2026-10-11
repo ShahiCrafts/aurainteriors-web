@@ -38,6 +38,7 @@ export default function AdminLoginPage() {
   const [password, setPassword] = useState("");
   const [otpValues, setOtpValues] = useState(["", "", "", "", "", ""]);
   const otp = otpValues.join("");
+  const [challengeId, setChallengeId] = useState("");
   const [step, setStep] = useState(1); // 1 = Login, 2 = OTP
   const [timer, setTimer] = useState(300); // 5 minutes countdown
   const [showPassword, setShowPassword] = useState(false);
@@ -202,6 +203,7 @@ export default function AdminLoginPage() {
       {
         onSuccess: (data) => {
           if (data.otpRequired) {
+            setChallengeId(data.challengeId);
             setStep(2);
             setTimer(300);
             toast.success("Verification code sent to your email.");
@@ -222,7 +224,7 @@ export default function AdminLoginPage() {
     }
 
     verifyOtp(
-      { email, otp },
+      { email, otp, challengeId },
       {
         onSuccess: (data) => {
           signIn(data.data.user, data.token);
@@ -241,7 +243,9 @@ export default function AdminLoginPage() {
     login(
       { email, password },
       {
-        onSuccess: () => {
+        onSuccess: (data) => {
+          setChallengeId(data.challengeId);
+          setOtpValues(["", "", "", "", "", ""]);
           setTimer(300);
           toast.success("A new verification code has been sent.");
         },

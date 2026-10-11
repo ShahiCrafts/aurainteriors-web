@@ -1,16 +1,24 @@
 import { create } from "zustand";
 
 const GUEST_CART_KEY = "guest_cart";
+const variantKey = (variant = {}) => JSON.stringify(
+  Object.entries(variant || {}).sort(([a], [b]) => a.localeCompare(b))
+);
 
 // Helper to load cart from localStorage
 const loadGuestCart = () => {
   try {
     const stored = localStorage.getItem(GUEST_CART_KEY);
     if (stored) {
-      return JSON.parse(stored);
+      const parsed = JSON.parse(stored);
+      if (!Array.isArray(parsed)) return [];
+      return parsed.filter(item => item && typeof item._id === "string" &&
+        item.product && typeof item.product._id === "string" &&
+        Number.isFinite(item.product.price) && item.product.price >= 0 &&
+        Number.isSafeInteger(item.quantity) && item.quantity > 0);
     }
   } catch {
-    localStorage.removeItem(GUEST_CART_KEY);
+    try { localStorage.removeItem(GUEST_CART_KEY); } catch { /* Storage may be unavailable. */ }
   }
   return [];
 };
@@ -29,17 +37,19 @@ const useGuestCartStore = create((set, get) => ({
 
   // Add item to guest cart
   addItem: (product, quantity = 1, variant = {}) => {
+    if (!product?._id || !Number.isSafeInteger(quantity) || quantity <= 0) return;
     const { items } = get();
 
     // Check if item already exists with same variant
     const existingIndex = items.findIndex(
       (item) =>
         item.product._id === product._id &&
-        JSON.stringify(item.variant) === JSON.stringify(variant)
+        variantKey(item.variant) === variantKey(variant)
     );
 
     let newItems;
     if (existingIndex >= 0) {
+      if (!Number.isSafeInteger(items[existingIndex].quantity + quantity)) return;
       // Update quantity if item exists
       newItems = items.map((item, index) =>
         index === existingIndex
@@ -70,6 +80,7 @@ const useGuestCartStore = create((set, get) => ({
 
   // Update item quantity
   updateItemQuantity: (itemId, quantity) => {
+    if (!Number.isSafeInteger(quantity)) return;
     const { items } = get();
 
     if (quantity <= 0) {
@@ -97,7 +108,7 @@ const useGuestCartStore = create((set, get) => ({
 
   // Clear entire cart
   clearCart: () => {
-    localStorage.removeItem(GUEST_CART_KEY);
+    try { localStorage.removeItem(GUEST_CART_KEY); } catch { /* Storage may be unavailable. */ }
     set({ items: [] });
   },
 

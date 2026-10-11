@@ -351,7 +351,7 @@ export default function Orders() {
                     </td>
                     <td className="px-6 py-4">
                       <span className={`inline-flex px-2.5 py-1 rounded-full text-xs font-medium ${getPaymentStatusColor(order.paymentStatus)}`}>
-                        {order.paymentStatus.charAt(0).toUpperCase() + order.paymentStatus.slice(1)}
+                        {order.refundRequest?.status === 'pending' ? 'Refund pending' : order.paymentStatus.charAt(0).toUpperCase() + order.paymentStatus.slice(1)}
                       </span>
                     </td>
                     <td className="px-6 py-4">

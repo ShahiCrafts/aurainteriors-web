@@ -9,7 +9,7 @@ export const verifyMagicLink = (token) =>
 export const adminLogin = (email, password) =>
   api.post("/auth/admin/login", { email, password });
 
-export const adminVerifyOtp = (email, otp) =>
-  api.post("/auth/admin/verify-otp", { email, otp });
+export const adminVerifyOtp = (email, otp, challengeId) =>
+  api.post("/auth/admin/verify-otp", { email, otp, challengeId });
 
 

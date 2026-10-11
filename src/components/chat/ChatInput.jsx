@@ -1,8 +1,9 @@
+import { validateChatFiles, ATTACHMENT_MIME_TYPES } from "../../utils/chatAttachmentPolicy";
 import { useState, useRef, useEffect } from "react";
-import { LucideSendHorizontal, Paperclip, Smile, X, AlertCircle } from "lucide-react";
+import { LucideSendHorizontal, Paperclip, Smile, X } from "lucide-react";
 import { AnimatePresence } from "framer-motion";
 import { useSendMessage } from "../../hooks/chat/useChatTan";
-import { getUploadSignature, uploadToCloudinary } from "../../api/chatApi";
+import { uploadChatAttachment } from "../../api/chatApi";
 import AuthRequiredModal from "./AuthRequiredModal";
 import RateLimitModal from "./RateLimitModal";
 import { toast } from "react-toastify";
@@ -15,21 +16,16 @@ const ChatInput = ({ chatId, onTyping }) => {
   const [rateLimitRetry, setRateLimitRetry] = useState(900);
   const [authError, setAuthError] = useState(null);
   const [isUploading, setIsUploading] = useState(false);
-  const [uploadProgress, setUploadProgress] = useState({}); // Track upload state per file
   const fileInputRef = useRef(null);
   const typingTimeoutRef = useRef(null);
   const textareaRef = useRef(null);
   const sendMessageMutation = useSendMessage();
-  const uploadCacheRef = useRef({}); // Cache Cloudinary credentials to avoid repeated fetches
-  const blobUrlsRef = useRef({}); // Track blob URLs for cleanup
-  
-  // Cleanup blob URLs on unmount
-  useEffect(() => {
-    return () => {
-      Object.values(blobUrlsRef.current).forEach(url => {
-        URL.revokeObjectURL(url);
-      });
-    };
+  const uploadCacheRef = useRef(new Map());
+  const sendingRef = useRef(false);
+  const sendAttemptRef = useRef(null);
+  const [isSending, setIsSending] = useState(false);
+  useEffect(() => () => {
+    if (typingTimeoutRef.current) clearTimeout(typingTimeoutRef.current);
   }, []);
 
   const handleTypingChange = (value) => {
@@ -39,77 +35,68 @@ const ChatInput = ({ chatId, onTyping }) => {
     typingTimeoutRef.current = setTimeout(() => onTyping(false), 300);
   };
 
-  const handleFileSelect = async (files) => {
-    const newFiles = Array.from(files);
-    setSelectedFiles((prev) => [...prev, ...newFiles]);
+  const handleFileSelect = (files) => {
+    if (sendingRef.current) return;
+    const combined = [...selectedFiles, ...Array.from(files || [])];
+    const error = validateChatFiles(combined);
+    if (error) toast.error(error);
+    else setSelectedFiles(combined);
+    if (fileInputRef.current) fileInputRef.current.value = "";
   };
 
   const handleSend = async () => {
+    if (sendingRef.current) return;
     const text = message.trim();
     const files = [...selectedFiles];
     if (!text && files.length === 0) return;
-
-    // Clear the composer immediately. The message cache is optimistic for text, so
-    // the input never feels blocked by a production round trip.
-    setMessage("");
-    setSelectedFiles([]);
+    const validationError = validateChatFiles(files);
+    if (validationError) { toast.error(validationError); return; }
+    sendingRef.current = true;
+    setIsSending(true);
     onTyping(false);
-    if (textareaRef.current) textareaRef.current.style.height = "24px";
-
     try {
-      let attachments = [];
-      if (files.length > 0) {
+      const attachments = [];
+      // Sequential uploads cap concurrency and retain each success for a failed-send retry.
+      for (const file of files) {
         setIsUploading(true);
-        if (!uploadCacheRef.current.signature) {
-          const signatureResponse = await getUploadSignature();
-          uploadCacheRef.current.signature = signatureResponse.data.signature;
-          setTimeout(() => { uploadCacheRef.current.signature = null; }, 50 * 60 * 1000);
+        let cached = uploadCacheRef.current.get(file);
+        if (!cached || cached.chatId !== chatId || new Date(cached.expiresAt) <= new Date()) {
+          cached = { ...await uploadChatAttachment(chatId, file), chatId };
+          uploadCacheRef.current.set(file, cached);
         }
-        const uploadConfig = uploadCacheRef.current.signature;
-        const results = await Promise.all(files.map(async (file) => {
-          const result = await uploadToCloudinary(file, uploadConfig, { maxRetries: 1, timeoutMs: 8000 });
-          return {
-            fileName: file.name,
-            fileUrl: result.secure_url,
-            fileType: file.type.startsWith("image") ? "image" : "document",
-            fileSize: file.size,
-          };
-        }));
-        attachments = results;
+        attachments.push(cached.attachment);
       }
-
-      sendMessageMutation.mutate(
-        { chatId, content: text, attachments },
-        {
-          onError: (error) => {
-            // Restore text so a failed request never makes the user's input disappear.
-            if (text) setMessage(text);
-            const response = error.response?.data;
-            if (response?.code === "AUTH_REQUIRED") {
-              setAuthError({ message: response.message, suggestion: response.suggestion });
-              setShowAuthModal(true);
-            }
-            if (response?.code === "RATE_LIMIT_EXCEEDED") {
-              setRateLimitRetry(response.retryAfter || 900);
-              setShowRateLimitModal(true);
-            }
-          },
-        }
-      );
+      setIsUploading(false);
+      const fingerprint = JSON.stringify({ chatId, content: text, attachments });
+      if (sendAttemptRef.current?.fingerprint !== fingerprint) {
+        sendAttemptRef.current = { fingerprint, clientMessageId: crypto.randomUUID() };
+      }
+      await sendMessageMutation.mutateAsync({ chatId, content: text, attachments, clientMessageId: sendAttemptRef.current.clientMessageId });
+      sendAttemptRef.current = null;
+      setMessage("");
+      setSelectedFiles([]);
+      uploadCacheRef.current.clear();
+      if (textareaRef.current) textareaRef.current.style.height = "24px";
     } catch (error) {
-      console.error("Error sending chat message:", error);
-      if (text) setMessage(text);
-      if (files.length) setSelectedFiles(files);
-      toast.error(files.length ? "Attachment upload failed. Please try again." : "Failed to send message");
+      // The composer stays intact until the server accepts the message.
+      const response = error.response?.data;
+      if (response?.code === "AUTH_REQUIRED") {
+        setAuthError({ message: response.message, suggestion: response.suggestion });
+        setShowAuthModal(true);
+      } else if (response?.code === "RATE_LIMIT_EXCEEDED") {
+        setRateLimitRetry(response.retryAfter || 900);
+        setShowRateLimitModal(true);
+      } else toast.error(error.displayMessage || "Could not send. Your message and files are ready to retry.");
     } finally {
+      sendingRef.current = false;
+      setIsSending(false);
       setIsUploading(false);
     }
   };
 
-
   const canSend =
     (message.trim() || selectedFiles.length > 0) &&
-    !isUploading;
+    !isSending;
 
   return (
     <>
@@ -124,11 +111,11 @@ const ChatInput = ({ chatId, onTyping }) => {
                 >
                   {file.name}
                   <button
-                    onClick={() =>
-                      setSelectedFiles((prev) =>
-                        prev.filter((_, i) => i !== index)
-                      )
-                    }
+                    disabled={isSending}
+                    onClick={() => {
+                      uploadCacheRef.current.delete(file);
+                      setSelectedFiles(prev => prev.filter((_, i) => i !== index));
+                    }}
                     className="absolute right-1 top-1.5 p-0.5 text-gray-400 hover:text-red-500"
                   >
                     <X size={14} />
@@ -146,13 +133,14 @@ const ChatInput = ({ chatId, onTyping }) => {
               ref={fileInputRef}
               type="file"
               multiple
+              accept={ATTACHMENT_MIME_TYPES.join(",")}
               className="hidden"
               onChange={(e) => handleFileSelect(e.target.files)}
             />
 
             <button
               onClick={() => fileInputRef.current?.click()}
-              disabled={isUploading}
+              disabled={isSending}
               className="p-2 rounded-lg hover:bg-gray-100 hover:text-gray-600 transition-colors disabled:opacity-50"
             >
               <Paperclip className="w-5 h-5" />
@@ -173,10 +161,10 @@ const ChatInput = ({ chatId, onTyping }) => {
                 e.target.style.height = `${Math.min(e.target.scrollHeight, 120)}px`;
               }}
               placeholder="Type your message..."
-              disabled={isUploading}
+              disabled={isSending}
               className="flex-1 bg-transparent text-[14px] leading-5 text-gray-800 placeholder:text-gray-400 resize-none focus:outline-none overflow-y-auto max-h-[120px] py-3 disabled:opacity-50"
               onKeyDown={(e) => {
-                if (e.key === "Enter" && !e.shiftKey && !isUploading) {
+                if (e.key === "Enter" && !e.shiftKey && !isSending) {
                   e.preventDefault();
                   handleSend();
                 }

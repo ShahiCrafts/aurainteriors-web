@@ -1,3 +1,4 @@
+import sanitizeBlogHtml from "../../utils/sanitizeBlogHtml";
 import { useState, useEffect } from "react";
 import { useParams, Link } from "react-router-dom";
 import {
@@ -265,7 +266,7 @@ export default function BlogDetailsPage() {
                   prose-ul:my-4 prose-li:my-1
                   prose-img:rounded-xl prose-img:my-6"
                 dangerouslySetInnerHTML={{
-                  __html: renderContent(blog.content),
+                  __html: sanitizeBlogHtml(renderContent(blog.content)),
                 }}
               />
 

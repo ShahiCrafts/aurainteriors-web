@@ -1,3 +1,4 @@
+import { chronologicalMessages } from "../../utils/chatMessages";
 import { useEffect } from 'react';
 import { DotLottieReact } from '@lottiefiles/dotlottie-react';
 import {
@@ -18,8 +19,7 @@ import ChatMessageList from './ChatMessageList';
 import ChatInput from './ChatInput';
 
 const ChatWindow = ({ chat, onClose, onStartNew, onResetView, isCreatingChat }) => {
-  const { user } = useAuthStore();
-  const token = localStorage.getItem('token');
+  const { user, token } = useAuthStore();
   const guestSessionId = getGuestSessionId();
   const { socket } = useNotificationSocket(token, user?._id, guestSessionId);
 
@@ -35,7 +35,7 @@ const ChatWindow = ({ chat, onClose, onStartNew, onResetView, isCreatingChat }) 
   const { typingStatus, sendTypingIndicator, broadcastRead } = useChatSocket(socket, chat?._id);
 
   // Derived message list — must be declared before any useEffect that depends on its length
-  const allMessages = messagesData?.pages.flatMap((page) => page.data.messages) || [];
+  const allMessages = chronologicalMessages(messagesData?.pages);
   const messageCount = allMessages.length;
 
   // Persist read state only when there is actually an unread incoming message.
@@ -103,6 +103,7 @@ const ChatWindow = ({ chat, onClose, onStartNew, onResetView, isCreatingChat }) 
                 </div>
               ) : (
                 <ChatMessageList
+                  key={chat?._id}
                   messages={allMessages}
                   isLoading={isLoading}
                   onLoadMore={() => hasNextPage && !isFetchingNextPage && fetchNextPage()}

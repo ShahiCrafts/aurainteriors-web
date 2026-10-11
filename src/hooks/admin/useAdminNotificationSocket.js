@@ -10,10 +10,14 @@ const useAdminNotificationSocket = (token, userId, role) => {
     const [connected, setConnected] = useState(false);
 
     useEffect(() => {
+        setSocket(null);
+        setConnected(false);
+        setAdminNotifications([]);
+        setUnreadAdminCount(0);
         if (!token || !userId || role !== "admin") return;
 
         const socketInstance = io(SOCKET_URL, {
-            auth: { token },
+            auth: { ...(token !== "cookie" ? { token } : {}) },
             transports: ["websocket"],
             withCredentials: true,
             reconnection: true,
@@ -35,15 +39,18 @@ const useAdminNotificationSocket = (token, userId, role) => {
         });
 
         socketInstance.on("admin:notification:new", (data) => {
-            setUnreadAdminCount(prev => prev + 1);
-            const newItems = Array.isArray(data) ? data : [data];
+            const newItems = (Array.isArray(data) ? data : [data]).filter(Boolean);
+            setUnreadAdminCount(prev => prev + newItems.filter(item => !item.isRead).length);
             setAdminNotifications(prev => [...newItems, ...prev]);
         });
 
         setSocket(socketInstance);
 
         return () => {
-            if (socketInstance) socketInstance.disconnect();
+            if (socketInstance) {
+                socketInstance.removeAllListeners();
+                socketInstance.disconnect();
+            }
         };
     }, [token, userId, role]);
 

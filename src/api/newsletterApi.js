@@ -17,8 +17,8 @@ export const subscribeNewsletter = async (data) => {
  * @param {string} email - Email address
  * @returns {Promise} API response
  */
-export const unsubscribeNewsletter = async (email) => {
-    const response = await api.post('/newsletter/unsubscribe', { email });
+export const unsubscribeNewsletter = async (token) => {
+    const response = await api.post('/newsletter/unsubscribe', { token });
     return response.data;
 };
 

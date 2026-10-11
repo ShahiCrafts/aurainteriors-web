@@ -1,3 +1,4 @@
+import useAuthStore from "../../store/authStore";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import orderApi from "../../api/orderApi";
 
@@ -42,39 +43,45 @@ export const useTrackOrder = () => {
 
 // Get my orders
 export const useMyOrders = (params = {}, options = {}) => {
+  const userId = useAuthStore(state => state.user?._id);
   return useQuery({
-    queryKey: ORDER_KEYS.myOrders(params),
+    queryKey: [...ORDER_KEYS.myOrders(params), userId || "guest"],
     queryFn: () => orderApi.getMyOrders(params),
     ...options,
+    enabled: !!userId && options.enabled !== false,
   });
 };
 
 // Get single order
 export const useOrder = (id, options = {}) => {
+  const userId = useAuthStore(state => state.user?._id);
   return useQuery({
-    queryKey: ORDER_KEYS.detail(id),
+    queryKey: [...ORDER_KEYS.detail(id), userId || "guest"],
     queryFn: () => orderApi.getOrder(id),
-    enabled: !!id,
     ...options,
+    enabled: !!userId && !!id && options.enabled !== false,
   });
 };
 
 // ========== ADMIN HOOKS ==========
 
 export const useAllOrders = (params = {}, options = {}) => {
+  const userId = useAuthStore(state => state.user?._id);
   return useQuery({
-    queryKey: ORDER_KEYS.admin(params),
+    queryKey: [...ORDER_KEYS.admin(params), userId || "guest"],
     queryFn: () => orderApi.getAllOrders(params),
     ...options,
+    enabled: !!userId && options.enabled !== false,
   });
 };
 
 export const useOrderAdmin = (id, options = {}) => {
+  const userId = useAuthStore(state => state.user?._id);
   return useQuery({
-    queryKey: [...ORDER_KEYS.all, "admin-detail", id],
+    queryKey: [...ORDER_KEYS.all, "admin-detail", id, userId || "guest"],
     queryFn: () => orderApi.getOrderAdmin(id),
-    enabled: !!id,
     ...options,
+    enabled: !!userId && !!id && options.enabled !== false,
   });
 };
 

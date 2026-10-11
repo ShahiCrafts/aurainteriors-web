@@ -10,7 +10,7 @@ const notificationApi = {
         const params = new URLSearchParams({
             page,
             limit,
-            ...filters,
+            ...Object.fromEntries(Object.entries(filters).filter(([, value]) => value !== undefined && value !== null)),
         });
 
         const response = await api.get(`/notifications?${params.toString()}`);

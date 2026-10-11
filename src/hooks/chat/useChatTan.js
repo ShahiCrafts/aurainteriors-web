@@ -32,6 +32,7 @@ export const useChatDetails = (chatId, options = {}) => {
 export const useChatMessages = (chatId, options = {}) => {
   return useInfiniteQuery({
     queryKey: ['chats', chatId, 'messages'],
+    initialPageParam: 1,
     queryFn: ({ pageParam = 1 }) =>
       chatApi.getChatMessages({ chatId, page: pageParam, limit: 50 }),
     getNextPageParam: (lastPage) => {
@@ -81,8 +82,12 @@ export const useSendMessage = () => {
             pageParams: [1],
           };
         }
-        const pages = [...old.pages];
-        const target = pages.length - 1;
+        const pages = old.pages.map(page => ({ ...page, data: {
+          ...page.data,
+          messages: (page.data?.messages || []).filter(message =>
+            message.clientMessageId !== clientMessageId || !String(message._id).startsWith('optimistic-')),
+        } }));
+        const target = 0;
         pages[target] = {
           ...pages[target],
           data: {
@@ -113,10 +118,20 @@ export const useSendMessage = () => {
           },
         }));
         if (!replaced && !alreadyPresent) {
-          const target = pages.length - 1;
+          const target = 0;
           pages[target] = { ...pages[target], data: { ...pages[target].data, messages: [...(pages[target].data?.messages || []), confirmed] } };
         }
-        return { ...old, pages };
+        const seen = new Set();
+        const deduplicatedPages = pages.map(page => ({ ...page, data: {
+          ...page.data,
+          messages: (page.data?.messages || []).filter(message => {
+            const id = String(message._id);
+            if (seen.has(id)) return false;
+            seen.add(id);
+            return true;
+          }),
+        } }));
+        return { ...old, pages: deduplicatedPages };
       });
       queryClient.invalidateQueries({ queryKey: ['chats', 'my'], refetchType: 'none' });
       queryClient.invalidateQueries({ queryKey: ['chats', 'admin', 'all'], refetchType: 'none' });

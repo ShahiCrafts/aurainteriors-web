@@ -9,7 +9,7 @@ import {
   useUpdateCartItem,
   useRemoveFromCart,
 } from "../../hooks/cart/useCartTan";
-import { useApplyDiscount } from "../../hooks/admin/useDiscountTan";
+import { usePreviewDiscount } from "../../hooks/admin/useDiscountTan";
 import { useGuestCheckout, useCheckout } from "../../hooks/order/useOrderTan";
 import Navbar from "../../layouts/customer/Navbar";
 import Footer from "../../layouts/customer/Footer";
@@ -69,7 +69,9 @@ export default function CheckoutPage() {
     shippingAddressId,
     setShippingAddress,
     setShippingAddressId,
-    shippingMethod,
+    appliedDiscount,
+    setAppliedDiscount,
+    clearDiscount,
     paymentMethod,
     setPaymentMethod,
     currentStep,
@@ -87,21 +89,21 @@ export default function CheckoutPage() {
 
   const {
     items: guestCartItems,
-    clearCart: clearGuestCart,
     updateItemQuantity: updateGuestCartQuantity,
     removeItem: removeGuestCartItem,
   } = useGuestCartStore();
 
   const { mutate: updateCartItem, isPending: isUpdating } = useUpdateCartItem();
   const { mutate: removeFromCart, isPending: isRemoving } = useRemoveFromCart();
-  const applyDiscountMutation = useApplyDiscount();
+  const applyDiscountMutation = usePreviewDiscount();
   const guestCheckoutMutation = useGuestCheckout();
   const authenticatedCheckoutMutation = useCheckout();
   const { defaultAddress } = useDefaultAddress();
 
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const submittingRef = useRef(false);
   const [promoCode, setPromoCode] = useState("");
-  const [appliedPromo, setAppliedPromo] = useState(null);
+  const appliedPromo = appliedDiscount ? { discount: appliedDiscount } : null;
   const [showPromoInput, setShowPromoInput] = useState(false);
 
   const methods = useForm({
@@ -197,13 +199,12 @@ export default function CheckoutPage() {
 
   const subtotal = selectedCartItems.reduce(
     (sum, item) =>
-      sum + (item.product?.salePrice || item.product?.price || 0) * item.quantity,
+      sum + (item.product?.price || 0) * item.quantity,
     0,
   );
-  const promoDiscount = appliedPromo?.discount?.discountAmount || 0;
-  const shippingCost = shippingMethod === "express" ? 100 : 0;
-  const taxRate = 0.13;
-  const taxAmount = Math.round((subtotal - promoDiscount) * taxRate);
+  const promoDiscount = appliedDiscount ? Math.round(subtotal * appliedDiscount.discountPercentage / 100) : 0;
+  const shippingCost = 0;
+  const taxAmount = 0;
   const total = subtotal - promoDiscount + shippingCost + taxAmount;
 
   const getImageUrl = (product) => getProductImageUrl(product);
@@ -340,24 +341,48 @@ export default function CheckoutPage() {
     });
   };
 
+  const promoSelectionKey = JSON.stringify(selectedCartItems.map(item => [item._id, item.quantity, item.product?.price, item.variant]));
+  const promoRequestRef = useRef(0);
+  const promoSelectionRef = useRef(promoSelectionKey);
+  promoSelectionRef.current = promoSelectionKey;
+  const previousPromoSelectionRef = useRef(promoSelectionKey);
+  useEffect(() => {
+    if (previousPromoSelectionRef.current !== promoSelectionKey) {
+      promoRequestRef.current += 1;
+      clearDiscount();
+    }
+    previousPromoSelectionRef.current = promoSelectionKey;
+  }, [promoSelectionKey, clearDiscount]);
+
   const handleApplyPromo = () => {
     if (!promoCode.trim()) {
       toast.error("Please enter a promo code");
       return;
     }
-    applyDiscountMutation.mutate(promoCode, {
+    if (!selectedCartItems.length) { toast.error("Select items before applying a promo"); return; }
+    const selectionKey = promoSelectionKey;
+    const requestId = ++promoRequestRef.current;
+    const preview = isAuthenticated
+      ? { code: promoCode, selectedItemIds: selectedCartItems.map(item => item._id) }
+      : { code: promoCode, items: selectedCartItems.map(item => ({ productId: item.product._id, quantity: item.quantity, variant: item.variant || {} })) };
+    applyDiscountMutation.mutate(preview, {
       onSuccess: (data) => {
-        setAppliedPromo(data.data);
+        if (promoRequestRef.current !== requestId || promoSelectionRef.current !== selectionKey) return;
+        setAppliedDiscount(data.data.discount);
         setPromoCode("");
         setShowPromoInput(false);
         toast.success("Promo code applied!");
       },
-      onError: (err) => toast.error(formatError(err, "Invalid promo code")),
+      onError: (err) => {
+        if (promoRequestRef.current === requestId && promoSelectionRef.current === selectionKey)
+          toast.error(formatError(err, "Invalid promo code"));
+      },
     });
   };
 
   const handleRemovePromo = () => {
-    setAppliedPromo(null);
+    promoRequestRef.current += 1;
+    clearDiscount();
     toast.success("Promo code removed");
   };
 
@@ -381,17 +406,26 @@ export default function CheckoutPage() {
     toast.error("Please select a shipping address to proceed.");
   };
 
+  const checkoutAttempt = useRef(null);
+  const keyedCheckout = (payload) => {
+    const fingerprint = JSON.stringify(payload);
+    if (checkoutAttempt.current?.fingerprint !== fingerprint) {
+      checkoutAttempt.current = { fingerprint, key: crypto.randomUUID() };
+    }
+    return { ...payload, idempotencyKey: checkoutAttempt.current.key };
+  };
   const handlePlaceOrder = async () => {
-    if (isSubmitting) return;
+    if (submittingRef.current) return;
     if (!ensureItemsSelected()) return;
+    submittingRef.current = true;
     setIsSubmitting(true);
     try {
       let result;
       if (isAuthenticated) {
         result = await authenticatedCheckoutMutation.mutateAsync(
-          getAuthenticatedCheckoutData(
+          keyedCheckout(getAuthenticatedCheckoutData(
             selectedCartItems.map((item) => item._id),
-          ),
+          )),
         );
       } else {
         const formattedItems = selectedCartItems.map((item) => ({
@@ -400,7 +434,7 @@ export default function CheckoutPage() {
           variant: item.variant || {},
         }));
         result = await guestCheckoutMutation.mutateAsync(
-          getGuestCheckoutData(formattedItems),
+          keyedCheckout(getGuestCheckoutData(formattedItems)),
         );
       }
       const order = result.data?.order;
@@ -420,7 +454,7 @@ export default function CheckoutPage() {
         form.submit();
         return;
       }
-      if (!isAuthenticated) clearGuestCart();
+      if (!isAuthenticated) selectedCartItems.forEach(item => removeGuestCartItem(item._id));
       reset();
       navigate(
         `/order-confirmation/${order.orderId}?email=${encodeURIComponent(
@@ -429,6 +463,7 @@ export default function CheckoutPage() {
       );
     } catch (error) {
       toast.error(formatError(error, "Failed to place order"));
+      submittingRef.current = false;
       setIsSubmitting(false);
     }
   };
@@ -612,9 +647,7 @@ export default function CheckoutPage() {
                               <p className="text-[16px] font-bold text-[#1A1714]">
                                 NRs.{" "}
                                 {(
-                                  (item.product?.salePrice ||
-                                    item.product?.price ||
-                                    0) * item.quantity
+                                  (item.product?.price || 0) * item.quantity
                                 ).toLocaleString()}
                               </p>
                             </div>
@@ -715,7 +748,7 @@ export default function CheckoutPage() {
                     )}
 
                     <div className="flex justify-between items-center text-[16px]">
-                      <span className="text-neutral-500">VAT (13%)</span>
+                      <span className="text-neutral-500">Tax</span>
                       <span className="font-semibold text-[#1A1714]">
                         NRs. {taxAmount.toLocaleString()}
                       </span>

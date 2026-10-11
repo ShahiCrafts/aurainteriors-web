@@ -24,10 +24,11 @@ const ChatWidget = () => {
       setActiveChatData(null);
       setActiveChatId(null);
     } else {
-      // User is guest - ensure session exists
+      // The server creates guest capabilities; discard legacy weak credentials.
       if (!getGuestSessionId()) {
-        const newSessionId = `guest_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
-        setGuestSessionId(newSessionId);
+        clearGuestSession();
+        setActiveChatData(null);
+        setActiveChatId(null);
       }
     }
   }, [user]);

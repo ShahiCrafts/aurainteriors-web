@@ -31,7 +31,7 @@ import useAdminNotificationSocket from "../../hooks/admin/useAdminNotificationSo
 export default function AdminLayout() {
   const location = useLocation();
   const navigate = useNavigate();
-  const { user, signOut } = useAuthStore();
+  const { user, token, logout } = useAuthStore();
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [logoutModalOpen, setLogoutModalOpen] = useState(false);
   const [policyModalOpen, setPolicyModalOpen] = useState(false);
@@ -58,7 +58,7 @@ export default function AdminLayout() {
     });
   };
 
-  const token = useMemo(() => localStorage.getItem("token"), []);
+
 
   // Admin notification socket hook
   const {
@@ -124,8 +124,8 @@ export default function AdminLayout() {
     setToasts((prev) => prev.filter((t) => t.id !== toastId));
   };
 
-  const handleSignOut = () => {
-    signOut();
+  const handleSignOut = async () => {
+    try { await logout(); } catch { return; }
     setLogoutModalOpen(false);
     navigate("/");
   };

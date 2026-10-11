@@ -1,9 +1,11 @@
 import axios from 'axios';
+import useAuthStore from '../store/authStore';
 import { API_V1_URL } from '../config/constants';
 
 const api = axios.create({
     baseURL: API_V1_URL,
     timeout: 10000,
+    withCredentials: true,
     headers: {
         'Content-Type': 'application/json',
     },
@@ -11,8 +13,8 @@ const api = axios.create({
 
 api.interceptors.request.use(
     (config) => {
-        const token = localStorage.getItem('token');
-        if (token) {
+        const token = useAuthStore.getState().token;
+        if (token && token !== "cookie") {
             config.headers.Authorization = `Bearer ${token}`;
         }
         return config;

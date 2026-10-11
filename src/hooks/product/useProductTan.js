@@ -119,8 +119,8 @@ export const useSetPrimaryImage = () => {
 
   return useMutation({
     mutationFn: ({ productId, imageId }) => productApi.setPrimaryImage(productId, imageId),
-    onSuccess: (_, { productId }) => {
-      queryClient.invalidateQueries({ queryKey: PRODUCT_KEYS.detail(productId) });
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: PRODUCT_KEYS.all });
     },
   });
 };
