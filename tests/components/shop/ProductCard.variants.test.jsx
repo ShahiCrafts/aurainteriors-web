@@ -25,7 +25,7 @@ vi.mock("../../../src/store/authStore", () => ({
   default: () => ({ isAuthenticated: false }),
 }));
 
-vi.mock("react-toastify", () => ({
+vi.mock("../../../src/lib/toast.js", () => ({
   toast: { success: vi.fn(), error: vi.fn() },
 }));
 

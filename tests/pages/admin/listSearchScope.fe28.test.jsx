@@ -111,7 +111,7 @@ vi.mock("../../../src/components/modals/ConfirmationDialog", () => ({
   default: () => null,
 }));
 
-vi.mock("react-toastify", () => ({
+vi.mock("../../../src/lib/toast.js", () => ({
   toast: { success: vi.fn(), error: vi.fn(), warning: vi.fn() },
 }));
 

@@ -111,7 +111,7 @@ vi.mock("../../../src/components/common/Skeleton", () => ({
   default: () => null,
 }));
 
-vi.mock("react-toastify", () => ({
+vi.mock("../../../src/lib/toast.js", () => ({
   toast: { success: vi.fn(), error: toastError, warning: vi.fn() },
 }));
 

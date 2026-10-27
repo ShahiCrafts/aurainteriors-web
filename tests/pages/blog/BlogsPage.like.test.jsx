@@ -52,7 +52,7 @@ vi.mock("../../../src/hooks/newsletter/useNewsletterTan", () => ({
 
 vi.mock("../../../src/layouts/customer/Navbar", () => ({ default: () => null }));
 vi.mock("../../../src/layouts/customer/Footer", () => ({ default: () => null }));
-vi.mock("react-toastify", () => ({
+vi.mock("../../../src/lib/toast.js", () => ({
   toast: { error: mockState.toastError, success: vi.fn() },
 }));
 

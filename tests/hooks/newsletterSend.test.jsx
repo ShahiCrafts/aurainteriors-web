@@ -23,13 +23,13 @@ vi.mock("../../src/api/jobApi.js", () => ({
   pollJob: vi.fn(),
 }));
 
-vi.mock("react-toastify", () => ({
+vi.mock("../../src/lib/toast.js", () => ({
   toast: { success: vi.fn(), error: vi.fn(), info: vi.fn(), warning: vi.fn() },
 }));
 
 import { sendTrendEmail } from "../../src/api/newsletterApi.js";
 import { pollJob } from "../../src/api/jobApi.js";
-import { toast } from "react-toastify";
+import { toast } from "../../src/lib/toast.js";
 import { useSendTrendEmail } from "../../src/hooks/newsletter/useNewsletterTan.js";
 
 function wrapper({ children }) {

@@ -33,7 +33,7 @@ vi.mock("../../../src/components/fallbacks/ImageWithFallback", () => ({
   default: (props) => <img {...props} alt={props.alt || ""} />,
 }));
 
-vi.mock("react-toastify", () => ({
+vi.mock("../../../src/lib/toast.js", () => ({
   toast: { success: vi.fn(), error: vi.fn() },
 }));
 

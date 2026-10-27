@@ -26,7 +26,7 @@ const toastMock = vi.hoisted(() => ({
   info: vi.fn(),
   warning: vi.fn(),
 }));
-vi.mock("react-toastify", () => ({ toast: toastMock }));
+vi.mock("../../../src/lib/toast.js", () => ({ toast: toastMock }));
 vi.mock("../../../src/lib/toast.js", () => ({ toast: toastMock }));
 
 vi.mock("../../../src/api/userApi.js", () => ({

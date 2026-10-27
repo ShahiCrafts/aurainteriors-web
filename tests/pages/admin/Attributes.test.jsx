@@ -45,7 +45,7 @@ vi.mock("../../../src/hooks/catalog/useCatalogTan", () => ({
   useDeleteAttributeDefinition: () => ({ mutateAsync: deleteMutate, isPending: false }),
 }));
 
-vi.mock("react-toastify", () => ({
+vi.mock("../../../src/lib/toast.js", () => ({
   toast: { success: vi.fn(), error: vi.fn() },
 }));
 

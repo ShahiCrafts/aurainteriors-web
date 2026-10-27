@@ -30,6 +30,7 @@
 import { describe, it, expect, vi } from "vitest";
 import { render, screen, waitFor } from "@testing-library/react";
 import { MemoryRouter } from "react-router-dom";
+import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { readdirSync, readFileSync, statSync } from "node:fs";
 import path from "node:path";
 import { fileURLToPath } from "node:url";
@@ -153,10 +154,18 @@ async function renderNotificationsPage(notifications) {
   });
   notificationApi.getUnreadCount.mockResolvedValue({ data: { unreadCount: 0 } });
   useAuthStore.setState({ user: { _id: "user-1" }, token: "cookie", loading: false });
+  // REUSE-016 (Phase 3): NotificationsPage reads its data through
+  // React Query now, so — like main.jsx — the harness provides a
+  // QueryClient. The security assertions below are unchanged.
+  const queryClient = new QueryClient({
+    defaultOptions: { queries: { retry: false } },
+  });
   const utils = render(
-    <MemoryRouter>
-      <NotificationsPage />
-    </MemoryRouter>
+    <QueryClientProvider client={queryClient}>
+      <MemoryRouter>
+        <NotificationsPage />
+      </MemoryRouter>
+    </QueryClientProvider>
   );
   // Wait for the notifications themselves to render (a hostile-only
   // fixture correctly renders NO "View details" link, so the link

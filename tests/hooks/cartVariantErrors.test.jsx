@@ -10,7 +10,7 @@ import { renderHook, act } from "@testing-library/react";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 
 const toastMock = vi.hoisted(() => ({ error: vi.fn(), success: vi.fn() }));
-vi.mock("react-toastify", () => ({ toast: toastMock }));
+vi.mock("../../src/lib/toast.js", () => ({ toast: toastMock }));
 
 vi.mock("../../src/api/cartApi.js", () => ({
   default: {

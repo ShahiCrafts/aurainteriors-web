@@ -48,7 +48,7 @@ vi.mock("../../../src/hooks/profile/useProfileTan", () => ({
   }),
 }));
 
-vi.mock("react-toastify", () => ({
+vi.mock("../../../src/lib/toast.js", () => ({
   toast: { success: vi.fn(), error: vi.fn() },
 }));
 
