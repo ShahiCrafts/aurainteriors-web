@@ -2,7 +2,7 @@ import { useEffect, useRef } from "react";
 import { useNavigate, useSearchParams } from "react-router-dom";
 import { verifyMagicLink as verifyMagicLinkApi } from "../../api/authApi";
 import Skeleton from "../../components/common/Skeleton";
-import useAuthStore from "../../store/authStore";
+import useAuthStore, { getAuthRevision } from "../../store/authStore";
 import { toast } from "react-toastify";
 
 // Module-level set to prevent double-firing in React 18 StrictMode
@@ -24,10 +24,18 @@ export default function VerifyMagicLinkPage() {
     processedTokens.add(token);
 
     const verify = async () => {
+      // FE-18: this completion is not cancelled by unmount; if a
+      // sign-out intervened while verification was in flight, do not
+      // resurrect a session — land on home as a guest instead.
+      const revisionAtStart = getAuthRevision();
       try {
         const response = await verifyMagicLinkApi(token);
         const data = response.data;
         const user = data.data.user;
+        if (getAuthRevision() !== revisionAtStart) {
+          navigate("/");
+          return;
+        }
         signIn(user, data.token);
         
         if (user && user.email) {

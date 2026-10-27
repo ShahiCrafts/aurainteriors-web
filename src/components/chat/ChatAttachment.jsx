@@ -1,5 +1,12 @@
 import { FileText, Download, Image as ImageIcon, ExternalLink, AlertCircle } from 'lucide-react';
 import { API_BASE_URL } from '../../config/constants';
+import { validateMediaUrl, isAbsoluteUrlCandidate } from '../../utils/safeUrl';
+
+// FE-03: a server-supplied chat attachment URL may only point at the
+// app's own API/uploads origin or Cloudinary. blob: is accepted ONLY
+// for the local optimistic preview (isOptimistic) — a blob: URL can
+// only be minted by this page, never by a server payload.
+const CHAT_ATTACHMENT_HOSTS = ['res.cloudinary.com'];
 
 const ChatAttachment = ({ attachment, isOwnMessage, isOptimistic = false }) => {
   // Handle missing or invalid attachment
@@ -10,13 +17,30 @@ const ChatAttachment = ({ attachment, isOwnMessage, isOptimistic = false }) => {
 
   const { fileName, fileUrl, fileType, fileSize } = attachment;
 
-  // Determine full URL - don't append base URL if it's already absolute (http, https, blob)
-  const fullUrl = 
-    fileUrl.startsWith('http://') || 
-    fileUrl.startsWith('https://') || 
-    fileUrl.startsWith('blob:')
-      ? fileUrl
-      : `${API_BASE_URL}${fileUrl}`;
+  // Determine full URL. Absolute values are validated (API origin /
+  // Cloudinary only, blob: only for the optimistic local preview);
+  // relative values keep the API base-joining behaviour. A rejected
+  // absolute value yields null and renders an inert placeholder below
+  // — the raw value never reaches an <img src> or an <a href>.
+  const validated = isAbsoluteUrlCandidate(fileUrl) || /^blob:/i.test(fileUrl.trim())
+    ? validateMediaUrl(fileUrl, {
+        fallback: null,
+        allowBlob: isOptimistic,
+        allowedHosts: CHAT_ATTACHMENT_HOSTS,
+      })
+    : fileUrl.startsWith('/')
+      ? `${API_BASE_URL}${fileUrl}`
+      : null;
+  const fullUrl = validated;
+
+  if (!fullUrl) {
+    return (
+      <div className="flex items-center gap-3 p-3 rounded-xl bg-neutral-50 border border-neutral-200">
+        <AlertCircle className="w-5 h-5 text-neutral-400 shrink-0" />
+        <p className="text-sm text-neutral-500 truncate">{fileName}</p>
+      </div>
+    );
+  }
 
   // Log for debugging
   if (isOptimistic) {

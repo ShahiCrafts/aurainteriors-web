@@ -1,75 +1,80 @@
-import { useState, useEffect } from "react";
+import { useState, useMemo, useRef } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import { AlertCircle, ArrowLeft } from "lucide-react";
 import Skeleton from "../../components/common/Skeleton";
 import { Link } from "react-router-dom";
-import { useProduct, useProducts } from "../../hooks/product/useProductTan";
+import { useProduct } from "../../hooks/product/useProductTan";
+import { useArCatalogProducts } from "../../hooks/product/useArCatalogTan";
 import { useCategories } from "../../hooks/product/useCategoryTan";
 import NativeARView from "../../components/ar/NativeARView";
 import { useAddToCart } from "../../hooks/cart/useCartTan";
 import useAuthStore from "../../store/authStore";
+import useGuestCartStore from "../../store/guestCartStore";
+import { hasArModel, isIntroProduct } from "../../utils/arProducts";
+
+const INTRO_PRODUCT = {
+  _id: "intro",
+  slug: "intro",
+  name: "Aura Signature Sofa",
+  description: "Experience modern luxury with our signature handcrafted sofa piece.",
+  price: 45000,
+  modelFiles: [{ format: "glb", url: "https://fabritor.s3.ap-southeast-1.amazonaws.com/models/sofa_chair.glb" }],
+  modelUrl: "https://fabritor.s3.ap-southeast-1.amazonaws.com/models/sofa_chair.glb",
+  images: [{ url: "https://images.unsplash.com/photo-1567016376408-0226e4d0c1ea?w=800" }]
+};
 
 export default function ARViewPage() {
   const { productSlug } = useParams();
   const navigate = useNavigate();
   const { isAuthenticated } = useAuthStore();
+  const addGuestItem = useGuestCartStore((state) => state.addItem);
   const [customization, setCustomization] = useState({});
+  const addInFlightRef = useRef(false);
 
   const { data: productData, isLoading: productLoading, error: productError } = useProduct(productSlug === "intro" ? null : productSlug, {
     enabled: productSlug !== "intro"
   });
 
-  const { data: productsData, isLoading: productsLoading } = useProducts({
-    limit: 100,
-    status: "active",
-  });
+  // FE-30: the picker catalog (page-walking, see useArCatalogProducts)
+  // and the category tree stream in behind the AR experience. They
+  // used to be part of isLoading, so AR blocked on a limit:100
+  // catalog fetch plus the full category tree even though only the
+  // linked product is needed to start.
+  const { data: catalogData } = useArCatalogProducts();
+  const { data: categoriesData } = useCategories();
 
-  const { data: categoriesData, isLoading: categoriesLoading } = useCategories();
-
-  const introProduct = {
-    _id: "intro",
-    slug: "intro",
-    name: "Aura Signature Sofa",
-    description: "Experience modern luxury with our signature handcrafted sofa piece.",
-    price: 45000,
-    modelFiles: [{ format: "glb", url: "https://fabritor.s3.ap-southeast-1.amazonaws.com/models/sofa_chair.glb" }],
-    modelUrl: "https://fabritor.s3.ap-southeast-1.amazonaws.com/models/sofa_chair.glb",
-    images: [{ url: "https://images.unsplash.com/photo-1567016376408-0226e4d0c1ea?w=800" }]
-  };
-
-  const product = productSlug === "intro" ? introProduct : productData?.data?.product;
-  const products = productsData?.data?.products || [];
+  const product = productSlug === "intro" ? INTRO_PRODUCT : productData?.data?.product;
   const categories = categoriesData?.data?.categories || [];
 
   // Filter products for AR compatibility and include intro if needed
-  const arProducts = products.filter((p) => {
-    const hasModelFiles = p.modelFiles?.some(
-      (m) => m.format === "glb" || m.format === "gltf"
-    );
-    const hasLegacyModel =
-      p.modelUrl?.includes(".glb") || p.modelUrl?.includes(".gltf");
-    return (hasModelFiles || hasLegacyModel) && p.slug !== productSlug;
-  });
+  const arProducts = useMemo(
+    () =>
+      (catalogData?.data?.products || []).filter(
+        (p) => hasArModel(p) && p.slug !== productSlug
+      ),
+    [catalogData, productSlug]
+  );
 
   // Combine selected product with others for the catalog
   const fullProducts = product ? [product, ...arProducts] : arProducts;
 
-  const isLoading = (productLoading && productSlug !== "intro") || productsLoading || categoriesLoading;
+  // FE-30: only the selected product blocks rendering.
+  const isLoading = productSlug !== "intro" && productLoading;
 
-  const { mutate: addToCart } = useAddToCart();
+  const { mutate: addToCart, isPending: isAddingToCart } = useAddToCart();
 
   const handleClose = () => {
     if (window.history.length > 1) {
       navigate(-1);
     } else {
-      navigate(`/product/${productSlug}`);
+      navigate(`/product/${encodeURIComponent(productSlug)}`);
     }
   };
 
   const handleProductSelect = (p) => {
     setCustomization({});
     if (p.slug !== productSlug) {
-      navigate(`/ar/${p.slug}`, { replace: true });
+      navigate(`/ar/${encodeURIComponent(p.slug)}`, { replace: true });
     }
   };
 
@@ -78,18 +83,26 @@ export default function ARViewPage() {
   };
 
   const handleAddToCart = (p) => {
+    // FE-30: the synthetic intro product is not purchasable, and a
+    // rapid double-tap must submit at most one mutation.
+    if (!p || isIntroProduct(p)) return;
+    if (addInFlightRef.current || isAddingToCart) return;
+    // FE-30: guests use the guest cart (the same path the product
+    // page offers) instead of being silently bounced to /shop.
     if (!isAuthenticated) {
-      navigate("/shop");
+      addGuestItem(p, 1);
       return;
     }
-
+    addInFlightRef.current = true;
     addToCart(
       {
         productId: p._id,
         quantity: 1,
       },
       {
-        onSuccess: () => { },
+        onSettled: () => {
+          addInFlightRef.current = false;
+        },
       }
     );
   };

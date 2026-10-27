@@ -1,4 +1,5 @@
-import { Link, useParams } from "react-router-dom";
+import { shopCategoryUrl, selectedCategorySlugs } from "../../utils/shopFilters";
+import { Link, useSearchParams } from "react-router-dom";
 import { ChevronRight } from "lucide-react";
 
 export default function CategorySidebar({
@@ -6,7 +7,8 @@ export default function CategorySidebar({
   currentCategory,
   productCounts,
 }) {
-  const { categorySlug } = useParams();
+  const [searchParams] = useSearchParams();
+  const selectedCategories = selectedCategorySlugs(searchParams);
 
   const displayCategories =
     currentCategory?.subcategories?.length > 0
@@ -23,14 +25,14 @@ export default function CategorySidebar({
 
       <div className="space-y-1">
         {displayCategories.map((category) => {
-          const isActive = categorySlug === category.slug;
+          const isActive = selectedCategories.includes(category.slug);
           const count =
             productCounts?.[category._id] || category.productCount || 0;
 
           return (
             <Link
               key={category._id}
-              to={`/shop/${category.slug}`}
+              to={shopCategoryUrl(category.slug)}
               className={`flex items-center justify-between px-3 py-2.5 rounded-lg transition-all font-dm-sans text-sm ${
                 isActive
                   ? "bg-teal-50 text-teal-700 font-medium"

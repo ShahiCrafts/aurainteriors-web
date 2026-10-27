@@ -1,4 +1,4 @@
-import { useState, useRef } from "react";
+import { useState, useRef, useEffect } from "react";
 import { Star, Loader2 } from "lucide-react";
 import { toast } from "react-toastify";
 import { useCreateReview, useUpdateReview } from "../../hooks/review/useReviewTan";
@@ -20,6 +20,7 @@ export default function ReviewForm({
     handleSubmit,
     setValue,
     watch,
+    reset,
     formState: { errors },
   } = useForm({
     resolver: yupResolver(reviewSchema),
@@ -30,6 +31,19 @@ export default function ReviewForm({
       comment: existingReview?.comment || "",
     },
   });
+
+  // FE-15: same captured-defaults defect as ReviewModal — defaultValues
+  // are read once at mount, so swapping the target review on the mounted
+  // form showed (and submitted) the previous review's values. Reset to
+  // the CURRENT target whenever it changes; blank for a new review.
+  useEffect(() => {
+    reset({
+      rating: existingReview?.rating || 0,
+      title: existingReview?.title || "",
+      comment: existingReview?.comment || "",
+    });
+    setHoveredRating(0);
+  }, [existingReview, reset]);
 
   const rating = watch("rating");
   const title = watch("title", "");
@@ -77,18 +91,26 @@ export default function ReviewForm({
 
       <form onSubmit={handleSubmit(onSubmit)}>
         <div className="mb-6">
-          <label className="block text-sm font-medium text-neutral-700 mb-2 font-dm-sans">
+          <span className="block text-sm font-medium text-neutral-700 mb-2 font-dm-sans">
             Rating
-          </label>
-          <div className="flex gap-1">
+          </span>
+          <div className="flex gap-1" role="radiogroup" aria-label="Rating">
             {[1, 2, 3, 4, 5].map((star) => (
               <button
                 key={star}
                 type="button"
+                role="radio"
+                aria-checked={rating === star}
+                aria-label={`${star} star${star > 1 ? "s" : ""}`}
+                tabIndex={star === (rating || 1) ? 0 : -1}
                 onMouseEnter={() => setHoveredRating(star)}
                 onMouseLeave={() => setHoveredRating(0)}
                 onClick={() => handleStarClick(star)}
-                className="focus:outline-none transition-transform hover:scale-110"
+                onKeyDown={(e) => {
+                  if (e.key === "ArrowRight" || e.key === "ArrowUp") { e.preventDefault(); handleStarClick(Math.min(5, star + 1)); }
+                  if (e.key === "ArrowLeft" || e.key === "ArrowDown") { e.preventDefault(); handleStarClick(Math.max(1, star - 1)); }
+                }}
+                className="focus:outline-none focus-visible:ring-2 focus-visible:ring-teal-500 rounded-full transition-transform hover:scale-110"
               >
                 <Star
                   size={28}

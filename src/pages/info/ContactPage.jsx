@@ -15,6 +15,7 @@ import {
   ArrowRight,
   User,
   FileText,
+  Star,
 } from "lucide-react";
 import Navbar from "../../layouts/customer/Navbar";
 import Footer from "../../layouts/customer/Footer";
@@ -22,7 +23,11 @@ import { useSubmitContact } from "../../hooks/admin/useContactTan";
 import { useForm } from "react-hook-form";
 import { yupResolver } from "@hookform/resolvers/yup";
 import { contactSchema } from "../../utils/validationSchemas";
+import { buildContactPayload } from "../../utils/contactContract";
 
+// FE-44: the full server category enum (validators/contact.validator.js)
+// — the old list silently omitted "feedback" and "other", and no control
+// rendered any of it, so every web enquiry was filed as "general".
 const contactCategories = [
   {
     value: "general",
@@ -44,6 +49,16 @@ const contactCategories = [
     label: "Partnership",
     icon: Handshake,
   },
+  {
+    value: "feedback",
+    label: "Feedback",
+    icon: Star,
+  },
+  {
+    value: "other",
+    label: "Other",
+    icon: FileText,
+  },
 ];
 
 const fadeInUp = {
@@ -62,11 +77,16 @@ export default function ContactPage() {
   } = useForm({
     resolver: yupResolver(contactSchema),
     mode: "onTouched",
+    defaultValues: { category: "general", phone: "" },
   });
 
   const onSubmit = (data) => {
+    // FE-44: send exactly the server schema's fields
+    // ({name, email, phone, subject, message, category}) — the old
+    // payload sent BOTH `name` and the non-schema `fullName` plus
+    // every other form key, and never sent a category at all.
     submitContact(
-      { name: data.fullName, ...data }, // Mapping fullName to name as expected by API if needed, or adjust API to accept fullName
+      buildContactPayload(data),
       {
         onSuccess: () => {
           toast.success("Message sent successfully! We'll get back to you soon.");
@@ -145,28 +165,28 @@ export default function ContactPage() {
 
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 sm:gap-5">
                   <div>
-                    <label className="block text-xs font-bold text-gray-700 mb-1.5 uppercase tracking-wide">
+                    <label htmlFor="contact-name" className="block text-xs font-bold text-gray-700 mb-1.5 uppercase tracking-wide">
                       Full Name <span className="text-red-500">*</span>
                     </label>
                     <div className="relative">
-                      <input
+                      <input id="contact-name"
                         type="text"
-                        {...register("fullName")}
+                        {...register("name")}
                         placeholder="John Doe"
-                        className={`w-full px-4 py-2.5 sm:py-3 rounded-xl border focus:ring-1 outline-none transition-all font-dm-sans text-sm text-gray-900 placeholder:text-gray-400 bg-white ${errors.fullName ? "border-red-400 focus:border-red-500 focus:ring-red-500/20" : "border-gray-200 focus:border-teal-700 focus:ring-teal-700"}`}
+                        className={`w-full px-4 py-2.5 sm:py-3 rounded-xl border focus:ring-1 outline-none transition-all font-dm-sans text-sm text-gray-900 placeholder:text-gray-400 bg-white ${errors.name ? "border-red-400 focus:border-red-500 focus:ring-red-500/20" : "border-gray-200 focus:border-teal-700 focus:ring-teal-700"}`}
                       />
                     </div>
-                    {errors.fullName && (
-                      <p className="text-xs text-red-500 mt-1 font-dm-sans">{errors.fullName.message}</p>
+                    {errors.name && (
+                      <p className="text-xs text-red-500 mt-1 font-dm-sans">{errors.name.message}</p>
                     )}
                   </div>
 
                   <div>
-                    <label className="block text-xs font-bold text-gray-700 mb-1.5 uppercase tracking-wide">
+                    <label htmlFor="contact-email" className="block text-xs font-bold text-gray-700 mb-1.5 uppercase tracking-wide">
                       Email Address <span className="text-red-500">*</span>
                     </label>
                     <div className="relative">
-                      <input
+                      <input id="contact-email"
                         type="email"
                         {...register("email")}
                         placeholder="you@example.com"
@@ -181,11 +201,11 @@ export default function ContactPage() {
 
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 sm:gap-5">
                   <div>
-                    <label className="block text-xs font-bold text-gray-700 mb-1.5 uppercase tracking-wide">
+                    <label htmlFor="contact-phone" className="block text-xs font-bold text-gray-700 mb-1.5 uppercase tracking-wide">
                       Phone Number
                     </label>
                     <div className="relative">
-                      <input
+                      <input id="contact-phone"
                         type="tel"
                         {...register("phone")}
                         placeholder="+1 (555) 000-0000"
@@ -195,11 +215,11 @@ export default function ContactPage() {
                   </div>
 
                   <div>
-                    <label className="block text-xs font-bold text-gray-700 mb-1.5 uppercase tracking-wide">
+                    <label htmlFor="contact-subject" className="block text-xs font-bold text-gray-700 mb-1.5 uppercase tracking-wide">
                       Subject <span className="text-red-500">*</span>
                     </label>
                     <div className="relative">
-                      <input
+                      <input id="contact-subject"
                         type="text"
                         {...register("subject")}
                         placeholder="Inquiry Topic"
@@ -213,11 +233,38 @@ export default function ContactPage() {
                 </div>
 
                 <div>
-                  <label className="block text-xs font-bold text-gray-700 mb-1.5 uppercase tracking-wide">
+                  <label
+                    htmlFor="contact-category"
+                    className="block text-xs font-bold text-gray-700 mb-1.5 uppercase tracking-wide"
+                  >
+                    Category
+                  </label>
+                  <select
+                    id="contact-category"
+                    {...register("category")}
+                    className={`w-full px-4 py-2.5 sm:py-3 rounded-xl border focus:ring-1 outline-none transition-all font-dm-sans text-sm text-gray-900 bg-white ${errors.category ? "border-red-400 focus:border-red-500 focus:ring-red-500/20" : "border-gray-200 focus:border-teal-700 focus:ring-teal-700"}`}
+                  >
+                    {contactCategories.map(({ value, label }) => (
+                      <option key={value} value={value}>
+                        {label}
+                      </option>
+                    ))}
+                  </select>
+                  {errors.category && (
+                    <p className="text-xs text-red-500 mt-1 font-dm-sans">{errors.category.message}</p>
+                  )}
+                  {errors.phone && (
+                    <p className="text-xs text-red-500 mt-1 font-dm-sans">{errors.phone.message}</p>
+                  )}
+                </div>
+
+                <div>
+                  <label htmlFor="contact-message" className="block text-xs font-bold text-gray-700 mb-1.5 uppercase tracking-wide">
                     Message <span className="text-red-500">*</span>
                   </label>
                   <div className="relative">
                     <textarea
+                      id="contact-message"
                       {...register("message")}
                       rows={4}
                       placeholder="How can we help you today?"

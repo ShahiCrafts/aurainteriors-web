@@ -1,5 +1,5 @@
-import sanitizeBlogHtml from "../../utils/sanitizeBlogHtml";
-import { useState, useEffect } from "react";
+import { buildBlogContent } from "../../utils/blogToc";
+import { useState, useEffect, useMemo } from "react";
 import { useParams, Link } from "react-router-dom";
 import {
   Clock,
@@ -16,7 +16,9 @@ import Navbar from "../../layouts/customer/Navbar";
 import Footer from "../../layouts/customer/Footer";
 import { useBlog, useRelatedBlogs } from "../../hooks/blog/useBlogTan";
 import Skeleton from "../../components/common/Skeleton";
-import { getBlogImageUrl, getAvatarUrl } from "../../utils/imageUrl";
+import { getBlogImageUrl } from "../../utils/imageUrl";
+import { validateExternalUrl } from "../../utils/safeUrl";
+import { UserAvatar } from "../../components/common/InitialsAvatar";
 
 export default function BlogDetailsPage() {
   const { slug } = useParams();
@@ -31,8 +33,21 @@ export default function BlogDetailsPage() {
   const { data: relatedData } = useRelatedBlogs(blog?._id, 3);
   const relatedBlogs = relatedData?.data?.blogs || [];
 
-  // Extract sections from content for TOC
-  const sections = blog?.content ? extractSections(blog.content) : [];
+  // FE-67: the article body and its TOC are built together from the
+  // SANITIZED output — buildBlogContent sanitizes first, then assigns
+  // page-generated ids (section-1, section-2, …) to the headings in
+  // the sanitized DOM and derives the TOC entries from them, so every
+  // TOC fragment has a live target. (The old flow injected the ids
+  // before sanitizing and the sanitizer stripped them.)
+  const rawContent =
+    blog?.content ||
+    (blog
+      ? `<p>${blog.excerpt || "Full article available at the original publisher."}</p>`
+      : "");
+  const { html: articleHtml, sections } = useMemo(
+    () => buildBlogContent(rawContent),
+    [rawContent]
+  );
 
   // Track scroll position for TOC highlighting
   useEffect(() => {
@@ -57,7 +72,10 @@ export default function BlogDetailsPage() {
     return () => window.removeEventListener("scroll", handleScroll);
   }, [sections]);
 
-  const scrollToSection = (sectionId) => {
+  const scrollToSection = (event, sectionId) => {
+    // The TOC entry is a real fragment link (#section-N); keep the
+    // offset smooth-scroll instead of the browser's instant jump.
+    event.preventDefault();
     const element = document.getElementById(sectionId);
     if (element) {
       const offset = 100;
@@ -87,9 +105,6 @@ export default function BlogDetailsPage() {
   };
 
   const getImageUrl = (imagePath) => getBlogImageUrl(imagePath);
-
-  const getAuthorAvatar = (author) =>
-    getAvatarUrl(author, author?.name || "Author");
 
   if (isLoading) {
     return (
@@ -132,6 +147,14 @@ export default function BlogDetailsPage() {
       </>
     );
   }
+
+  // FE-04 (sibling): the source logo and the "Read Original"
+  // attribution link point off-site BY DESIGN (any publisher host is
+  // legitimate), so they are scheme-validated, not host-allowlisted:
+  // only a clean https: URL survives validateExternalUrl; a
+  // javascript:/data:/http: value renders nothing at all.
+  const validatedSourceLogo = validateExternalUrl(blog.source?.logo);
+  const validatedOriginalUrl = validateExternalUrl(blog.originalUrl);
 
   const formattedDate = blog.publishedAt
     ? new Date(blog.publishedAt).toLocaleDateString("en-US", {
@@ -266,7 +289,9 @@ export default function BlogDetailsPage() {
                   prose-ul:my-4 prose-li:my-1
                   prose-img:rounded-xl prose-img:my-6 prose-img:max-w-full prose-img:h-auto prose-figure:my-8 prose-blockquote:border-[#F27318] break-words [&_iframe]:max-w-full [&_p]:leading-8"
                 dangerouslySetInnerHTML={{
-                  __html: sanitizeBlogHtml(renderContent(blog.content || `<p>${blog.excerpt || "Full article available at the original publisher."}</p>`)),
+                  // FE-67: sanitizer output + page-generated heading
+                  // ids only (see buildBlogContent).
+                  __html: articleHtml,
                 }}
               />
 
@@ -294,9 +319,9 @@ export default function BlogDetailsPage() {
                 {blog.source && (
                   <div className="flex items-center justify-between pb-4 border-b border-neutral-200">
                     <div className="flex items-center gap-3">
-                      {blog.source.logo && (
+                      {validatedSourceLogo && (
                         <img
-                          src={blog.source.logo}
+                          src={validatedSourceLogo}
                           alt={blog.source.name}
                           className="h-8 w-auto object-contain"
                           onError={(e) => {
@@ -313,9 +338,9 @@ export default function BlogDetailsPage() {
                         </p>
                       </div>
                     </div>
-                    {blog.originalUrl && (
+                    {validatedOriginalUrl && (
                       <a
-                        href={blog.originalUrl}
+                        href={validatedOriginalUrl}
                         target="_blank"
                         rel="noopener noreferrer"
                         className="text-sm text-[#F27318] hover:underline"
@@ -328,13 +353,15 @@ export default function BlogDetailsPage() {
 
                 {/* Author Info */}
                 <div className="flex items-center gap-4">
-                  {blog.author?.avatar ? (
-                    <img src={getAuthorAvatar(blog.author)} alt={blog.author?.name || "Author"} className="w-12 h-12 rounded-full object-cover" />
-                  ) : (
-                    <span className="w-12 h-12 rounded-full bg-[#F27318] text-white font-semibold flex items-center justify-center">
-                      {(blog.author?.name || "Editorial Team").split(/\s+/).map(part => part[0]).slice(0, 2).join("").toUpperCase()}
-                    </span>
-                  )}
+                  {/* FE-06: real avatar img or local initials
+                      (UserAvatar) — never an external placeholder
+                      URL built from the author's name. */}
+                  <UserAvatar
+                    user={blog.author}
+                    name={blog.author?.name || "Editorial Team"}
+                    alt={blog.author?.name || "Author"}
+                    className="w-12 h-12 rounded-full text-base"
+                  />
                   <div>
                     <p className="font-semibold text-[#1A1714]">
                       {blog.author?.name || "Editorial Team"}
@@ -357,9 +384,12 @@ export default function BlogDetailsPage() {
                     </h3>
                     <nav className="space-y-1">
                       {sections.map((section) => (
-                        <button
+                        <a
                           key={section.id}
-                          onClick={() => scrollToSection(section.id)}
+                          href={`#${section.id}`}
+                          onClick={(event) =>
+                            scrollToSection(event, section.id)
+                          }
                           className={`block w-full text-left px-3 py-2 text-sm rounded-lg transition-all duration-200 ${
                             activeSection === section.id
                               ? "bg-orange-50 text-[#F27318] font-medium border-l-2 border-[#F27318]"
@@ -367,7 +397,7 @@ export default function BlogDetailsPage() {
                           }`}
                         >
                           {section.title}
-                        </button>
+                        </a>
                       ))}
                     </nav>
                   </div>
@@ -387,7 +417,7 @@ export default function BlogDetailsPage() {
               {relatedBlogs.map((relatedBlog) => (
                 <Link
                   key={relatedBlog._id}
-                  to={`/blog/${relatedBlog.slug}`}
+                  to={`/blog/${encodeURIComponent(relatedBlog.slug)}`}
                   className="group"
                 >
                   <div className="relative h-48 rounded-xl overflow-hidden mb-4">
@@ -415,48 +445,3 @@ export default function BlogDetailsPage() {
   );
 }
 
-// Helper function to extract sections from content for TOC
-function extractSections(content) {
-  const sections = [];
-  const headingRegex = /<h2[^>]*id="([^"]*)"[^>]*>([^<]*)<\/h2>/gi;
-  let match;
-
-  while ((match = headingRegex.exec(content)) !== null) {
-    sections.push({
-      id: match[1],
-      title: match[2],
-    });
-  }
-
-  // If no h2 with IDs, try to extract from plain h2 tags
-  if (sections.length === 0) {
-    const simpleHeadingRegex = /<h2[^>]*>([^<]*)<\/h2>/gi;
-    let index = 0;
-    while ((match = simpleHeadingRegex.exec(content)) !== null) {
-      const id = `section-${index}`;
-      sections.push({
-        id,
-        title: match[1],
-      });
-      index++;
-    }
-  }
-
-  return sections;
-}
-
-// Helper function to render content with proper IDs for TOC
-function renderContent(content) {
-  if (!content) return "";
-
-  // Add IDs to h2 tags if they don't have them
-  let index = 0;
-  return content.replace(/<h2([^>]*)>([^<]*)<\/h2>/gi, (match, attrs, text) => {
-    if (attrs.includes('id="')) {
-      return match;
-    }
-    const id = `section-${index}`;
-    index++;
-    return `<h2${attrs} id="${id}">${text}</h2>`;
-  });
-}

@@ -8,7 +8,8 @@ import {
 } from "../../hooks/review/useReviewTan";
 import useAuthStore from "../../store/authStore";
 import ConfirmationDialog from "../modals/ConfirmationDialog";
-import { getAvatarUrl } from "../../utils/imageUrl";
+// FE-06: the getAvatarUrl import that used to sit here was dead
+// (imported, never called in this file) and is removed.
 import { toast } from "react-toastify";
 import formatError from "../../utils/errorHandler";
 

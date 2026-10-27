@@ -12,9 +12,11 @@ import {
 import Navbar from "../../layouts/customer/Navbar";
 import Footer from "../../layouts/customer/Footer";
 import { useBlogs, useBlogCategories, usePopularBlogs, useToggleBlogLike } from "../../hooks/blog/useBlogTan";
-import { getBlogImageUrl, getAvatarUrl } from "../../utils/imageUrl";
+import { getBlogImageUrl } from "../../utils/imageUrl";
+import { UserAvatar } from "../../components/common/InitialsAvatar";
 import Skeleton from "../../components/common/Skeleton";
 import { useNewsletterSubscribe } from "../../hooks/newsletter/useNewsletterTan";
+import { toast } from "react-toastify";
 
 export default function BlogsPage() {
   const [activeCategory, setActiveCategory] = useState("all");
@@ -74,14 +76,27 @@ export default function BlogsPage() {
   };
 
   const toggleLiked = (postId) => {
-    const isLiked = likedPosts.includes(postId);
-    setLikedPosts((prev) =>
-      isLiked ? prev.filter((id) => id !== postId) : [...prev, postId]
-    );
-    // Only increment likes if not already liked (simple counter, no unlike)
-    if (!isLiked) {
-      toggleLike(postId);
+    // FE-26: the server's like is idempotent per actor (FA-25) and
+    // there is NO unlike endpoint, so local state must reconcile with
+    // the server instead of flipping freely:
+    //  - Already liked: explicit no-op. The old code emptied the heart
+    //    locally while sending nothing, leaving the server count
+    //    incremented next to an unfilled heart until reload.
+    //  - Not liked: optimistic fill, but roll the flip back on error
+    //    (the old code registered no onError, so a failed POST left
+    //    the heart filled although the server never counted it).
+    // The hook's invalidation refetches the list on success, so the
+    // displayed count is the server's.
+    if (likedPosts.includes(postId)) {
+      return;
     }
+    setLikedPosts((prev) => [...prev, postId]);
+    toggleLike(postId, {
+      onError: () => {
+        setLikedPosts((prev) => prev.filter((id) => id !== postId));
+        toast.error("Couldn't register your like. Please try again.");
+      },
+    });
   };
 
   const handleNewsletterSubmit = (e) => {
@@ -100,8 +115,6 @@ export default function BlogsPage() {
   };
 
   const getImageUrl = (imagePath) => getBlogImageUrl(imagePath);
-
-  const getAuthorAvatar = (author) => getAvatarUrl(author, author?.name || 'Author');
 
   return (
     <>
@@ -213,7 +226,6 @@ export default function BlogsPage() {
                       onToggleSaved={() => toggleSaved(post._id)}
                       onToggleLiked={() => toggleLiked(post._id)}
                       getImageUrl={getImageUrl}
-                      getAuthorAvatar={getAuthorAvatar}
                     />
                   ))}
                 </div>
@@ -255,7 +267,7 @@ export default function BlogsPage() {
                   {popularPosts.map((post, index) => (
                     <Link
                       key={post._id}
-                      to={`/blog/${post.slug}`}
+                      to={`/blog/${encodeURIComponent(post.slug)}`}
                       className="flex gap-3 group"
                     >
                       <span className="text-[#F27318] font-semibold text-sm">
@@ -317,7 +329,6 @@ function BlogCard({
   onToggleSaved,
   onToggleLiked,
   getImageUrl,
-  getAuthorAvatar,
 }) {
   const formattedDate = post.publishedAt
     ? new Date(post.publishedAt).toLocaleDateString("en-US", {
@@ -335,7 +346,7 @@ function BlogCard({
     <article className="flex flex-col sm:flex-row gap-4 sm:gap-6 group rounded-2xl border border-neutral-100 p-3 sm:p-4 hover:border-orange-200 hover:shadow-sm transition-all">
       {/* Image */}
       <Link
-        to={`/blog/${post.slug}`}
+        to={`/blog/${encodeURIComponent(post.slug)}`}
         className="relative w-full sm:w-64 md:w-72 h-48 sm:h-44 md:h-48 shrink-0 rounded-xl overflow-hidden"
       >
         <img
@@ -384,7 +395,7 @@ function BlogCard({
         </div>
 
         {/* Title */}
-        <Link to={`/blog/${post.slug}`}>
+        <Link to={`/blog/${encodeURIComponent(post.slug)}`}>
           <h2 className="text-lg sm:text-xl font-semibold text-neutral-900 mb-2 group-hover:text-[#F27318] transition-colors line-clamp-2 font-playfair">
             {post.title}
           </h2>
@@ -398,13 +409,15 @@ function BlogCard({
         {/* Source & Author */}
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-3">
-            {post.author?.avatar ? (
-              <img src={getAuthorAvatar(post.author)} alt={post.author?.name || "Author"} className="w-8 h-8 rounded-full object-cover" />
-            ) : (
-              <span className="w-8 h-8 shrink-0 rounded-full bg-[#F27318] text-white text-xs font-semibold flex items-center justify-center">
-                {(post.author?.name || "Editorial Team").split(/\s+/).map(part => part[0]).slice(0, 2).join("").toUpperCase()}
-              </span>
-            )}
+            {/* FE-06: real avatar img or local initials (UserAvatar)
+                — never an external placeholder URL built from the
+                author's name. */}
+            <UserAvatar
+              user={post.author}
+              name={post.author?.name || "Editorial Team"}
+              alt={post.author?.name || "Author"}
+              className="w-8 h-8 rounded-full text-xs"
+            />
             <div>
               <p className="text-sm font-medium text-neutral-800">
                 {post.author?.name || "Editorial Team"}
@@ -427,7 +440,7 @@ function BlogCard({
               />
             </button>
             <Link
-              to={`/blog/${post.slug}`}
+              to={`/blog/${encodeURIComponent(post.slug)}`}
               className="flex items-center gap-1 text-[#F27318] font-medium text-sm hover:gap-2 transition-all"
             >
               Read More

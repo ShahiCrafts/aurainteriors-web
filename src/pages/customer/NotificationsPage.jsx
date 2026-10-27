@@ -17,8 +17,20 @@ import useAuthStore from "../../store/authStore";
 import Navbar from "../../layouts/customer/Navbar";
 import notificationApi from "../../api/notificationApi";
 import Skeleton from "../../components/common/Skeleton";
+import Pagination from "../../components/common/Pagination";
 import useNotificationSocket from "../../hooks/notification/useNotificationSocket";
 import { Link } from "react-router-dom";
+import { safeActionUrl } from "../../utils/safeUrl";
+
+// Phase 5 (open-redirect sweep): the stored actionUrl is
+// server-controlled and must pass the same FE-04 gate as every
+// other consumer (NotificationBell, AdminLayout, AnnouncementsPage)
+// before it reaches <Link to>. inAppOnly: router targets are
+// internal by definition — an off-site or dangerous-scheme value
+// yields null, and the caller falls back to the orders tab (when
+// the notification carries an orderId) or renders no link at all.
+const notificationTarget = (n) =>
+  n.actionUrl ? safeActionUrl(n.actionUrl, { inAppOnly: true }) : null;
 
 export default function NotificationsPage() {
   const { user, token } = useAuthStore();
@@ -288,9 +300,17 @@ export default function NotificationsPage() {
                         <Clock className="w-3.5 h-3.5" />
                         {formatTimeAgo(n.createdAt)}
                       </span>
-                      {(n.actionUrl || n.data?.orderId) && (
+                      {(notificationTarget(n) || n.data?.orderId) && (
                         <Link
-                          to={n.actionUrl || `/profile/orders/${n.data?.orderId}`}
+                          // FE-16: the fallback was /profile/orders/<id>,
+                          // which matches no customer route (404). Orders
+                          // live under /profile with the orders tab active
+                          // (same convention as Navbar's "My Orders").
+                          // Phase 5: `to` is the VALIDATED target
+                          // (notificationTarget), never the raw stored
+                          // actionUrl — see the helper above.
+                          to={notificationTarget(n) || "/profile"}
+                          state={notificationTarget(n) ? undefined : { activeTab: "orders" }}
                           className="flex items-center gap-1 text-teal-600 hover:text-teal-700 hover:underline"
                         >
                           View details <ChevronRight className="w-3 h-3" />
@@ -312,23 +332,17 @@ export default function NotificationsPage() {
             )}
           </div>
 
-          {/* Load More / Pagination (Simple implementation) */}
-          {totalPages > 1 && (
-            <div className="flex items-center justify-center gap-4 mt-10">
-              <button disabled={page <= 1 || loading} onClick={() => fetchNotifications(page - 1)}
-                className="px-6 py-2.5 bg-white border border-gray-200 rounded-xl disabled:opacity-50">
-                Previous
-              </button>
-              <span>Page {page} of {totalPages}</span>
-              <button
-                disabled={page >= totalPages || loading}
-                onClick={() => fetchNotifications(page + 1)}
-                className="px-6 py-2.5 bg-white border border-gray-200 text-gray-700 font-medium rounded-xl hover:bg-gray-50 shadow-sm disabled:opacity-50 disabled:cursor-not-allowed transition-all"
-              >
-                Next
-              </button>
-            </div>
-          )}
+          {/* Pagination — the shared Pagination, simple
+              variant (Wave A); disabled while a page loads. */}
+          <div className="mt-10">
+            <Pagination
+              variant="simple"
+              page={page}
+              totalPages={totalPages}
+              onPageChange={(p) => fetchNotifications(p)}
+              disabled={loading}
+            />
+          </div>
 
         </div>
       </div>

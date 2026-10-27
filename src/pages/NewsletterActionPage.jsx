@@ -11,7 +11,7 @@ export default function NewsletterActionPage() {
   const submit = async () => {
     setBusy(true);
     try {
-      const { data } = await api.post(`/newsletter/${unsubscribe ? "unsubscribe" : "confirm"}`, { token });
+      const { data } = await api.post(`/newsletter/${encodeURIComponent(unsubscribe ? "unsubscribe" : "confirm")}`, { token });
       setMessage(data.message); setDone(true);
     } catch (error) { setMessage(error.response?.data?.message || "Unable to process this request. Please try again."); }
     finally { setBusy(false); }

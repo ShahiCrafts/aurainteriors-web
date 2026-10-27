@@ -1,4 +1,5 @@
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
+import { useDialogBehaviour } from "../common/useDialogBehaviour";
 import { Truck, Check, MapPin, Home, Building2, Users, Edit3 } from "lucide-react";
 import useCheckoutStore from "../../store/checkoutStore";
 import useAuthStore from "../../store/authStore";
@@ -57,6 +58,9 @@ export default function ShippingStep() {
     isFetching: isAddressesFetching,
   } = useAddresses({ enabled: isAuthenticated });
   const [isAddressDrawerOpen, setIsAddressDrawerOpen] = useState(false);
+  // FE-64: address drawer uses the shared dialog behaviour hook.
+  const addressDrawerRef = useRef(null);
+  useDialogBehaviour({ open: isAddressDrawerOpen, onClose: () => handleCancelDrawer(), containerRef: addressDrawerRef });
   const [isAddAddressModalOpen, setIsAddAddressModalOpen] = useState(false);
   const [drawerSelectedAddressId, setDrawerSelectedAddressId] = useState(null);
   const [drawerOriginalAddressId, setDrawerOriginalAddressId] = useState(null);
@@ -106,18 +110,6 @@ export default function ShippingStep() {
     setDrawerSelectedAddressId(shippingAddressId || selectedAddress?._id || null);
   }, [isAddressDrawerOpen, selectedAddress, shippingAddressId]);
 
-  useEffect(() => {
-    if (isAddressDrawerOpen) {
-      document.body.style.overflow = "hidden";
-    } else {
-      document.body.style.overflow = "";
-    }
-
-    return () => {
-      document.body.style.overflow = "";
-    };
-  }, [isAddressDrawerOpen]);
-
   const handleSelectAddress = (address) => {
     setDrawerSelectedAddressId(address._id);
   };
@@ -148,20 +140,31 @@ export default function ShippingStep() {
     setIsAddAddressModalOpen(true);
   };
 
-  const handleSaveGuestAddress = (addressData) => {
-    const nameParts = addressData.fullName.trim().split(" ");
-    const firstName = nameParts[0] || "";
-    const lastName = nameParts.slice(1).join(" ") || "";
+  // FE-37: the guest address save is the AddEditAddressModal's
+  // override path — wire a pending flag through isPendingOverride so
+  // the modal's submit disables while the save runs, and guard
+  // re-entry here as well.
+  const [isSavingGuestAddress, setIsSavingGuestAddress] = useState(false);
+  const handleSaveGuestAddress = async (addressData) => {
+    if (isSavingGuestAddress) return;
+    setIsSavingGuestAddress(true);
+    try {
+      const nameParts = addressData.fullName.trim().split(" ");
+      const firstName = nameParts[0] || "";
+      const lastName = nameParts.slice(1).join(" ") || "";
 
-    setGuestInfo({
-      email: addressData.email || guestInfo.email || "",
-      firstName,
-      lastName,
-      phone: addressData.phone,
-    });
-    setShippingAddress(addressData);
-    setShippingAddressId("guest_temp");
-    setIsAddAddressModalOpen(false);
+      setGuestInfo({
+        email: addressData.email || guestInfo.email || "",
+        firstName,
+        lastName,
+        phone: addressData.phone,
+      });
+      setShippingAddress(addressData);
+      setShippingAddressId("guest_temp");
+      setIsAddAddressModalOpen(false);
+    } finally {
+      setIsSavingGuestAddress(false);
+    }
   };
 
   const deliveryOptions = [
@@ -316,6 +319,13 @@ export default function ShippingStep() {
 
         {/* Drawer */}
         <div
+          ref={addressDrawerRef}
+          role={isAddressDrawerOpen ? "dialog" : undefined}
+          aria-modal={isAddressDrawerOpen ? "true" : undefined}
+          aria-label="Shipping address"
+          aria-hidden={!isAddressDrawerOpen || undefined}
+          inert={!isAddressDrawerOpen}
+          tabIndex={-1}
           className={`fixed top-0 right-0 z-101 h-full w-full sm:max-w-[460px] bg-white shadow-2xl transition-transform duration-300 ease-out flex flex-col font-dm-sans ${
             isAddressDrawerOpen ? "translate-x-0" : "translate-x-full"
           }`}
@@ -443,6 +453,7 @@ export default function ShippingStep() {
         address={!isAuthenticated ? selectedAddress : null}
         isGuest={!isAuthenticated}
         onSubmitOverride={!isAuthenticated ? handleSaveGuestAddress : undefined}
+        isPendingOverride={!isAuthenticated ? isSavingGuestAddress : undefined}
       />
     </div>
   );

@@ -1,52 +1,26 @@
+import { Suspense, lazy, memo } from "react";
 import { Check, CheckCheck, Info, Bot, Sparkles, User, AlertCircle, RotateCcw } from "lucide-react";
-import ReactMarkdown from "react-markdown";
-import remarkGfm from "remark-gfm";
 import ChatAttachment from "./ChatAttachment";
-import { getAvatarUrl } from "../../utils/imageUrl";
+import { UserAvatar } from "../common/InitialsAvatar";
 
-// FIX 6: Markdown link renderer — opens in new tab, uses brand colour
-const MarkdownLink = ({ href, children }) => {
-  let cleanHref = href;
-  if (cleanHref && cleanHref.includes("/product/")) {
-    cleanHref = "/product/" + cleanHref.split("/product/")[1];
-  }
+// FE-49: the react-markdown pipeline lives in BotMarkdown.jsx and is
+// loaded only when a bot message with content actually renders. User
+// messages never trigger the import. While the chunk is in flight the
+// Suspense fallback renders the raw content as plain text, so a slow
+// chunk degrades to readable text — never a blank bubble.
+const BotMarkdown = lazy(() => import("./BotMarkdown.jsx"));
+
+// FE-52: memoised on the content string so an ancestor re-render
+// never re-enters the markdown pipeline for an unchanged message.
+const BotMessageContent = memo(function BotMessageContent({ content }) {
   return (
-    <a
-      href={cleanHref}
-      target="_blank"
-      rel="noopener noreferrer"
-      className="text-indigo-600 underline underline-offset-2 hover:text-indigo-800 transition-colors"
-    >
-      {children}
-    </a>
+    <Suspense fallback={<>{content}</>}>
+      <BotMarkdown content={content} />
+    </Suspense>
   );
-};
+});
 
-// FIX 6: ReactMarkdown component config
-const BotMessageContent = ({ content }) => (
-  <ReactMarkdown
-    remarkPlugins={[remarkGfm]}
-    disallowedElements={["script", "style", "iframe", "object", "embed"]}
-    unwrapDisallowed
-    components={{
-      a: MarkdownLink,
-      p: ({ children }) => <p className="m-0 p-0 leading-snug text-[14px]">{children}</p>,
-      li: ({ children }) => <li className="m-0 p-0 leading-snug text-[14px]">{children}</li>,
-      ul: ({ children }) => <ul className="list-none m-0 p-0 space-y-0.5">{children}</ul>,
-      ol: ({ children }) => <ol className="list-decimal list-inside m-0 p-0 space-y-0.5">{children}</ol>,
-      strong: ({ children }) => <strong className="font-semibold text-gray-900">{children}</strong>,
-      hr: () => <hr className="border-t border-gray-200 my-2 w-full" />,
-      h1: ({ children }) => <h1 className="text-base font-extrabold mt-1 mb-0.5">{children}</h1>,
-      h2: ({ children }) => <h2 className="text-sm font-bold mt-1 mb-0.5">{children}</h2>,
-      h3: ({ children }) => <h3 className="text-sm font-bold mt-1 mb-0.5">{children}</h3>,
-      h4: ({ children }) => <h4 className="text-xs font-bold mt-0.5 mb-0.5">{children}</h4>,
-    }}
-  >
-    {content}
-  </ReactMarkdown>
-);
-
-const ChatMessage = ({ message, isOwnMessage, isAdminView = false }) => {
+const ChatMessage = ({ message, isOwnMessage, isAdminView = false, onRetry }) => {
   const isBot = message.senderRole === "bot" || message.isAiGenerated === true;
   const isAdmin = message.senderRole === "admin" && !isBot;
   const isSystem = message.senderRole === "system" || message.messageType === "system";
@@ -82,25 +56,14 @@ const ChatMessage = ({ message, isOwnMessage, isAdminView = false }) => {
               <User size={18} strokeWidth={1.5} />
             </div>
           ) : (
-            <div
-              className={`w-10 h-10 rounded-full flex items-center justify-center border shadow-sm shrink-0 overflow-hidden ${
-                isAdmin
-                  ? "bg-indigo-100 border-indigo-200 text-indigo-600"
-                  : "bg-gray-50 border-gray-100 text-gray-400"
-              }`}
-            >
-              <img
-                src={getAvatarUrl(message.sender)}
-                alt={isAdmin ? "Admin" : message.sender?.firstName || "User"}
-                className="w-full h-full object-cover"
-                onError={(e) => {
-                  e.target.onerror = null;
-                  e.target.src = `https://ui-avatars.com/api/?name=${encodeURIComponent(
-                    isAdmin ? "Admin" : message.sender?.firstName || "U"
-                  )}&background=${isAdmin ? 'E0E7FF' : 'F3F4F6'}&color=${isAdmin ? '4338CA' : '9CA3AF'}`;
-                }}
-              />
-            </div>
+            /* FE-06: real avatar img or local initials — never an
+               external placeholder URL built from the sender's name. */
+            <UserAvatar
+              user={message.sender}
+              name={isAdmin ? "Admin" : undefined}
+              alt={isAdmin ? "Admin" : message.sender?.firstName || "User"}
+              className="w-10 h-10 rounded-full text-sm border shadow-sm"
+            />
           )}
         </div>
 
@@ -181,8 +144,32 @@ const ChatMessage = ({ message, isOwnMessage, isAdminView = false }) => {
             </div>
           )}
 
+          {/* FE-19: a failed send must never look delivered. The
+              optimistic-send failure flags (isFailed/sendError, set by
+              useChatTan onError) are rendered here with a tap-to-retry
+              affordance; the delivered/read checks below are skipped
+              for failed messages. */}
+          {isOwnMessage && message.isFailed ? (
+            <div className="flex items-center gap-1.5 px-1 mt-0.5" role="alert">
+              <span className="flex items-center gap-1 text-[11px] font-semibold text-red-600">
+                <AlertCircle size={13} strokeWidth={2.5} />
+                Failed to send{message.sendError ? ` — ${message.sendError}` : ""}
+              </span>
+              {onRetry && (
+                <button
+                  type="button"
+                  onClick={() => onRetry(message)}
+                  className="flex items-center gap-1 text-[11px] font-bold text-[#F27318] hover:text-[#D9620E] underline underline-offset-2"
+                >
+                  <RotateCcw size={12} strokeWidth={2.5} />
+                  Retry
+                </button>
+              )}
+            </div>
+          ) : null}
+
           {/* Delivery status (own messages only) */}
-          {isOwnMessage && !isBot && !message.isInternalNote && (
+          {isOwnMessage && !isBot && !message.isInternalNote && !message.isFailed && (
             <div className="flex items-center gap-1 px-1 mt-0.5 select-none">
               {/* PERF-OPT 2: Show pending dot for optimistic messages until confirmed by server */}
               {message.isPending ? (
@@ -210,4 +197,8 @@ const ChatMessage = ({ message, isOwnMessage, isAdminView = false }) => {
   );
 };
 
-export default ChatMessage;
+// FE-52: memoised — props are the (cache-stable) message object plus
+// booleans and a stable onRetry callback, so typing-driven ancestor
+// re-renders skip unchanged rows entirely instead of re-rendering
+// (and re-parsing) the whole history per keystroke.
+export default memo(ChatMessage);

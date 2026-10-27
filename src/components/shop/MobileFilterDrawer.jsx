@@ -1,6 +1,7 @@
 import { X, SlidersHorizontal } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 import FilterSidebar from "./FilterSidebar";
+import Dialog from "../common/Dialog";
 
 export default function MobileFilterDrawer({
     isOpen,
@@ -27,8 +28,9 @@ export default function MobileFilterDrawer({
                         animate={{ y: 0 }}
                         exit={{ y: "100%" }}
                         transition={{ type: "spring", damping: 25, stiffness: 200 }}
-                        className="fixed inset-x-0 bottom-0 bg-white rounded-t-[40px] z-[101] flex flex-col max-h-[96vh] font-dm-sans shadow-[0_-8px_40px_-10px_rgba(0,0,0,0.3)] pb-safe"
+                        className="fixed inset-x-0 bottom-0 z-[101]"
                     >
+                     <Dialog open={isOpen} onClose={onClose} labelledBy="mobile-filters-title" className="bg-white rounded-t-[40px] flex flex-col max-h-[96vh] font-dm-sans shadow-[0_-8px_40px_-10px_rgba(0,0,0,0.3)] pb-safe relative">
                         {/* Drag Handle */}
                         <div className="w-full pt-3 pb-1 flex justify-center shrink-0">
                             <div className="w-12 h-1.5 bg-neutral-200 rounded-full" />
@@ -41,7 +43,7 @@ export default function MobileFilterDrawer({
                                     <SlidersHorizontal size={20} />
                                 </div>
                                 <div>
-                                    <h2 className="text-xl font-bold text-[#1A1714]">Filters</h2>
+                                    <h2 id="mobile-filters-title" className="text-xl font-bold text-[#1A1714]">Filters</h2>
                                     <p className="text-xs text-black/40 font-medium uppercase tracking-wider">{totalProducts} Items</p>
                                 </div>
                             </div>
@@ -68,6 +70,7 @@ export default function MobileFilterDrawer({
                                 Show {totalProducts} Products
                             </button>
                         </div>
+                     </Dialog>
                     </motion.div>
                 </>
             )}
