@@ -439,14 +439,7 @@ export default function AdminLoginPage() {
                 disabled={isLoggingIn}
                 className="w-full h-[48px] bg-[#0066FF] hover:bg-[#0052CC] text-white font-bold text-[14px] tracking-wide rounded-[8px] mt-4 transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed border-none cursor-pointer flex items-center justify-center gap-2"
               >
-                {isLoggingIn ? (
-                  <>
-                    <div className="animate-spin rounded-full h-4 w-4 border-2 border-white border-t-transparent" />
-                    Authenticating...
-                  </>
-                ) : (
-                  "Continue"
-                )}
+                {isLoggingIn ? "Authenticating..." : "Continue"}
               </button>
             </form>
           ) : (
@@ -493,14 +486,7 @@ export default function AdminLoginPage() {
                 disabled={isVerifying || otp.length !== 6}
                 className="w-full h-[48px] bg-[#0066FF] hover:bg-[#0052CC] text-white font-bold text-[14px] tracking-wide rounded-[8px] transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed border-none cursor-pointer flex items-center justify-center gap-2"
               >
-                {isVerifying ? (
-                  <>
-                    <div className="animate-spin rounded-full h-4 w-4 border-2 border-white border-t-transparent" />
-                    Verifying...
-                  </>
-                ) : (
-                  "Verify & Log In"
-                )}
+                {isVerifying ? "Verifying..." : "Verify & Log In"}
               </button>
 
               <button

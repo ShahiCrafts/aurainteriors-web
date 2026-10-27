@@ -7,7 +7,6 @@ import {
   RefreshCw, 
   CheckCircle, 
   AlertCircle, 
-  Loader, 
   Database,
   CloudLightning,
   AlertTriangle
@@ -208,11 +207,7 @@ const KnowledgeBase = () => {
 
         {/* Upload Button */}
         <label className={`flex items-center gap-2 px-5 py-3 bg-teal-600 hover:bg-teal-700 text-white rounded-xl font-medium shadow-sm transition-all duration-200 cursor-pointer ${uploading ? "opacity-75 cursor-not-allowed" : ""}`}>
-          {uploading ? (
-            <Loader className="w-5 h-5 animate-spin" />
-          ) : (
-            <Upload className="w-5 h-5" />
-          )}
+          <Upload className="w-5 h-5" />
           <span>{uploading ? "Uploading..." : "Upload File"}</span>
           <input 
             type="file" 
@@ -409,7 +404,7 @@ const KnowledgeBase = () => {
                       )}
                       {doc.status === "processing" && (
                         <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-semibold bg-blue-50 text-blue-700 border border-blue-100">
-                          <Loader className="w-3 h-3 animate-spin text-blue-600" />
+                          <span className="w-1.5 h-1.5 rounded-full bg-blue-600 motion-safe:animate-pulse" />
                           Processing
                         </span>
                       )}

@@ -31,10 +31,11 @@ const NotFoundPage       = lazy(() => import("./pages/info/NotFoundPage"));
 
 import Skeleton, { DashboardSkeleton } from "./components/common/Skeleton";
 
-function LoadingSpinner() {
+function AdminPageSkeleton() {
   return (
-    <div className="p-8 min-h-screen bg-neutral-900 font-dm-sans space-y-6">
-      <div className="flex justify-between items-center pb-6 border-b border-neutral-800">
+    <div className="p-8 min-h-screen bg-neutral-50 font-dm-sans space-y-6" aria-busy="true">
+      <span role="status" className="sr-only">Loading…</span>
+      <div className="flex justify-between items-center pb-6 border-b border-neutral-200" aria-hidden="true">
         <Skeleton className="w-48 h-8 rounded-lg" />
         <Skeleton className="w-10 h-10 rounded-full" />
       </div>
@@ -61,32 +62,32 @@ export default function AdminApp() {
           path="/dashboard"
           element={
             <AdminRoute>
-              <Suspense fallback={<LoadingSpinner />}>
+              <Suspense fallback={<AdminPageSkeleton />}>
                 <AdminLayout />
               </Suspense>
             </AdminRoute>
           }
         >
-          <Route index element={<Suspense fallback={<LoadingSpinner />}><AdminDashboard /></Suspense>} />
-          <Route path="categories"    element={<Suspense fallback={<LoadingSpinner />}><AdminCategories /></Suspense>} />
-          <Route path="attributes"    element={<Suspense fallback={<LoadingSpinner />}><AdminAttributes /></Suspense>} />
-          <Route path="product-types" element={<Suspense fallback={<LoadingSpinner />}><AdminProductTypes /></Suspense>} />
-          <Route path="rooms"         element={<Suspense fallback={<LoadingSpinner />}><AdminRooms /></Suspense>} />
-          <Route path="collections"   element={<Suspense fallback={<LoadingSpinner />}><AdminCollections /></Suspense>} />
-          <Route path="products"      element={<Suspense fallback={<LoadingSpinner />}><AdminProducts /></Suspense>} />
-          <Route path="orders"        element={<Suspense fallback={<LoadingSpinner />}><AdminOrders /></Suspense>} />
-          <Route path="discounts"     element={<Suspense fallback={<LoadingSpinner />}><AdminDiscounts /></Suspense>} />
-          <Route path="promotions"    element={<Suspense fallback={<LoadingSpinner />}><AdminPromotions /></Suspense>} />
-          <Route path="announcements" element={<Suspense fallback={<LoadingSpinner />}><AdminAnnouncements /></Suspense>} />
-          <Route path="reviews"       element={<Suspense fallback={<LoadingSpinner />}><AdminReviews /></Suspense>} />
-          <Route path="support"       element={<Suspense fallback={<LoadingSpinner />}><AdminSupportChats /></Suspense>} />
-          <Route path="knowledge"     element={<Suspense fallback={<LoadingSpinner />}><AdminKnowledgeBase /></Suspense>} />
-          <Route path="contacts"      element={<Suspense fallback={<LoadingSpinner />}><AdminContacts /></Suspense>} />
-          <Route path="users"         element={<Suspense fallback={<LoadingSpinner />}><AdminUsers /></Suspense>} />
+          <Route index element={<Suspense fallback={<AdminPageSkeleton />}><AdminDashboard /></Suspense>} />
+          <Route path="categories"    element={<Suspense fallback={<AdminPageSkeleton />}><AdminCategories /></Suspense>} />
+          <Route path="attributes"    element={<Suspense fallback={<AdminPageSkeleton />}><AdminAttributes /></Suspense>} />
+          <Route path="product-types" element={<Suspense fallback={<AdminPageSkeleton />}><AdminProductTypes /></Suspense>} />
+          <Route path="rooms"         element={<Suspense fallback={<AdminPageSkeleton />}><AdminRooms /></Suspense>} />
+          <Route path="collections"   element={<Suspense fallback={<AdminPageSkeleton />}><AdminCollections /></Suspense>} />
+          <Route path="products"      element={<Suspense fallback={<AdminPageSkeleton />}><AdminProducts /></Suspense>} />
+          <Route path="orders"        element={<Suspense fallback={<AdminPageSkeleton />}><AdminOrders /></Suspense>} />
+          <Route path="discounts"     element={<Suspense fallback={<AdminPageSkeleton />}><AdminDiscounts /></Suspense>} />
+          <Route path="promotions"    element={<Suspense fallback={<AdminPageSkeleton />}><AdminPromotions /></Suspense>} />
+          <Route path="announcements" element={<Suspense fallback={<AdminPageSkeleton />}><AdminAnnouncements /></Suspense>} />
+          <Route path="reviews"       element={<Suspense fallback={<AdminPageSkeleton />}><AdminReviews /></Suspense>} />
+          <Route path="support"       element={<Suspense fallback={<AdminPageSkeleton />}><AdminSupportChats /></Suspense>} />
+          <Route path="knowledge"     element={<Suspense fallback={<AdminPageSkeleton />}><AdminKnowledgeBase /></Suspense>} />
+          <Route path="contacts"      element={<Suspense fallback={<AdminPageSkeleton />}><AdminContacts /></Suspense>} />
+          <Route path="users"         element={<Suspense fallback={<AdminPageSkeleton />}><AdminUsers /></Suspense>} />
         </Route>
 
         {/* Catch-all 404 */}
-        <Route path="*" element={<Suspense fallback={<LoadingSpinner />}><NotFoundPage /></Suspense>} />
+        <Route path="*" element={<Suspense fallback={<AdminPageSkeleton />}><NotFoundPage /></Suspense>} />
       </Routes>
     </div>
   );

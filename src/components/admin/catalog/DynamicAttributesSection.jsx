@@ -1,5 +1,5 @@
+import Skeleton from "../../common/Skeleton";
 import { useEffect, useMemo, useState } from "react";
-import { Loader2 } from "lucide-react";
 import AttributeValueInput from "./AttributeValueInput";
 import {
   useCategoryAttributes,
@@ -118,9 +118,11 @@ export default function DynamicAttributesSection({
         </p>
       )}
       {categoryId && isLoading && (
-        <p className="flex items-center gap-2 text-sm text-gray-400">
-          <Loader2 className="w-4 h-4 animate-spin" /> Loading attributes…
-        </p>
+        <div className="space-y-2" aria-busy="true">
+          <span role="status" className="sr-only">Loading attributes…</span>
+          <Skeleton className="h-10 w-full rounded-lg" />
+          <Skeleton className="h-10 w-full rounded-lg" />
+        </div>
       )}
       {categoryId && !isLoading && resolved.length === 0 && (
         <p className="text-sm text-gray-500">

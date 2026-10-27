@@ -10,7 +10,6 @@ import {
   X,
   Send,
   Calendar,
-  Loader2,
   CheckCircle,
   XCircle,
   Clock,
@@ -824,9 +823,6 @@ export default function Announcements() {
                   disabled={createMutation.isPending || updateMutation.isPending}
                   className="inline-flex items-center gap-2 px-4 py-2.5 bg-teal-600 text-white rounded-xl hover:bg-teal-700 transition-colors font-medium disabled:opacity-50"
                 >
-                  {(createMutation.isPending || updateMutation.isPending) && (
-                    <Loader2 className="w-4 h-4 animate-spin" />
-                  )}
                   {editingAnnouncement ? "Update Announcement" : "Create Announcement"}
                 </button>
               </div>
@@ -895,9 +891,6 @@ export default function Announcements() {
                   disabled={scheduleMutation.isPending}
                   className="inline-flex items-center gap-2 px-4 py-2.5 bg-blue-600 text-white rounded-xl hover:bg-blue-700 transition-colors font-medium disabled:opacity-50"
                 >
-                  {scheduleMutation.isPending && (
-                    <Loader2 className="w-4 h-4 animate-spin" />
-                  )}
                   Schedule
                 </button>
               </div>

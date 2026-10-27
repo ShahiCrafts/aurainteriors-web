@@ -3,8 +3,7 @@ import { motion, AnimatePresence } from 'framer-motion';
 import {
   X,
   Upload,
-  Loader2,
-} from 'lucide-react';
+  } from 'lucide-react';
 
 // Phase 7 split (from Categories.jsx) — the create/edit category
 // form modal. Its shell already wrapped the shared Dialog (via
@@ -263,11 +262,7 @@ export default function CategoryFormModal({
                   disabled={createMutation.isPending || updateMutation.isPending}
                   className="flex-1 px-4 py-2 bg-teal-600 text-white rounded-lg font-medium hover:bg-teal-700 transition-colors disabled:opacity-50 text-sm cursor-pointer"
                 >
-                  {(createMutation.isPending || updateMutation.isPending) ? (
-                    <Loader2 className="w-5 h-5 animate-spin mx-auto" />
-                  ) : (
-                    editingCategory ? 'Save Changes' : 'Add Category'
-                  )}
+                  {editingCategory ? 'Save Changes' : 'Add Category'}
                 </button>
               </div>
             </form>

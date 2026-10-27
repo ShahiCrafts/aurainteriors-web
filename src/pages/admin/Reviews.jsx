@@ -7,7 +7,6 @@ import {
   Search,
   X,
   Star,
-  Loader2,
   MessageSquare,
   CheckCircle2,
   XCircle,
@@ -492,11 +491,7 @@ export default function Reviews() {
                   }
                   className="flex-1 px-4 py-2.5 bg-teal-600 text-white rounded-lg text-sm font-medium flex items-center justify-center gap-2 hover:bg-teal-700"
                 >
-                  {addResponseMutation.isPending ? (
-                    <Loader2 size={16} className="animate-spin" />
-                  ) : (
-                    <Send size={16} />
-                  )}
+                  <Send size={16} />
                   Send Response
                 </button>
               </div>

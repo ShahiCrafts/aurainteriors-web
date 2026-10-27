@@ -1,6 +1,7 @@
 import { useMemo, useState } from "react";
 import { motion } from "framer-motion";
-import { Loader2, Plus, X } from "lucide-react";
+import { Plus, X } from "lucide-react";
+import Skeleton from "../../common/Skeleton";
 import { toast } from "../../../lib/toast";
 import Dialog from "../../common/Dialog";
 import AttributeValueInput from "./AttributeValueInput";
@@ -249,8 +250,11 @@ export default function CategoryAttributesEditor({ category, categories = [], on
 
           <div className="p-5 space-y-3 text-sm">
             {isLoading ? (
-              <div className="flex items-center justify-center py-10 text-gray-400">
-                <Loader2 className="w-5 h-5 animate-spin mr-2" /> Loading attributes…
+              <div className="space-y-3 py-6" aria-busy="true">
+                <span role="status" className="sr-only">Loading attributes…</span>
+                <Skeleton className="h-10 w-full rounded-lg" />
+                <Skeleton className="h-10 w-full rounded-lg" />
+                <Skeleton className="h-10 w-full rounded-lg" />
               </div>
             ) : (
               <>
@@ -446,11 +450,7 @@ export default function CategoryAttributesEditor({ category, categories = [], on
               disabled={isLoading || setAssignments.isPending}
               className="flex-1 px-4 py-2 bg-teal-600 text-white rounded-lg font-medium hover:bg-teal-700 transition-colors disabled:opacity-50 text-sm"
             >
-              {setAssignments.isPending ? (
-                <Loader2 className="w-5 h-5 animate-spin mx-auto" />
-              ) : (
-                "Save assignments"
-              )}
+              {"Save assignments"}
             </button>
           </div>
         </Dialog>

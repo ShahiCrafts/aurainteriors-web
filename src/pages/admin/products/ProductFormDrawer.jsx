@@ -5,7 +5,6 @@ import {
   Box,
   FileText,
   Layers,
-  Loader2,
   SlidersHorizontal,
   Boxes,
 } from "lucide-react";
@@ -135,13 +134,7 @@ export default function ProductFormDrawer({ form, categories }) {
                 }
                 className="flex-1 bg-teal-600 text-white px-4 py-2 rounded-lg text-sm font-semibold hover:bg-teal-700 transition-colors disabled:opacity-50 disabled:cursor-not-allowed cursor-pointer"
               >
-                {createMutation.isPending || updateMutation.isPending ? (
-                  <Loader2 className="w-5 h-5 animate-spin mx-auto" />
-                ) : editingProduct ? (
-                  "Update Product"
-                ) : (
-                  "Add Product"
-                )}
+                {editingProduct ? "Update Product" : "Add Product"}
               </button>
             </div>
            </Dialog>

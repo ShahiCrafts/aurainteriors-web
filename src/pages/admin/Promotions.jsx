@@ -23,7 +23,7 @@ import {
   Image,
   Tag,
 } from "lucide-react";
-import { TableSkeleton } from "../../components/common/Skeleton";
+import Skeleton, { TableSkeleton } from "../../components/common/Skeleton";
 import ConfirmationDialog from "../../components/modals/ConfirmationDialog";
 import {
   usePromotions,
@@ -335,7 +335,7 @@ export default function Promotions() {
       >
         <Icon
           size={10}
-          className={status === "sending" ? "animate-spin" : ""}
+          className={status === "sending" ? "motion-safe:animate-pulse" : ""}
         />
         {config.label}
       </span>
@@ -782,9 +782,6 @@ export default function Promotions() {
                 disabled={createMutation.isPending || updateMutation.isPending}
                 className="flex-1 px-4 py-2.5 bg-teal-600 text-white rounded-lg hover:bg-teal-700 text-sm font-semibold flex items-center justify-center gap-2 transition-all active:scale-95 disabled:opacity-50"
               >
-                {(createMutation.isPending || updateMutation.isPending) && (
-                  <Loader2 className="w-4 h-4 animate-spin" />
-                )}
                 {editingPromotion ? "Update Campaign" : "Launch Campaign"}
               </button>
             </div>
@@ -855,8 +852,15 @@ function AnalyticsModal({ promotionId, onClose }) {
   return (
     <Modal title="Campaign Insights" onClose={onClose}>
       {isLoading ? (
-        <div className="flex items-center justify-center py-20">
-          <Loader2 className="w-8 h-8 animate-spin text-teal-600" />
+        <div className="space-y-8" aria-busy="true">
+          <span role="status" className="sr-only">Loading insights…</span>
+          <div className="grid grid-cols-2 gap-4" aria-hidden="true">
+            <Skeleton className="h-24 w-full rounded-xl" />
+            <Skeleton className="h-24 w-full rounded-xl" />
+            <Skeleton className="h-24 w-full rounded-xl" />
+            <Skeleton className="h-24 w-full rounded-xl" />
+          </div>
+          <Skeleton className="h-40 w-full rounded-xl" />
         </div>
       ) : analytics ? (
         <div className="space-y-8">

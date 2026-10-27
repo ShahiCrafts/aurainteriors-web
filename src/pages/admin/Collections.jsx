@@ -1,6 +1,6 @@
 import { useMemo, useState } from "react";
 import { AnimatePresence, motion } from "framer-motion";
-import { Edit2, Loader2, Plus, Search, Trash2, X } from "lucide-react";
+import { Edit2, Plus, Search, Trash2, X } from "lucide-react";
 import { toast } from "../../lib/toast";
 import Dialog from "../../components/common/Dialog";
 import Skeleton from "../../components/common/Skeleton";
@@ -670,13 +670,7 @@ export default function Collections() {
                       disabled={createMutation.isPending || updateMutation.isPending}
                       className="flex-1 px-4 py-2 bg-teal-600 text-white rounded-lg font-medium hover:bg-teal-700 transition-colors disabled:opacity-50 text-sm"
                     >
-                      {createMutation.isPending || updateMutation.isPending ? (
-                        <Loader2 className="w-5 h-5 animate-spin mx-auto" />
-                      ) : editing ? (
-                        "Save Changes"
-                      ) : (
-                        "Create Collection"
-                      )}
+                      {editing ? "Save Changes" : "Create Collection"}
                     </button>
                   </div>
                 </form>

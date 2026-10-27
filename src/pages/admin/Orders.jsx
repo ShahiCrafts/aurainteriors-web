@@ -9,7 +9,6 @@ import {
   X,
   ChevronDown,
   Eye,
-  Loader2,
   ShoppingBag,
   DollarSign,
   Clock,
@@ -574,8 +573,7 @@ export default function Orders() {
                   disabled={updateStatusMutation.isPending}
                   className="flex-1 px-4 py-2.5 bg-teal-600 text-white rounded-lg hover:bg-teal-700 transition-colors disabled:opacity-50 flex items-center justify-center gap-2 text-sm font-medium"
                 >
-                  {updateStatusMutation.isPending && <Loader2 className="w-4 h-4 animate-spin" />}
-                  Update
+                                    Update
                 </button>
               </div>
              </Dialog>
@@ -665,8 +663,7 @@ export default function Orders() {
                   disabled={!returnDecision || processReturnMutation.isPending}
                   className="flex-1 px-4 py-2.5 bg-teal-600 text-white rounded-lg hover:bg-teal-700 transition-colors disabled:opacity-50 flex items-center justify-center gap-2 text-sm font-medium"
                 >
-                  {processReturnMutation.isPending && <Loader2 className="w-4 h-4 animate-spin" />}
-                  Process
+                                    Process
                 </button>
               </div>
              </Dialog>

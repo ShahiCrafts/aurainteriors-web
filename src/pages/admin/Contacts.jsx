@@ -14,7 +14,6 @@ import {
   User,
   Calendar,
   Phone,
-  Loader2,
   ChevronLeft,
   ChevronRight,
   Clock,
@@ -508,11 +507,7 @@ export default function Contacts() {
                   disabled={respondMutation.isPending || !responseText.trim()}
                   className="flex-1 py-2.5 bg-teal-600 text-white rounded-lg text-sm font-medium hover:bg-teal-700 flex items-center justify-center gap-2"
                 >
-                  {respondMutation.isPending ? (
-                    <Loader2 size={16} className="animate-spin" />
-                  ) : (
-                    <Send size={16} />
-                  )}
+                  <Send size={16} />
                   Send Reply
                 </button>
               </div>

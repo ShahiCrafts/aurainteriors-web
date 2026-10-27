@@ -9,7 +9,6 @@ import {
   X,
   Percent,
   Tag,
-  Loader2,
   Ticket,
   ChevronDown,
 } from "lucide-react";
@@ -552,13 +551,7 @@ export default function Discounts() {
                   }
                   className="flex-1 bg-teal-600 text-white px-4 py-2.5 rounded-lg text-xs font-bold uppercase tracking-wider hover:bg-teal-700 shadow-md flex items-center justify-center gap-2"
                 >
-                  {createMutation.isPending || updateMutation.isPending ? (
-                    <Loader2 size={14} className="animate-spin" />
-                  ) : editingDiscount ? (
-                    "Update"
-                  ) : (
-                    "Save"
-                  )}
+                  {editingDiscount ? "Update" : "Save"}
                 </button>
               </div>
              </Dialog>

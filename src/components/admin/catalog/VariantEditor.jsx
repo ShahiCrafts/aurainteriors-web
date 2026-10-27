@@ -1,6 +1,7 @@
 import { useMemo, useState } from "react";
 import { AnimatePresence, motion } from "framer-motion";
-import { Edit2, Loader2, Lock, Plus, Trash2, X } from "lucide-react";
+import { Edit2, Lock, Plus, Trash2, X } from "lucide-react";
+import Skeleton from "../../common/Skeleton";
 import { toast } from "../../../lib/toast";
 import Dialog from "../../common/Dialog";
 import ConfirmationDialog from "../../modals/ConfirmationDialog";
@@ -324,9 +325,12 @@ export default function VariantEditor({ product }) {
           </p>
         )}
         {isLoading ? (
-          <p className="flex items-center gap-2 text-sm text-gray-400 py-4">
-            <Loader2 className="w-4 h-4 animate-spin" /> Loading variants…
-          </p>
+          <div className="space-y-2 py-4" aria-busy="true">
+            <span role="status" className="sr-only">Loading variants…</span>
+            <Skeleton className="h-10 w-full rounded-lg" />
+            <Skeleton className="h-10 w-full rounded-lg" />
+            <Skeleton className="h-10 w-full rounded-lg" />
+          </div>
         ) : variants.length === 0 ? (
           <p className="text-sm text-gray-500 py-2">
             This product has no variants yet — it sells as a single item.
@@ -711,13 +715,7 @@ export default function VariantEditor({ product }) {
                       disabled={createVariant.isPending || updateVariant.isPending}
                       className="flex-1 px-4 py-2 bg-teal-600 text-white rounded-lg font-medium hover:bg-teal-700 transition-colors disabled:opacity-50 text-sm"
                     >
-                      {createVariant.isPending || updateVariant.isPending ? (
-                        <Loader2 className="w-5 h-5 animate-spin mx-auto" />
-                      ) : editingVariant ? (
-                        "Save Variant"
-                      ) : (
-                        "Add Variant"
-                      )}
+                      {editingVariant ? "Save Variant" : "Add Variant"}
                     </button>
                   </div>
                 </form>
