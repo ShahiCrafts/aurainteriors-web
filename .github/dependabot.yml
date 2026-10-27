@@ -1,0 +1,31 @@
+# Dependabot version updates (Phase 5).
+# Weekly PRs only — nothing here auto-merges; every update still goes
+# through the CI gates (including the pinned osv-scanner job) and human
+# review. Minor/patch updates are grouped to keep PR volume reviewable;
+# major updates arrive as individual PRs on purpose.
+version: 2
+updates:
+  - package-ecosystem: "npm"
+    directory: "/"
+    schedule:
+      interval: "weekly"
+      day: "monday"
+    groups:
+      npm-minor-patch:
+        patterns:
+          - "*"
+        update-types:
+          - "minor"
+          - "patch"
+  - package-ecosystem: "github-actions"
+    directory: "/"
+    schedule:
+      interval: "weekly"
+      day: "monday"
+    groups:
+      github-actions-minor-patch:
+        patterns:
+          - "*"
+        update-types:
+          - "minor"
+          - "patch"

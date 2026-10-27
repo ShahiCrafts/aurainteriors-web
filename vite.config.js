@@ -29,6 +29,36 @@ export default defineConfig(({ mode, command }) => {
         bundle["index.html"] = entry;
       },
     },
+    // FE-50: per-mode public pruning (build only). Vite copies public/
+    // wholesale into BOTH dists, so single-app assets used to ship in the
+    // other app's deploy too (the 1.35 MB AR model in dist/admin, the
+    // admin logo in dist/customer). This plugin removes the files the
+    // current mode provably never references, after the bundle is
+    // written. Reference proof per file (grep over src/**, both
+    // index.html files and vite config; full evidence in
+    // audit/fe/remediation/phase3-assets.md):
+    //   admin-only:    admin-logo.png — src/layouts/admin/AdminLayout.jsx
+    //   customer-only: sofa_chair.glb — src/pages/shop/NativeARPage.jsx
+    //                  ad-banner.png  — src/pages/shop/ShopPage.jsx
+    // Everything else in public/ is referenced by both apps and is never
+    // pruned: favicon.png and not_found.json by both entries, logo.png by
+    // customer chrome AND the admin login page, brands/ by BrandMarquee —
+    // which the ADMIN app also renders, because its NotFoundPage (routed
+    // in AdminApp.jsx) reuses the customer Footer. Dev servers are
+    // unaffected (apply: "build").
+    {
+      name: "fe50-per-mode-public-prune",
+      apply: "build",
+      closeBundle() {
+        const outDir = path.resolve(isAdmin ? "dist/admin" : "dist/customer");
+        const drop = isAdmin
+          ? ["sofa_chair.glb", "ad-banner.png"]
+          : ["admin-logo.png"];
+        for (const entry of drop) {
+          fs.rmSync(path.join(outDir, entry), { recursive: true, force: true });
+        }
+      },
+    },
     react(),
     tailwindcss(),
     isAdmin && {
