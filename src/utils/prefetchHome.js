@@ -13,9 +13,3 @@ export const prefetchHomeData = async (queryClient) => {
     }),
   ]);
 };
-
-export const prefetchHomeOnHover = (queryClient) => {
-  if (typeof requestIdleCallback !== "undefined") {
-    requestIdleCallback(() => prefetchHomeData(queryClient), { timeout: 2000 });
-  } else setTimeout(() => prefetchHomeData(queryClient), 100);
-};
