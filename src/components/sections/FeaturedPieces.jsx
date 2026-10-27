@@ -1,114 +1,172 @@
-import React, { useState } from "react";
+
+import React, { useMemo, useState } from "react";
 import { Link } from "react-router-dom";
-import { MoveRight, ChevronLeft, ChevronRight } from "lucide-react";
 import { useProducts } from "../../hooks/product/useProductTan";
 import ProductCard from "../shop/ProductCard";
-import Skeleton, { ProductCardSkeleton } from "../common/Skeleton";
+import { ProductCardSkeleton } from "../common/Skeleton";
 import useInView from "../../hooks/useInView";
+import { shopCategoryUrl } from "../../utils/shopFilters";
+import PromoCard from "../common/PromoCard";
+
+import promoSofasSeating from "../../assets/images/promo-sofas-seating.webp";
+import promoLightingCollection from "../../assets/images/promo-lighting-collection.webp";
+
+const ROWS = 2;
+
+const PRODUCT_PARAMS = {
+  limit: 5 * ROWS,
+  sort: "-isFeatured,-createdAt",
+  status: "active",
+};
 
 export default function FeaturedPieces() {
-  const [currentIndex, setCurrentIndex] = useState(0);
-  const [visibleCount, setVisibleCount] = useState(6);
-
-  // Only fire the API call once this section scrolls near the viewport.
-  // The rootMargin in useInView pre-fetches 200px before the element enters
-  // the screen, so products load just before the user sees the section.
+  const [visibleCount, setVisibleCount] = useState(5);
   const [sectionRef, isInView] = useInView();
 
   const { data: productData, isLoading } = useProducts(
-    { limit: 12, sort: "-isFeatured,-createdAt", status: "active" },
-    // Spread any extra options; enabled gates the network request
+    PRODUCT_PARAMS,
     { enabled: isInView }
   );
 
-  const products = productData?.data?.products || [];
-  
-  // Update visible count based on screen size
+  const products = useMemo(
+    () => productData?.data?.products || [],
+    [productData]
+  );
+
   React.useEffect(() => {
     const updateVisible = () => {
-      if (window.innerWidth >= 1024) setVisibleCount(6);
-      else if (window.innerWidth >= 768) setVisibleCount(3);
-      else setVisibleCount(2);
+      if (window.innerWidth >= 1280) {
+        setVisibleCount(5);
+      } else if (window.innerWidth >= 768) {
+        setVisibleCount(3);
+      } else {
+        setVisibleCount(2);
+      }
     };
+
     updateVisible();
-    window.addEventListener("resize", updateVisible, { passive: true });
-    return () => window.removeEventListener("resize", updateVisible);
+
+    window.addEventListener("resize", updateVisible, {
+      passive: true,
+    });
+
+    return () => {
+      window.removeEventListener("resize", updateVisible);
+    };
   }, []);
 
-  const maxIndex = Math.max(0, products.length - visibleCount);
-  const canScroll = products.length > visibleCount;
-
-  // Clamp currentIndex when data or visibleCount changes
-  React.useEffect(() => {
-    if (currentIndex > maxIndex) setCurrentIndex(Math.max(0, maxIndex));
-  }, [products.length, visibleCount, maxIndex, currentIndex]);
-
-  const nextSlide = () => {
-    setCurrentIndex((prev) => Math.min(prev + 1, maxIndex));
-  };
-
-  const prevSlide = () => {
-    setCurrentIndex((prev) => Math.max(prev - 1, 0));
-  };
-
-  const slidePercent = 100 / visibleCount;
+  const visibleProducts = products.slice(
+    0,
+    visibleCount * ROWS
+  );
 
   return (
-    <section ref={sectionRef} className="bg-white pt-8 pb-8 md:pt-8 mt-0 px-2 md:px-6 lg:px-8 font-dm-sans">
-      <div className="max-w-[1440px] mx-auto">
+    <section
+      ref={sectionRef}
+      className="bg-white px-2 pb-10 pt-8 font-dm-sans md:px-6 lg:px-8"
+    >
+      <div className="mx-auto max-w-[1440px]">
 
-        {/* HEADER */}
-        <div className="flex items-center justify-between mb-4 md:mb-6">
+        {/* Section Header */}
+        <div className="mb-6 flex flex-wrap items-end justify-between gap-4">
           <div>
-            <h2 className="text-[24px] md:text-[32px] font-semibold text-[#1A1714]">Discover what's new</h2>
-            <p className="text-[14px] md:text-[15px] text-black/40 mt-1">Designed to refresh your everyday life</p>
+            <p className="text-[14px] font-light text-black/40">
+              Featured Products
+            </p>
+
+            <h2 className="mt-2 text-[28px] font-bold leading-tight text-[#1A1714] md:text-[36px]">
+              Handpicked for Your Home
+            </h2>
+
+            <p className="mt-1.5 text-[14px] text-black/45 md:text-[15px]">
+              Explore our most loved furniture, décor and lighting pieces.
+            </p>
           </div>
-          <Link to="/shop" className="flex items-center gap-2 text-[14px] md:text-[15px] font-medium text-[#1A1714] hover:text-[#F27318] transition-all group pb-1.5 border-b-2 border-black/5 hover:border-[#F27318]">
-            View all products <MoveRight size={18} className="transition-transform group-hover:translate-x-2" />
+
+          <Link
+            to="/shop"
+            className="text-[14px] font-semibold text-[#1A1714] underline underline-offset-4 transition-colors hover:text-[#F27318] focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#F27318]"
+          >
+            View All Products
           </Link>
         </div>
 
-        {/* PRODUCTS CAROUSEL */}
-        <div className="relative">
-          {/* NAVIGATION BUTTONS */}
-          <div className={`absolute top-1/2 -left-4 -right-4 -translate-y-1/2 flex justify-between pointer-events-none z-10 ${canScroll ? 'hidden lg:flex' : 'hidden'}`}>
-            <button 
-              onClick={prevSlide}
-              className={`w-12 h-12 rounded-full bg-white shadow-lg border border-black/5 flex items-center justify-center text-black/40 hover:text-[#F27318] hover:scale-110 transition-all pointer-events-auto ${currentIndex === 0 ? 'opacity-30 pointer-events-none' : ''}`}
-            >
-              <ChevronLeft size={20} />
-            </button>
-            <button 
-              onClick={nextSlide}
-              className={`w-12 h-12 rounded-full bg-white shadow-lg border border-black/5 flex items-center justify-center text-black/40 hover:text-[#F27318] hover:scale-110 transition-all pointer-events-auto ${currentIndex >= maxIndex ? 'opacity-30 pointer-events-none' : ''}`}
-            >
-              <ChevronRight size={20} />
-            </button>
+        {/* Featured Products */}
+        {isLoading ? (
+          <div className="grid grid-cols-2 gap-4 md:grid-cols-3 md:gap-5 xl:grid-cols-5">
+            {Array.from({
+              length: visibleCount * ROWS,
+            }).map((_, i) => (
+              <ProductCardSkeleton key={i} />
+            ))}
           </div>
+        ) : visibleProducts.length > 0 ? (
+          <div className="grid grid-cols-2 gap-4 md:grid-cols-3 md:gap-5 xl:grid-cols-5">
+            {visibleProducts.map((product) => (
+              <ProductCard
+                key={product._id}
+                product={product}
+              />
+            ))}
+          </div>
+        ) : (
+          <p className="rounded-lg bg-[#FAF8F5] px-6 py-10 text-center text-[14px] text-black/45">
+            No products available yet — check back soon.
+          </p>
+        )}
 
-          {/* SLIDER WINDOW */}
-          <div className="overflow-hidden">
-            <div 
-              className="flex transition-transform duration-700 ease-out gap-4 md:gap-5"
-              style={{ transform: `translateX(-${currentIndex * slidePercent}%)` }}
-            >
-              {isLoading ? (
-                [...Array(12)].map((_, i) => (
-                  <div key={i} className="min-w-[calc(100%-0px)] md:min-w-[calc(33.333%-11px)] lg:min-w-[calc(16.667%-17px)]">
-                    <ProductCardSkeleton />
-                  </div>
-                ))
-              ) : (
-                products.map((product) => (
-                  <div key={product._id} className="min-w-[calc(100%-0px)] md:min-w-[calc(33.333%-11px)] lg:min-w-[calc(16.667%-17px)]">
-                    <ProductCard product={product} />
-                  </div>
-                ))
-              )}
-            </div>
-          </div>
+        {/* Promotional Cards */}
+        <div className="mt-7 grid grid-cols-1 gap-3 lg:grid-cols-[3fr_2fr]">
+
+          {/* Sofas & Seating */}
+          <PromoCard
+            variant="primary"
+            eyebrow="Comfort Meets Style"
+            title={
+              <>
+                Discover Comfort
+                <br />
+                <span className="text-[#FF6500]">
+                  With our Sofa Collection
+                </span>
+              </>
+            }
+            description="Beautifully crafted sofas and seating for a more comfortable home."
+            ctaLabel="Shop Sofas"
+            ctaHref={shopCategoryUrl("living-room")}
+            image={{
+              src: promoSofasSeating,
+              width: 1747,
+              height: 900,
+              alt: "Olive green two-seater sofa in a warm, sunlit living room",
+            }}
+          />
+
+          {/* Lighting Collection */}
+          <PromoCard
+            variant="secondary"
+            eyebrow="Elevate Your Space"
+            title={
+              <>
+                Premium
+                <br />
+                <span className="text-[#FF6500]">
+                  Lighting Collection
+                </span>
+              </>
+            }
+            description="Modern lighting for a warmer, more beautiful home."
+            ctaLabel="Shop Lighting"
+            ctaHref={shopCategoryUrl("lighting")}
+            image={{
+              src: promoLightingCollection,
+              width: 1747,
+              height: 900,
+              alt: "Beige pendant lighting against a warm interior wall",
+            }}
+          />
+
         </div>
-
       </div>
     </section>
   );

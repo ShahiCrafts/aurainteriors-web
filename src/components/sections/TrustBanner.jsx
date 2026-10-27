@@ -1,26 +1,49 @@
-import React, { useState, useEffect } from "react";
-import { Truck, ShieldCheck, Home, Percent } from "lucide-react";
+import { useEffect, useMemo, useState } from "react";
+import { Truck, ShieldCheck, Home } from "lucide-react";
 
-export default function TrustBanner() {
-  const [timeLeft, setTimeLeft] = useState({ days: 0, hours: 4, minutes: 13, seconds: 31 });
+// SALE countdown card — restored at the owner's request. History:
+// the original card (FE-14) restarted from a hardcoded start value
+// on every page load and was removed as fabrication. This version
+// keeps the original design but counts against a REAL target
+// instant: pass `saleEndsAt` (Date or ISO string) once the sale
+// feature lands and it will drive the card. Until then the target
+// defaults to the end of the current day, so the timer genuinely
+// ticks instead of replaying invented numbers.
+function endOfToday() {
+  const end = new Date();
+  end.setHours(23, 59, 59, 999);
+  return end;
+}
+
+function timeRemaining(target) {
+  const ms = Math.max(0, target.getTime() - Date.now());
+  const totalSeconds = Math.floor(ms / 1000);
+  return {
+    days: Math.floor(totalSeconds / 86400),
+    hours: Math.floor((totalSeconds % 86400) / 3600),
+    minutes: Math.floor((totalSeconds % 3600) / 60),
+    seconds: totalSeconds % 60,
+  };
+}
+
+export default function TrustBanner({ saleEndsAt } = {}) {
+  const target = useMemo(
+    () => (saleEndsAt ? new Date(saleEndsAt) : endOfToday()),
+    [saleEndsAt]
+  );
+  const [timeLeft, setTimeLeft] = useState(() => timeRemaining(target));
 
   useEffect(() => {
-    const timer = setInterval(() => {
-      setTimeLeft((prev) => {
-        if (prev.seconds > 0) return { ...prev, seconds: prev.seconds - 1 };
-        if (prev.minutes > 0) return { ...prev, minutes: prev.minutes - 1, seconds: 59 };
-        if (prev.hours > 0) return { ...prev, hours: prev.hours - 1, minutes: 59, seconds: 59 };
-        return prev;
-      });
-    }, 1000);
+    setTimeLeft(timeRemaining(target));
+    const timer = setInterval(() => setTimeLeft(timeRemaining(target)), 1000);
     return () => clearInterval(timer);
-  }, []);
+  }, [target]);
 
   return (
     <section className="font-dm-sans px-2 md:px-6 lg:px-8 py-2 md:py-4 bg-[#f6f6f6]">
       <div className="max-w-[1440px] mx-auto flex flex-col lg:flex-row gap-2 md:gap-4 items-stretch">
 
-        {/* CARD 1 (NOW LEFT): SALE COUNTDOWN */}
+        {/* CARD 1 (LEFT): SALE COUNTDOWN */}
         <div className="bg-white rounded-lg shadow-[0_4px_25px_rgba(0,0,0,0.06)] flex items-center gap-6 p-4 lg:px-8 shrink-0">
           <div className="flex flex-col">
             <span className="text-[#F27318] text-[22px] font-bold tracking-tight leading-none">SALE</span>
@@ -33,8 +56,8 @@ export default function TrustBanner() {
               { label: "Hrs", value: timeLeft.hours },
               { label: "Mins", value: timeLeft.minutes },
               { label: "Secs", value: timeLeft.seconds },
-            ].map((item, idx) => (
-              <div key={idx} className="flex flex-col items-center">
+            ].map((item) => (
+              <div key={item.label} className="flex flex-col items-center">
                 <span className="text-[20px] font-bold text-[#1A1714] tabular-nums leading-none">
                   {String(item.value).padStart(2, "0")}
                 </span>
@@ -46,7 +69,7 @@ export default function TrustBanner() {
           </div>
         </div>
 
-        {/* CARD 2 (NOW RIGHT): TRUST + APP */}
+        {/* CARD 2 (RIGHT): TRUST + APP */}
         <div className="flex-1 bg-white rounded-lg shadow-[0_4px_25px_rgba(0,0,0,0.06)] flex flex-col xl:flex-row items-center overflow-hidden">
           {/* VALUE PROPS */}
           <div className="flex-1 grid grid-cols-1 md:grid-cols-3 gap-4 md:gap-0 p-4 lg:px-6 w-full">
