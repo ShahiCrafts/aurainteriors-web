@@ -7,11 +7,13 @@ import {
   useDeleteReview,
 } from "../../hooks/review/useReviewTan";
 import useAuthStore from "../../store/authStore";
+import { useShallow } from "zustand/react/shallow";
 import ConfirmationDialog from "../modals/ConfirmationDialog";
 // FE-06: the getAvatarUrl import that used to sit here was dead
 // (imported, never called in this file) and is removed.
-import { toast } from "react-toastify";
+import { toast } from "../../lib/toast";
 import formatError from "../../utils/errorHandler";
+import { formatDate as formatDateShared } from "../../utils/formatDate";
 
 export default function ReviewSection({ productId, productName, onEditReview }) {
   const [filter, setFilter] = useState({
@@ -21,7 +23,7 @@ export default function ReviewSection({ productId, productName, onEditReview }) 
     rating: undefined,
   });
 
-  const { isAuthenticated, user } = useAuthStore();
+  const { isAuthenticated, user } = useAuthStore(useShallow((state) => ({ isAuthenticated: state.isAuthenticated, user: state.user })));
 
   const {
     data: reviewsData,
@@ -189,7 +191,7 @@ export default function ReviewSection({ productId, productName, onEditReview }) 
 function ReviewCard({ review, productId, isOwner, onEdit, isLast }) {
   const [showMenu, setShowMenu] = useState(false);
   const [deleteModalOpen, setDeleteModalOpen] = useState(false);
-  const { isAuthenticated, user } = useAuthStore();
+  const { isAuthenticated, user } = useAuthStore(useShallow((state) => ({ isAuthenticated: state.isAuthenticated, user: state.user })));
 
   const { mutate: markHelpful, isPending: isMarkingHelpful } = useMarkHelpful();
   const { mutate: deleteReview, isPending: isDeleting } = useDeleteReview();
@@ -217,13 +219,8 @@ function ReviewCard({ review, productId, isOwner, onEdit, isLast }) {
     );
   };
 
-  const formatDate = (dateString) => {
-    return new Date(dateString).toLocaleDateString("en-US", {
-      day: "2-digit",
-      month: "short",
-      year: "numeric",
-    });
-  };
+  const formatDate = (dateString) =>
+    formatDateShared(dateString, { day: "2-digit", month: "short", year: "numeric" });
 
   const getUserName = () => {
     return `${review.user?.firstName || review.user?.name || "Anonymous"} ${review.user?.lastName || ""}`.trim();

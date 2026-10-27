@@ -6,6 +6,7 @@ import { useArCatalogProducts } from "../../hooks/product/useArCatalogTan";
 import { useCategories } from "../../hooks/product/useCategoryTan";
 import { useAddToCart } from "../../hooks/cart/useCartTan";
 import useAuthStore from "../../store/authStore";
+import { useShallow } from "zustand/react/shallow";
 import useGuestCartStore from "../../store/guestCartStore";
 import { hasArModel, isIntroProduct } from "../../utils/arProducts";
 
@@ -27,8 +28,8 @@ export default function NativeARPage() {
     () => new URLSearchParams(location.search).get("select"),
     [location.search]
   );
-  const { isAuthenticated } = useAuthStore();
-  const addGuestItem = useGuestCartStore((state) => state.addItem);
+  const { isAuthenticated } = useAuthStore(useShallow((state) => ({ isAuthenticated: state.isAuthenticated })));
+  const { addItem: addGuestItem } = useGuestCartStore(useShallow((state) => ({ addItem: state.addItem })));
   const [userSelectedProduct, setUserSelectedProduct] = useState(null);
   const [customization, setCustomization] = useState({});
   const addInFlightRef = useRef(false);

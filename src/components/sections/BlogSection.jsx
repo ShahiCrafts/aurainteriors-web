@@ -4,12 +4,7 @@ import { Link } from "react-router-dom";
 
 import { useBlogs } from "../../hooks/blog/useBlogTan";
 import { getBlogImageUrl } from "../../utils/imageUrl";
-
-const formatDate = (value) => {
-  if (!value) return "";
-  const date = new Date(value);
-  return Number.isNaN(date.getTime()) ? "" : date.toLocaleDateString("en-US", { day: "2-digit", month: "short" });
-};
+import { formatDate as formatDateShared } from "../../utils/formatDate";
 
 export default function BlogSection() {
   const { data, isLoading, isError } = useBlogs({ page: 1, limit: 5, sort: "-publishedAt" });
@@ -84,7 +79,7 @@ export default function BlogSection() {
                 {/* DATE OVERLAY (BOTTOM RIGHT) */}
                 <div className="absolute bottom-3 right-3 flex items-center gap-1.5">
                   <Calendar size={12} className="text-white/80" />
-                  <span className="text-[12px] font-medium text-white/90 drop-shadow-sm uppercase tracking-wider">{formatDate(post.publishedAt || post.createdAt)}</span>
+                  <span className="text-[12px] font-medium text-white/90 drop-shadow-sm uppercase tracking-wider">{formatDateShared(post.publishedAt || post.createdAt, { day: "2-digit", month: "short" })}</span>
                 </div>
               </div>
 

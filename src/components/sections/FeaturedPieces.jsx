@@ -55,9 +55,9 @@ export default function FeaturedPieces() {
     };
   }, []);
 
-  const visibleProducts = products.slice(
-    0,
-    visibleCount * ROWS
+  const visibleProducts = useMemo(
+    () => products.slice(0, visibleCount * ROWS),
+    [products, visibleCount]
   );
 
   return (
@@ -85,7 +85,7 @@ export default function FeaturedPieces() {
 
           <Link
             to="/shop"
-            className="text-[14px] font-semibold text-[#1A1714] underline underline-offset-4 transition-colors hover:text-[#F27318] focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#F27318]"
+            className="text-[14px] font-semibold text-[#1A1714] underline underline-offset-4 transition-colors hover:text-brand focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand"
           >
             View All Products
           </Link>
@@ -165,7 +165,6 @@ export default function FeaturedPieces() {
               alt: "Beige pendant lighting against a warm interior wall",
             }}
           />
-
         </div>
       </div>
     </section>

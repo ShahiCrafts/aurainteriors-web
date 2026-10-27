@@ -1,9 +1,14 @@
 import React from "react";
-import { IoCheckmarkCircle, IoFilter } from "react-icons/io5";
+import { IoFilter } from "react-icons/io5";
 import { HiOutlineCube } from "react-icons/hi2";
 
-// FE-63: the shared formatter replaces this file's own local copy.
-import { formatNPR } from "../../../utils/formatCurrency";
+// REUSE-001 (Phase 5): the per-product tile is the canonical
+// ProductCard in its hooks-free "ar-thumb" variant — selection
+// semantics (button, not navigation), the selected ring/check and
+// the name/price rows are all expressed through ProductSummary +
+// `selected` + `onSelect`, so the catalogue keeps only its chrome
+// (header, filter button, horizontal snap strip, empty state).
+import ProductCard from "../../shop/ProductCard";
 
 const ProductCatalog = ({
   products,
@@ -11,7 +16,6 @@ const ProductCatalog = ({
   onProductSelect,
   onFilterClick,
   hasActiveFilters,
-  getProductImage,
 }) => {
   return (
     <div
@@ -61,52 +65,15 @@ const ProductCatalog = ({
             const isSelected =
               selectedProduct?._id === product._id ||
               selectedProduct?.id === product.id;
-            const imageUrl = getProductImage(product);
 
             return (
-              <button
+              <ProductCard
                 key={product._id || product.id}
-                onClick={() => onProductSelect(product)}
-                className="group shrink-0 w-20 snap-start flex flex-col items-center p-2 rounded-2xl transition-all hover:bg-white/10"
-              >
-                <div
-                  className={`relative w-16 h-16 rounded-xl overflow-hidden transition-all ${
-                    isSelected
-                      ? "ring-2 ring-teal-400 ring-offset-2 ring-offset-black/70"
-                      : "border border-white/20 group-hover:border-teal-400/50"
-                  }`}
-                >
-                  {imageUrl ? (
-                    <img
-                      src={imageUrl}
-                      alt={product.name}
-                      loading="lazy"
-                      className="w-full h-full object-cover"
-                    />
-                  ) : (
-                    <div className="w-full h-full bg-white/10 flex items-center justify-center">
-                      <HiOutlineCube size={20} className="text-white/40" />
-                    </div>
-                  )}
-                  {isSelected && (
-                    <div className="absolute inset-0 bg-teal-500/20 flex items-center justify-center">
-                      <div className="w-5 h-5 bg-teal-500 rounded-full flex items-center justify-center">
-                        <IoCheckmarkCircle size={14} className="text-white" />
-                      </div>
-                    </div>
-                  )}
-                </div>
-                <span className="mt-2 text-[10px] font-medium text-white/80 text-center max-w-16 truncate">
-                  {product.name}
-                </span>
-                <span
-                  className={`text-[10px] font-semibold ${
-                    isSelected ? "text-teal-400" : "text-white/50"
-                  }`}
-                >
-                  {formatNPR(product.price)}
-                </span>
-              </button>
+                variant="ar-thumb"
+                product={product}
+                selected={isSelected}
+                onSelect={onProductSelect}
+              />
             );
           })
         )}
