@@ -15,31 +15,31 @@ export const contactApi = {
 
     // Admin: Get single contact
     getById: async (id) => {
-        const response = await api.get(`/contacts/${id}`);
+        const response = await api.get(`/contacts/${encodeURIComponent(id)}`);
         return response.data;
     },
 
     // Admin: Update contact
     update: async (id, data) => {
-        const response = await api.patch(`/contacts/${id}`, data);
+        const response = await api.patch(`/contacts/${encodeURIComponent(id)}`, data);
         return response.data;
     },
 
     // Admin: Mark as read/unread
     markAsRead: async (id, isRead = true) => {
-        const response = await api.patch(`/contacts/${id}/read`, { isRead });
+        const response = await api.patch(`/contacts/${encodeURIComponent(id)}/read`, { isRead });
         return response.data;
     },
 
     // Admin: Respond to contact
     respond: async (id, message) => {
-        const response = await api.post(`/contacts/${id}/respond`, { message });
+        const response = await api.post(`/contacts/${encodeURIComponent(id)}/respond`, { message });
         return response.data;
     },
 
     // Admin: Delete contact
     delete: async (id) => {
-        const response = await api.delete(`/contacts/${id}`);
+        const response = await api.delete(`/contacts/${encodeURIComponent(id)}`);
         return response.data;
     },
 

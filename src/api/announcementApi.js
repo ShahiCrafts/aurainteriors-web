@@ -11,7 +11,7 @@ const announcementApi = {
 
     // Get single announcement (Admin)
     getById: async (id) => {
-        const response = await api.get(`/announcements/${id}`);
+        const response = await api.get(`/announcements/${encodeURIComponent(id)}`);
         return response.data;
     },
 
@@ -23,31 +23,31 @@ const announcementApi = {
 
     // Update announcement (Admin)
     update: async (id, data) => {
-        const response = await api.patch(`/announcements/${id}`, data);
+        const response = await api.patch(`/announcements/${encodeURIComponent(id)}`, data);
         return response.data;
     },
 
     // Delete announcement (Admin)
     delete: async (id) => {
-        const response = await api.delete(`/announcements/${id}`);
+        const response = await api.delete(`/announcements/${encodeURIComponent(id)}`);
         return response.data;
     },
 
     // Publish announcement immediately (Admin)
     publish: async (id) => {
-        const response = await api.post(`/announcements/${id}/publish`);
+        const response = await api.post(`/announcements/${encodeURIComponent(id)}/publish`);
         return response.data;
     },
 
     // Schedule announcement (Admin)
     schedule: async (id, scheduledAt) => {
-        const response = await api.post(`/announcements/${id}/schedule`, { scheduledAt });
+        const response = await api.post(`/announcements/${encodeURIComponent(id)}/schedule`, { scheduledAt });
         return response.data;
     },
 
     // Archive announcement (Admin)
     archive: async (id) => {
-        const response = await api.post(`/announcements/${id}/archive`);
+        const response = await api.post(`/announcements/${encodeURIComponent(id)}/archive`);
         return response.data;
     },
 
@@ -67,7 +67,7 @@ const announcementApi = {
 
     // Get single public announcement (Public)
     getPublicById: async (id) => {
-        const response = await api.get(`/announcements/public/${id}`);
+        const response = await api.get(`/announcements/public/${encodeURIComponent(id)}`);
         return response.data;
     },
 };
