@@ -14,7 +14,6 @@
 import { useEffect, useState } from "react";
 import { Link, useSearchParams } from "react-router-dom";
 import {
-  ChevronRight,
   ChevronDown,
   Grid3X3,
   List,
@@ -24,10 +23,11 @@ import {
 } from "lucide-react";
 
 import ProductCard from "./ProductCard";
-import FilterSidebarSkeleton from "./FilterSidebarSkeleton";
+import Pagination from "../common/Pagination";
+import Dialog from "../ui/Dialog";
+import { FilterSidebarSkeleton, ListingCardSkeleton } from "../common/Skeleton";
 import FilterSidebar from "./FilterSidebar";
 import { FilterChips } from "./FacetFilters";
-import { ListingCardSkeleton } from "./ProductLoadingSkeletons";
 
 import { useCategoryTree } from "../../hooks/product/useCategoryTan";
 import {
@@ -524,59 +524,23 @@ export default function CatalogListing({
                   ))}
                 </div>
 
-                {/* PAGINATION */}
+                {/* PAGINATION — the shared Pagination, customer
+                    theme (REUSE-002); the page lives in the URL and
+                    handlePageChange keeps the scroll-to-top. */}
                 {pagination.pages > 1 && (
                   <div className="flex flex-col sm:flex-row items-center justify-between gap-4 mt-12 sm:mt-16 pt-8 border-t border-black/[0.03]">
                     <span className="text-[11px] font-bold text-black/20 uppercase tracking-widest order-2 sm:order-1">
                       Page {pagination.page} / {pagination.pages}
                     </span>
-                    <div className="flex items-center gap-1.5 sm:gap-2 flex-wrap justify-center order-1 sm:order-2">
-                      <button
-                        onClick={() => handlePageChange(page - 1)}
-                        disabled={page === 1}
-                        aria-label="Previous page"
-                        className="w-9 h-9 sm:w-10 sm:h-10 flex items-center justify-center rounded-lg bg-black/[0.03] text-black hover:bg-black/[0.06] disabled:opacity-30 transition-all"
-                      >
-                        <ChevronRight size={18} className="rotate-180" />
-                      </button>
-                      {[...Array(pagination.pages)].map((_, i) => {
-                        const pageNum = i + 1;
-                        if (
-                          pageNum === 1 ||
-                          pageNum === pagination.pages ||
-                          (pageNum >= page - 1 && pageNum <= page + 1)
-                        ) {
-                          return (
-                            <button
-                              key={pageNum}
-                              onClick={() => handlePageChange(pageNum)}
-                              className={`w-9 h-9 sm:w-10 sm:h-10 text-[12px] font-bold rounded-lg transition-all ${
-                                pageNum === page
-                                  ? "bg-[#F27318] text-white shadow-lg shadow-[#F27318]/20"
-                                  : "bg-black/[0.03] text-black hover:bg-black/[0.06]"
-                              }`}
-                            >
-                              {pageNum}
-                            </button>
-                          );
-                        }
-                        if (pageNum === page - 2 || pageNum === page + 2) {
-                          return (
-                            <span key={pageNum} className="text-black/10">
-                              ...
-                            </span>
-                          );
-                        }
-                        return null;
-                      })}
-                      <button
-                        onClick={() => handlePageChange(page + 1)}
-                        disabled={page === pagination.pages}
-                        aria-label="Next page"
-                        className="w-9 h-9 sm:w-10 sm:h-10 flex items-center justify-center rounded-lg bg-black/[0.03] text-black hover:bg-black/[0.06] disabled:opacity-30 transition-all"
-                      >
-                        <ChevronRight size={18} />
-                      </button>
+                    <div className="order-1 sm:order-2 flex-1 sm:max-w-xl w-full">
+                      <Pagination
+                        theme="customer"
+                        page={pagination.page}
+                        totalPages={pagination.pages}
+                        pageSize={pagination.limit}
+                        totalItems={totalProducts}
+                        onPageChange={handlePageChange}
+                      />
                     </div>
                     <div className="hidden sm:block w-24 order-3" />
                   </div>
@@ -587,7 +551,11 @@ export default function CatalogListing({
         </div>
       </div>
 
-      {/* MOBILE FILTER DRAWER — same panel, same facets */}
+      {/* MOBILE FILTER DRAWER — same panel, same facets.
+          Phase 6: the panel is the shared Dialog (ui/Dialog) —
+          it gains role/aria-modal, focus trap, Escape-to-close and
+          the scroll lock; the backdrop button is the consumer
+          backdrop, calling the same close handler. */}
       {showMobileFilters && (
         <div className="fixed inset-0 z-50 lg:hidden">
           <button
@@ -596,7 +564,12 @@ export default function CatalogListing({
             className="absolute inset-0 bg-black/40 cursor-default"
             onClick={() => setShowMobileFilters(false)}
           />
-          <div className="absolute right-0 top-0 h-full w-[88%] max-w-sm bg-white shadow-xl overflow-y-auto">
+          <Dialog
+            open
+            onClose={() => setShowMobileFilters(false)}
+            label="Filters"
+            className="absolute right-0 top-0 h-full w-[88%] max-w-sm bg-white shadow-xl overflow-y-auto"
+          >
             <div className="flex items-center justify-between px-5 py-4 border-b border-black/[0.06] sticky top-0 bg-white z-10">
               <h3 className="text-[16px] font-bold text-[#1A1714]">Filters</h3>
               <button
@@ -622,7 +595,7 @@ export default function CatalogListing({
                 Show {totalProducts} results
               </button>
             </div>
-          </div>
+          </Dialog>
         </div>
       )}
     </>

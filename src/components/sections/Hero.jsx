@@ -1,4 +1,5 @@
 import { shopCategoryUrl } from "../../utils/shopFilters";
+import { formatNPR } from "../../utils/formatCurrency";
 import { ArrowUpRight, Star } from "lucide-react";
 import { Link } from "react-router-dom";
 
@@ -9,7 +10,7 @@ const slides = [
     heading: "Furniture",
     highlight: "That Fits You",
     desc: "Discover our handpicked collection of timeless sofas and accent chairs — thoughtfully designed to bring warmth, character, and lasting comfort into every corner of your home.",
-    price: "₹7,499",
+    price: 7499,
     cta: "Explore Now",
     img: "https://plus.unsplash.com/premium_photo-1734549547878-9de3d46d8fc2?q=80&w=2071&auto=format&fit=crop&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D",
   },
@@ -19,7 +20,7 @@ const slides = [
     heading: "Sleep in",
     highlight: "Pure Comfort",
     desc: "Our premium king-size beds and orthopedic mattresses are engineered with adaptive support layers — so every night feels like your best one yet.",
-    price: "₹12,999",
+    price: 12999,
     cta: "Shop Beds",
     img: "https://plus.unsplash.com/premium_photo-1661962771640-426ce94f16c6?q=80&w=3131&auto=format&fit=crop&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D",
   },
@@ -29,7 +30,7 @@ const slides = [
     heading: "Work From",
     highlight: "Anywhere",
     desc: "From height-adjustable desks to cable-managed bookshelves, our workspace collection is built for deep focus, long hours, and a setup that actually inspires you.",
-    price: "₹9,299",
+    price: 9299,
     cta: "View Office",
     img: "https://images.unsplash.com/photo-1618220048045-10a6dbdf83e0?q=80&w=1480&auto=format&fit=crop&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D",
   },
@@ -98,7 +99,7 @@ export default function Hero() {
                     Starting from
                   </span>
                   <span className="text-[20px] sm:text-[24px] font-bold text-white tracking-[-0.02em] drop-shadow-sm">
-                    {slides[0].price}
+                    {formatNPR(slides[0].price)}
                   </span>
                 </div>
               </div>
@@ -163,10 +164,10 @@ export default function Hero() {
                     rating/price block — see the note there. */}
                 <div className="flex items-baseline gap-1.5 sm:gap-2">
                   <span className="text-[12px] sm:text-[13px] font-normal text-white/60 line-through">
-                    ₹24,999
+                    {formatNPR(24999)}
                   </span>
                   <span className="text-[16px] sm:text-[18px] font-bold text-[#F27318] drop-shadow-sm">
-                    ₹19,999
+                    {formatNPR(19999)}
                   </span>
                 </div>
               </div>

@@ -1,129 +1,47 @@
 import { shopCategoryUrl, findCategoryChain } from "../../utils/shopFilters";
-import { ProductDetailsSkeleton } from "../../components/shop/ProductLoadingSkeletons";
-import { useState, useEffect, useRef } from "react";
-import { motion, AnimatePresence } from "framer-motion";
-import { useParams, Link, useNavigate } from "react-router-dom";
-import {
-  ChevronRight,
-  ChevronLeft,
-  Star,
-  Minus,
-  Plus,
-  RotateCcw,
-  Truck,
-  ShieldCheck,
-  Loader2,
-  Heart,
-  Share2,
-  Hammer,
-  ShoppingCart,
-  PenLine,
-  Edit2,
-  MoveRight,
-  Maximize2,
-  MapPin,
-  X,
-  Sparkles,
-  Layers,
-  LayoutGrid,
-  MessageCircle,
-  FileText,
-} from "lucide-react";
+import { ProductDetailsSkeleton } from "../../components/common/Skeleton";
+import { useState, useEffect } from "react";
+import { useParams, Link } from "react-router-dom";
+import { ChevronRight } from "lucide-react";
 import Navbar from "../../layouts/customer/Navbar";
 import Footer from "../../layouts/customer/Footer";
-import { useProduct, useRelatedProducts } from "../../hooks/product/useProductTan";
+import { useProduct } from "../../hooks/product/useProductTan";
 import { useCategoryTree } from "../../hooks/product/useCategoryTan";
 import { useCatalogSchema } from "../../hooks/catalog/useCatalogTan";
-import VariantSelector from "../../components/shop/VariantSelector";
 import {
-  findVariantBySelection,
-  defaultVariantSelection,
-  variantAvailableCount,
-  isVariantPurchasable,
   variantGalleryImages,
-  variantOptionsObject,
   effectiveModelUrl,
-  groupSpecifications,
 } from "../../utils/variantSelection";
 import { useAddToWishlist, useRemoveFromWishlist, useCheckWishlist } from "../../hooks/cart/useWishlistTan";
-import { useAddToCart } from "../../hooks/cart/useCartTan";
 import useAuthStore from "../../store/authStore";
-import useGuestCartStore from "../../store/guestCartStore";
-import { toast } from "react-toastify";
-import ProductCard from "../../components/shop/ProductCard";
-import ImageMagnifier from "../../components/shop/ImageMagnifier";
+import { useShallow } from "zustand/react/shallow";
+import { toast } from "../../lib/toast";
 import ARViewModal from "../../components/modals/ARViewModal";
 import ReviewModal from "../../components/modals/ReviewModal";
-import ReviewSection from "../../components/shop/ReviewSection";
-import arIcon from "../../assets/icons/ar_icon.png";
 import { getImageUrl as getImageUrlUtil, buildImageSrcSet } from "../../utils/imageUrl";
 import formatError from "../../utils/errorHandler";
-import { formatNPR } from "../../utils/formatCurrency";
 import CategoryBar from "../../components/navigation/CategoryBar";
-import Dialog from "../../components/common/Dialog";
 import { useCanReview, useUserReview } from "../../hooks/review/useReviewTan";
+import Gallery, { GalleryLightbox } from "./product-details/Gallery";
+import PurchasePanel from "./product-details/PurchasePanel";
+import ProductTabs from "./product-details/ProductTabs";
+import RelatedProducts from "./product-details/RelatedProducts";
+import useVariantPurchase from "./product-details/hooks/useVariantPurchase";
 
-// Simple line-art dimension diagram, driven by the product's dimensions data.
-function DimensionDiagram({ dimensions }) {
-  const unit = dimensions.unit || "cm";
-  const width = dimensions.width || "–";
-  const height = dimensions.height || "–";
-  const depth = dimensions.depth || "–";
-
-  return (
-    <svg viewBox="-20 0 640 380" className="w-full h-auto -mt-2" fill="none" xmlns="http://www.w3.org/2000/svg">
-      {/* Sofa silhouette */}
-      <rect x="120" y="80" width="360" height="140" rx="16" stroke="#3d3d3d" strokeWidth="1.5" />
-      {/* Left armrest */}
-      <rect x="120" y="60" width="70" height="50" rx="8" stroke="#3d3d3d" strokeWidth="1.5" />
-      {/* Right armrest */}
-      <rect x="410" y="60" width="70" height="50" rx="8" stroke="#3d3d3d" strokeWidth="1.5" />
-      {/* Legs */}
-      <line x1="150" y1="220" x2="150" y2="240" stroke="#3d3d3d" strokeWidth="1.5" />
-      <line x1="430" y1="220" x2="430" y2="240" stroke="#3d3d3d" strokeWidth="1.5" />
-
-      {/* HEIGHT dimension (right side) - Orange */}
-      <line x1="520" y1="60" x2="520" y2="220" stroke="#F27318" strokeWidth="1.5" />
-      <circle cx="520" cy="60" r="5" fill="#F27318" />
-      <circle cx="520" cy="220" r="5" fill="#F27318" />
-      <text x="560" y="145" fontSize="16" fontWeight="700" fill="#1A1714">{height} cm</text>
-      <text x="560" y="170" fontSize="12" fill="#9a9a9a" fontWeight="500">Height</text>
-
-      {/* DEPTH dimension (left side) - Orange dashed */}
-      <line x1="80" y1="240" x2="130" y2="240" stroke="#F27318" strokeWidth="1.5" strokeDasharray="5,5" />
-      <line x1="80" y1="240" x2="80" y2="270" stroke="#F27318" strokeWidth="1.5" strokeDasharray="5,5" />
-      <circle cx="80" cy="240" r="5" fill="#F27318" />
-      <circle cx="130" cy="240" r="5" fill="#F27318" />
-      <text x="35" y="295" fontSize="16" fontWeight="700" fill="#1A1714">{depth} cm</text>
-      <text x="35" y="320" fontSize="12" fill="#9a9a9a" fontWeight="500">Depth</text>
-
-      {/* WIDTH dimension (bottom) - Orange */}
-      <line x1="120" y1="300" x2="480" y2="300" stroke="#F27318" strokeWidth="1.5" />
-      <circle cx="120" cy="300" r="5" fill="#F27318" />
-      <circle cx="480" cy="300" r="5" fill="#F27318" />
-      <text x="240" y="355" fontSize="16" fontWeight="700" fill="#1A1714" textAnchor="middle">{width} cm</text>
-      <text x="240" y="380" fontSize="12" fill="#9a9a9a" fontWeight="500" textAnchor="middle">Width</text>
-    </svg>
-  );
-}
-
+// Phase 7 split — this page is now composition + data fetching +
+// layout: the gallery, purchase panel, tabs and related rail live
+// in ./product-details/, and the purchase state machine in
+// ./product-details/hooks/useVariantPurchase.js.
 export default function ProductDetailsPage() {
   const { productSlug } = useParams();
-  const navigate = useNavigate();
-  const { isAuthenticated } = useAuthStore();
+  const { isAuthenticated } = useAuthStore(useShallow((state) => ({ isAuthenticated: state.isAuthenticated })));
 
   const [selectedImage, setSelectedImage] = useState(0);
-  const [selectedColor, setSelectedColor] = useState(null);
-  const [variantSelection, setVariantSelection] = useState({});
-  const [quantity, setQuantity] = useState(1);
-  const [activeMainTab, setActiveMainTab] = useState("description");
   const [isARModalOpen, setIsARModalOpen] = useState(false);
   const [isReviewModalOpen, setIsReviewModalOpen] = useState(false);
   const [editingReview, setEditingReview] = useState(null);
   const [scrolledPastAction, setScrolledPastAction] = useState(false);
   const [isLightboxOpen, setIsLightboxOpen] = useState(false);
-  const [isDescriptionExpanded, setIsDescriptionExpanded] = useState(false);
-  const reviewsSectionRef = useRef(null);
 
   useEffect(() => {
     const handleScroll = () => {
@@ -181,126 +99,17 @@ export default function ProductDetailsPage() {
     setEditingReview(null);
   };
 
-  const { mutate: addToCart, isPending: isAddingToCart } = useAddToCart();
-  const { addItem: addToGuestCart } = useGuestCartStore();
+  // Phase 7 split: the purchase state machine (variant/colour/
+  // quantity selection, selected-variant + stock/price derivation,
+  // add-to-cart and buy-now handlers for guest + authenticated
+  // paths) lives in the useVariantPurchase hook.
+  const purchase = useVariantPurchase(product);
+  const { isVariantProduct, selectedVariant } = purchase;
 
-  // FE-22: stock is nullish-checked, never `|| 10` — a stock of 0 is a
-  // real value (out of stock), not a missing one.
-  const stock = product?.stock ?? 0;
-
-  // Phase 7 (catalog): variant products are driven by the selected
-  // catalog variant — its price, stock, gallery and AR model — and
-  // cart lines name it by variantId (+ sku). The catalog schema
-  // supplies the option-group + specification labels.
+  // Phase 7 (catalog): the catalog schema supplies the option-group
+  // + specification labels used by the purchase panel and tabs.
   const { data: schemaData } = useCatalogSchema();
   const definitions = schemaData?.data?.definitions || {};
-  const isVariantProduct =
-    !!product && product.hasVariants === true && (product.catalogVariants?.length ?? 0) > 0;
-  const selectedVariant = isVariantProduct
-    ? findVariantBySelection(product, variantSelection)
-    : null;
-  const displayStock = isVariantProduct
-    ? selectedVariant
-      ? variantAvailableCount(selectedVariant)
-      : 0
-    : stock;
-  const isOutOfStock =
-    !!product &&
-    (isVariantProduct ? !isVariantPurchasable(selectedVariant) : stock <= 0);
-  const displayPrice = selectedVariant?.price ?? product?.price;
-  const displayCompareAt = selectedVariant
-    ? selectedVariant.compareAtPrice > selectedVariant.price
-      ? selectedVariant.compareAtPrice
-      : null
-    : product?.originalPrice;
-
-  const buildVariant = () => {
-    const variant = {};
-    if (selectedColor) variant.color = typeof selectedColor === "object" ? selectedColor.name : selectedColor;
-    return variant;
-  };
-
-  // The add payload for the current product state: variant
-  // products send variantId + sku (the legacy triple stays empty —
-  // the server stores {} for variant lines); legacy products send
-  // exactly the payload they always have.
-  const buildAddPayload = () => {
-    if (isVariantProduct) {
-      return {
-        auth: {
-          productId: product._id,
-          quantity,
-          variant: {},
-          variantId: selectedVariant._id,
-          sku: selectedVariant.sku,
-        },
-        guestMeta: {
-          variantId: selectedVariant._id,
-          sku: selectedVariant.sku,
-          unitPrice: selectedVariant.price,
-          options: variantOptionsObject(selectedVariant),
-        },
-      };
-    }
-    return { auth: { productId: product._id, quantity, variant: buildVariant() }, guestMeta: null };
-  };
-
-  const handleAddToCart = () => {
-    if (!product || isOutOfStock) return;
-    if (isVariantProduct && !selectedVariant) {
-      toast.error("Please select all options");
-      return;
-    }
-    const payload = buildAddPayload();
-
-    if (!isAuthenticated) {
-      // Legacy guest lines keep the exact 3-argument call (FE-22);
-      // the variant meta rides along only for variant products.
-      if (payload.guestMeta) {
-        addToGuestCart(product, quantity, payload.auth.variant, payload.guestMeta);
-      } else {
-        addToGuestCart(product, quantity, payload.auth.variant);
-      }
-      toast.success("Added to cart");
-      setQuantity(1);
-      return;
-    }
-
-    addToCart(payload.auth, {
-      onSuccess: () => {
-        toast.success("Added to cart");
-        setQuantity(1);
-      },
-      // FE-47: no per-call onError — the cart hook reports errors.
-    });
-  };
-
-  // FE-22: Buy Now is an express path — add the item, then go straight
-  // to checkout. Navigation happens only once the add has succeeded
-  // (for signed-in users, in the mutation's onSuccess).
-  const handleBuyNow = () => {
-    if (!product || isOutOfStock) return;
-    if (isVariantProduct && !selectedVariant) {
-      toast.error("Please select all options");
-      return;
-    }
-    const payload = buildAddPayload();
-
-    if (!isAuthenticated) {
-      if (payload.guestMeta) {
-        addToGuestCart(product, quantity, payload.auth.variant, payload.guestMeta);
-      } else {
-        addToGuestCart(product, quantity, payload.auth.variant);
-      }
-      navigate("/checkout");
-      return;
-    }
-
-    addToCart(payload.auth, {
-      onSuccess: () => navigate("/checkout"),
-      // FE-47: no per-call onError — the cart hook reports errors.
-    });
-  };
 
   const handleWishlistToggle = () => {
     if (!isAuthenticated) {
@@ -340,25 +149,15 @@ export default function ProductDetailsPage() {
     }
   };
 
-  const { data: relatedData } = useRelatedProducts(product?._id, 4);
-  const relatedProducts = relatedData?.data?.products || [];
-
   // FE-22: navigating to another product reuses this component with a
-  // new route param — reset every per-product selection so the previous
-  // product's colour/image/quantity can never leak into the next
-  // product's cart variant. Keyed on the product id, not the product
-  // object, so refetches of the SAME product do not wipe a selection.
+  // new route param — reset the gallery image so the previous
+  // product's image can never leak into the next product. Keyed on
+  // the product id, not the product object, so refetches of the SAME
+  // product do not wipe a selection. (The purchase selections reset
+  // inside useVariantPurchase, keyed on the same product id.)
   useEffect(() => {
     if (!product?._id) return;
-    setSelectedColor(product.colors?.length > 0 ? product.colors[0] : null);
-    // Phase 7: variant products land on a real, purchasable
-    // combination (never a partial selection).
-    setVariantSelection(
-      product.hasVariants === true ? defaultVariantSelection(product) : {}
-    );
     setSelectedImage(0);
-    setQuantity(1);
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [product?._id]);
 
   // Phase 7: switching variants restarts the gallery at the
@@ -414,80 +213,7 @@ export default function ProductDetailsPage() {
   const getImageSrcSet = (image, widths) =>
     buildImageSrcSet(image?.url, widths, { type: "products" });
 
-  const getDiscount = () => {
-    // Phase 7: the discount follows the DISPLAYED price pair —
-    // the selected variant's price/compareAt for variant products,
-    // the product's price/originalPrice otherwise.
-    if (displayCompareAt && displayPrice) {
-      const discount = Math.round(((displayCompareAt - displayPrice) / displayCompareAt) * 100);
-      return discount > 0 ? discount : null;
-    }
-    return null;
-  };
 
-  const handleQuantityChange = (delta) => {
-    // FE-22: cap at the real stock (nullish, so stock 0 caps at 0 and
-    // the stepper can never raise the quantity of an out-of-stock item).
-    // Phase 7: for variant products the cap is the SELECTED
-    // variant's available stock.
-    const cap = displayStock;
-    if (cap <= 0) return;
-    const newQuantity = quantity + delta;
-    if (newQuantity >= 1 && newQuantity <= cap) setQuantity(newQuantity);
-  };
-
-  const detailSections = [
-    {
-      id: "materials",
-      title: "Materials & Composition",
-      content:
-        product?.materials?.length > 0
-          ? `This piece is meticulously crafted using ${product.materials.join(", ")} and finished with our signature hand-applied oils for a lasting, premium feel.`
-          : "Premium, sustainably sourced materials selected for their durability and natural beauty. Every joint is handcrafted for structural integrity.",
-    },
-    product?.dimensions &&
-    (product.dimensions.width || product.dimensions.height || product.dimensions.depth) && {
-      id: "dimensions",
-      title: "Dimensions",
-      content: `${product.dimensions.width || 0}${product.dimensions.unit || "cm"} (W) x ${product.dimensions.height || 0}${product.dimensions.unit || "cm"} (H) x ${product.dimensions.depth || 0}${product.dimensions.unit || "cm"} (D)`,
-    },
-    {
-      id: "warranty",
-      title: "Aura Warranty",
-      content:
-        product?.warranty ||
-        "Aura Interiors provides a 5-Year limited structural warranty on all premium furniture. We stand by our craftsmanship and ensure your investment is protected against any manufacturing defects.",
-    },
-    {
-      id: "shipping",
-      title: "Shipping & White-Glove Service",
-      content:
-        product?.shippingInfo ||
-        "Enjoy free white-glove delivery and assembly in Kathmandu. Our professional team will place your piece in the room of your choice and remove all packaging. We offer a 30-day hassle-free return policy.",
-    },
-    product?.careInstructions && { id: "care", title: "Care Instructions", content: product.careInstructions },
-  ].filter(Boolean);
-
-  const colors = product?.colors || [];
-
-  // Phase 7: stored catalog attributes for the specifications
-  // tab — definition labels, grouped by displayGroup, values
-  // formatted per type; attributes with no stored value are
-  // omitted (groupSpecifications). The first-class weight field
-  // joins the general group (dimensions already render above).
-  const catalogSpecGroups = groupSpecifications(product, definitions);
-  if (product?.weight?.value) {
-    const weightItem = {
-      key: "weight",
-      label: "Weight",
-      value: `${product.weight.value} ${product.weight.unit || "kg"}`,
-    };
-    const general = catalogSpecGroups.find((group) => group.group === "Specifications");
-    if (general) general.items.push(weightItem);
-    else catalogSpecGroups.push({ group: "Specifications", items: [weightItem] });
-  }
-
-  const detailIcons = [Sparkles, Layers, ShieldCheck, LayoutGrid];
 
   if (isLoading) {
     return (
@@ -539,8 +265,6 @@ export default function ProductDetailsPage() {
     );
   }
 
-  const discount = getDiscount();
-
   return (
     <>
       <Navbar />
@@ -565,678 +289,43 @@ export default function ProductDetailsPage() {
 
           {/* Product Section */}
           <div className="flex gap-10 mb-14">            {/* Image Gallery */}
-            <div className="flex-[1.2] flex gap-3 justify-end overflow-hidden">
-              {/* Thumbnails - left side */}
-              <div className="flex flex-col gap-3 overflow-y-auto no-scrollbar">
-                {images.slice(0, 5).map((image, index) => {
-                  const isLastVisible = index === 4 && images.length > 5;
-                  return (
-                    <button
-                      key={index}
-                      onClick={() => setSelectedImage(index)}
-                      className={`relative shrink-0 w-20 h-20 rounded-lg overflow-hidden border-2 transition-all ${selectedImage === index ? "border-[#F27318]" : "border-transparent hover:border-black/10"
-                        }`}
-                    >
-                      <img src={getImageUrl(image)} srcSet={getImageSrcSet(image, [160, 320])} sizes="80px" loading="lazy" alt={`${product.name} thumbnail ${index + 1}`} className="w-full h-full object-cover" />
-                      {isLastVisible && (
-                        <div className="absolute inset-0 bg-black/50 flex items-center justify-center">
-                          <span className="text-white text-xs font-bold">+{images.length - 5}</span>
-                        </div>
-                      )}
-                    </button>
-                  );
-                })}
-              </div>
-
-              {/* Main image and details - right side */}
-              <div className="space-y-6 flex-1">
-              {/* Main Image */}
-              <div className="w-full overflow-hidden">
-              <div className="relative rounded-xl overflow-hidden bg-black/[0.02] border border-black/[0.05] w-full h-[444px]">
-                {/* Bestseller badge on image */}
-                {product.isFeatured && (
-                  <div className="absolute top-4 left-4 z-10 flex items-center gap-1.5 bg-white text-[#1A1714] text-[13px] font-bold px-3 py-1.5 rounded-md shadow-sm">
-                    <Star size={13} className="fill-[#F27318] text-[#F27318]" />
-                    Bestseller
-                  </div>
-                )}
-
-                <ImageMagnifier
-                  src={getImageUrl(images[selectedImage])}
-                  srcSet={getImageSrcSet(images[selectedImage], [800, 1200, 1600])}
-                  sizes="(max-width: 1024px) 100vw, 60vw"
-                  alt={product.name}
-                  magnifierSize={120}
-                  zoomLevel={2.5}
-                  className="w-full h-full object-cover"
-                />
-
-                {/* Fullscreen button - top right */}
-                <button
-                  onClick={() => setIsLightboxOpen(true)}
-                  className="absolute top-4 right-4 z-10 w-9 h-9 bg-white rounded-full flex items-center justify-center hover:bg-neutral-50 transition-all text-black/50 hover:text-black shadow-sm"
-                  title="View fullscreen"
-                >
-                  <Maximize2 size={16} strokeWidth={2} />
-                </button>
-
-                {/* AR button */}
-                {product.arAvailable && (
-                  <button
-                    onClick={() => setIsARModalOpen(true)}
-                    className="absolute bottom-4 right-4 w-9 h-9 bg-white rounded-full flex items-center justify-center hover:bg-neutral-50 transition-all shadow-sm"
-                    title="View in AR"
-                  >
-                    <img src={arIcon} alt="AR View" className="w-4 h-4" />
-                  </button>
-                )}
-
-                {/* Pagination dots - mobile */}
-                <div className="absolute bottom-4 left-1/2 -translate-x-1/2 flex gap-1.5 lg:hidden">
-                  {images.map((_, index) => (
-                    <div
-                      key={index}
-                      className={`h-1.5 rounded-full transition-all duration-300 ${selectedImage === index ? "w-5 bg-[#F27318]" : "w-1.5 bg-neutral-300/60"
-                        }`}
-                    />
-                  ))}
-                </div>
-              </div>
-              </div>
-              </div>
-            </div>
+            <Gallery
+              product={product}
+              images={images}
+              selectedImage={selectedImage}
+              setSelectedImage={setSelectedImage}
+              getImageUrl={getImageUrl}
+              getImageSrcSet={getImageSrcSet}
+              setIsLightboxOpen={setIsLightboxOpen}
+              setIsARModalOpen={setIsARModalOpen}
+            />
 
             {/* Product Info */}
-            <div className="flex-1">              {/* Bestseller badge */}
-              {product.isFeatured && (
-                <div className="bg-[#F27318] text-white text-[11px] font-bold px-3 py-1 rounded uppercase tracking-widest mb-5 w-fit">
-                  Bestseller
-                </div>
-              )}
-
-              {/* Title */}
-              <h1 className="text-[30px] leading-[1.2] font-bold text-[#1A1714] mb-3">{product.name}</h1>
-
-              {/* Rating row - single line */}
-              <div className="flex flex-wrap items-center gap-2 text-[14px] mb-4">
-                <div className="flex items-center gap-1">
-                  {[...Array(5)].map((_, i) => (
-                    <Star
-                      key={i}
-                      size={15}
-                      className={
-                        i < Math.round(product?.rating?.average || 0) ? "fill-[#F27318] text-[#F27318]" : "fill-black/10 text-transparent"
-                      }
-                    />
-                  ))}
-                </div>
-                <span className="font-bold text-[#1A1714]">{(product?.rating?.average || 0).toFixed(1)}</span>
-                <span className="text-black/40 font-medium">({product?.rating?.count || 0} reviews)</span>
-                {/* FE-14: the product API provides no soldCount field (the
-                    server product model has none), so render this element
-                    only when a real numeric count is actually supplied —
-                    never the fabricated "200+" fallback. */}
-                {typeof product.soldCount === "number" && (
-                  <>
-                    <span className="w-1 h-1 rounded-full bg-black/20"></span>
-                    <span className="text-black/40 font-medium">{product.soldCount} bought in last month</span>
-                  </>
-                )}
-              </div>
-
-              {/* Price - inline (Phase 7: the selected variant's
-                  price + compareAt drive this block for variant
-                  products) */}
-              <div className="flex items-baseline gap-2.5 mb-1.5">
-                <span className="text-[30px] font-bold text-[#1A1714]">{formatNPR(displayPrice ?? 0)}</span>
-                {displayCompareAt && displayCompareAt > displayPrice && (
-                  <>
-                    <span className="text-[16px] text-black/35 line-through font-medium">{formatNPR(displayCompareAt)}</span>
-                    <span className="bg-[#F27318]/[0.08] text-[#F27318] px-2.5 py-1 rounded text-[13px] font-bold">{discount}% OFF</span>
-                  </>
-                )}
-              </div>
-              <p className="text-[14px] text-black/50 mb-4">Inclusive of all taxes</p>
-
-              {/* Phase 7: variant availability line */}
-              {isVariantProduct && (
-                <p className="text-[14px] font-medium mb-4 -mt-2" aria-live="polite">
-                  {!selectedVariant ? (
-                    <span className="text-black/50">Select options to see availability</span>
-                  ) : selectedVariant.enabled === false ? (
-                    <span className="text-red-600">This variant is unavailable</span>
-                  ) : displayStock > 0 ? (
-                    <span className="text-emerald-600">In stock — {displayStock} available</span>
-                  ) : (
-                    <span className="text-red-600">Out of stock for this variant</span>
-                  )}
-                </p>
-              )}
-
-              {/* Product Description */}
-              {product.description && (
-                <div className="mb-6">
-                  {!isDescriptionExpanded ? (
-                    <p className="text-[14px] text-black/60 leading-relaxed text-justify">
-                      {product.description.length > 150
-                        ? `${product.description.substring(0, 150)}... `
-                        : product.description}
-                      {product.description.length > 150 && (
-                        <button
-                          onClick={() => setIsDescriptionExpanded(true)}
-                          className="text-[#F27318] font-semibold hover:underline text-[14px] inline"
-                        >
-                          View More
-                        </button>
-                      )}
-                    </p>
-                  ) : (
-                    <p className="text-[14px] text-black/60 leading-relaxed text-justify">
-                      {product.description}
-                      <button
-                        onClick={() => setIsDescriptionExpanded(false)}
-                        className="text-[#F27318] font-semibold hover:underline text-[14px] inline ml-1"
-                      >
-                        View Less
-                      </button>
-                    </p>
-                  )}
-                </div>
-              )}
-
-              {/* Trust Icons - with card background */}
-              {/* <div className="bg-[#F27318]/5 rounded-lg px-4 py-6 mb-8 mt-8">
-                <div className="grid grid-cols-4 gap-5">
-                  <div className="flex items-start gap-3">
-                    <Truck size={18} className="text-[#F27318] shrink-0 mt-0.5" />
-                    <div>
-                      <h4 className="text-[14px] font-bold text-[#1A1714] leading-tight">Free Delivery</h4>
-                      <p className="text-[13px] text-black/50 leading-tight mt-0.5">above NPR 5,000</p>
-                    </div>
-                  </div>
-                  <div className="flex items-start gap-2">
-                    <Hammer size={18} className="text-[#F27318] shrink-0 mt-0.5" />
-                    <div>
-                      <h4 className="text-[14px] font-bold text-[#1A1714] leading-tight">Free Installation</h4>
-                      <p className="text-[13px] text-black/50 leading-tight mt-0.5">on all orders</p>
-                    </div>
-                  </div>
-                  <div className="flex items-start gap-2">
-                    <ShieldCheck size={18} className="text-[#F27318] shrink-0 mt-0.5" />
-                    <div>
-                      <h4 className="text-[14px] font-bold text-[#1A1714] leading-tight">10 Year Warranty</h4>
-                      <p className="text-[13px] text-black/50 leading-tight mt-0.5">on frame</p>
-                    </div>
-                  </div>
-                  <div className="flex items-start gap-2">
-                    <RotateCcw size={18} className="text-[#F27318] shrink-0 mt-0.5" />
-                    <div>
-                      <h4 className="text-[14px] font-bold text-[#1A1714] leading-tight">Easy Returns</h4>
-                      <p className="text-[13px] text-black/50 leading-tight mt-0.5">within 7 days</p>
-                    </div>
-                  </div>
-                </div>
-              </div> */}
-
-              {/* Phase 7: variant selector — for variant products
-                  the variant axes ARE the option surface, so the
-                  legacy color selector below is suppressed (its
-                  value could never reach a variant cart line). */}
-              {isVariantProduct && (
-                <VariantSelector
-                  product={product}
-                  definitions={definitions}
-                  selection={variantSelection}
-                  onSelectionChange={setVariantSelection}
-                />
-              )}
-
-              {/* Color Selector */}
-              {!isVariantProduct && colors.length > 0 && (
-                <div className="mb-5">
-                  <h3 className="text-[15px] font-semibold text-black/80 mb-3">
-                    Select Color:{" "}
-                    <span className="font-bold text-[#1A1714]">
-                      {selectedColor && typeof selectedColor === "object" ? selectedColor.name : selectedColor}
-                    </span>
-                  </h3>
-                  <div className="flex flex-wrap gap-3">
-                    {colors.map((color, index) => {
-                      const colorValue = typeof color === "object" ? color.hex : color;
-                      const isSelected = (selectedColor?.name || selectedColor) === (color.name || color);
-                      return (
-                        <button
-                          key={index}
-                          onClick={() => setSelectedColor(color)}
-                          className={`w-10 h-10 rounded-full border-2 transition-all duration-200 flex items-center justify-center overflow-hidden ${isSelected ? "border-[#F27318]" : "border-transparent hover:border-black/10"
-                            }`}
-                          title={typeof color === "object" ? color.name : color}
-                        >
-                          <div
-                            className="w-full h-full rounded-full"
-                            style={{ backgroundColor: colorValue }}
-                          />
-                        </button>
-                      );
-                    })}
-                  </div>
-                </div>
-              )}
-
-              {/* Quantity + Add to Cart + Buy Now — same row */}
-              <div className="flex flex-col sm:flex-row items-stretch gap-3 mb-5">
-                <div className="flex items-center bg-white border border-black/10 rounded-lg h-[52px] shrink-0 justify-center sm:justify-start">
-                  <button
-                    onClick={() => handleQuantityChange(-1)}
-                    disabled={quantity <= 1 || isOutOfStock}
-                    aria-label="Decrease quantity"
-                    className="w-10 h-full flex items-center justify-center text-black/40 hover:text-black/90 disabled:opacity-20 transition-all"
-                  >
-                    <Minus size={15} />
-                  </button>
-                  <span className="w-9 text-center font-bold text-[15px] text-[#1A1714]">{quantity}</span>
-                  <button
-                    onClick={() => handleQuantityChange(1)}
-                    disabled={isOutOfStock || quantity >= displayStock}
-                    aria-label="Increase quantity"
-                    className="w-10 h-full flex items-center justify-center text-black/40 hover:text-black/90 disabled:opacity-20 transition-all"
-                  >
-                    <Plus size={15} />
-                  </button>
-                </div>
-
-                <button
-                  id="main-add-to-cart"
-                  onClick={handleAddToCart}
-                  disabled={isAddingToCart || isOutOfStock}
-                  className="flex-2 bg-[#F27318] text-white h-[52px] rounded-lg font-bold text-[16px] hover:bg-[#D9620E] transition-all duration-300 flex items-center justify-center gap-2.5 disabled:bg-neutral-200"
-                >
-                  {isAddingToCart ? <Loader2 size={20} className="animate-spin" /> : <ShoppingCart size={18} />}
-                  {isOutOfStock ? "Out of Stock" : isAddingToCart ? "Adding..." : "Add to Cart"}
-                </button>
-
-                <button
-                  onClick={handleBuyNow}
-                  disabled={isAddingToCart || isOutOfStock}
-                  className="flex-1 bg-white text-[#1A1714] border border-black/15 h-[52px] rounded-lg font-bold text-[16px] hover:border-black/30 transition-all duration-300 disabled:opacity-50"
-                >
-                  Buy Now
-                </button>
-              </div>
-
-              {/* Wishlist / Share — horizontally centered */}
-              <div className="flex items-start gap-12 mt-10">
-                <button
-                  onClick={handleWishlistToggle}
-                  disabled={isWishlistLoading}
-                  className="flex items-center gap-1.5 text-[14px] font-semibold text-black/60 hover:text-[#F27318] transition-all disabled:opacity-50"
-                >
-                  <Heart size={16} className={isInWishlist ? "fill-red-500 text-red-500" : ""} />
-                  Add to Wishlist
-                </button>
-                <button
-                  onClick={handleShare}
-                  className="flex items-center gap-1.5 text-[14px] font-semibold text-black/60 hover:text-[#F27318] transition-all"
-                >
-                  <Share2 size={16} />
-                  Share
-                </button>
-              </div>
-            </div>
+            <PurchasePanel
+              product={product}
+              definitions={definitions}
+              {...purchase}
+              isInWishlist={isInWishlist}
+              isWishlistLoading={isWishlistLoading}
+              onWishlistToggle={handleWishlistToggle}
+              onShare={handleShare}
+            />
           </div>
 
-          {/* Tabs + Content — full width */}
-          <div className="mb-16">
-            <div className="border-b border-black/[0.08] flex items-center justify-between">
-              <div className="flex gap-0 overflow-x-auto min-w-min">
-                {[
-                  { id: "description", label: "Description", Icon: FileText },
-                  { id: "specifications", label: "Specifications", Icon: Edit2 },
-                  { id: "materials", label: "Materials", Icon: Layers },
-                  { id: "reviews", label: `Reviews (${product?.rating?.count || 0})`, Icon: Star },
-                  { id: "delivery", label: "Delivery & Returns", Icon: Truck },
-                ].map((tab) => {
-                  const { Icon } = tab;
-                  const isActive = activeMainTab === tab.id;
-                  return (
-                    <button
-                      key={tab.id}
-                      onClick={() => setActiveMainTab(tab.id)}
-                      className={`px-6 py-5 text-[14px] font-semibold transition-all relative bg-transparent border-none cursor-pointer whitespace-nowrap flex items-center gap-2.5 group ${isActive ? "text-[#1A1714]" : "text-black/50 hover:text-black/70"
-                        }`}
-                    >
-                      <Icon 
-                        size={16} 
-                        strokeWidth={isActive ? 2.5 : 2}
-                        className={`transition-all ${isActive ? "text-[#F27318]" : "text-black/40 group-hover:text-black/60"}`} 
-                      />
-                      {tab.label}
-                      {isActive && (
-                        <motion.div
-                          layoutId="activeMainTabUnderline"
-                          className="absolute bottom-0 left-0 right-0 h-0.5 bg-[#F27318]"
-                          transition={{ type: "spring", bounce: 0.2, duration: 0.6 }}
-                        />
-                      )}
-                    </button>
-                  );
-                })}
-              </div>
+          <ProductTabs
+            product={product}
+            definitions={definitions}
+            isAuthenticated={isAuthenticated}
+            hasReviewed={hasReviewed}
+            userReview={userReview}
+            handleOpenReviewModal={handleOpenReviewModal}
+            images={images}
+            selectedImage={selectedImage}
+            getImageUrl={getImageUrl}
+            getImageSrcSet={getImageSrcSet}
+          />
 
-              {activeMainTab === "reviews" && (
-                <motion.div initial={{ opacity: 0, x: 10 }} animate={{ opacity: 1, x: 0 }} transition={{ duration: 0.3 }} className="ml-auto pl-4">
-                  {isAuthenticated ? (
-                    hasReviewed ? (
-                      <button
-                        onClick={() => handleOpenReviewModal(userReview)}
-                        className="inline-flex items-center gap-2 text-[#F27318] text-[14px] font-semibold hover:underline underline-offset-4 transition-all cursor-pointer bg-transparent border-none p-0 whitespace-nowrap"
-                      >
-                        <Edit2 size={14} />
-                        Edit Your Review
-                      </button>
-                    ) : (
-                      <button
-                        onClick={() => handleOpenReviewModal()}
-                        className="inline-flex items-center gap-2 text-[#F27318] text-[14px] font-semibold hover:underline underline-offset-4 transition-all cursor-pointer bg-transparent border-none p-0 whitespace-nowrap"
-                      >
-                        <PenLine size={15} />
-                        Write a Review
-                      </button>
-                    )
-                  ) : (
-                    <button
-                      onClick={() => useAuthStore.getState().openAuthModal("login")}
-                      className="inline-flex items-center gap-2 text-[#F27318] text-[14px] font-semibold hover:underline underline-offset-4 transition-all cursor-pointer bg-transparent border-none p-0 whitespace-nowrap"
-                    >
-                      <PenLine size={14} />
-                      Write a Review
-                    </button>
-                  )}
-                </motion.div>
-              )}
-            </div>
-
-            <div className="pt-8">
-              <AnimatePresence mode="wait">
-                {activeMainTab === "description" ? (
-                  <motion.div
-                    key="description"
-                    initial={{ opacity: 0, y: 10 }}
-                    animate={{ opacity: 1, y: 0 }}
-                    exit={{ opacity: 0, y: -10 }}
-                    transition={{ duration: 0.4, ease: [0.23, 1, 0.32, 1] }}
-                  >
-                    <div className="grid grid-cols-1 lg:grid-cols-2 gap-12 items-start">
-                      {/* Left Column - Description & Features */}
-                      <div>
-                        <h3 className="text-[18px] font-bold text-[#1A1714] mb-6">{product.name}</h3>
-                        <div className="text-[15px] text-black/60 leading-[1.8] font-medium space-y-5 mb-8 text-justify">
-                          <p>{product.description}</p>
-                        </div>
-
-                        {product.materials?.length > 0 && (
-                          <ul className="space-y-5 pt-2">
-                            {product.materials.map((material, idx) => {
-                              const Icon = detailIcons[idx % detailIcons.length];
-                              return (
-                                <li key={idx} className="flex items-start gap-4">
-                                  <div className="flex items-center justify-center w-14 h-14 rounded-full bg-[#F27318]/8 shrink-0">
-                                    <Icon size={22} className="text-[#F27318]" />
-                                  </div>
-                                  <div>
-                                    <p className="text-[15px] font-semibold text-[#1A1714] mb-0.5 capitalize">{material.split('-')[0]}</p>
-                                    <p className="text-[14px] text-black/50">{material}</p>
-                                  </div>
-                                </li>
-                              );
-                            })}
-                          </ul>
-                        )}
-                      </div>
-
-                      {/* Right Column - Dimensions */}
-                      {product?.dimensions &&
-                        (product.dimensions.width || product.dimensions.height || product.dimensions.depth) && (
-                          <div className="flex flex-col bg-[#F27318]/4 rounded-2xl p-8">
-                            <h4 className="text-[15px] font-bold text-[#1A1714] mb-0 flex items-center gap-2.5">
-                              <Edit2 size={16} className="text-[#F27318]" />
-                              Dimensions
-                            </h4>
-                            <div className="w-full">
-                              <DimensionDiagram dimensions={product.dimensions} />
-                            </div>
-                          </div>
-                        )}
-                    </div>
-                  </motion.div>
-                ) : activeMainTab === "specifications" ? (
-                  <motion.div
-                    key="specifications"
-                    initial={{ opacity: 0, y: 10 }}
-                    animate={{ opacity: 1, y: 0 }}
-                    exit={{ opacity: 0, y: -10 }}
-                    transition={{ duration: 0.4, ease: [0.23, 1, 0.32, 1] }}
-                  >
-                    <div className="grid grid-cols-1 lg:grid-cols-2 gap-x-10 gap-y-7">
-                      {detailSections.map((section) => (
-                        <div key={section.id}>
-                          <h4 className="text-[14px] font-bold text-[#1A1714] mb-2 uppercase tracking-widest">{section.title}</h4>
-                          <div className="text-black/55 font-medium text-[15px] leading-[1.8]">{section.content}</div>
-                        </div>
-                      ))}
-                    </div>
-
-                    {/* Phase 7: catalog attribute specifications —
-                        stored values only, grouped by displayGroup. */}
-                    {catalogSpecGroups.length > 0 && (
-                      <div className="mt-10 grid grid-cols-1 lg:grid-cols-2 gap-x-10 gap-y-7">
-                        {catalogSpecGroups.map((group) => (
-                          <div key={group.group}>
-                            <h4 className="text-[14px] font-bold text-[#1A1714] mb-2 uppercase tracking-widest">{group.group}</h4>
-                            <dl className="space-y-1.5">
-                              {group.items.map((item) => (
-                                <div key={item.key} className="flex gap-2 text-[15px]">
-                                  <dt className="text-black/45 font-medium">{item.label}:</dt>
-                                  <dd className="text-black/70 font-medium">{item.value}</dd>
-                                </div>
-                              ))}
-                            </dl>
-                          </div>
-                        ))}
-                      </div>
-                    )}
-                  </motion.div>
-                ) : activeMainTab === "materials" ? (
-                  <motion.div
-                    key="materials"
-                    initial={{ opacity: 0, y: 10 }}
-                    animate={{ opacity: 1, y: 0 }}
-                    exit={{ opacity: 0, y: -10 }}
-                    transition={{ duration: 0.4, ease: [0.23, 1, 0.32, 1] }}
-                  >
-                    <div className="grid grid-cols-1 lg:grid-cols-2 gap-12">
-                      {/* Left Column - Materials List */}
-                      <div>
-                        <h3 className="text-[20px] font-bold text-[#1A1714] mb-2">Premium materials. Built to last.</h3>
-                        <p className="text-[14px] text-black/60 leading-relaxed mb-8 text-justify">
-                          Thoughtfully selected materials and a sturdy build ensure lasting comfort, durability, and timeless style.
-                        </p>
-
-                        {product.materials?.length > 0 ? (
-                          <div className="space-y-6">
-                            {product.materials.map((material, idx) => {
-                              const Icon = detailIcons[idx % detailIcons.length];
-                              return (
-                                <div key={idx} className="flex gap-4">
-                                  {/* Material Image Placeholder */}
-                                  <div className="w-28 h-28 rounded-lg bg-gradient-to-br from-orange-100 to-orange-50 shrink-0 flex items-center justify-center border border-black/5">
-                                    <Icon size={32} className="text-[#F27318]/40" />
-                                  </div>
-                                  {/* Material Info */}
-                                  <div className="flex-1">
-                                    <h4 className="text-[15px] font-bold text-[#1A1714] mb-1">{material.split('-')[0]}</h4>
-                                    <p className="text-[13px] text-black/50 mb-3">{material}</p>
-                                    <div className="flex gap-4 text-[12px]">
-                                      {idx === 0 && (
-                                        <>
-                                          <div className="flex items-center gap-1.5 text-black/60">
-                                            <Sparkles size={14} className="text-[#F27318]" />
-                                            <span>Breathable</span>
-                                          </div>
-                                          <div className="flex items-center gap-1.5 text-black/60">
-                                            <ShieldCheck size={14} className="text-[#F27318]" />
-                                            <span>Stain-Resistant</span>
-                                          </div>
-                                        </>
-                                      )}
-                                      {idx === 1 && (
-                                        <>
-                                          <div className="flex items-center gap-1.5 text-black/60">
-                                            <Hammer size={14} className="text-[#F27318]" />
-                                            <span>Solid & Durable</span>
-                                          </div>
-                                          <div className="flex items-center gap-1.5 text-black/60">
-                                            <Layers size={14} className="text-[#F27318]" />
-                                            <span>Sustainably Sourced</span>
-                                          </div>
-                                        </>
-                                      )}
-                                      {idx === 2 && (
-                                        <>
-                                          <div className="flex items-center gap-1.5 text-black/60">
-                                            <Sparkles size={14} className="text-[#F27318]" />
-                                            <span>High Resilience</span>
-                                          </div>
-                                          <div className="flex items-center gap-1.5 text-black/60">
-                                            <RotateCcw size={14} className="text-[#F27318]" />
-                                            <span>Lasting Comfort</span>
-                                          </div>
-                                        </>
-                                      )}
-                                    </div>
-                                  </div>
-                                </div>
-                              );
-                            })}
-                          </div>
-                        ) : (
-                          <p className="text-[14px] text-black/60">Premium, sustainably sourced materials selected for their durability and natural beauty.</p>
-                        )}
-                      </div>
-
-                      {/* Right Column - Product Image with Callouts */}
-                      <div className="flex flex-col">
-                        {/* Product Image */}
-                        <div className="mb-8 relative">
-                          <img
-                            src={getImageUrl(images[selectedImage])}
-                            srcSet={getImageSrcSet(images[selectedImage], [640, 960, 1280])}
-                            sizes="(max-width: 1024px) 100vw, 50vw"
-                            loading="lazy"
-                            alt={product.name}
-                            className="w-full h-auto rounded-lg object-cover"
-                          />
-                          
-                          {/* Callout Points */}
-                          <div className="absolute top-1/4 right-4 w-48 bg-white rounded-lg p-4 shadow-lg">
-                            <p className="text-[13px] font-bold text-[#1A1714] mb-1">Cotton Fabric</p>
-                            <p className="text-[12px] text-black/60">Soft-touch cotton fabric for a refined look and everyday comfort.</p>
-                          </div>
-                          <div className="absolute top-1/2 right-4 w-48 bg-white rounded-lg p-4 shadow-lg">
-                            <p className="text-[13px] font-bold text-[#1A1714] mb-1">Pine Wood Frame</p>
-                            <p className="text-[12px] text-black/60">Sturdy pine wood frame for reliable strength and stability.</p>
-                          </div>
-                          <div className="absolute bottom-1/4 right-4 w-48 bg-white rounded-lg p-4 shadow-lg">
-                            <p className="text-[13px] font-bold text-[#1A1714] mb-1">High-Density Foam</p>
-                            <p className="text-[12px] text-black/60">Plush cushioning that maintains its shape and support over time.</p>
-                          </div>
-                        </div>
-
-                        {/* Benefits Row */}
-                        <div className="grid grid-cols-2 gap-4">
-                          <div className="flex flex-col items-center text-center p-4 bg-black/[0.02] rounded-lg">
-                            <ShieldCheck size={24} className="text-[#F27318] mb-2" />
-                            <p className="text-[12px] font-bold text-[#1A1714] mb-1">Built to Last</p>
-                            <p className="text-[11px] text-black/50">Premium materials for long-lasting durability.</p>
-                          </div>
-                          <div className="flex flex-col items-center text-center p-4 bg-black/[0.02] rounded-lg">
-                            <Sparkles size={24} className="text-[#F27318] mb-2" />
-                            <p className="text-[12px] font-bold text-[#1A1714] mb-1">Easy to Maintain</p>
-                            <p className="text-[11px] text-black/50">Materials chosen for easy cleaning and care.</p>
-                          </div>
-                          <div className="flex flex-col items-center text-center p-4 bg-black/[0.02] rounded-lg">
-                            <Layers size={24} className="text-[#F27318] mb-2" />
-                            <p className="text-[12px] font-bold text-[#1A1714] mb-1">Sustainably Sourced</p>
-                            <p className="text-[11px] text-black/50">Responsibly sourced wood for a better future.</p>
-                          </div>
-                          <div className="flex flex-col items-center text-center p-4 bg-black/[0.02] rounded-lg">
-                            <Star size={24} className="text-[#F27318] mb-2" />
-                            <p className="text-[12px] font-bold text-[#1A1714] mb-1">Quality Assured</p>
-                            <p className="text-[11px] text-black/50">Rigorous quality checks for your peace of mind.</p>
-                          </div>
-                        </div>
-                      </div>
-                    </div>
-                  </motion.div>
-                ) : activeMainTab === "delivery" ? (
-                  <motion.div
-                    key="delivery"
-                    initial={{ opacity: 0, y: 10 }}
-                    animate={{ opacity: 1, y: 0 }}
-                    exit={{ opacity: 0, y: -10 }}
-                    transition={{ duration: 0.4, ease: [0.23, 1, 0.32, 1] }}
-                  >
-                    <div className="space-y-6 text-[15px] text-black/55 leading-[1.8] font-medium">
-                      <div>
-                        <h3 className="text-[16px] font-bold text-[#1A1714] mb-1.5">Free Delivery</h3>
-                        <p>Enjoy free white-glove delivery and assembly in Kathmandu. Our professional team will place your piece in the room of your choice and remove all packaging.</p>
-                      </div>
-                      <div>
-                        <h3 className="text-[16px] font-bold text-[#1A1714] mb-1.5">Easy Returns</h3>
-                        <p>We offer a 30-day hassle-free return policy. If you're not completely satisfied, simply contact us to arrange a return.</p>
-                      </div>
-                      <div>
-                        <h3 className="text-[16px] font-bold text-[#1A1714] mb-1.5">Warranty</h3>
-                        <p>Aura Interiors provides a 5-Year limited structural warranty on all premium furniture. We stand by our craftsmanship.</p>
-                      </div>
-                    </div>
-                  </motion.div>
-                ) : (
-                  <motion.div
-                    key="reviews"
-                    initial={{ opacity: 0, y: 20 }}
-                    animate={{ opacity: 1, y: 0 }}
-                    exit={{ opacity: 0, y: -20 }}
-                    transition={{ duration: 0.5, ease: [0.23, 1, 0.32, 1] }}
-                    ref={reviewsSectionRef}
-                  >
-                    <ReviewSection productId={product._id} productName={product.name} onEditReview={handleOpenReviewModal} />
-                  </motion.div>
-                )}
-              </AnimatePresence>
-            </div>
-          </div>
-
-          {/* Related Products */}
-          {relatedProducts.length > 0 && (
-            <div className="mb-16">
-              <div className="flex items-center justify-between mb-6">
-                <h2 className="text-[23px] font-bold text-[#1A1714]">You May Also Like</h2>
-                <Link
-                  to="/shop"
-                  className="hidden sm:flex items-center gap-1.5 text-[14px] font-bold text-[#1A1714] hover:text-[#F27318] transition-all group"
-                >
-                  View all <MoveRight size={16} className="transition-transform group-hover:translate-x-1" />
-                </Link>
-              </div>
-
-              <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-4 md:gap-6">
-                {relatedProducts.slice(0, 5).map((relatedProduct) => (
-                  <ProductCard key={relatedProduct._id} product={relatedProduct} />
-                ))}
-              </div>
-            </div>
-          )}
+          <RelatedProducts productId={product?._id} />
         </div>
       </main>
       <Footer />
@@ -1262,95 +351,16 @@ export default function ProductDetailsPage() {
         productName={product?.name}
       />
 
-      {/* Fullscreen Image Lightbox */}
-      <AnimatePresence>
-        {isLightboxOpen && (
-          <motion.div
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            exit={{ opacity: 0 }}
-            transition={{ duration: 0.2 }}
-            className="fixed inset-0 z-[100] bg-black/90 flex items-center justify-center"
-            onClick={() => setIsLightboxOpen(false)}
-          >
-           <Dialog open={isLightboxOpen} onClose={() => setIsLightboxOpen(false)} label="Product image viewer" className="absolute inset-0 flex items-center justify-center">
-            {/* Close button */}
-            <button
-              onClick={() => setIsLightboxOpen(false)}
-              className="absolute top-5 right-5 w-11 h-11 bg-white/10 hover:bg-white/20 rounded-full flex items-center justify-center text-white transition-all z-10"
-              title="Close"
-              aria-label="Close image viewer"
-            >
-              <X size={22} />
-            </button>
-
-            {/* Image counter */}
-            {images.length > 1 && (
-              <div className="absolute top-6 left-6 text-white/70 text-[14px] font-medium">
-                {selectedImage + 1} / {images.length}
-              </div>
-            )}
-
-            {/* Nav arrows */}
-            {images.length > 1 && (
-              <>
-                <button
-                  onClick={(e) => {
-                    e.stopPropagation();
-                    setSelectedImage((prev) => (prev === 0 ? images.length - 1 : prev - 1));
-                  }}
-                  className="absolute left-4 sm:left-8 w-11 h-11 bg-white/10 hover:bg-white/20 rounded-full flex items-center justify-center text-white transition-all"
-                >
-                  <ChevronLeft size={22} />
-                </button>
-                <button
-                  onClick={(e) => {
-                    e.stopPropagation();
-                    setSelectedImage((prev) => (prev === images.length - 1 ? 0 : prev + 1));
-                  }}
-                  className="absolute right-4 sm:right-8 w-11 h-11 bg-white/10 hover:bg-white/20 rounded-full flex items-center justify-center text-white transition-all"
-                >
-                  <ChevronRight size={22} />
-                </button>
-              </>
-            )}
-
-            {/* Full image */}
-            <motion.img
-              key={selectedImage}
-              initial={{ scale: 0.96, opacity: 0 }}
-              animate={{ scale: 1, opacity: 1 }}
-              transition={{ duration: 0.2 }}
-              src={getImageUrl(images[selectedImage])}
-              srcSet={getImageSrcSet(images[selectedImage], [800, 1200, 1600, 2000])}
-              sizes="90vw"
-              alt={product.name}
-              className="max-w-[90vw] max-h-[85vh] object-contain"
-              onClick={(e) => e.stopPropagation()}
-            />
-
-            {/* Thumbnail strip inside lightbox */}
-            {images.length > 1 && (
-              <div
-                className="absolute bottom-6 left-1/2 -translate-x-1/2 flex gap-2 px-3 py-2 bg-white/10 rounded-xl max-w-[90vw] overflow-x-auto no-scrollbar"
-                onClick={(e) => e.stopPropagation()}
-              >
-                {images.map((image, index) => (
-                  <button
-                    key={index}
-                    onClick={() => setSelectedImage(index)}
-                    className={`shrink-0 w-12 h-12 rounded-lg overflow-hidden border-2 transition-all ${selectedImage === index ? "border-white" : "border-transparent opacity-60 hover:opacity-100"
-                      }`}
-                  >
-                    <img src={getImageUrl(image)} srcSet={getImageSrcSet(image, [96, 192])} sizes="48px" loading="lazy" alt={`${product.name} thumbnail ${index + 1}`} className="w-full h-full object-cover" />
-                  </button>
-                ))}
-              </div>
-            )}
-           </Dialog>
-          </motion.div>
-        )}
-      </AnimatePresence>
+      <GalleryLightbox
+        isLightboxOpen={isLightboxOpen}
+        setIsLightboxOpen={setIsLightboxOpen}
+        images={images}
+        selectedImage={selectedImage}
+        setSelectedImage={setSelectedImage}
+        product={product}
+        getImageUrl={getImageUrl}
+        getImageSrcSet={getImageSrcSet}
+      />
 
       {/* Floating Sticky Add to Cart Bar — desktop + mobile */}
       <style>{`

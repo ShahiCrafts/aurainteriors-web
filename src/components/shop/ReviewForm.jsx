@@ -1,6 +1,6 @@
 import { useState, useRef, useEffect } from "react";
 import { Star, Loader2 } from "lucide-react";
-import { toast } from "react-toastify";
+import { toast } from "../../lib/toast";
 import { useCreateReview, useUpdateReview } from "../../hooks/review/useReviewTan";
 import { useForm } from "react-hook-form";
 import { yupResolver } from "@hookform/resolvers/yup";
