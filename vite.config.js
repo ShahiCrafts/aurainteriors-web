@@ -97,10 +97,9 @@ export default defineConfig(({ mode, command }) => {
     dedupe: ["three", "react", "react-dom"],
     alias: {
       three: path.resolve("./node_modules/three"),
-      // Map every `import { toast } from "react-toastify"` to our custom
-      // implementation. This means zero per-file import changes are needed,
-      // react-toastify ships 0 bytes to the bundle, and we own the full design.
-      "react-toastify": path.resolve("./src/lib/toast.js"),
+      // REUSE-015: the former "react-toastify" alias to src/lib/toast.js
+      // was removed — every file now imports lib/toast directly and the
+      // react-toastify dependency is gone.
     },
   },
 

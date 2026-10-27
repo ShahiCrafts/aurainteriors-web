@@ -70,4 +70,62 @@ export default defineConfig([
       globals: { ...globals.browser, ...globals.node, ...globals.vitest },
     },
   },
+  // ── Phase 4 (REUSE-003): no raw hex colours in class strings ────────
+  // New UI primitives must use the theme tokens (bg-brand,
+  // hover:bg-brand-hover, …) instead of raw hex like bg-[#F27318].
+  // Scoped to components/ui for now: the legacy tree carries 100+ raw-hex
+  // class strings, so widening this to all of src/ today would flood the
+  // warning total and bury the signal. Widen the `files` glob as legacy
+  // surfaces migrate onto the primitives. Warning level on purpose — it
+  // guides new code, it does not gate the build.
+  {
+    files: ['src/components/ui/**/*.{js,jsx}'],
+    plugins: {
+      local: {
+        rules: {
+          'no-raw-hex-class': {
+            meta: {
+              type: 'suggestion',
+              docs: {
+                description:
+                  'disallow raw hex colours inside className strings; use theme tokens',
+              },
+            },
+            create(context) {
+              const HEX = /#[0-9a-fA-F]{3,8}\b/
+              const check = (node, raw) => {
+                if (typeof raw !== 'string' || !HEX.test(raw)) return
+                const inClassName = context.sourceCode
+                  .getAncestors(node)
+                  .some(
+                    (ancestor) =>
+                      ancestor.type === 'JSXAttribute' &&
+                      ancestor.name &&
+                      ancestor.name.name === 'className',
+                  )
+                if (inClassName) {
+                  context.report({
+                    node,
+                    message:
+                      'Raw hex colour in a className string — use a theme token (e.g. bg-brand, text-brand) instead.',
+                  })
+                }
+              }
+              return {
+                Literal(node) {
+                  if (typeof node.value === 'string') check(node, node.value)
+                },
+                TemplateElement(node) {
+                  check(node, node.value && node.value.cooked)
+                },
+              }
+            },
+          },
+        },
+      },
+    },
+    rules: {
+      'local/no-raw-hex-class': 'warn',
+    },
+  },
 ])
