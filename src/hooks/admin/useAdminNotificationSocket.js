@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import io from "socket.io-client";
 import notificationApi from "../../api/notificationApi";
 import { SOCKET_URL } from "../../config/constants";
@@ -8,6 +8,10 @@ const useAdminNotificationSocket = (token, userId, role) => {
     const [adminNotifications, setAdminNotifications] = useState([]);
     const [unreadAdminCount, setUnreadAdminCount] = useState(0);
     const [connected, setConnected] = useState(false);
+    // FE-24: ids already delivered over the socket. A replayed or
+    // re-emitted notification (e.g. across a reconnect) must not
+    // duplicate the list entry or inflate the unread badge.
+    const seenSocketIdsRef = useRef(new Set());
 
     useEffect(() => {
         setSocket(null);
@@ -39,7 +43,15 @@ const useAdminNotificationSocket = (token, userId, role) => {
         });
 
         socketInstance.on("admin:notification:new", (data) => {
-            const newItems = (Array.isArray(data) ? data : [data]).filter(Boolean);
+            const incoming = (Array.isArray(data) ? data : [data]).filter(Boolean);
+            const newItems = incoming.filter((item) => {
+                const id = item?._id ?? item?.id;
+                if (id == null) return true;
+                if (seenSocketIdsRef.current.has(id)) return false;
+                seenSocketIdsRef.current.add(id);
+                return true;
+            });
+            if (newItems.length === 0) return;
             setUnreadAdminCount(prev => prev + newItems.filter(item => !item.isRead).length);
             setAdminNotifications(prev => [...newItems, ...prev]);
         });

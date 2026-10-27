@@ -64,9 +64,42 @@ export const useToggleBlogLike = () => {
 
   return useMutation({
     mutationFn: (id) => blogApi.toggleLike(id),
-    onSuccess: (_, id) => {
-      queryClient.invalidateQueries({ queryKey: BLOG_KEYS.detail(id) });
-      queryClient.invalidateQueries({ queryKey: BLOG_KEYS.all });
+    onSuccess: (data, id) => {
+      // FE-55: the old code invalidated BLOG_KEYS.all for a single
+      // like — every blog list, detail, categories, popular and
+      // featured query refetched. The server returns the
+      // authoritative count ({ data: { likes } }, blog.controller
+      // likeBlog), so patch the affected post directly in every
+      // cached blog surface instead and invalidate nothing.
+      // Surfaces whose payload has no post collection (categories,
+      // stats, sources) are returned untouched by the updater.
+      const likes = data?.data?.likes;
+      if (!Number.isFinite(likes)) {
+        // No usable count in the response: a direct update is not
+        // safe, so fall back to the narrowest invalidation that
+        // covers the visible like counts — this post's detail and
+        // the blog lists — never the whole domain.
+        queryClient.invalidateQueries({ queryKey: BLOG_KEYS.detail(id) });
+        queryClient.invalidateQueries({ queryKey: [...BLOG_KEYS.all, "list"] });
+        return;
+      }
+      const isTarget = (post) => post && (post._id === id || post.slug === id);
+      const patchPost = (post) => (isTarget(post) ? { ...post, likes } : post);
+      const patchCache = (old) => {
+        if (!old?.data) return old;
+        if (old.data.blog) {
+          return isTarget(old.data.blog)
+            ? { ...old, data: { ...old.data, blog: patchPost(old.data.blog) } }
+            : old;
+        }
+        if (Array.isArray(old.data.blogs)) {
+          return old.data.blogs.some(isTarget)
+            ? { ...old, data: { ...old.data, blogs: old.data.blogs.map(patchPost) } }
+            : old;
+        }
+        return old;
+      };
+      queryClient.setQueriesData({ queryKey: BLOG_KEYS.all }, patchCache);
     },
   });
 };

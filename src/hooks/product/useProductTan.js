@@ -10,6 +10,24 @@ const PRODUCT_KEYS = {
   related: (id, limit) => [...PRODUCT_KEYS.all, 'related', id, limit],
 };
 
+// FE-55: mutations invalidate the narrowest keys that changed —
+// the list prefix + the mutated product's detail + the featured /
+// new-arrivals list prefixes (storefront lists that genuinely
+// display the mutated product) — never PRODUCT_KEYS.all, whose
+// prefix also matched every OTHER product's detail and related
+// lists. Related lists of other products are deliberately left:
+// they are recommendation rails, and the mutated product's own
+// detail/list entries — the surfaces that display it as a subject —
+// are always invalidated.
+const productListKey = () => [...PRODUCT_KEYS.all, 'list'];
+const productFeaturedKey = () => [...PRODUCT_KEYS.all, 'featured'];
+const productNewArrivalsKey = () => [...PRODUCT_KEYS.all, 'newArrivals'];
+const invalidateProductLists = (queryClient) => {
+  queryClient.invalidateQueries({ queryKey: productListKey() });
+  queryClient.invalidateQueries({ queryKey: productFeaturedKey() });
+  queryClient.invalidateQueries({ queryKey: productNewArrivalsKey() });
+};
+
 // Get all products with filtering.
 // `options` is an optional second argument for passing React Query options
 // (e.g. { enabled: false }) without touching the hook's core logic.
@@ -27,9 +45,18 @@ export const useProducts = (params = {}, options = {}) => {
 
 // Get single product
 export const useProduct = (id, options = {}) => {
+  const queryClient = useQueryClient();
   return useQuery({
     queryKey: PRODUCT_KEYS.detail(id),
-    queryFn: () => productApi.getById(id),
+    queryFn: ({ signal }) => {
+      let knownId;
+      for (const [, cached] of queryClient.getQueriesData({ queryKey: PRODUCT_KEYS.all })) {
+        const product = cached?.data?.product;
+        const match = product?.slug === id ? product : cached?.data?.products?.find?.((item) => item?.slug === id);
+        if (match?._id) { knownId = match._id; break; }
+      }
+      return productApi.getById(id, { knownId, signal });
+    },
     enabled: !!id,
     ...options,
   });
@@ -71,7 +98,7 @@ export const useCreateProduct = () => {
   return useMutation({
     mutationFn: (data) => productApi.create(data),
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: PRODUCT_KEYS.all });
+      invalidateProductLists(queryClient);
     },
   });
 };
@@ -83,7 +110,7 @@ export const useUpdateProduct = () => {
   return useMutation({
     mutationFn: ({ id, data }) => productApi.update(id, data),
     onSuccess: (_, { id }) => {
-      queryClient.invalidateQueries({ queryKey: PRODUCT_KEYS.all });
+      invalidateProductLists(queryClient);
       queryClient.invalidateQueries({ queryKey: PRODUCT_KEYS.detail(id) });
     },
   });
@@ -96,7 +123,7 @@ export const useDeleteProduct = () => {
   return useMutation({
     mutationFn: (id) => productApi.delete(id),
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: PRODUCT_KEYS.all });
+      invalidateProductLists(queryClient);
     },
   });
 };
@@ -108,7 +135,7 @@ export const useHardDeleteProduct = () => {
   return useMutation({
     mutationFn: (id) => productApi.hardDelete(id),
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: PRODUCT_KEYS.all });
+      invalidateProductLists(queryClient);
     },
   });
 };
@@ -119,8 +146,11 @@ export const useSetPrimaryImage = () => {
 
   return useMutation({
     mutationFn: ({ productId, imageId }) => productApi.setPrimaryImage(productId, imageId),
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: PRODUCT_KEYS.all });
+    onSuccess: (_, { productId }) => {
+      // Thumbnails render in lists, featured and new-arrivals rails
+      // as well as the detail gallery.
+      invalidateProductLists(queryClient);
+      queryClient.invalidateQueries({ queryKey: PRODUCT_KEYS.detail(productId) });
     },
   });
 };
@@ -132,7 +162,9 @@ export const useUpdateStock = () => {
   return useMutation({
     mutationFn: ({ id, stock }) => productApi.updateStock(id, stock),
     onSuccess: (_, { id }) => {
-      queryClient.invalidateQueries({ queryKey: PRODUCT_KEYS.all });
+      // FE-55: stock renders on the admin list and the detail page
+      // only (featured rails show no stock state).
+      queryClient.invalidateQueries({ queryKey: productListKey() });
       queryClient.invalidateQueries({ queryKey: PRODUCT_KEYS.detail(id) });
     },
   });

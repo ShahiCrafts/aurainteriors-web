@@ -52,6 +52,9 @@ export const useSendMessage = () => {
 
   return useMutation({
     mutationFn: chatApi.sendMessage,
+    // FE-47: send failures are surfaced in place (the optimistic bubble
+    // is marked failed by onError below) — opt out of the global toast.
+    meta: { suppressGlobalErrorToast: true },
     onMutate: async (variables) => {
       const { chatId, content, attachments } = variables;
       const clientMessageId = variables.clientMessageId || crypto.randomUUID();

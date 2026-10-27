@@ -1,14 +1,26 @@
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import announcementApi from "../../api/announcementApi";
+import { scopedAdminKey } from "../../lib/adminScope";
 
-const ANNOUNCEMENT_KEYS = {
-  all: ["announcements"],
-  list: (params) => [...ANNOUNCEMENT_KEYS.all, "list", params],
-  detail: (id) => [...ANNOUNCEMENT_KEYS.all, "detail", id],
-  stats: () => [...ANNOUNCEMENT_KEYS.all, "stats"],
-  public: (params) => [...ANNOUNCEMENT_KEYS.all, "public", params],
-  publicDetail: (id) => [...ANNOUNCEMENT_KEYS.all, "public", "detail", id],
+// FE-08: admin keys are scoped to the signed-in admin's id (read at
+// call time). The public variants serve public data and deliberately
+// keep their identity-free keys so both bundles share one cache entry.
+export const ANNOUNCEMENT_KEYS = {
+  all: () => scopedAdminKey("announcements"),
+  list: (params) => [...ANNOUNCEMENT_KEYS.all(), "list", params],
+  detail: (id) => [...ANNOUNCEMENT_KEYS.all(), "detail", id],
+  stats: () => [...ANNOUNCEMENT_KEYS.all(), "stats"],
+  public: (params) => ["announcements", "public", params],
+  publicDetail: (id) => ["announcements", "public", "detail", id],
 };
+
+// FE-55: mutations invalidate the narrowest keys that changed —
+// the list prefix (every list-param variant, nothing else) plus the
+// specific detail/stats keys below — never ANNOUNCEMENT_KEYS.all(),
+// whose prefix also matched every other announcement's detail and
+// the public variants' admin siblings. The old code invalidated
+// all() and then detail(id) again, a redundant subset call.
+const announcementListKey = () => [...ANNOUNCEMENT_KEYS.all(), "list"];
 
 // ==================== ADMIN HOOKS ====================
 
@@ -46,7 +58,10 @@ export const useCreateAnnouncement = () => {
   return useMutation({
     mutationFn: (data) => announcementApi.create(data),
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ANNOUNCEMENT_KEYS.all });
+      // FE-55: a new announcement appears in lists and changes the
+      // status counts on the same admin screen — nothing else.
+      queryClient.invalidateQueries({ queryKey: announcementListKey() });
+      queryClient.invalidateQueries({ queryKey: ANNOUNCEMENT_KEYS.stats() });
     },
   });
 };
@@ -58,8 +73,9 @@ export const useUpdateAnnouncement = () => {
   return useMutation({
     mutationFn: ({ id, data }) => announcementApi.update(id, data),
     onSuccess: (_, { id }) => {
-      queryClient.invalidateQueries({ queryKey: ANNOUNCEMENT_KEYS.all });
+      queryClient.invalidateQueries({ queryKey: announcementListKey() });
       queryClient.invalidateQueries({ queryKey: ANNOUNCEMENT_KEYS.detail(id) });
+      queryClient.invalidateQueries({ queryKey: ANNOUNCEMENT_KEYS.stats() });
     },
   });
 };
@@ -71,7 +87,8 @@ export const useDeleteAnnouncement = () => {
   return useMutation({
     mutationFn: (id) => announcementApi.delete(id),
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ANNOUNCEMENT_KEYS.all });
+      queryClient.invalidateQueries({ queryKey: announcementListKey() });
+      queryClient.invalidateQueries({ queryKey: ANNOUNCEMENT_KEYS.stats() });
     },
   });
 };
@@ -83,8 +100,9 @@ export const usePublishAnnouncement = () => {
   return useMutation({
     mutationFn: (id) => announcementApi.publish(id),
     onSuccess: (_, id) => {
-      queryClient.invalidateQueries({ queryKey: ANNOUNCEMENT_KEYS.all });
+      queryClient.invalidateQueries({ queryKey: announcementListKey() });
       queryClient.invalidateQueries({ queryKey: ANNOUNCEMENT_KEYS.detail(id) });
+      queryClient.invalidateQueries({ queryKey: ANNOUNCEMENT_KEYS.stats() });
     },
   });
 };
@@ -96,8 +114,9 @@ export const useScheduleAnnouncement = () => {
   return useMutation({
     mutationFn: ({ id, scheduledAt }) => announcementApi.schedule(id, scheduledAt),
     onSuccess: (_, { id }) => {
-      queryClient.invalidateQueries({ queryKey: ANNOUNCEMENT_KEYS.all });
+      queryClient.invalidateQueries({ queryKey: announcementListKey() });
       queryClient.invalidateQueries({ queryKey: ANNOUNCEMENT_KEYS.detail(id) });
+      queryClient.invalidateQueries({ queryKey: ANNOUNCEMENT_KEYS.stats() });
     },
   });
 };
@@ -109,8 +128,9 @@ export const useArchiveAnnouncement = () => {
   return useMutation({
     mutationFn: (id) => announcementApi.archive(id),
     onSuccess: (_, id) => {
-      queryClient.invalidateQueries({ queryKey: ANNOUNCEMENT_KEYS.all });
+      queryClient.invalidateQueries({ queryKey: announcementListKey() });
       queryClient.invalidateQueries({ queryKey: ANNOUNCEMENT_KEYS.detail(id) });
+      queryClient.invalidateQueries({ queryKey: ANNOUNCEMENT_KEYS.stats() });
     },
   });
 };
