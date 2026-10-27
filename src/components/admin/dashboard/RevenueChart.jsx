@@ -1,3 +1,4 @@
+import { formatDate } from "../../../utils/formatDate";
 import {
     AreaChart,
     Area,
@@ -60,7 +61,7 @@ export default function RevenueChart({ data, period = DEFAULT_REVENUE_PERIOD, on
                                 axisLine={false}
                                 tickMargin={10}
                                 minTickGap={40}
-                                tickFormatter={(val) => new Date(val).toLocaleDateString(undefined, { month: 'short', day: 'numeric' })}
+                                tickFormatter={(val) => formatDate(val, { month: 'short', day: 'numeric' })}
                             />
                             <YAxis
                                 tick={{ fontSize: 10, fill: '#9ca3af' }}
@@ -78,7 +79,7 @@ export default function RevenueChart({ data, period = DEFAULT_REVENUE_PERIOD, on
                                 }}
                                 labelStyle={{ fontSize: '12px', color: '#6b7280', marginBottom: '6px' }}
                                 formatter={(value) => [formatNPR(value), 'Revenue']}
-                                labelFormatter={(label) => new Date(label).toLocaleDateString(undefined, { weekday: 'short', month: 'short', day: 'numeric' })}
+                                labelFormatter={(label) => formatDate(label, { weekday: 'short', month: 'short', day: 'numeric' })}
                             />
                             <Area
                                 type="monotone"

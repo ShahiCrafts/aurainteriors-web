@@ -1,4 +1,5 @@
 import { buildBlogContent } from "../../utils/blogToc";
+import { formatDate } from "../../utils/formatDate";
 import { useState, useEffect, useMemo } from "react";
 import { useParams, Link } from "react-router-dom";
 import {
@@ -156,17 +157,11 @@ export default function BlogDetailsPage() {
   const validatedSourceLogo = validateExternalUrl(blog.source?.logo);
   const validatedOriginalUrl = validateExternalUrl(blog.originalUrl);
 
-  const formattedDate = blog.publishedAt
-    ? new Date(blog.publishedAt).toLocaleDateString("en-US", {
-        month: "long",
-        day: "numeric",
-        year: "numeric",
-      })
-    : new Date(blog.createdAt).toLocaleDateString("en-US", {
-        month: "long",
-        day: "numeric",
-        year: "numeric",
-      });
+  const formattedDate = formatDate(blog.publishedAt || blog.createdAt, {
+    month: "long",
+    day: "numeric",
+    year: "numeric",
+  });
 
   return (
     <>

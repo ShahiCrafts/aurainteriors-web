@@ -13,10 +13,11 @@ import Navbar from "../../layouts/customer/Navbar";
 import Footer from "../../layouts/customer/Footer";
 import { useBlogs, useBlogCategories, usePopularBlogs, useToggleBlogLike } from "../../hooks/blog/useBlogTan";
 import { getBlogImageUrl } from "../../utils/imageUrl";
+import { formatDate } from "../../utils/formatDate";
 import { UserAvatar } from "../../components/common/InitialsAvatar";
 import Skeleton from "../../components/common/Skeleton";
 import { useNewsletterSubscribe } from "../../hooks/newsletter/useNewsletterTan";
-import { toast } from "react-toastify";
+import { toast } from "../../lib/toast";
 
 export default function BlogsPage() {
   const [activeCategory, setActiveCategory] = useState("all");
@@ -330,17 +331,11 @@ function BlogCard({
   onToggleLiked,
   getImageUrl,
 }) {
-  const formattedDate = post.publishedAt
-    ? new Date(post.publishedAt).toLocaleDateString("en-US", {
-      month: "short",
-      day: "numeric",
-      year: "numeric",
-    })
-    : new Date(post.createdAt).toLocaleDateString("en-US", {
-      month: "short",
-      day: "numeric",
-      year: "numeric",
-    });
+  const formattedDate = formatDate(post.publishedAt || post.createdAt, {
+    month: "short",
+    day: "numeric",
+    year: "numeric",
+  });
 
   return (
     <article className="flex flex-col sm:flex-row gap-4 sm:gap-6 group rounded-2xl border border-neutral-100 p-3 sm:p-4 hover:border-orange-200 hover:shadow-sm transition-all">

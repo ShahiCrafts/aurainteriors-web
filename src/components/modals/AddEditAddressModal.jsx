@@ -2,8 +2,7 @@ import { useEffect, useRef, useState } from "react";
 import { createPortal } from "react-dom";
 import { motion, AnimatePresence } from "framer-motion";
 import { X, Home, Building2, Users, MapPin, Loader2, Check, Truck, Receipt } from "lucide-react";
-import { toast } from "react-toastify";
-import * as yup from "yup";
+import { toast } from "../../lib/toast";
 import {
   useCreateAddress,
   useUpdateAddress,
@@ -11,7 +10,15 @@ import {
 import formatError from "../../utils/errorHandler";
 import { useForm } from "react-hook-form";
 import { yupResolver } from "@hookform/resolvers/yup";
-import { addressSchema } from "../../utils/validationSchemas";
+import {
+  addressSchema,
+  guestAddressSchema,
+} from "../../utils/validationSchemas";
+import {
+  addressToFormValues,
+  emptyAddressFormValues,
+  formValuesToAddressPayload,
+} from "../../utils/addressMapper";
 import Dialog from "../common/Dialog";
 
 const labelOptions = [
@@ -36,11 +43,9 @@ export default function AddEditAddressModal({
 }) {
   const isEditing = !!address;
 
-  const schema = isGuest
-    ? addressSchema.shape({
-        email: yup.string().email("Invalid email").required("Email is required"),
-      })
-    : addressSchema;
+  // Phase 6 (REUSE-013): the guest email rule lives in
+  // validationSchemas (guestAddressSchema) — no local schema here.
+  const schema = isGuest ? guestAddressSchema : addressSchema;
 
   const {
     register,
@@ -52,21 +57,7 @@ export default function AddEditAddressModal({
   } = useForm({
     resolver: yupResolver(schema),
     mode: "onTouched",
-    defaultValues: {
-      label: "home",
-      customLabel: "",
-      type: "delivery",
-      fullName: "",
-      email: "",
-      phone: "",
-      addressLine1: "",
-      addressLine2: "",
-      city: "",
-      state: "",
-      postalCode: "",
-      country: "Nepal",
-      isDefault: false,
-    },
+    defaultValues: emptyAddressFormValues(),
   });
 
   const { mutate: createAddress, isPending: isCreating } = useCreateAddress();
@@ -87,47 +78,14 @@ export default function AddEditAddressModal({
 
   useEffect(() => {
     if (isOpen) {
-      if (address) {
-        reset({
-          label: address.label || "home",
-          customLabel: address.customLabel || "",
-          type: address.type || "delivery",
-          fullName: address.fullName || "",
-          email: address.email || "",
-          phone: address.phone || "",
-          addressLine1: address.addressLine1 || "",
-          addressLine2: address.addressLine2 || "",
-          city: address.city || "",
-          state: address.state || "",
-          postalCode: address.postalCode || "",
-          country: address.country || "Nepal",
-          isDefault: address.isDefault || false,
-        });
-      } else {
-        reset({
-          label: "home",
-          customLabel: "",
-          type: "delivery",
-          fullName: "",
-          email: "",
-          phone: "",
-          addressLine1: "",
-          addressLine2: "",
-          city: "",
-          state: "",
-          postalCode: "",
-          country: "Nepal",
-          isDefault: false,
-        });
-      }
+      // Phase 6 (REUSE-013): one mapper for both reset branches —
+      // addressToFormValues(null) is the blank form.
+      reset(addressToFormValues(address));
     }
   }, [isOpen, address, reset]);
 
   const onSubmit = async (data) => {
-    const payload = { ...data };
-    if (payload.label !== "other") {
-      payload.customLabel = "";
-    }
+    const payload = formValuesToAddressPayload(data);
 
     if (onSubmitOverride) {
       // FE-37: exactly one override save in flight; the submit stays

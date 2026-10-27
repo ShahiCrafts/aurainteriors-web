@@ -8,6 +8,7 @@ import {
 import Skeleton from "../../common/Skeleton";
 import { UserAvatar } from "../../common/InitialsAvatar";
 import { formatNPR } from "../../../utils/formatCurrency";
+import { formatDate } from "../../../utils/formatDate";
 import { useToggleBot } from "../../../hooks/chat/useChatTan";
 import { useAllOrders } from "../../../hooks/order/useOrderTan";
 
@@ -182,7 +183,7 @@ const AiAssistantPanel = ({ chat, onClose, onUseReply, onEditReply }) => {
             <div className="border-t border-gray-50 pt-2 flex justify-between text-[11px] text-gray-500">
               <span>Customer since:</span>
               <span className="font-semibold text-gray-800">
-                {new Date(chat?.customer?.createdAt || Date.now()).toLocaleDateString('en-US', { month: 'short', year: 'numeric' })}
+                {formatDate(chat?.customer?.createdAt || Date.now(), { month: 'short', year: 'numeric' })}
               </span>
             </div>
           </div>
@@ -226,7 +227,7 @@ const AiAssistantPanel = ({ chat, onClose, onUseReply, onEditReply }) => {
                           {item.quantity}x {item.product?.name || "Product"}
                         </p>
                       ))}
-                      <p className="text-[10px] text-gray-400">Ordered: {new Date(order.createdAt).toLocaleDateString()}</p>
+                      <p className="text-[10px] text-gray-400">Ordered: {formatDate(order.createdAt)}</p>
                     </div>
 
                     <div className="flex justify-between items-center border-t border-gray-50 pt-2 text-[11px]">

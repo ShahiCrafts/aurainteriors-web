@@ -1,3 +1,5 @@
+import { formatDate } from "../../utils/formatDate";
+import useDebounce from "../../hooks/useDebounce";
 import { useRef, useState } from "react";
 import Dialog from "../../components/common/Dialog";
 import { motion, AnimatePresence } from "framer-motion";
@@ -26,7 +28,7 @@ import {
   useToggleApproval,
   useAdminDeleteReview,
 } from "../../hooks/review/useReviewTan";
-import { toast } from "react-toastify";
+import { toast } from "../../lib/toast";
 import formatError from "../../utils/errorHandler";
 import { getImageUrl } from "../../utils/imageUrl";
 import { UserAvatar } from "../../components/common/InitialsAvatar";
@@ -34,6 +36,7 @@ import Pagination from "../../components/common/Pagination";
 
 export default function Reviews() {
   const [searchQuery, setSearchQuery] = useState("");
+  const debouncedSearchQuery = useDebounce(searchQuery, 300); // PERF-F-007: input stays immediate; only the query-param value is debounced
   const [filterRating, setFilterRating] = useState("all");
   const [filterStatus, setFilterStatus] = useState("all");
   const [page, setPage] = useState(1);
@@ -49,7 +52,7 @@ export default function Reviews() {
   const queryParams = {
     page,
     limit: pageSize,
-    ...(searchQuery && { search: searchQuery }),
+    ...(debouncedSearchQuery && { search: debouncedSearchQuery }),
     ...(filterRating !== "all" && { rating: filterRating }),
     ...(filterStatus !== "all" && { isApproved: filterStatus === "approved" }),
   };
@@ -296,7 +299,7 @@ export default function Reviews() {
                     <td className="px-6 py-4">
                       {renderStars(review.rating)}
                       <p className="text-[10px] text-gray-400 mt-1 uppercase font-bold tracking-tight">
-                        {new Date(review.createdAt).toLocaleDateString()}
+                        {formatDate(review.createdAt)}
                       </p>
                     </td>
                     <td className="px-6 py-4">
@@ -431,7 +434,7 @@ export default function Reviews() {
               <div className="flex flex-wrap gap-4 py-3 border-y border-gray-100">
                 <div className="flex items-center gap-1.5 text-xs text-gray-500">
                   <Calendar size={14} />{" "}
-                  {new Date(selectedReview.createdAt).toLocaleDateString()}
+                  {formatDate(selectedReview.createdAt)}
                 </div>
                 <div className="flex items-center gap-1.5 text-xs text-gray-500">
                   <ThumbsUp size={14} /> {selectedReview.helpfulCount || 0}{" "}

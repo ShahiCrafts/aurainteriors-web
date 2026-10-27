@@ -3,6 +3,7 @@ import { createRoot } from "react-dom/client";
 import { BrowserRouter } from "react-router-dom";
 import { QueryClientProvider } from "@tanstack/react-query";
 import { queryClient } from "./lib/queryClient";
+import { reportWebVitals } from "./lib/reportWebVitals";
 import App from "./App.jsx";
 import ErrorBoundary from "./components/common/ErrorBoundary.jsx";
 import ToastProvider from "./components/ui/ToastProvider.jsx";
@@ -15,6 +16,9 @@ import "./styles/index.css";
  * (staleTime 5 min, gcTime 10 min, retry 1, no refetch on window focus
  * — see that module for the rationale.)
  */
+
+// No-op unless the build sets VITE_WEB_VITALS=1 (see lib/reportWebVitals.js).
+reportWebVitals();
 
 createRoot(document.getElementById("root")).render(
   <StrictMode>

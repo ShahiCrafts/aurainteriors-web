@@ -1,3 +1,4 @@
+import { formatDate } from "../../../utils/formatDate";
 import { Link } from "react-router-dom";
 import { ArrowRight } from "lucide-react";
 import { formatNPR } from "../../../utils/formatCurrency";
@@ -79,7 +80,7 @@ export default function RecentOrdersTable({ orders = [] }) {
 
                   {/* Date */}
                   <td className="px-6 py-4 text-gray-600 whitespace-nowrap">
-                    {new Date(order.createdAt).toLocaleDateString(undefined, {
+                    {formatDate(order.createdAt, {
                       month: "short",
                       day: "numeric",
                       year: "numeric",

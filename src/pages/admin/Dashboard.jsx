@@ -1,10 +1,11 @@
+import { formatDate } from "../../utils/formatDate";
 import { useState } from 'react';
 import { Download, DollarSign, ShoppingBag, Box, Users } from 'lucide-react';
 import { DashboardSkeleton } from '../../components/common/Skeleton';
-import * as XLSX from 'xlsx';
 import { useDashboardStats, useRevenueAnalytics, useCategorySales, useTopProducts } from '../../hooks/admin/useAnalyticsTan';
 import { useAllOrders } from '../../hooks/order/useOrderTan';
 import useAuthStore from '../../store/authStore';
+import { useShallow } from "zustand/react/shallow";
 import { formatNPR } from '../../utils/formatCurrency';
 
 // Extracted Components
@@ -18,7 +19,7 @@ import AIInsights from '../../components/admin/dashboard/AIInsights';
 import QuickActions from '../../components/admin/dashboard/QuickActions';
 
 export default function Dashboard() {
-  const { user } = useAuthStore();
+  const { user } = useAuthStore(useShallow((state) => ({ user: state.user })));
   const { data: statsData, isLoading: statsLoading } = useDashboardStats();
   // FE-38: the RevenueChart period select is wired to this state —
   // picking a period re-queries the revenue endpoint with that
@@ -47,8 +48,12 @@ export default function Dashboard() {
     return 'Good evening';
   };
 
-  const handleDownloadReport = () => {
+  const handleDownloadReport = async () => {
     try {
+      // PERF-F-002: xlsx is loaded on demand — a static import pulled
+      // the vendor-xlsx chunk into the admin index route graph even
+      // when the report was never exported.
+      const XLSX = await import('xlsx');
       const overviewData = [
         { Metric: 'Net Revenue', Value: stats.totalRevenue },
         { Metric: 'Total Orders', Value: stats.totalOrders },
@@ -68,7 +73,7 @@ export default function Dashboard() {
         Customer: o.user?.fullName || o.guestInfo?.firstName || 'Guest',
         Status: o.orderStatus,
         Total: o.total,
-        Date: new Date(o.createdAt).toLocaleDateString(),
+        Date: formatDate(o.createdAt),
       }));
 
       const wb = XLSX.utils.book_new();

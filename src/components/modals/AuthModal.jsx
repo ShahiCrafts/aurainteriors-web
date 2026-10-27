@@ -6,21 +6,20 @@ import { API_V1_URL } from "../../config/constants";
 import { useSendMagicLink } from "../../hooks/auth/useMagicLinkTan";
 import { useUpdateProfile } from "../../hooks/profile/useProfileTan";
 import useAuthStore from "../../store/authStore";
-import { toast } from "react-toastify";
+import { useShallow } from "zustand/react/shallow";
+import { toast } from "../../lib/toast";
 import formatError from "../../utils/errorHandler";
 import Dialog from "../common/Dialog";
 
 const ORANGE = "#F27318";
 
 export default function AuthModal() {
-  const {
-    isAuthModalOpen,
+  const { isAuthModalOpen,
     closeAuthModal,
     authModalView,
     setAuthModalView,
     setUser,
-    user,
-  } = useAuthStore();
+    user, } = useAuthStore(useShallow((state) => ({ isAuthModalOpen: state.isAuthModalOpen, closeAuthModal: state.closeAuthModal, authModalView: state.authModalView, setAuthModalView: state.setAuthModalView, setUser: state.setUser, user: state.user })));
 
   const reduceMotion = useReducedMotion();
   const [email, setEmail] = useState("");

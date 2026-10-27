@@ -1,7 +1,7 @@
 import { useMemo, useState } from "react";
 import { motion } from "framer-motion";
 import { Loader2, Plus, X } from "lucide-react";
-import { toast } from "react-toastify";
+import { toast } from "../../../lib/toast";
 import Dialog from "../../common/Dialog";
 import AttributeValueInput from "./AttributeValueInput";
 import {

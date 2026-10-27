@@ -1,3 +1,4 @@
+import { formatDate, formatDateTime } from "../../utils/formatDate";
 import { useState } from "react";
 import Dialog from "../../components/common/Dialog";
 import { motion, AnimatePresence } from "framer-motion";
@@ -37,7 +38,7 @@ import {
   useArchiveAnnouncement,
   useAnnouncementStats,
 } from "../../hooks/admin/useAnnouncementTan";
-import { toast } from "react-toastify";
+import { toast } from "../../lib/toast";
 import Pagination from "../../components/common/Pagination";
 import formatError from "../../utils/errorHandler";
 import { reportSendOutcome } from "../../utils/queuedSend";
@@ -497,8 +498,7 @@ export default function Announcements() {
                         </span>
                         {announcement.scheduledAt && announcement.status === "scheduled" && (
                           <p className="text-xs text-gray-400 mt-1">
-                            {new Date(announcement.scheduledAt).toLocaleDateString()}{" "}
-                            {new Date(announcement.scheduledAt).toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" })}
+                            {formatDateTime(announcement.scheduledAt, { hour: "2-digit", minute: "2-digit" })}
                           </p>
                         )}
                       </td>
@@ -507,7 +507,7 @@ export default function Announcements() {
                       </td>
                       <td className="py-4 px-6">
                         <p className="text-sm text-gray-600">
-                          {new Date(announcement.createdAt).toLocaleDateString()}
+                          {formatDate(announcement.createdAt)}
                         </p>
                       </td>
                       <td className="py-4 px-6">

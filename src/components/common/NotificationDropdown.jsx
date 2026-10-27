@@ -13,6 +13,7 @@ import {
   Bell
 } from "lucide-react";
 import Skeleton from "./Skeleton";
+import { formatTime } from "../../utils/formatDate";
 
 const getNotificationIcon = (type) => {
   switch (type) {
@@ -68,14 +69,6 @@ const NotificationDropdown = ({
     notifications.length
   );
 
-  const formatTime = (date) => {
-    if (!date) return "";
-    const notificationDate = new Date(date);
-    return notificationDate.toLocaleTimeString([], {
-      hour: "2-digit",
-      minute: "2-digit",
-    });
-  };
 
   return (
     <div className="w-full h-full flex flex-col bg-white">

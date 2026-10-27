@@ -1,3 +1,4 @@
+import { formatDate } from "../../utils/formatDate";
 import { useState } from "react";
 import { useQueryClient } from "@tanstack/react-query";
 import Dialog from "../../components/common/Dialog";
@@ -27,7 +28,7 @@ import {
   useAdminResetPassword,
 } from "../../hooks/admin/useUserTan";
 import { UserAvatar } from "../../components/common/InitialsAvatar";
-import { toast } from "react-toastify";
+import { toast } from "../../lib/toast";
 import Pagination from "../../components/common/Pagination";
 import formatError from "../../utils/errorHandler";
 
@@ -372,7 +373,7 @@ export default function Users() {
                           <Clock size={14} className="text-gray-400" />
                           <span>
                             {user.lastLogin
-                              ? new Date(user.lastLogin).toLocaleDateString()
+                              ? formatDate(user.lastLogin)
                               : "Never"}
                           </span>
                         </div>
@@ -386,7 +387,7 @@ export default function Users() {
                       <div className="flex items-center gap-1.5 text-sm text-gray-600">
                         <Calendar size={14} className="text-gray-400" />
                         <span>
-                          {new Date(user.createdAt).toLocaleDateString()}
+                          {formatDate(user.createdAt)}
                         </span>
                       </div>
                     </td>

@@ -3,7 +3,8 @@ import { useNavigate, useSearchParams } from "react-router-dom";
 import { verifyMagicLink as verifyMagicLinkApi } from "../../api/authApi";
 import Skeleton from "../../components/common/Skeleton";
 import useAuthStore, { getAuthRevision } from "../../store/authStore";
-import { toast } from "react-toastify";
+import { useShallow } from "zustand/react/shallow";
+import { toast } from "../../lib/toast";
 
 // Module-level set to prevent double-firing in React 18 StrictMode
 const processedTokens = new Set();
@@ -12,7 +13,7 @@ export default function VerifyMagicLinkPage() {
   const [searchParams] = useSearchParams();
   const token = searchParams.get("token");
   const navigate = useNavigate();
-  const { signIn, openAuthModal } = useAuthStore();
+  const { signIn, openAuthModal } = useAuthStore(useShallow((state) => ({ signIn: state.signIn, openAuthModal: state.openAuthModal })));
   useEffect(() => {
     if (!token) {
       toast.error("Invalid or missing magic link token.");

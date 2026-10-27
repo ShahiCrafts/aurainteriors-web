@@ -3,7 +3,8 @@ import { useNavigate } from "react-router-dom";
 import { Mail, Lock, ShieldCheck, ArrowLeft, ChevronLeft, ChevronRight, Eye, EyeOff } from "lucide-react";
 import { useAdminLogin, useAdminVerifyOtp } from "../../hooks/auth/useAdminAuth";
 import useAuthStore, { getAuthRevision } from "../../store/authStore";
-import { toast } from "react-toastify";
+import { useShallow } from "zustand/react/shallow";
+import { toast } from "../../lib/toast";
 import formatError from "../../utils/errorHandler";
 
 const CAROUSEL_SLIDES = [
@@ -32,7 +33,7 @@ const CAROUSEL_SLIDES = [
 
 export default function AdminLoginPage() {
   const navigate = useNavigate();
-  const { signIn, isAuthenticated, user } = useAuthStore();
+  const { signIn, isAuthenticated, user } = useAuthStore(useShallow((state) => ({ signIn: state.signIn, isAuthenticated: state.isAuthenticated, user: state.user })));
 
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");

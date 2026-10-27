@@ -1,3 +1,5 @@
+import { formatDate, formatDateTime } from "../../utils/formatDate";
+import useDebounce from "../../hooks/useDebounce";
 import { useState, useEffect } from 'react';
 import Dialog from "../../components/common/Dialog";
 import { useLocation } from 'react-router-dom';
@@ -15,13 +17,14 @@ import {
 } from 'lucide-react';
 import Skeleton from "../../components/common/Skeleton";
 import { useAllOrders, useUpdateOrderStatus, useProcessReturnRequest, useOrderAdmin } from '../../hooks/order/useOrderTan';
-import { toast } from "react-toastify";
+import { toast } from "../../lib/toast";
 import Pagination from '../../components/common/Pagination';
 import formatError from "../../utils/errorHandler";
 import { formatNPR } from "../../utils/formatCurrency";
 
 export default function Orders() {
   const [searchQuery, setSearchQuery] = useState('');
+  const debouncedSearchQuery = useDebounce(searchQuery, 300); // PERF-F-007: input stays immediate; only the query-param value is debounced
   const [filterStatus, setFilterStatus] = useState('all');
   const [filterPaymentStatus, setFilterPaymentStatus] = useState('all');
   const [page, setPage] = useState(1);
@@ -40,7 +43,7 @@ export default function Orders() {
   const queryParams = {
     page,
     limit: pageSize,
-    ...(searchQuery && { search: searchQuery }),
+    ...(debouncedSearchQuery && { search: debouncedSearchQuery }),
     ...(filterStatus !== 'all' && { status: filterStatus }),
     ...(filterPaymentStatus !== 'all' && { paymentStatus: filterPaymentStatus }),
   };
@@ -341,7 +344,7 @@ export default function Orders() {
                     </td>
                     <td className="px-6 py-4">
                       <p className="text-sm text-gray-600">
-                        {new Date(order.createdAt).toLocaleDateString('en-US', {
+                        {formatDate(order.createdAt, {
                           month: 'short',
                           day: 'numeric',
                           year: 'numeric',
@@ -455,7 +458,7 @@ export default function Orders() {
                       )}
                     </p>
                     <p className="text-gray-500 mt-1">
-                      Placed: <span className="text-gray-900">{detailOrder.createdAt ? new Date(detailOrder.createdAt).toLocaleString() : '—'}</span>
+                      Placed: <span className="text-gray-900">{detailOrder.createdAt ? formatDateTime(detailOrder.createdAt) : '—'}</span>
                     </p>
                     <p className="text-gray-500 mt-1">
                       Status: <span className="font-medium text-gray-900">{detailOrder.orderStatus || '—'}</span>

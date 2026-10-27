@@ -20,6 +20,15 @@ html::-webkit-scrollbar {
   --font-lato: "Lato", sans-serif;
   --font-playfair: "Playfair Display", serif;
   --font-dm-sans: "DM Sans", sans-serif;
+
+  /* Brand tokens (Phase 4, REUSE-003): the storefront primary was typed
+     as the raw hex #F27318 in 100+ places. New primitives in
+     components/ui use these tokens (bg-brand, hover:bg-brand-hover,
+     text-brand, fill-brand, …) instead of raw hex. brand-hover is
+     #D9620E — the majority hover value (ProductCard, CartSlider); the
+     Wishlist outlier #E6651B was NOT adopted (see phase4 log). */
+  --color-brand: #F27318;
+  --color-brand-hover: #D9620E;
 }
 
 .sidebar-scroll {

@@ -10,12 +10,13 @@ import { UserAvatar } from "../../common/InitialsAvatar";
 import useChatSocket from "../../../hooks/chat/useChatSocket";
 import useNotificationSocket from "../../../hooks/notification/useNotificationSocket";
 import useAuthStore from "../../../store/authStore";
+import { useShallow } from "zustand/react/shallow";
 import ChatMessageList from "../../chat/ChatMessageList";
 import ChatInput from "../../chat/ChatInput";
 import TypingIndicator from "../../chat/TypingIndicator";
 
 const ChatConversation = ({ chat, onClose, onChatUpdated, draftReply }) => {
-  const { user, token } = useAuthStore();
+  const { user, token } = useAuthStore(useShallow((state) => ({ user: state.user, token: state.token })));
   const { socket } = useNotificationSocket(token, user?._id);
 
 

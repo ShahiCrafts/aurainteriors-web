@@ -1,12 +1,13 @@
 import { useEffect, useRef } from "react";
 import { useNavigate } from "react-router-dom";
 import useAuthStore, { getAuthRevision } from "../../store/authStore";
-import { toast } from "react-toastify";
+import { useShallow } from "zustand/react/shallow";
+import { toast } from "../../lib/toast";
 import { getProfile } from "../../api/profileApi";
 import Skeleton from "../common/Skeleton";
 
 export default function AuthCallback() {
-  const signIn = useAuthStore((state) => state.signIn);
+  const { signIn } = useAuthStore(useShallow((state) => ({ signIn: state.signIn })));
   const navigate = useNavigate();
   const isProcessing = useRef(false);
 

@@ -1,3 +1,4 @@
+import { formatDate } from "../../utils/formatDate";
 import { useState } from "react";
 import Dialog from "../../components/common/Dialog";
 import { motion, AnimatePresence } from "framer-motion";
@@ -35,7 +36,7 @@ import {
   usePromotionAnalytics,
 } from "../../hooks/admin/usePromotionTan";
 import { useDiscounts } from "../../hooks/admin/useDiscountTan";
-import { toast } from "react-toastify";
+import { toast } from "../../lib/toast";
 import Pagination from "../../components/common/Pagination";
 import formatError from "../../utils/errorHandler";
 import { reportSendOutcome } from "../../utils/queuedSend";
@@ -518,9 +519,7 @@ export default function Promotions() {
                           promotion.status === "scheduled" && (
                             <span className="text-[10px] text-gray-400 flex items-center gap-1">
                               <Calendar size={10} />{" "}
-                              {new Date(
-                                promotion.scheduledAt
-                              ).toLocaleDateString()}
+                              {formatDate(promotion.scheduledAt)}
                             </span>
                           )}
                       </div>
@@ -548,7 +547,7 @@ export default function Promotions() {
                       )}
                     </td>
                     <td className="px-6 py-4 text-xs text-gray-600">
-                      {new Date(promotion.createdAt).toLocaleDateString()}
+                      {formatDate(promotion.createdAt)}
                     </td>
                     <td className="px-6 py-4">
                       <div className="flex items-center justify-center gap-1">

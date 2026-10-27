@@ -17,6 +17,7 @@ import {
 import Skeleton from "../../components/common/Skeleton";
 import { useQueryClient } from "@tanstack/react-query";
 import useAuthStore from "../../store/authStore";
+import { useShallow } from "zustand/react/shallow";
 import useGuestCartStore from "../../store/guestCartStore";
 import { useCart } from "../../hooks/cart/useCartTan";
 import { useWishlist } from "../../hooks/cart/useWishlistTan";
@@ -38,10 +39,10 @@ export default function Navbar() {
   const [cartEverOpened, setCartEverOpened] = useState(false);
   const [isProfileOpen, setIsProfileOpen] = useState(false);
   const queryClient = useQueryClient();
-  const { isAuthenticated, logout, openAuthModal, user } = useAuthStore();
+  const { isAuthenticated, logout, openAuthModal, user } = useAuthStore(useShallow((state) => ({ isAuthenticated: state.isAuthenticated, logout: state.logout, openAuthModal: state.openAuthModal, user: state.user })));
   const { data: cartData } = useCart({ enabled: isAuthenticated });
   const { data: wishlistData } = useWishlist({ enabled: isAuthenticated });
-  const guestCartItems = useGuestCartStore((state) => state.items);
+  const { items: guestCartItems } = useGuestCartStore(useShallow((state) => ({ items: state.items })));
 
   const cartCount = isAuthenticated
     ? cartData?.data?.cart?.totalItems || 0

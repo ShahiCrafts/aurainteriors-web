@@ -7,7 +7,7 @@ import { uploadChatAttachment } from "../../api/chatApi";
 import AuthRequiredModal from "./AuthRequiredModal";
 import RateLimitModal from "./RateLimitModal";
 import { RATE_LIMIT_EVENT } from "../../api/index";
-import { toast } from "react-toastify";
+import { toast } from "../../lib/toast";
 
 const ChatInput = ({ chatId, onTyping, draftReply }) => {
   const [message, setMessage] = useState("");

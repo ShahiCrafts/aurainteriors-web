@@ -2,7 +2,7 @@
  * Custom toast singleton — drop-in API replacement for react-toastify.
  *
  * Usage (unchanged from before):
- *   import { toast } from "react-toastify";  // still works via Vite alias
+ *   import { toast } from "<relative>/lib/toast";  // REUSE-015: direct imports only — the former Vite alias from "react-toastify" was removed with the dependency
  *   toast.success("Added to cart");
  *   toast.error("Something went wrong");
  *   toast.info("Just so you know");
