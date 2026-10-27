@@ -1,4 +1,5 @@
 import { useState } from "react";
+import Dialog from "../../components/common/Dialog";
 import { motion, AnimatePresence } from "framer-motion";
 import {
   Plus,
@@ -37,6 +38,7 @@ import { useDiscounts } from "../../hooks/admin/useDiscountTan";
 import { toast } from "react-toastify";
 import Pagination from "../../components/common/Pagination";
 import formatError from "../../utils/errorHandler";
+import { reportSendOutcome } from "../../utils/queuedSend";
 
 const CATEGORY_OPTIONS = [
   { value: "living_room", label: "Living Room" },
@@ -230,7 +232,11 @@ export default function Promotions() {
         setConfirmModal((prev) => ({ ...prev, isLoading: true }));
         sendMutation.mutate(id, {
           onSuccess: (result) => {
-            toast.success(result.message || "Promotion sent successfully");
+            // FE-41: a 202 queued body must not be reported as "sent" —
+            // reportSendOutcome toasts the queued state, polls the job,
+            // and reports the real sent/failed counts (or the failure).
+            // Inline 200 bodies keep showing the server message.
+            void reportSendOutcome(result, { kind: "promotion", toast });
             setConfirmModal({ ...confirmModal, isOpen: false, isLoading: false });
           },
           onError: (err) => {
@@ -352,7 +358,7 @@ export default function Promotions() {
   };
 
   const filteredPromotions = promotions.filter((p) =>
-    p.title.toLowerCase().includes(searchQuery.toLowerCase())
+    (p.title || '').toLowerCase().includes(searchQuery.toLowerCase())
   );
 
   return (
@@ -385,7 +391,7 @@ export default function Promotions() {
               <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
               <input
                 type="text"
-                placeholder="Search by title or content..."
+                placeholder="Search this page by title…"
                 value={searchQuery}
                 onChange={(e) => {
                   setSearchQuery(e.target.value);
@@ -410,6 +416,14 @@ export default function Promotions() {
             </select>
           </div>
         </div>
+
+        {/* FE-28: the promotions API has no search parameter, so the
+            search filters only this page — say so while it is active. */}
+        {searchQuery && (
+          <p className="px-4 pt-3 text-xs text-gray-400">
+            Showing matches from this page only — other pages are not searched.
+          </p>
+        )}
 
         {isLoading ? (
           <div className="p-4">
@@ -815,18 +829,21 @@ function Modal({ title, children, onClose }) {
         animate={{ scale: 1, opacity: 1 }}
         exit={{ scale: 0.95, opacity: 0 }}
         onClick={(e) => e.stopPropagation()}
-        className="bg-white rounded-xl max-w-lg w-full p-6 border border-gray-100 shadow-2xl"
+        className="w-full max-w-lg"
       >
+       <Dialog open onClose={onClose} label={title} className="bg-white rounded-xl max-w-lg w-full p-6 border border-gray-100 shadow-2xl">
         <div className="flex items-center justify-between mb-6">
           <h3 className="text-lg font-bold text-gray-900">{title}</h3>
           <button
             onClick={onClose}
+            aria-label="Close dialog"
             className="p-2 hover:bg-gray-100 rounded-lg transition-colors"
           >
             <X className="w-5 h-5 text-gray-400" />
           </button>
         </div>
         {children}
+       </Dialog>
       </motion.div>
     </motion.div>
   );

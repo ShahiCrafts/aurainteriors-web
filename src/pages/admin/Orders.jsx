@@ -1,4 +1,5 @@
 import { useState, useEffect } from 'react';
+import Dialog from "../../components/common/Dialog";
 import { useLocation } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
 import {
@@ -13,10 +14,11 @@ import {
   RotateCcw,
 } from 'lucide-react';
 import Skeleton from "../../components/common/Skeleton";
-import { useAllOrders, useUpdateOrderStatus, useProcessReturnRequest } from '../../hooks/order/useOrderTan';
+import { useAllOrders, useUpdateOrderStatus, useProcessReturnRequest, useOrderAdmin } from '../../hooks/order/useOrderTan';
 import { toast } from "react-toastify";
 import Pagination from '../../components/common/Pagination';
 import formatError from "../../utils/errorHandler";
+import { formatNPR } from "../../utils/formatCurrency";
 
 export default function Orders() {
   const [searchQuery, setSearchQuery] = useState('');
@@ -25,6 +27,10 @@ export default function Orders() {
   const [page, setPage] = useState(1);
   const [pageSize] = useState(10);
   const [selectedOrder, setSelectedOrder] = useState(null);
+  // FE-38: 'View details' state — the row order opens the dialog
+  // immediately; useOrderAdmin (GET /orders/admin/:id) refreshes it
+  // with the full record.
+  const [detailsOrder, setDetailsOrder] = useState(null);
   const [showStatusModal, setShowStatusModal] = useState(false);
   const [showReturnModal, setShowReturnModal] = useState(false);
   const [newStatus, setNewStatus] = useState('');
@@ -40,6 +46,10 @@ export default function Orders() {
   };
 
   const { data: ordersData, isLoading, error } = useAllOrders(queryParams);
+  const { data: detailsData, isLoading: detailsLoading } = useOrderAdmin(detailsOrder?._id, {
+    enabled: !!detailsOrder,
+  });
+  const detailOrder = detailsData?.data?.order || detailsOrder;
   const updateStatusMutation = useUpdateOrderStatus();
   const processReturnMutation = useProcessReturnRequest();
 
@@ -313,7 +323,7 @@ export default function Orders() {
                   >
                     <td className="px-6 py-4">
                       <div>
-                        <p className="font-mono text-sm font-medium text-gray-900">#{order.orderId.slice(-8)}</p>
+                        <p className="font-mono text-sm font-medium text-gray-900">#{(order.orderId || '').slice(-8)}</p>
                         <p className="text-xs text-gray-400 mt-0.5">{order.items?.length || 0} items</p>
                       </div>
                     </td>
@@ -340,18 +350,18 @@ export default function Orders() {
                     </td>
                     <td className="px-6 py-4 text-right">
                       <p className="text-sm font-semibold text-gray-900">
-                        NRs. {(order.total || 0).toLocaleString()}
+                        {formatNPR(order.total || 0)}
                       </p>
                     </td>
                     <td className="px-6 py-4">
                       <span className={`inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-medium ${getStatusColor(order.orderStatus)}`}>
                         <span className={`w-1.5 h-1.5 rounded-full ${getStatusDot(order.orderStatus)}`}></span>
-                        {order.orderStatus.charAt(0).toUpperCase() + order.orderStatus.slice(1)}
+                        {(order.orderStatus || '').charAt(0).toUpperCase() + (order.orderStatus || '').slice(1)}
                       </span>
                     </td>
                     <td className="px-6 py-4">
                       <span className={`inline-flex px-2.5 py-1 rounded-full text-xs font-medium ${getPaymentStatusColor(order.paymentStatus)}`}>
-                        {order.refundRequest?.status === 'pending' ? 'Refund pending' : order.paymentStatus.charAt(0).toUpperCase() + order.paymentStatus.slice(1)}
+                        {order.refundRequest?.status === 'pending' ? 'Refund pending' : (order.paymentStatus || '').charAt(0).toUpperCase() + (order.paymentStatus || '').slice(1)}
                       </span>
                     </td>
                     <td className="px-6 py-4">
@@ -373,6 +383,7 @@ export default function Orders() {
                           </button>
                         )}
                         <button
+                          onClick={() => setDetailsOrder(order)}
                           className="p-2 text-gray-500 hover:bg-gray-100 rounded-lg transition-colors"
                           title="View details"
                         >
@@ -396,6 +407,113 @@ export default function Orders() {
         />
       </div>
 
+      {/* Order Details Modal — FE-38: opened by the 'View details' eye
+          button; fed by useOrderAdmin (GET /orders/admin/:id), falling
+          back to the row's own record while the detail loads. */}
+      <AnimatePresence>
+        {detailsOrder && (
+          <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            onClick={() => setDetailsOrder(null)}
+            className="fixed inset-0 bg-black/50 backdrop-blur-sm flex items-center justify-center z-50 p-4"
+          >
+            <motion.div
+              initial={{ scale: 0.95, opacity: 0 }}
+              animate={{ scale: 1, opacity: 1 }}
+              exit={{ scale: 0.95, opacity: 0 }}
+              onClick={e => e.stopPropagation()}
+              className="w-full max-w-lg"
+            >
+             <Dialog open onClose={() => setDetailsOrder(null)} label="Order Details" className="bg-white rounded-xl max-w-lg w-full p-6 border border-gray-100 relative max-h-[85vh] overflow-y-auto">
+              <div className="flex items-center justify-between mb-5">
+                <h3 className="text-lg font-bold text-gray-900">Order Details</h3>
+                <button
+                  onClick={() => setDetailsOrder(null)}
+                  aria-label="Close details"
+                  className="p-2 hover:bg-gray-100 rounded-lg transition-colors"
+                >
+                  <X className="w-5 h-5 text-gray-400" />
+                </button>
+              </div>
+
+              {detailsLoading && !detailsData ? (
+                <p className="text-sm text-gray-500">Loading order details…</p>
+              ) : detailOrder ? (
+                <div className="space-y-5 text-sm">
+                  <div>
+                    <p className="text-gray-500">Order: <span className="font-mono font-medium text-gray-900">{detailOrder.orderId}</span></p>
+                    <p className="text-gray-500 mt-1">
+                      Customer: <span className="font-medium text-gray-900">
+                        {detailOrder.user
+                          ? `${detailOrder.user.firstName || ''} ${detailOrder.user.lastName || ''}`.trim()
+                          : `${detailOrder.guestInfo?.firstName || 'Guest'} ${detailOrder.guestInfo?.lastName || ''}`.trim()}
+                      </span>
+                      {(detailOrder.user?.email || detailOrder.guestInfo?.email) && (
+                        <> · <span className="text-gray-900">{detailOrder.user?.email || detailOrder.guestInfo?.email}</span></>
+                      )}
+                    </p>
+                    <p className="text-gray-500 mt-1">
+                      Placed: <span className="text-gray-900">{detailOrder.createdAt ? new Date(detailOrder.createdAt).toLocaleString() : '—'}</span>
+                    </p>
+                    <p className="text-gray-500 mt-1">
+                      Status: <span className="font-medium text-gray-900">{detailOrder.orderStatus || '—'}</span>
+                      {' · '}Payment: <span className="font-medium text-gray-900">{detailOrder.paymentStatus || '—'}</span>
+                      {detailOrder.paymentMethod && <> ({detailOrder.paymentMethod.toUpperCase()})</>}
+                    </p>
+                  </div>
+
+                  <div>
+                    <h4 className="font-semibold text-gray-900 mb-2">Items</h4>
+                    <ul className="divide-y divide-gray-50">
+                      {(detailOrder.items || []).map((item, idx) => (
+                        <li key={item._id || idx} className="flex items-center justify-between py-2">
+                          <span className="text-gray-700">{item.name} <span className="text-gray-400">× {item.quantity || 0}</span></span>
+                          <span className="font-medium text-gray-900">{formatNPR((item.price || 0) * (item.quantity || 0))}</span>
+                        </li>
+                      ))}
+                    </ul>
+                  </div>
+
+                  <div className="border-t border-gray-100 pt-3 space-y-1">
+                    <p className="flex justify-between text-gray-500"><span>Subtotal</span><span className="text-gray-900">{formatNPR(detailOrder.subtotal || 0)}</span></p>
+                    {(detailOrder.discountAmount || 0) > 0 && (
+                      <p className="flex justify-between text-gray-500"><span>Discount{detailOrder.discountCode?.code ? ` (${detailOrder.discountCode.code})` : ''}</span><span className="text-gray-900">− {formatNPR(detailOrder.discountAmount || 0)}</span></p>
+                    )}
+                    <p className="flex justify-between text-gray-500"><span>Shipping</span><span className="text-gray-900">{formatNPR(detailOrder.shippingCost || 0)}</span></p>
+                    {(detailOrder.tax || 0) > 0 && (
+                      <p className="flex justify-between text-gray-500"><span>Tax</span><span className="text-gray-900">{formatNPR(detailOrder.tax || 0)}</span></p>
+                    )}
+                    <p className="flex justify-between font-semibold text-gray-900 pt-1"><span>Total</span><span>{formatNPR(detailOrder.total || 0)}</span></p>
+                  </div>
+
+                  {detailOrder.shippingAddress && (
+                    <div>
+                      <h4 className="font-semibold text-gray-900 mb-1">Shipping Address</h4>
+                      <p className="text-gray-600">
+                        {detailOrder.shippingAddress.fullName}
+                        {detailOrder.shippingAddress.phone ? ` · ${detailOrder.shippingAddress.phone}` : ''}
+                        <br />
+                        {detailOrder.shippingAddress.addressLine1}
+                        {detailOrder.shippingAddress.addressLine2 ? `, ${detailOrder.shippingAddress.addressLine2}` : ''}
+                        <br />
+                        {detailOrder.shippingAddress.city}
+                        {detailOrder.shippingAddress.state ? `, ${detailOrder.shippingAddress.state}` : ''}
+                        {detailOrder.shippingAddress.postalCode ? ` ${detailOrder.shippingAddress.postalCode}` : ''}
+                        {detailOrder.shippingAddress.country ? `, ${detailOrder.shippingAddress.country}` : ''}
+                      </p>
+                    </div>
+                  )}
+
+                </div>
+              ) : null}
+             </Dialog>
+            </motion.div>
+          </motion.div>
+        )}
+      </AnimatePresence>
+
       {/* Status Update Modal */}
       <AnimatePresence>
         {showStatusModal && (
@@ -411,8 +529,9 @@ export default function Orders() {
               animate={{ scale: 1, opacity: 1 }}
               exit={{ scale: 0.95, opacity: 0 }}
               onClick={e => e.stopPropagation()}
-              className="bg-white rounded-xl max-w-md w-full p-6 border border-gray-100"
+              className="w-full max-w-md"
             >
+             <Dialog open onClose={() => setShowStatusModal(false)} label="Update Order Status" className="bg-white rounded-xl max-w-md w-full p-6 border border-gray-100 relative">
               <div className="flex items-center justify-between mb-5">
                 <h3 className="text-lg font-bold text-gray-900">Update Order Status</h3>
                 <button
@@ -456,6 +575,7 @@ export default function Orders() {
                   Update
                 </button>
               </div>
+             </Dialog>
             </motion.div>
           </motion.div>
         )}
@@ -474,8 +594,9 @@ export default function Orders() {
               animate={{ scale: 1, opacity: 1 }}
               exit={{ scale: 0.95, opacity: 0 }}
               onClick={e => e.stopPropagation()}
-              className="bg-white rounded-xl max-w-md w-full p-6 border border-gray-100"
+              className="w-full max-w-md"
             >
+             <Dialog open onClose={() => setShowReturnModal(false)} label="Process Return Request" className="bg-white rounded-xl max-w-md w-full p-6 border border-gray-100 relative">
               <div className="flex items-center justify-between mb-5">
                 <h3 className="text-lg font-bold text-gray-900">Process Return Request</h3>
                 <button
@@ -545,6 +666,7 @@ export default function Orders() {
                   Process
                 </button>
               </div>
+             </Dialog>
             </motion.div>
           </motion.div>
         )}

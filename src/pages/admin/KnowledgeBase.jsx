@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import { 
   FileText, 
   Upload, 
@@ -12,12 +12,33 @@ import {
   AlertTriangle
 } from "lucide-react";
 import { TableSkeleton } from "../../components/common/Skeleton";
-import { 
-  listDocuments, 
-  uploadDocument, 
-  deleteDocument, 
-  retryDocument 
+import Pagination from "../../components/common/Pagination";
+import {
+  listDocuments,
+  uploadDocument,
+  deleteDocument,
+  retryDocument
 } from "../../api/documentApi";
+import { validateMediaUrl } from "../../utils/safeUrl";
+
+// FE-42: with DOCUMENT_DELETE_HONEST_STATUS=on the server answers a
+// document delete whose cleanup partly failed with HTTP 200
+// { status:'partial', message, data:{ outcomes } } (server
+// controllers/document.controller.js:146-156). Outcomes are per-system:
+// 'ok' | 'failed' | 'skipped' — only 'failed' is a cleanup failure.
+const CLEANUP_SYSTEM_LABELS = {
+  qdrant: "vector index",
+  cloudinary: "file storage",
+  database: "database",
+};
+
+const failedCleanupSystems = (outcomes) =>
+  Object.entries(outcomes || {})
+    .filter(([, outcome]) => outcome === "failed")
+    .map(([system]) => ({
+      system,
+      label: CLEANUP_SYSTEM_LABELS[system] || system,
+    }));
 
 const KnowledgeBase = () => {
   const [documents, setDocuments] = useState([]);
@@ -25,6 +46,10 @@ const KnowledgeBase = () => {
   const [uploading, setUploading] = useState(false);
   const [error, setError] = useState(null);
   const [successMsg, setSuccessMsg] = useState(null);
+  // FE-42: a 'partial' delete outcome stays visible until dismissed:
+  // { id, message, failed: [{ system, label }], recordGone, retryError }
+  const [partialDelete, setPartialDelete] = useState(null);
+  const [retryingCleanup, setRetryingCleanup] = useState(false);
   const [page, setPage] = useState(1);
   const [pagination, setPagination] = useState({ totalPages: 1 });
 
@@ -66,16 +91,94 @@ const KnowledgeBase = () => {
     }
   };
 
+  // FE-37: the delete button had no pending guard — a double-click
+  // fired duplicate DELETE calls. Track the in-flight delete (guard
+  // first, before the confirm prompt) and disable that row's button.
+  const [deletingId, setDeletingId] = useState(null);
+  const deletingRef = useRef(null);
+
   // Handle document deletion
   const handleDelete = async (id) => {
+    if (deletingRef.current) return;
     if (!window.confirm("Are you sure you want to delete this document? All vector indexes will be removed.")) return;
+    deletingRef.current = id;
+    setDeletingId(id);
     try {
-      await deleteDocument(id);
-      setSuccessMsg("Document and vectors deleted successfully");
+      // FE-42: use the resolved value — a 'partial' status means the DB
+      // record is deleted but some cleanup failed; claiming full success
+      // would hide orphaned vectors/files from the admin.
+      const result = await deleteDocument(id);
+      if (result?.status === "partial") {
+        setSuccessMsg(null);
+        setPartialDelete({
+          id,
+          message:
+            result.message ||
+            "Document deleted from the database, but some cleanup steps failed.",
+          failed: failedCleanupSystems(result.data?.outcomes),
+          recordGone: false,
+          retryError: null,
+        });
+      } else {
+        setPartialDelete(null);
+        setSuccessMsg("Document and vectors deleted successfully");
+        setTimeout(() => setSuccessMsg(null), 5000);
+      }
+      // The list refetches either way: the DB row really is gone.
       fetchDocs(page);
-      setTimeout(() => setSuccessMsg(null), 5000);
     } catch (err) {
       setError(err.displayMessage || "Failed to delete document");
+    } finally {
+      deletingRef.current = null;
+      setDeletingId(null);
+    }
+  };
+
+  // FE-42: "Retry cleanup" re-calls deleteDocument once per click and
+  // reports exactly what the server answers — success upgrades the
+  // warning, another partial refreshes the failed systems, and a 404
+  // means the record is already deleted (the server has no cleanup-retry
+  // endpoint; the failed cleanups are logged for support). A cleanup is
+  // never claimed successful unless the server response says so.
+  const handleRetryCleanup = async () => {
+    if (!partialDelete || retryingCleanup) return;
+    const { id } = partialDelete;
+    try {
+      setRetryingCleanup(true);
+      const result = await deleteDocument(id);
+      if (result?.status === "partial") {
+        setPartialDelete({
+          id,
+          message:
+            result.message ||
+            "Document deleted from the database, but some cleanup steps failed.",
+          failed: failedCleanupSystems(result.data?.outcomes),
+          recordGone: false,
+          retryError: null,
+        });
+      } else {
+        setPartialDelete(null);
+        setSuccessMsg("Document and vectors deleted successfully");
+        setTimeout(() => setSuccessMsg(null), 5000);
+      }
+      fetchDocs(page);
+    } catch (err) {
+      if (err?.response?.status === 404 || err?.status === 404) {
+        setPartialDelete((prev) =>
+          prev ? { ...prev, recordGone: true, retryError: null } : prev
+        );
+      } else {
+        setPartialDelete((prev) =>
+          prev
+            ? {
+                ...prev,
+                retryError: err.displayMessage || "Cleanup retry failed",
+              }
+            : prev
+        );
+      }
+    } finally {
+      setRetryingCleanup(false);
     }
   };
 
@@ -132,6 +235,63 @@ const KnowledgeBase = () => {
         <div className="p-4 bg-emerald-50 border border-emerald-100 text-emerald-700 rounded-xl flex items-start gap-3">
           <CheckCircle className="w-5 h-5 shrink-0 mt-0.5" />
           <span className="text-sm font-medium">{successMsg}</span>
+        </div>
+      )}
+
+      {/* FE-42: partial-delete warning — stays until dismissed, names the
+          failed cleanup systems, and offers one honest retry per click. */}
+      {partialDelete && (
+        <div
+          data-testid="partial-delete-warning"
+          className="p-4 bg-amber-50 border border-amber-200 text-amber-800 rounded-xl flex items-start gap-3"
+        >
+          <AlertTriangle className="w-5 h-5 shrink-0 mt-0.5" />
+          <div className="flex flex-col gap-2 text-sm">
+            <span className="font-semibold">
+              Document deleted, but cleanup was incomplete
+            </span>
+            <span>{partialDelete.message}</span>
+            {partialDelete.failed.length > 0 && (
+              <span>
+                Cleanup failed for:{" "}
+                {partialDelete.failed.map((f) => f.label).join(", ")}.
+              </span>
+            )}
+            {partialDelete.recordGone && (
+              <span>
+                The document record is already deleted, so cleanup cannot be
+                retried from here. The failed cleanup
+                {partialDelete.failed.length > 0
+                  ? ` (${partialDelete.failed.map((f) => f.label).join(", ")})`
+                  : ""}{" "}
+                has been logged for support to resolve.
+              </span>
+            )}
+            {partialDelete.retryError && (
+              <span className="text-rose-700">
+                Retry failed: {partialDelete.retryError}
+              </span>
+            )}
+            <span className="flex gap-2 mt-1">
+              {!partialDelete.recordGone && (
+                <button
+                  type="button"
+                  onClick={handleRetryCleanup}
+                  disabled={retryingCleanup}
+                  className="px-3 py-1.5 bg-amber-600 hover:bg-amber-700 disabled:opacity-60 text-white rounded-lg font-medium transition-colors"
+                >
+                  {retryingCleanup ? "Retrying..." : "Retry cleanup"}
+                </button>
+              )}
+              <button
+                type="button"
+                onClick={() => setPartialDelete(null)}
+                className="px-3 py-1.5 border border-amber-300 hover:bg-amber-100 text-amber-800 rounded-lg font-medium transition-colors"
+              >
+                Dismiss
+              </button>
+            </span>
+          </div>
         </div>
       )}
 
@@ -219,8 +379,8 @@ const KnowledgeBase = () => {
                           <FileText className="w-5 h-5" />
                         </div>
                         <div className="min-w-0">
-                          <a 
-                            href={doc.fileUrl} 
+                          <a
+                            href={validateMediaUrl(doc.fileUrl, { fallback: "#", allowedHosts: ["res.cloudinary.com"] }) || "#"}
                             target="_blank" 
                             rel="noopener noreferrer" 
                             className="font-bold text-gray-900 hover:text-teal-600 truncate block text-sm"
@@ -285,8 +445,9 @@ const KnowledgeBase = () => {
                         )}
                         <button 
                           onClick={() => handleDelete(doc._id)}
+                          disabled={deletingId === doc._id}
                           title="Delete Document"
-                          className="p-2 hover:bg-rose-50 text-rose-500 hover:text-rose-600 rounded-lg transition-colors"
+                          className="p-2 hover:bg-rose-50 text-rose-500 hover:text-rose-600 rounded-lg transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
                         >
                           <Trash2 className="w-4 h-4" />
                         </button>
@@ -300,28 +461,16 @@ const KnowledgeBase = () => {
         )}
       </div>
 
-      {/* Pagination Controls */}
-      {pagination.totalPages > 1 && (
-        <div className="flex justify-center items-center gap-4 mt-2">
-          <button 
-            disabled={page === 1}
-            onClick={() => setPage(p => Math.max(p - 1, 1))}
-            className="px-4 py-2 border border-gray-200 rounded-xl disabled:opacity-40 font-medium hover:bg-gray-50 text-sm transition-all"
-          >
-            Previous
-          </button>
-          <span className="text-sm font-semibold text-gray-600">
-            Page {page} of {pagination.totalPages}
-          </span>
-          <button 
-            disabled={page === pagination.totalPages}
-            onClick={() => setPage(p => Math.min(p + 1, pagination.totalPages))}
-            className="px-4 py-2 border border-gray-200 rounded-xl disabled:opacity-40 font-medium hover:bg-gray-50 text-sm transition-all"
-          >
-            Next
-          </button>
-        </div>
-      )}
+      {/* Pagination Controls — the shared Pagination, simple
+          variant (Wave A); it renders nothing at one page. */}
+      <div className="mt-2">
+        <Pagination
+          variant="simple"
+          page={page}
+          totalPages={pagination.totalPages}
+          onPageChange={setPage}
+        />
+      </div>
     </div>
   );
 };

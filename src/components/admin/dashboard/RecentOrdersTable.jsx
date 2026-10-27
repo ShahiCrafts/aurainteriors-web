@@ -1,7 +1,9 @@
 import { Link } from "react-router-dom";
 import { ArrowRight } from "lucide-react";
+import { formatNPR } from "../../../utils/formatCurrency";
 
 export default function RecentOrdersTable({ orders = [] }) {
+  const safeOrders = orders || [];
   return (
     <div className="bg-white rounded-2xl border border-gray-100 overflow-hidden shadow-[0_2px_10px_-4px_rgba(0,0,0,0.05)]">
       {/* Header */}
@@ -40,7 +42,7 @@ export default function RecentOrdersTable({ orders = [] }) {
           </thead>
 
           <tbody className="divide-y divide-gray-100">
-            {orders.map((order) => {
+            {safeOrders.map((order) => {
               const customerName =
                 order.user?.fullName || order.guestInfo?.firstName || "Guest";
 
@@ -59,7 +61,7 @@ export default function RecentOrdersTable({ orders = [] }) {
                   {/* Order ID */}
                   <td className="px-6 py-4">
                     <span className="inline-block font-mono text-xs text-gray-600 bg-gray-100 px-2 py-1 rounded-md">
-                      #{order.orderId.slice(-6)}
+                      #{(order.orderId || '').slice(-6)}
                     </span>
                   </td>
 
@@ -95,13 +97,13 @@ export default function RecentOrdersTable({ orders = [] }) {
 
                   {/* Total */}
                   <td className="px-6 py-4 text-right font-semibold text-gray-900">
-                    NRs. {order.total.toLocaleString()}
+                    {formatNPR(order.total || 0)}
                   </td>
                 </tr>
               );
             })}
 
-            {orders.length === 0 && (
+            {safeOrders.length === 0 && (
               <tr>
                 <td
                   colSpan={5}

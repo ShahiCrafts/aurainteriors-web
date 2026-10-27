@@ -8,19 +8,38 @@ import {
     ResponsiveContainer,
 } from 'recharts';
 
-export default function RevenueChart({ data }) {
+// FE-38: the period <select> below used to have no value/onChange/
+// state at all — an admin could pick 'This Year' and nothing changed,
+// while the subtitle permanently claimed 'last 30 days'. The period
+// CAN genuinely drive the chart: Dashboard owns the period state and
+// feeds useRevenueAnalytics(days) → GET /analytics/revenue?days=N,
+// and the server honours `days` (clamped to 1..365, default 30 —
+// controllers/analytics.controller.js getRevenueAnalytics). So the
+// select is wired as a controlled control and the subtitle states
+// the window actually being shown. The period definitions and the
+// days mapping live in utils/revenuePeriod.js (this file exports
+// only the component).
+import { REVENUE_PERIODS, DEFAULT_REVENUE_PERIOD } from '../../../utils/revenuePeriod';
+import { formatNPR } from '../../../utils/formatCurrency';
+
+export default function RevenueChart({ data, period = DEFAULT_REVENUE_PERIOD, onPeriodChange }) {
+    const activePeriod = REVENUE_PERIODS.find((p) => p.value === period) || REVENUE_PERIODS[0];
     return (
         <div className="bg-white rounded-2xl border border-gray-100 p-5 shadow-[0_2px_10px_-4px_rgba(0,0,0,0.05)]">
             <div className="flex items-center justify-between mb-4">
                 <div>
                     <h2 className="text-base font-bold text-gray-900">Sales Overview</h2>
-                    <p className="text-[13px] text-gray-500 mt-0.5">Revenue trend over the last 30 days</p>
+                    <p className="text-[13px] text-gray-500 mt-0.5">{activePeriod.subtitle}</p>
                 </div>
-                <select className="text-xs border border-gray-200 rounded-lg px-2.5 py-1.5 text-gray-600 bg-white focus:outline-none focus:ring-2 focus:ring-teal-500/20 focus:border-teal-500 transition-all cursor-pointer hover:border-teal-200 shrink-0">
-                    <option>Last 30 Days</option>
-                    <option>This Month</option>
-                    <option>Last 3 Months</option>
-                    <option>This Year</option>
+                <select
+                    aria-label="Revenue period"
+                    value={activePeriod.value}
+                    onChange={(e) => onPeriodChange?.(e.target.value)}
+                    className="text-xs border border-gray-200 rounded-lg px-2.5 py-1.5 text-gray-600 bg-white focus:outline-none focus:ring-2 focus:ring-teal-500/20 focus:border-teal-500 transition-all cursor-pointer hover:border-teal-200 shrink-0"
+                >
+                    {REVENUE_PERIODS.map((p) => (
+                        <option key={p.value} value={p.value}>{p.label}</option>
+                    ))}
                 </select>
             </div>
             <div className="h-[220px] w-full min-w-0">
@@ -58,7 +77,7 @@ export default function RevenueChart({ data }) {
                                     padding: '12px'
                                 }}
                                 labelStyle={{ fontSize: '12px', color: '#6b7280', marginBottom: '6px' }}
-                                formatter={(value) => [`NRs. ${value.toLocaleString()}`, 'Revenue']}
+                                formatter={(value) => [formatNPR(value), 'Revenue']}
                                 labelFormatter={(label) => new Date(label).toLocaleDateString(undefined, { weekday: 'short', month: 'short', day: 'numeric' })}
                             />
                             <Area

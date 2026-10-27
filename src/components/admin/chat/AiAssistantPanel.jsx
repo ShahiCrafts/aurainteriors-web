@@ -6,7 +6,8 @@ import {
   Shield, Check, UserCheck, ShieldAlert
 } from "lucide-react";
 import Skeleton from "../../common/Skeleton";
-import { getAvatarUrl } from "../../../utils/imageUrl";
+import { UserAvatar } from "../../common/InitialsAvatar";
+import { formatNPR } from "../../../utils/formatCurrency";
 import { useToggleBot } from "../../../hooks/chat/useChatTan";
 import { useAllOrders } from "../../../hooks/order/useOrderTan";
 
@@ -26,8 +27,11 @@ const AiAssistantPanel = ({ chat, onClose, onUseReply, onEditReply }) => {
 
   const customerOrders = ordersData?.data?.orders || [];
 
-  const summary = chat?.metadata?.aiSummary || "The customer is asking about delivery status and showing concern over order timelines.";
-  const suggestedReply = chat?.metadata?.suggestedReply || "Hello! Let me pull up your order status right away and see what's happening.";
+  // FE-14: only real, API-provided AI text may be shown or dispatched.
+  // A missing summary renders an honest empty state, and a missing
+  // suggested reply renders no suggestion UI and no send/copy path.
+  const summary = chat?.metadata?.aiSummary;
+  const suggestedReply = chat?.metadata?.suggestedReply;
 
   const handleCopy = () => {
     navigator.clipboard.writeText(suggestedReply);
@@ -115,7 +119,8 @@ const AiAssistantPanel = ({ chat, onClose, onUseReply, onEditReply }) => {
             </button>
           </div>
 
-          {/* 2. Suggested Response */}
+          {/* 2. Suggested Response — only when the API actually provided one */}
+          {suggestedReply && (
           <div className="bg-linear-to-b from-teal-50/20 to-white rounded-xl border border-teal-100 p-4 space-y-3">
             <div className="flex items-center justify-between">
               <div className="flex items-center gap-1.5 text-[11px] font-bold text-teal-700 uppercase tracking-wider">
@@ -142,6 +147,7 @@ const AiAssistantPanel = ({ chat, onClose, onUseReply, onEditReply }) => {
               </button>
             </div>
           </div>
+          )}
 
           {/* 3. Conversation Summary */}
           <div className="bg-white rounded-xl border border-gray-100 p-3.5 space-y-2">
@@ -150,21 +156,20 @@ const AiAssistantPanel = ({ chat, onClose, onUseReply, onEditReply }) => {
               Conversation Summary
             </div>
             <p className="text-xs text-gray-600 leading-relaxed">
-              {summary}
+              {summary || "No AI summary available"}
             </p>
           </div>
 
           {/* 4. Customer Profile Card */}
           <div className="bg-white rounded-xl border border-gray-100 p-3.5 space-y-3">
             <div className="flex items-center gap-3">
-              <img 
-                src={getAvatarUrl(chat?.customer)}
+              {/* FE-06: real avatar img or local initials — the
+                  customer's name never leaves for a placeholder
+                  service. */}
+              <UserAvatar
+                user={chat?.customer}
                 alt="Customer Profile"
-                className="w-10 h-10 rounded-full object-cover border border-gray-100 shrink-0"
-                onError={(e) => {
-                  e.target.onerror = null;
-                  e.target.src = `https://ui-avatars.com/api/?name=${encodeURIComponent(chat?.customer?.firstName || "U")}&background=E0E7FF&color=4338CA`;
-                }}
+                className="w-10 h-10 rounded-full text-sm border border-gray-100"
               />
               <div className="min-w-0">
                 <h4 className="font-bold text-gray-900 text-xs truncate">
@@ -226,7 +231,7 @@ const AiAssistantPanel = ({ chat, onClose, onUseReply, onEditReply }) => {
 
                     <div className="flex justify-between items-center border-t border-gray-50 pt-2 text-[11px]">
                       <span className="text-gray-400">Total Price</span>
-                      <span className="font-bold text-gray-900">NRs. {order.total.toLocaleString()}</span>
+                      <span className="font-bold text-gray-900">{formatNPR(order.total)}</span>
                     </div>
                   </div>
                 ))}

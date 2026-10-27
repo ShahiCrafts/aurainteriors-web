@@ -1,4 +1,5 @@
-import { useState, useRef, useMemo } from 'react';
+import { useState, useRef, useMemo, useEffect } from 'react';
+import Dialog from "../../components/common/Dialog";
 import { motion, AnimatePresence } from 'framer-motion';
 import {
   Plus,
@@ -9,9 +10,11 @@ import {
   FolderTree,
   Package,
   Image,
-  GripVertical,
   ChevronRight,
   ChevronDown,
+  ArrowUp,
+  ArrowDown,
+  SlidersHorizontal,
   Upload,
   Loader2,
   GitFork,
@@ -20,6 +23,16 @@ import {
 import Skeleton from "../../components/common/Skeleton";
 import ConfirmationDialog from "../../components/modals/ConfirmationDialog";
 import { useCategories, useCreateCategory, useUpdateCategory, useDeleteCategory } from '../../hooks/product/useCategoryTan';
+import { useProductTypes, useRooms, useReorderCategories } from '../../hooks/catalog/useCatalogTan';
+import {
+  buildCategoryTree,
+  flattenVisibleTree,
+  descendantIdSet,
+  moveIdWithinSiblings,
+  subtreeProductCount,
+  categoryParentId,
+} from '../../utils/categoryTree';
+import CategoryAttributesEditor from '../../components/admin/catalog/CategoryAttributesEditor';
 import { toast } from "react-toastify";
 import formatError from "../../utils/errorHandler";
 import ImageWithFallback from '../../components/fallbacks/ImageWithFallback';
@@ -42,6 +55,8 @@ export default function Categories() {
   const [imagePreview, setImagePreview] = useState(null);
   const [deleteModalOpen, setDeleteModalOpen] = useState(false);
   const [categoryToDelete, setCategoryToDelete] = useState(null);
+  const [attributesCategory, setAttributesCategory] = useState(null);
+  const [expandedInitialized, setExpandedInitialized] = useState(false);
   const [categoryForm, setCategoryForm] = useState({
     name: '',
     description: '',
@@ -49,16 +64,35 @@ export default function Categories() {
     status: 'active',
     parent: '',
     sortOrder: 0,
+    productType: '',
+    roomSlugs: [],
   });
 
   // Fetch categories
   const { data: categoriesData, isLoading, error } = useCategories();
   const categories = categoriesData?.data?.categories || [];
 
+  // Catalog registries for the form (Phase 6)
+  const { data: productTypesData } = useProductTypes();
+  const productTypes = productTypesData?.data?.productTypes || [];
+  const { data: roomsData } = useRooms();
+  const rooms = roomsData?.data?.rooms || [];
+
   // Mutations
   const createMutation = useCreateCategory();
   const updateMutation = useUpdateCategory();
   const deleteMutation = useDeleteCategory();
+  const reorderMutation = useReorderCategories();
+
+  // The tree starts fully expanded so the whole hierarchy (and its
+  // subtree counts) is visible on first load.
+  useEffect(() => {
+    if (!expandedInitialized && categories.length > 0) {
+      const parentIds = new Set(categories.map((c) => categoryParentId(c)).filter(Boolean));
+      setExpandedCategories(categories.filter((c) => parentIds.has(String(c._id))).map((c) => String(c._id)));
+      setExpandedInitialized(true);
+    }
+  }, [categories, expandedInitialized]);
 
   const toggleExpand = (categoryId) => {
     setExpandedCategories(prev =>
@@ -68,15 +102,17 @@ export default function Categories() {
     );
   };
 
-  const handleAddCategory = () => {
+  const handleAddCategory = (parentId = '') => {
     setEditingCategory(null);
     setCategoryForm({
       name: '',
       description: '',
       image: null,
       status: 'active',
-      parent: '',
+      parent: parentId || '',
       sortOrder: 0,
+      productType: '',
+      roomSlugs: [],
     });
     setImagePreview(null);
     setShowModal(true);
@@ -89,8 +125,10 @@ export default function Categories() {
       description: category.description || '',
       image: null,
       status: category.status,
-      parent: category.parent?._id || category.parent || '',
+      parent: categoryParentId(category) || '',
       sortOrder: category.sortOrder || 0,
+      productType: category.productType || '',
+      roomSlugs: category.roomSlugs || [],
     });
     setImagePreview(category.image ? getCategoryImageUrl(category.image) : null);
     setShowModal(true);
@@ -132,11 +170,14 @@ export default function Categories() {
       description: categoryForm.description,
       status: categoryForm.status,
       sortOrder: categoryForm.sortOrder,
+      // Always send the parent on update: '' means "move to root"
+      // (the server maps it to null). On create the api layer drops
+      // the empty value and the category is created at the root.
+      parent: categoryForm.parent || '',
+      // '' clears an assigned product type server-side.
+      productType: categoryForm.productType || '',
+      roomSlugs: categoryForm.roomSlugs,
     };
-
-    if (categoryForm.parent) {
-      formData.parent = categoryForm.parent;
-    }
 
     if (categoryForm.image instanceof File) {
       formData.image = categoryForm.image;
@@ -163,8 +204,8 @@ export default function Categories() {
     if (searchQuery.trim()) {
       const q = searchQuery.toLowerCase();
       result = result.filter(cat => 
-        cat.name.toLowerCase().includes(q) || 
-        cat.slug.toLowerCase().includes(q) || 
+        (cat.name || '').toLowerCase().includes(q) || 
+        (cat.slug || '').toLowerCase().includes(q) || 
         (cat.description && cat.description.toLowerCase().includes(q))
       );
     }
@@ -206,10 +247,61 @@ export default function Categories() {
     return result;
   }, [categories, searchQuery, statusFilter, typeFilter, densityFilter, sortBy]);
 
-  // Get parent categories (those without parent)
-  const parentCategories = useMemo(() => {
-    return categories.filter(cat => !cat.parent);
-  }, [categories]);
+  // Phase 6 — hierarchical tree view, built client-side from the
+  // flat list (which includes inactive categories, unlike the
+  // server's active-only tree endpoint). Subtree product counts
+  // roll up from the flat list's direct productCount values.
+  const treeRoots = useMemo(() => buildCategoryTree(categories), [categories]);
+  const treeRows = useMemo(
+    () => flattenVisibleTree(treeRoots, new Set(expandedCategories.map(String))),
+    [treeRoots, expandedCategories]
+  );
+  const siblingIdsByParent = useMemo(() => {
+    const map = new Map();
+    const walk = (nodes, parentKey) => {
+      map.set(parentKey, nodes.map((n) => String(n._id)));
+      nodes.forEach((n) => walk(n.children || [], String(n._id)));
+    };
+    walk(treeRoots, 'root');
+    return map;
+  }, [treeRoots]);
+
+  // The tree is the default view; any search/filter/non-default
+  // sort switches to the flat card grid below.
+  const isTreeMode =
+    !searchQuery.trim() &&
+    statusFilter === 'all' &&
+    typeFilter === 'all' &&
+    densityFilter === 'all' &&
+    sortBy === 'sortOrder';
+
+  const handleMoveCategory = (category, direction) => {
+    const parentKey = categoryParentId(category) || 'root';
+    const siblings = siblingIdsByParent.get(parentKey) || [];
+    const next = moveIdWithinSiblings(siblings, category._id, direction);
+    if (next === siblings) return;
+    reorderMutation.mutate(next, {
+      onError: (err) => toast.error(formatError(err, 'Failed to reorder categories')),
+    });
+  };
+
+  // Parent picker options: the whole tree, minus — when editing —
+  // the category itself and its descendants (the server rejects
+  // cycles with a 400; excluding them keeps the invalid choice
+  // unselectable in the first place).
+  const parentOptions = useMemo(() => {
+    const excluded = editingCategory ? descendantIdSet(categories, editingCategory._id) : new Set();
+    if (editingCategory) excluded.add(String(editingCategory._id));
+    const options = [];
+    const walk = (nodes, depth) => {
+      nodes.forEach((node) => {
+        if (!excluded.has(String(node._id))) options.push({ category: node, depth });
+        walk(node.children || [], depth + 1);
+      });
+    };
+    walk(treeRoots, 0);
+    return options;
+  }, [categories, treeRoots, editingCategory]);
 
   // Compute Stats Card Values
   const parentCategoriesCount = useMemo(() => categories.filter(c => !c.parent).length, [categories]);
@@ -283,7 +375,7 @@ export default function Categories() {
           </p>
         </div>
         <button
-          onClick={handleAddCategory}
+          onClick={() => handleAddCategory()}
           className="inline-flex items-center gap-2 px-4 py-2 bg-teal-600 hover:bg-teal-700 text-white rounded-lg text-sm font-medium transition-colors shadow-sm cursor-pointer"
         >
           <Plus className="w-4 h-4" />
@@ -422,7 +514,125 @@ export default function Categories() {
         </div>
       </div>
 
-      {/* Categories Grid */}
+      {/* Categories — hierarchical tree (default view). Any
+          search/filter/non-default sort switches to the flat card
+          grid below. */}
+      {isTreeMode ? (
+        <div className="bg-white rounded-2xl border border-gray-100 shadow-[0_2px_10px_-4px_rgba(0,0,0,0.05)] overflow-hidden">
+          <div className="divide-y divide-gray-50">
+            {treeRows.map(({ category, depth, hasChildren, isExpanded }) => {
+              const directCount = category.productCount || 0;
+              const subtreeCount = subtreeProductCount(category);
+              const siblings = siblingIdsByParent.get(categoryParentId(category) || 'root') || [];
+              const siblingIndex = siblings.indexOf(String(category._id));
+              return (
+                <div
+                  key={category._id}
+                  data-testid={`category-row-${category.slug}`}
+                  className="flex items-center gap-3 pr-5 py-3.5 hover:bg-gray-50/60 transition-colors"
+                  style={{ paddingLeft: `${20 + depth * 28}px` }}
+                >
+                  {hasChildren ? (
+                    <button
+                      onClick={() => toggleExpand(category._id)}
+                      aria-label={`${isExpanded ? 'Collapse' : 'Expand'} ${category.name}`}
+                      className="p-1 hover:bg-gray-100 rounded-md text-gray-500 shrink-0"
+                    >
+                      {isExpanded ? <ChevronDown className="w-4 h-4" /> : <ChevronRight className="w-4 h-4" />}
+                    </button>
+                  ) : (
+                    <span className="w-6 shrink-0" />
+                  )}
+                  <div className="w-10 h-10 rounded-lg overflow-hidden bg-gray-50 border border-gray-100 shrink-0">
+                    {category.image ? (
+                      <ImageWithFallback
+                        src={getCategoryImageUrl(category.image)}
+                        alt={category.name}
+                        className="w-full h-full object-cover"
+                      />
+                    ) : (
+                      <div className="w-full h-full flex items-center justify-center">
+                        <Image className="w-4 h-4 text-gray-400" />
+                      </div>
+                    )}
+                  </div>
+                  <div className="flex-1 min-w-0">
+                    <div className="flex items-center gap-2 flex-wrap">
+                      <span className="font-semibold text-gray-900 text-sm">{category.name}</span>
+                      <span className="font-mono text-xs text-gray-400">/{category.slug}</span>
+                      {category.productType ? (
+                        <span className="px-2 py-0.5 rounded-full text-[10px] font-bold uppercase tracking-wider bg-indigo-50 text-indigo-700 border border-indigo-100">
+                          {category.productType}
+                        </span>
+                      ) : null}
+                    </div>
+                    <p className="text-xs text-gray-500 mt-0.5">
+                      {directCount} products
+                      {subtreeCount !== directCount ? ` · ${subtreeCount} incl. subcategories` : ''}
+                    </p>
+                  </div>
+                  <span className={`inline-flex items-center px-2.5 py-1 rounded-full text-[11px] font-semibold capitalize shrink-0 ${
+                    category.status === 'active'
+                      ? 'bg-emerald-50 text-emerald-700'
+                      : 'bg-slate-100 text-slate-600'
+                  }`}>
+                    {category.status === 'active' ? 'Active' : 'Inactive'}
+                  </span>
+                  <div className="flex items-center gap-0.5 shrink-0">
+                    <button
+                      onClick={() => handleMoveCategory(category, -1)}
+                      disabled={siblingIndex <= 0 || reorderMutation.isPending}
+                      aria-label={`Move ${category.name} up`}
+                      title="Move up"
+                      className="p-1.5 hover:bg-slate-100 text-gray-500 rounded-full transition-colors disabled:opacity-30 disabled:hover:bg-transparent"
+                    >
+                      <ArrowUp className="w-3.5 h-3.5" />
+                    </button>
+                    <button
+                      onClick={() => handleMoveCategory(category, 1)}
+                      disabled={siblingIndex < 0 || siblingIndex >= siblings.length - 1 || reorderMutation.isPending}
+                      aria-label={`Move ${category.name} down`}
+                      title="Move down"
+                      className="p-1.5 hover:bg-slate-100 text-gray-500 rounded-full transition-colors disabled:opacity-30 disabled:hover:bg-transparent"
+                    >
+                      <ArrowDown className="w-3.5 h-3.5" />
+                    </button>
+                    <button
+                      onClick={() => setAttributesCategory(category)}
+                      className="p-1.5 hover:bg-slate-100 text-gray-500 rounded-full transition-colors"
+                      title="Attributes"
+                    >
+                      <SlidersHorizontal className="w-3.5 h-3.5" />
+                    </button>
+                    <button
+                      onClick={() => handleAddCategory(category._id)}
+                      className="p-1.5 hover:bg-slate-100 text-gray-500 rounded-full transition-colors"
+                      title="Add subcategory"
+                    >
+                      <Plus className="w-3.5 h-3.5" />
+                    </button>
+                    <button
+                      onClick={() => handleEditCategory(category)}
+                      className="p-1.5 hover:bg-slate-100 text-gray-500 rounded-full transition-colors"
+                      title="Edit"
+                    >
+                      <Edit2 className="w-3.5 h-3.5" />
+                    </button>
+                    <button
+                      onClick={() => confirmDelete(category._id)}
+                      className="p-1.5 hover:bg-red-50 text-red-500 rounded-full transition-colors"
+                      disabled={deleteMutation.isPending}
+                      title="Delete"
+                    >
+                      <Trash2 className="w-3.5 h-3.5" />
+                    </button>
+                  </div>
+                </div>
+              );
+            })}
+          </div>
+        </div>
+      ) : (
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
         {filteredCategories.map((category) => (
           <motion.div
@@ -478,6 +688,13 @@ export default function Categories() {
 
               {/* Actions */}
               <div className="flex items-center gap-1">
+                <button
+                  onClick={() => setAttributesCategory(category)}
+                  className="p-2 hover:bg-slate-100 text-gray-500 rounded-full transition-colors duration-150"
+                  title="Attributes"
+                >
+                  <SlidersHorizontal className="w-4 h-4" />
+                </button>
                 <button
                   onClick={() => handleEditCategory(category)}
                   className="p-2 hover:bg-slate-100 text-gray-500 rounded-full transition-colors duration-150"
@@ -560,6 +777,7 @@ export default function Categories() {
           </motion.div>
         ))}
       </div>
+      )}
 
       {filteredCategories.length === 0 && (
         <div className="text-center py-16 bg-white rounded-2xl border border-gray-100 shadow-[0_2px_10px_-4px_rgba(0,0,0,0.05)]">
@@ -586,8 +804,9 @@ export default function Categories() {
               animate={{ scale: 1, opacity: 1 }}
               exit={{ scale: 0.95, opacity: 0 }}
               onClick={(e) => e.stopPropagation()}
-              className="bg-white rounded-2xl w-full max-w-lg max-h-[90vh] overflow-y-auto"
+              className="w-full max-w-lg"
             >
+             <Dialog open onClose={() => setShowModal(false)} label="Category" className="bg-white rounded-2xl w-full max-h-[90vh] overflow-y-auto relative">
               {/* Modal Header */}
               <div className="flex items-center justify-between p-5 border-b border-gray-100">
                 <h2 className="text-lg font-semibold text-gray-900">
@@ -661,6 +880,23 @@ export default function Categories() {
                   />
                 </div>
 
+                {editingCategory && (
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-1.5">
+                      Slug
+                    </label>
+                    <input
+                      type="text"
+                      value={editingCategory.slug || ''}
+                      readOnly
+                      className="w-full px-4 py-2 bg-gray-50 border border-gray-200 rounded-lg text-sm font-mono text-gray-500"
+                    />
+                    <p className="text-xs text-gray-400 mt-1">
+                      The slug is generated when the category is created and does not change on rename.
+                    </p>
+                  </div>
+                )}
+
                 <div>
                   <label className="block text-sm font-medium text-gray-700 mb-1.5">
                     Description
@@ -683,13 +919,67 @@ export default function Categories() {
                     className="w-full px-4 py-2 bg-white border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-teal-500/10 focus:border-teal-500 text-sm font-medium text-gray-600 cursor-pointer"
                   >
                     <option value="">None (Top Level)</option>
-                    {parentCategories
-                      .filter(cat => cat._id !== editingCategory?._id)
-                      .map(cat => (
-                        <option key={cat._id} value={cat._id}>{cat.name}</option>
-                      ))
-                    }
+                    {parentOptions.map(({ category, depth }) => (
+                      <option key={category._id} value={category._id}>
+                        {`${'— '.repeat(depth)}${category.name}`}
+                      </option>
+                    ))}
                   </select>
+                  {editingCategory && (
+                    <p className="text-xs text-gray-400 mt-1">
+                      This category and its subcategories are not listed — a category cannot sit
+                      underneath itself.
+                    </p>
+                  )}
+                </div>
+
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-1.5">
+                    Product Type
+                  </label>
+                  <select
+                    value={categoryForm.productType}
+                    onChange={(e) => setCategoryForm({ ...categoryForm, productType: e.target.value })}
+                    className="w-full px-4 py-2 bg-white border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-teal-500/10 focus:border-teal-500 text-sm font-medium text-gray-600 cursor-pointer"
+                  >
+                    <option value="">None (inherit from parent)</option>
+                    {productTypes.map((type) => (
+                      <option key={type.key} value={type.key}>{type.label}</option>
+                    ))}
+                  </select>
+                  <p className="text-xs text-gray-400 mt-1">
+                    The type's attributes apply to products in this category.
+                  </p>
+                </div>
+
+                <div>
+                  <span className="block text-sm font-medium text-gray-700 mb-1.5">
+                    Rooms
+                  </span>
+                  {rooms.length === 0 ? (
+                    <p className="text-xs text-gray-400">No rooms defined yet.</p>
+                  ) : (
+                    <div className="flex flex-wrap gap-x-4 gap-y-2">
+                      {rooms.map((room) => (
+                        <label key={room.slug} className="flex items-center gap-2 cursor-pointer text-sm text-gray-700">
+                          <input
+                            type="checkbox"
+                            checked={categoryForm.roomSlugs.includes(room.slug)}
+                            onChange={(e) =>
+                              setCategoryForm({
+                                ...categoryForm,
+                                roomSlugs: e.target.checked
+                                  ? [...categoryForm.roomSlugs, room.slug]
+                                  : categoryForm.roomSlugs.filter((slug) => slug !== room.slug),
+                              })
+                            }
+                            className="w-4 h-4 rounded border-gray-300 text-[#025E5D] focus:ring-[#025E5D]"
+                          />
+                          {room.label}
+                        </label>
+                      ))}
+                    </div>
+                  )}
                 </div>
 
                 <div className="grid grid-cols-2 gap-4">
@@ -740,6 +1030,7 @@ export default function Categories() {
                   </button>
                 </div>
               </form>
+             </Dialog>
             </motion.div>
           </motion.div>
         )}
@@ -748,7 +1039,7 @@ export default function Categories() {
       <ConfirmationDialog
         isOpen={deleteModalOpen}
         title="Delete Category?"
-        message="Are you sure you want to delete this category? All subcategories and product associations might be affected. This action cannot be undone."
+        message="The server refuses to delete a category that still has subcategories or active products — delete or move those first, and its message will be shown here if it refuses. This action cannot be undone."
         onConfirm={handleDeleteCategory}
         onCancel={() => {
           setDeleteModalOpen(false);
@@ -758,6 +1049,16 @@ export default function Categories() {
         type="danger"
         isLoading={deleteMutation.isPending}
       />
+
+      <AnimatePresence>
+        {attributesCategory && (
+          <CategoryAttributesEditor
+            category={attributesCategory}
+            categories={categories}
+            onClose={() => setAttributesCategory(null)}
+          />
+        )}
+      </AnimatePresence>
     </div>
   );
 }

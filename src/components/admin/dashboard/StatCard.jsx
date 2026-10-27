@@ -27,12 +27,14 @@ export default function StatCard({ label, value, trend, trendUp, trendLabel, ico
                 )}
             </div>
 
-            <div className="flex items-center gap-1.5 mt-4">
-                <span className={`inline-flex items-center gap-0.5 text-xs font-semibold ${trendUp ? 'text-teal-600' : 'text-red-500'}`}>
-                    {trendUp ? <TrendingUp className="w-3 h-3" /> : <TrendingDown className="w-3 h-3" />} {trend}
-                </span>
-                <span className="text-xs text-gray-400 font-medium">{trendLabel}</span>
-            </div>
+            {trend && (
+                <div className="flex items-center gap-1.5 mt-4">
+                    <span className={`inline-flex items-center gap-0.5 text-xs font-semibold ${trendUp ? 'text-teal-600' : 'text-red-500'}`}>
+                        {trendUp ? <TrendingUp className="w-3 h-3" /> : <TrendingDown className="w-3 h-3" />} {trend}
+                    </span>
+                    <span className="text-xs text-gray-400 font-medium">{trendLabel}</span>
+                </div>
+            )}
         </div>
     );
 }

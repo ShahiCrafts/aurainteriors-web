@@ -1,4 +1,6 @@
 import { useState } from "react";
+import { useQueryClient } from "@tanstack/react-query";
+import Dialog from "../../components/common/Dialog";
 import { motion, AnimatePresence } from "framer-motion";
 import {
   Search,
@@ -24,7 +26,7 @@ import {
   useDeleteUser,
   useAdminResetPassword,
 } from "../../hooks/admin/useUserTan";
-import { getAvatarUrl } from "../../utils/imageUrl";
+import { UserAvatar } from "../../components/common/InitialsAvatar";
 import { toast } from "react-toastify";
 import Pagination from "../../components/common/Pagination";
 import formatError from "../../utils/errorHandler";
@@ -41,6 +43,7 @@ export default function Users() {
   const [showResetModal, setShowResetModal] = useState(false);
   const [showStatusModal, setShowStatusModal] = useState(false);
   const [newPassword, setNewPassword] = useState("");
+  const [confirmPassword, setConfirmPassword] = useState("");
   const [deactivationReason, setDeactivationReason] = useState("");
   const [showDeleteModal, setShowDeleteModal] = useState(false);
   const [showReactivateModal, setShowReactivateModal] = useState(false);
@@ -66,6 +69,7 @@ export default function Users() {
   const users = usersData?.data?.users || [];
   const pagination = usersData?.data?.pagination || { total: 0, pages: 1 };
 
+  const queryClient = useQueryClient();
   const updateStatusMutation = useUpdateUserStatus();
   const deleteMutation = useDeleteUser();
   const resetMutation = useAdminResetPassword();
@@ -116,16 +120,32 @@ export default function Users() {
   const handleResetPassword = () => {
     if (newPassword.length < 8)
       return toast.error("Password must be at least 8 characters");
+    // FE-09: a typo in a single unconfirmed field silently locked the
+    // user into an unknown password — require an exact match first.
+    if (newPassword !== confirmPassword)
+      return toast.error("Passwords do not match");
     resetMutation.mutate(
       { id: selectedUser._id, password: newPassword },
       {
         onSuccess: () => {
           setShowResetModal(false);
           setNewPassword("");
+          setConfirmPassword("");
           toast.success("Password updated successfully");
         },
         onError: (err) => {
           toast.error(formatError(err, "Failed to update password"));
+        },
+        // FE-09: the mutation's variables hold the plaintext password;
+        // once the reset settles (success OR failure) drop the settled
+        // mutation from the cache so no password lingers there. (The
+        // observer's reset() alone only detaches the observer — the
+        // Mutation object, variables included, stays in the cache —
+        // so the cache clear is what actually evicts it, the first
+        // option named in the finding.)
+        onSettled: () => {
+          queryClient.getMutationCache().clear();
+          resetMutation.reset();
         },
       }
     );
@@ -283,18 +303,14 @@ export default function Users() {
                     <td className="px-6 py-4">
                       <div className="flex items-center gap-3">
                         <div className="shrink-0">
-                          {user.avatar ? (
-                            <img
-                              src={getAvatarUrl(user)}
-                              alt=""
-                              className="w-10 h-10 rounded-full object-cover ring-2 ring-gray-100"
-                            />
-                          ) : (
-                            <div className="w-10 h-10 rounded-full bg-teal-50 flex items-center justify-center text-teal-700 font-bold text-xs uppercase">
-                              {user.firstName[0]}
-                              {user.lastName[0]}
-                            </div>
-                          )}
+                          {/* FE-06: real avatar img or local initials
+                              (UserAvatar) — never an external
+                              placeholder URL built from the name. */}
+                          <UserAvatar
+                            user={user}
+                            alt=""
+                            className="w-10 h-10 rounded-full text-xs ring-2 ring-gray-100"
+                          />
                         </div>
                         <div className="min-w-0">
                           <p className="text-sm font-semibold text-gray-900 truncate">
@@ -379,6 +395,8 @@ export default function Users() {
                         <button
                           onClick={() => {
                             setSelectedUser(user);
+                            setNewPassword("");
+                            setConfirmPassword("");
                             setShowResetModal(true);
                           }}
                           className="p-2 text-gray-500 hover:bg-gray-100 rounded-lg transition-colors"
@@ -444,14 +462,28 @@ export default function Users() {
                   {selectedUser?.email}
                 </span>
               </p>
-              <label className="block text-sm font-medium text-gray-700 mb-2">
+              <label htmlFor="reset-new-password" className="block text-sm font-medium text-gray-700 mb-2">
                 New Password
               </label>
               <input
+                id="reset-new-password"
                 type="password"
+                autoComplete="new-password"
                 value={newPassword}
                 onChange={(e) => setNewPassword(e.target.value)}
                 placeholder="At least 8 characters"
+                className="w-full px-4 py-2.5 border border-gray-200 rounded-lg text-sm focus:outline-none focus:border-teal-500 focus:ring-2 focus:ring-teal-500/20"
+              />
+              <label htmlFor="reset-confirm-password" className="block text-sm font-medium text-gray-700 mb-2 mt-4">
+                Confirm New Password
+              </label>
+              <input
+                id="reset-confirm-password"
+                type="password"
+                autoComplete="new-password"
+                value={confirmPassword}
+                onChange={(e) => setConfirmPassword(e.target.value)}
+                placeholder="Confirm the new password"
                 className="w-full px-4 py-2.5 border border-gray-200 rounded-lg text-sm focus:outline-none focus:border-teal-500 focus:ring-2 focus:ring-teal-500/20"
               />
             </div>
@@ -568,18 +600,21 @@ function Modal({ title, children, onClose }) {
         animate={{ scale: 1, opacity: 1 }}
         exit={{ scale: 0.95, opacity: 0 }}
         onClick={(e) => e.stopPropagation()}
-        className="bg-white rounded-xl max-w-md w-full p-6 border border-gray-100 shadow-xl"
+        className="w-full max-w-md"
       >
+       <Dialog open onClose={onClose} label={title} className="bg-white rounded-xl max-w-md w-full p-6 border border-gray-100 shadow-xl">
         <div className="flex items-center justify-between mb-5">
           <h3 className="text-lg font-bold text-gray-900">{title}</h3>
           <button
             onClick={onClose}
+            aria-label="Close dialog"
             className="p-2 hover:bg-gray-100 rounded-lg transition-colors"
           >
             <X className="w-5 h-5 text-gray-400" />
           </button>
         </div>
         {children}
+       </Dialog>
       </motion.div>
     </motion.div>
   );

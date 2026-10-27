@@ -1,30 +1,30 @@
  import { Link } from 'react-router-dom';
-import { ShoppingBag, ClipboardPlus, UserPlus, FileBarChart } from 'lucide-react';
+import { ShoppingBag, ClipboardPlus, UserPlus } from 'lucide-react';
 
+// FE-16: the previous targets (/dashboard/products/new, /dashboard/orders/new,
+// /dashboard/users/new, /dashboard/reports) match no child route under
+// /dashboard — they rendered the admin layout with an empty content area.
+// Create actions now land on the real list pages (each has its own
+// in-page create flow); "View Reports" is hidden — the SalesReports page
+// component exists but is not routed, pending an owner decision.
 const actions = [
     {
         label: 'Add Product',
         icon: ShoppingBag,
-        path: '/dashboard/products/new',
+        path: '/dashboard/products',
         iconBg: 'bg-indigo-50 text-indigo-600',
     },
     {
         label: 'Create Order',
         icon: ClipboardPlus,
-        path: '/dashboard/orders/new',
+        path: '/dashboard/orders',
         iconBg: 'bg-blue-50 text-blue-600',
     },
     {
         label: 'Add User',
         icon: UserPlus,
-        path: '/dashboard/users/new',
+        path: '/dashboard/users',
         iconBg: 'bg-emerald-50 text-emerald-600',
-    },
-    {
-        label: 'View Reports',
-        icon: FileBarChart,
-        path: '/dashboard/reports',
-        iconBg: 'bg-orange-50 text-orange-600',
     },
 ];
 
@@ -32,7 +32,7 @@ export default function QuickActions() {
     return (
         <div className="bg-white rounded-2xl border border-gray-100 p-5 shadow-[0_2px_10px_-4px_rgba(0,0,0,0.05)]">
             <h2 className="text-base font-bold text-gray-900 mb-4">Quick Actions</h2>
-            <div className="grid grid-cols-4 gap-3">
+            <div className="grid grid-cols-3 gap-3">
                 {actions.map((action) => (
                     <Link
                         key={action.label}

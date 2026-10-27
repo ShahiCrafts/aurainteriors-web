@@ -1,10 +1,10 @@
 import { useState } from 'react';
 import { ChevronDown, MessageCircle, User, Filter } from 'lucide-react';
 import Skeleton from '../../common/Skeleton';
-import { getAvatarUrl } from "../../../utils/imageUrl";
+import { UserAvatar } from "../../common/InitialsAvatar";
 
 const ChatList = ({
-  chats,
+  chats = [],
   pagination,
   isLoading,
   selectedChat,
@@ -17,7 +17,7 @@ const ChatList = ({
   const [searchQuery, setSearchQuery] = useState('');
 
   // Filter chats by search query
-  const filteredChats = chats.filter((chat) => {
+  const filteredChats = (chats || []).filter((chat) => {
     const customerName = `${chat.customer?.firstName || ''} ${chat.customer?.lastName || ''}`.toLowerCase();
     const subject = (chat.subject || '').toLowerCase();
     const query = searchQuery.toLowerCase();
@@ -97,12 +97,11 @@ const ChatList = ({
               else if (chat.priority === "low") urgencyColor = "text-blue-500 bg-blue-50 border border-blue-100";
               
               const priorityText = chat.priority ? chat.priority.charAt(0).toUpperCase() + chat.priority.slice(1) : "Medium";
-              
-              // Mock AI confidence for UI
-              const confidence = chat.metadata?.confidence || Math.floor(Math.random() * 60) + 30; // 30-90%
-              let barColor = "bg-green-500";
-              if (confidence < 40) barColor = "bg-red-400";
-              else if (confidence < 70) barColor = "bg-yellow-400";
+
+              // FE-14: no AI confidence is rendered in this list. The
+              // previous code invented one per render
+              // (Math.random() * 60 + 30) for chats without a real
+              // metadata.confidence, and the value was never displayed.
 
               return (
                 <div
@@ -114,14 +113,13 @@ const ChatList = ({
                 >
                   {/* Avatar */}
                   <div className="relative shrink-0 pt-0.5">
-                    <img 
-                      src={getAvatarUrl(chat.customer)}
+                    {/* FE-06: real avatar img or local initials —
+                        never an external placeholder URL built from
+                        the customer's name. */}
+                    <UserAvatar
+                      user={chat.customer}
                       alt="Customer"
-                      className="w-10 h-10 rounded-full object-cover"
-                      onError={(e) => {
-                        e.target.onerror = null;
-                        e.target.src = `https://ui-avatars.com/api/?name=${encodeURIComponent(chat.customer?.firstName || "U")}&background=E0E7FF&color=4338CA`;
-                      }}
+                      className="w-10 h-10 rounded-full text-sm"
                     />
                     {/* Presence Dot */}
                     <div className={`absolute bottom-0 right-0 w-2.5 h-2.5 rounded-full border-2 border-white ${isSelected ? 'bg-red-500' : 'bg-yellow-500'}`}></div>

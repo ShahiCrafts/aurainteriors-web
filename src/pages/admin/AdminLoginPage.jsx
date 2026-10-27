@@ -2,7 +2,7 @@ import { useState, useEffect, useRef } from "react";
 import { useNavigate } from "react-router-dom";
 import { Mail, Lock, ShieldCheck, ArrowLeft, ChevronLeft, ChevronRight, Eye, EyeOff } from "lucide-react";
 import { useAdminLogin, useAdminVerifyOtp } from "../../hooks/auth/useAdminAuth";
-import useAuthStore from "../../store/authStore";
+import useAuthStore, { getAuthRevision } from "../../store/authStore";
 import { toast } from "react-toastify";
 import formatError from "../../utils/errorHandler";
 
@@ -223,10 +223,14 @@ export default function AdminLoginPage() {
       return;
     }
 
+    // FE-18: revision-gate the completion — a sign-out that intervened
+    // while the OTP request was in flight must not be undone by it.
+    const revisionAtStart = getAuthRevision();
     verifyOtp(
       { email, otp, challengeId },
       {
         onSuccess: (data) => {
+          if (getAuthRevision() !== revisionAtStart) return;
           signIn(data.data.user, data.token);
           toast.success("Welcome back, Administrator!");
           navigate("/dashboard");
