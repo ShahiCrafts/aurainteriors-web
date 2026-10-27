@@ -21,7 +21,7 @@ import {
   useUpdateDiscount,
   useDeleteDiscount,
 } from "../../hooks/admin/useDiscountTan";
-import { toast } from "react-toastify";
+import { toast } from "../../lib/toast";
 import Pagination from "../../components/common/Pagination";
 import formatError from "../../utils/errorHandler";
 import { parseDiscountFormValues } from "../../utils/adminForms";

@@ -3,9 +3,10 @@ import { MessageSquare, X } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useMyChats, useStartChat, useSendMessage, useChatDetails } from '../../hooks/chat/useChatTan';
 import useAuthStore from '../../store/authStore';
+import { useShallow } from "zustand/react/shallow";
 import { getGuestSessionId, setGuestSessionId, clearGuestSession } from '../../utils/guestSessionStorage';
 import ChatWindow from './ChatWindow';
-import { toast } from "react-toastify";
+import { toast } from "../../lib/toast";
 
 const ChatWidget = () => {
   const [isOpen, setIsOpen] = useState(false);
@@ -15,7 +16,7 @@ const ChatWidget = () => {
   });
   const [activeChatId, setActiveChatId] = useState(null);
   const [activeChatData, setActiveChatData] = useState(null); // Store guest chat data directly
-  const { user } = useAuthStore();
+  const { user } = useAuthStore(useShallow((state) => ({ user: state.user })));
 
   // Handle guest session lifecycle
   useEffect(() => {

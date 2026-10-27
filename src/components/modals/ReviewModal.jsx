@@ -1,7 +1,7 @@
 import { useState, useEffect } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { X, Star, Loader2 } from "lucide-react";
-import { toast } from "react-toastify";
+import { toast } from "../../lib/toast";
 import Dialog from "../common/Dialog";
 import { useCreateReview, useUpdateReview } from "../../hooks/review/useReviewTan";
 import { useForm } from "react-hook-form";

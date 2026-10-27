@@ -1,3 +1,4 @@
+import { formatDate } from "../../../utils/formatDate";
 import { useState } from 'react';
 import { ChevronDown, MessageCircle, User, Filter } from 'lucide-react';
 import Skeleton from '../../common/Skeleton';
@@ -38,7 +39,7 @@ const ChatList = ({
     if (diffInSeconds < 86400) return `${Math.floor(diffInSeconds / 3600)}h ago`;
     if (diffInSeconds < 604800) return `${Math.floor(diffInSeconds / 86400)}d ago`;
 
-    return messageDate.toLocaleDateString();
+    return formatDate(messageDate);
   };
 
   return (

@@ -1,10 +1,11 @@
 import { motion, AnimatePresence } from 'framer-motion';
 import { LogIn, UserPlus, X } from 'lucide-react';
 import useAuthStore from '../../store/authStore';
+import { useShallow } from "zustand/react/shallow";
 import Dialog from '../common/Dialog';
 
 const AuthRequiredModal = ({ isOpen, onClose, message, suggestion }) => {
-  const openAuthModal = useAuthStore((state) => state.openAuthModal);
+  const { openAuthModal } = useAuthStore(useShallow((state) => ({ openAuthModal: state.openAuthModal })));
 
   // The customer app has no /login or /signup route: auth is the global
   // AuthModal (magic-link email flow). Its single 'email' view serves both

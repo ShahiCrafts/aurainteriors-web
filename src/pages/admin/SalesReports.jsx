@@ -31,7 +31,6 @@ import {
 import { motion } from "framer-motion";
 import { useSalesReports, useCategorySales, useTopProducts } from "../../hooks/admin/useAnalyticsTan";
 import { getImageUrl } from "../../utils/imageUrl";
-import * as XLSX from "xlsx";
 import { formatNPR } from "../../utils/formatCurrency";
 
 export default function SalesReports() {
@@ -48,8 +47,12 @@ export default function SalesReports() {
 
     const COLORS = ["#0066ff", "#0ea5e9", "#6366f1", "#8b5cf6", "#d946ef", "#f43f5e"];
 
-    const exportToExcel = () => {
+    const exportToExcel = async () => {
         if (!chartData.length) return;
+
+        try {
+        // PERF-F-002: dynamic import — see Dashboard.jsx.
+        const XLSX = await import("xlsx");
 
         const ws = XLSX.utils.json_to_sheet(chartData.map(item => ({
             Date: item._id,
@@ -61,6 +64,9 @@ export default function SalesReports() {
         const wb = XLSX.utils.book_new();
         XLSX.utils.book_append_sheet(wb, ws, "Sales Report");
         XLSX.writeFile(wb, `Aura_Sales_Report_${range}_${new Date().toISOString().split('T')[0]}.xlsx`);
+        } catch (error) {
+            console.error("Error generating report:", error);
+        }
     };
 
     const StatCard = ({ title, value, growth, icon: Icon, suffix = "", prefix = "" }) => (

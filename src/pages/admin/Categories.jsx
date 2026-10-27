@@ -1,39 +1,29 @@
-import { useState, useRef, useMemo, useEffect } from 'react';
-import Dialog from "../../components/common/Dialog";
+import { useState, useRef, useMemo } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import {
   Plus,
   Search,
   Edit2,
   Trash2,
-  X,
   FolderTree,
   Package,
   Image,
   ChevronRight,
   ChevronDown,
-  ArrowUp,
-  ArrowDown,
   SlidersHorizontal,
-  Upload,
-  Loader2,
   GitFork,
   Layers,
 } from 'lucide-react';
 import Skeleton from "../../components/common/Skeleton";
 import ConfirmationDialog from "../../components/modals/ConfirmationDialog";
 import { useCategories, useCreateCategory, useUpdateCategory, useDeleteCategory } from '../../hooks/product/useCategoryTan';
-import { useProductTypes, useRooms, useReorderCategories } from '../../hooks/catalog/useCatalogTan';
-import {
-  buildCategoryTree,
-  flattenVisibleTree,
-  descendantIdSet,
-  moveIdWithinSiblings,
-  subtreeProductCount,
-  categoryParentId,
-} from '../../utils/categoryTree';
-import CategoryAttributesEditor from '../../components/admin/catalog/CategoryAttributesEditor';
-import { toast } from "react-toastify";
+import { useProductTypes, useRooms } from '../../hooks/catalog/useCatalogTan';
+import { categoryParentId } from '../../utils/categoryTree';
+import CategoryTree from './categories/CategoryTree';
+import CategoryFormModal from './categories/CategoryFormModal';
+import CategoryAttributesPanel from './categories/CategoryAttributesPanel';
+import useCategoryTree from './categories/hooks/useCategoryTree';
+import { toast } from "../../lib/toast";
 import formatError from "../../utils/errorHandler";
 import ImageWithFallback from '../../components/fallbacks/ImageWithFallback';
 import { getCategoryImageUrl } from '../../utils/imageUrl';
@@ -51,12 +41,10 @@ export default function Categories() {
   const [sortBy, setSortBy] = useState('sortOrder');
   const [showModal, setShowModal] = useState(false);
   const [editingCategory, setEditingCategory] = useState(null);
-  const [expandedCategories, setExpandedCategories] = useState([]);
   const [imagePreview, setImagePreview] = useState(null);
   const [deleteModalOpen, setDeleteModalOpen] = useState(false);
   const [categoryToDelete, setCategoryToDelete] = useState(null);
   const [attributesCategory, setAttributesCategory] = useState(null);
-  const [expandedInitialized, setExpandedInitialized] = useState(false);
   const [categoryForm, setCategoryForm] = useState({
     name: '',
     description: '',
@@ -82,25 +70,27 @@ export default function Categories() {
   const createMutation = useCreateCategory();
   const updateMutation = useUpdateCategory();
   const deleteMutation = useDeleteCategory();
-  const reorderMutation = useReorderCategories();
+  // Phase 7 split: tree state (expansion, tree building, sibling
+  // reorder, parent-picker options) lives in the useCategoryTree
+  // hook over utils/categoryTree.js; it owns the reorder mutation.
+  const {
+    expandedCategories,
+    toggleExpand,
+    treeRows,
+    siblingIdsByParent,
+    parentOptions,
+    handleMoveCategory,
+    reorderMutation,
+  } = useCategoryTree(categories, editingCategory);
 
-  // The tree starts fully expanded so the whole hierarchy (and its
-  // subtree counts) is visible on first load.
-  useEffect(() => {
-    if (!expandedInitialized && categories.length > 0) {
-      const parentIds = new Set(categories.map((c) => categoryParentId(c)).filter(Boolean));
-      setExpandedCategories(categories.filter((c) => parentIds.has(String(c._id))).map((c) => String(c._id)));
-      setExpandedInitialized(true);
-    }
-  }, [categories, expandedInitialized]);
-
-  const toggleExpand = (categoryId) => {
-    setExpandedCategories(prev =>
-      prev.includes(categoryId)
-        ? prev.filter(id => id !== categoryId)
-        : [...prev, categoryId]
-    );
-  };
+  // The tree is the default view; any search/filter/non-default
+  // sort switches to the flat card grid below.
+  const isTreeMode =
+    !searchQuery.trim() &&
+    statusFilter === 'all' &&
+    typeFilter === 'all' &&
+    densityFilter === 'all' &&
+    sortBy === 'sortOrder';
 
   const handleAddCategory = (parentId = '') => {
     setEditingCategory(null);
@@ -246,62 +236,6 @@ export default function Categories() {
 
     return result;
   }, [categories, searchQuery, statusFilter, typeFilter, densityFilter, sortBy]);
-
-  // Phase 6 — hierarchical tree view, built client-side from the
-  // flat list (which includes inactive categories, unlike the
-  // server's active-only tree endpoint). Subtree product counts
-  // roll up from the flat list's direct productCount values.
-  const treeRoots = useMemo(() => buildCategoryTree(categories), [categories]);
-  const treeRows = useMemo(
-    () => flattenVisibleTree(treeRoots, new Set(expandedCategories.map(String))),
-    [treeRoots, expandedCategories]
-  );
-  const siblingIdsByParent = useMemo(() => {
-    const map = new Map();
-    const walk = (nodes, parentKey) => {
-      map.set(parentKey, nodes.map((n) => String(n._id)));
-      nodes.forEach((n) => walk(n.children || [], String(n._id)));
-    };
-    walk(treeRoots, 'root');
-    return map;
-  }, [treeRoots]);
-
-  // The tree is the default view; any search/filter/non-default
-  // sort switches to the flat card grid below.
-  const isTreeMode =
-    !searchQuery.trim() &&
-    statusFilter === 'all' &&
-    typeFilter === 'all' &&
-    densityFilter === 'all' &&
-    sortBy === 'sortOrder';
-
-  const handleMoveCategory = (category, direction) => {
-    const parentKey = categoryParentId(category) || 'root';
-    const siblings = siblingIdsByParent.get(parentKey) || [];
-    const next = moveIdWithinSiblings(siblings, category._id, direction);
-    if (next === siblings) return;
-    reorderMutation.mutate(next, {
-      onError: (err) => toast.error(formatError(err, 'Failed to reorder categories')),
-    });
-  };
-
-  // Parent picker options: the whole tree, minus — when editing —
-  // the category itself and its descendants (the server rejects
-  // cycles with a 400; excluding them keeps the invalid choice
-  // unselectable in the first place).
-  const parentOptions = useMemo(() => {
-    const excluded = editingCategory ? descendantIdSet(categories, editingCategory._id) : new Set();
-    if (editingCategory) excluded.add(String(editingCategory._id));
-    const options = [];
-    const walk = (nodes, depth) => {
-      nodes.forEach((node) => {
-        if (!excluded.has(String(node._id))) options.push({ category: node, depth });
-        walk(node.children || [], depth + 1);
-      });
-    };
-    walk(treeRoots, 0);
-    return options;
-  }, [categories, treeRoots, editingCategory]);
 
   // Compute Stats Card Values
   const parentCategoriesCount = useMemo(() => categories.filter(c => !c.parent).length, [categories]);
@@ -518,120 +452,18 @@ export default function Categories() {
           search/filter/non-default sort switches to the flat card
           grid below. */}
       {isTreeMode ? (
-        <div className="bg-white rounded-2xl border border-gray-100 shadow-[0_2px_10px_-4px_rgba(0,0,0,0.05)] overflow-hidden">
-          <div className="divide-y divide-gray-50">
-            {treeRows.map(({ category, depth, hasChildren, isExpanded }) => {
-              const directCount = category.productCount || 0;
-              const subtreeCount = subtreeProductCount(category);
-              const siblings = siblingIdsByParent.get(categoryParentId(category) || 'root') || [];
-              const siblingIndex = siblings.indexOf(String(category._id));
-              return (
-                <div
-                  key={category._id}
-                  data-testid={`category-row-${category.slug}`}
-                  className="flex items-center gap-3 pr-5 py-3.5 hover:bg-gray-50/60 transition-colors"
-                  style={{ paddingLeft: `${20 + depth * 28}px` }}
-                >
-                  {hasChildren ? (
-                    <button
-                      onClick={() => toggleExpand(category._id)}
-                      aria-label={`${isExpanded ? 'Collapse' : 'Expand'} ${category.name}`}
-                      className="p-1 hover:bg-gray-100 rounded-md text-gray-500 shrink-0"
-                    >
-                      {isExpanded ? <ChevronDown className="w-4 h-4" /> : <ChevronRight className="w-4 h-4" />}
-                    </button>
-                  ) : (
-                    <span className="w-6 shrink-0" />
-                  )}
-                  <div className="w-10 h-10 rounded-lg overflow-hidden bg-gray-50 border border-gray-100 shrink-0">
-                    {category.image ? (
-                      <ImageWithFallback
-                        src={getCategoryImageUrl(category.image)}
-                        alt={category.name}
-                        className="w-full h-full object-cover"
-                      />
-                    ) : (
-                      <div className="w-full h-full flex items-center justify-center">
-                        <Image className="w-4 h-4 text-gray-400" />
-                      </div>
-                    )}
-                  </div>
-                  <div className="flex-1 min-w-0">
-                    <div className="flex items-center gap-2 flex-wrap">
-                      <span className="font-semibold text-gray-900 text-sm">{category.name}</span>
-                      <span className="font-mono text-xs text-gray-400">/{category.slug}</span>
-                      {category.productType ? (
-                        <span className="px-2 py-0.5 rounded-full text-[10px] font-bold uppercase tracking-wider bg-indigo-50 text-indigo-700 border border-indigo-100">
-                          {category.productType}
-                        </span>
-                      ) : null}
-                    </div>
-                    <p className="text-xs text-gray-500 mt-0.5">
-                      {directCount} products
-                      {subtreeCount !== directCount ? ` · ${subtreeCount} incl. subcategories` : ''}
-                    </p>
-                  </div>
-                  <span className={`inline-flex items-center px-2.5 py-1 rounded-full text-[11px] font-semibold capitalize shrink-0 ${
-                    category.status === 'active'
-                      ? 'bg-emerald-50 text-emerald-700'
-                      : 'bg-slate-100 text-slate-600'
-                  }`}>
-                    {category.status === 'active' ? 'Active' : 'Inactive'}
-                  </span>
-                  <div className="flex items-center gap-0.5 shrink-0">
-                    <button
-                      onClick={() => handleMoveCategory(category, -1)}
-                      disabled={siblingIndex <= 0 || reorderMutation.isPending}
-                      aria-label={`Move ${category.name} up`}
-                      title="Move up"
-                      className="p-1.5 hover:bg-slate-100 text-gray-500 rounded-full transition-colors disabled:opacity-30 disabled:hover:bg-transparent"
-                    >
-                      <ArrowUp className="w-3.5 h-3.5" />
-                    </button>
-                    <button
-                      onClick={() => handleMoveCategory(category, 1)}
-                      disabled={siblingIndex < 0 || siblingIndex >= siblings.length - 1 || reorderMutation.isPending}
-                      aria-label={`Move ${category.name} down`}
-                      title="Move down"
-                      className="p-1.5 hover:bg-slate-100 text-gray-500 rounded-full transition-colors disabled:opacity-30 disabled:hover:bg-transparent"
-                    >
-                      <ArrowDown className="w-3.5 h-3.5" />
-                    </button>
-                    <button
-                      onClick={() => setAttributesCategory(category)}
-                      className="p-1.5 hover:bg-slate-100 text-gray-500 rounded-full transition-colors"
-                      title="Attributes"
-                    >
-                      <SlidersHorizontal className="w-3.5 h-3.5" />
-                    </button>
-                    <button
-                      onClick={() => handleAddCategory(category._id)}
-                      className="p-1.5 hover:bg-slate-100 text-gray-500 rounded-full transition-colors"
-                      title="Add subcategory"
-                    >
-                      <Plus className="w-3.5 h-3.5" />
-                    </button>
-                    <button
-                      onClick={() => handleEditCategory(category)}
-                      className="p-1.5 hover:bg-slate-100 text-gray-500 rounded-full transition-colors"
-                      title="Edit"
-                    >
-                      <Edit2 className="w-3.5 h-3.5" />
-                    </button>
-                    <button
-                      onClick={() => confirmDelete(category._id)}
-                      className="p-1.5 hover:bg-red-50 text-red-500 rounded-full transition-colors"
-                      disabled={deleteMutation.isPending}
-                      title="Delete"
-                    >
-                      <Trash2 className="w-3.5 h-3.5" />
-                    </button>
-                  </div>
-                </div>
-              );
-            })}
-          </div>
-        </div>
+        <CategoryTree
+          treeRows={treeRows}
+          siblingIdsByParent={siblingIdsByParent}
+          toggleExpand={toggleExpand}
+          handleMoveCategory={handleMoveCategory}
+          reorderMutation={reorderMutation}
+          deleteMutation={deleteMutation}
+          setAttributesCategory={setAttributesCategory}
+          handleAddCategory={handleAddCategory}
+          handleEditCategory={handleEditCategory}
+          confirmDelete={confirmDelete}
+        />
       ) : (
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
         {filteredCategories.map((category) => (
@@ -789,252 +621,23 @@ export default function Categories() {
         </div>
       )}
 
-      {/* Add/Edit Category Modal */}
-      <AnimatePresence>
-        {showModal && (
-          <motion.div
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            exit={{ opacity: 0 }}
-            className="fixed inset-0 bg-black/50 z-50 flex items-center justify-center p-4"
-            onClick={() => setShowModal(false)}
-          >
-            <motion.div
-              initial={{ scale: 0.95, opacity: 0 }}
-              animate={{ scale: 1, opacity: 1 }}
-              exit={{ scale: 0.95, opacity: 0 }}
-              onClick={(e) => e.stopPropagation()}
-              className="w-full max-w-lg"
-            >
-             <Dialog open onClose={() => setShowModal(false)} label="Category" className="bg-white rounded-2xl w-full max-h-[90vh] overflow-y-auto relative">
-              {/* Modal Header */}
-              <div className="flex items-center justify-between p-5 border-b border-gray-100">
-                <h2 className="text-lg font-semibold text-gray-900">
-                  {editingCategory ? 'Edit Category' : 'Add New Category'}
-                </h2>
-                <button
-                  onClick={() => setShowModal(false)}
-                  className="p-2 hover:bg-gray-100 rounded-lg transition-colors"
-                >
-                  <X className="w-5 h-5 text-gray-500" />
-                </button>
-              </div>
-
-              {/* Modal Body */}
-              <form onSubmit={handleSubmit} className="p-5 space-y-4 text-sm">
-                {/* Image Upload */}
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1.5">
-                    Category Image
-                  </label>
-                  <div
-                    onClick={() => fileInputRef.current?.click()}
-                    className="border-2 border-dashed border-gray-200 rounded-lg p-4 text-center hover:border-teal-500 transition-colors cursor-pointer bg-gray-50"
-                  >
-                    {imagePreview ? (
-                      <div className="relative inline-block">
-                        <img
-                          src={imagePreview}
-                          alt="Preview"
-                          className="max-w-full max-h-64 object-contain mx-auto"
-                        />
-                        <button
-                          type="button"
-                          onClick={(e) => {
-                            e.stopPropagation();
-                            setImagePreview(null);
-                            setCategoryForm({ ...categoryForm, image: null });
-                          }}
-                          className="absolute -top-2 -right-2 p-1 bg-red-500 text-white rounded-full"
-                        >
-                          <X className="w-4 h-4" />
-                        </button>
-                      </div>
-                    ) : (
-                      <>
-                        <Upload className="w-8 h-8 text-gray-400 mx-auto mb-2" />
-                        <p className="text-sm text-gray-500">Click to upload image</p>
-                        <p className="text-xs text-gray-400 mt-1">PNG, JPG up to 5MB</p>
-                      </>
-                    )}
-                    <input
-                      ref={fileInputRef}
-                      type="file"
-                      accept="image/*"
-                      onChange={handleImageChange}
-                      className="hidden"
-                    />
-                  </div>
-                </div>
-
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1.5">
-                    Category Name *
-                  </label>
-                  <input
-                    type="text"
-                    value={categoryForm.name}
-                    onChange={(e) => setCategoryForm({ ...categoryForm, name: e.target.value })}
-                    className="w-full px-4 py-2 bg-white border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-teal-500/10 focus:border-teal-500 text-sm font-medium text-gray-800"
-                    required
-                  />
-                </div>
-
-                {editingCategory && (
-                  <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-1.5">
-                      Slug
-                    </label>
-                    <input
-                      type="text"
-                      value={editingCategory.slug || ''}
-                      readOnly
-                      className="w-full px-4 py-2 bg-gray-50 border border-gray-200 rounded-lg text-sm font-mono text-gray-500"
-                    />
-                    <p className="text-xs text-gray-400 mt-1">
-                      The slug is generated when the category is created and does not change on rename.
-                    </p>
-                  </div>
-                )}
-
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1.5">
-                    Description
-                  </label>
-                  <textarea
-                    value={categoryForm.description}
-                    onChange={(e) => setCategoryForm({ ...categoryForm, description: e.target.value })}
-                    rows={3}
-                    className="w-full px-4 py-2 bg-white border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-teal-500/10 focus:border-teal-500 text-sm font-medium text-gray-800 resize-none"
-                  />
-                </div>
-
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1.5">
-                    Parent Category (Optional)
-                  </label>
-                  <select
-                    value={categoryForm.parent}
-                    onChange={(e) => setCategoryForm({ ...categoryForm, parent: e.target.value })}
-                    className="w-full px-4 py-2 bg-white border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-teal-500/10 focus:border-teal-500 text-sm font-medium text-gray-600 cursor-pointer"
-                  >
-                    <option value="">None (Top Level)</option>
-                    {parentOptions.map(({ category, depth }) => (
-                      <option key={category._id} value={category._id}>
-                        {`${'— '.repeat(depth)}${category.name}`}
-                      </option>
-                    ))}
-                  </select>
-                  {editingCategory && (
-                    <p className="text-xs text-gray-400 mt-1">
-                      This category and its subcategories are not listed — a category cannot sit
-                      underneath itself.
-                    </p>
-                  )}
-                </div>
-
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1.5">
-                    Product Type
-                  </label>
-                  <select
-                    value={categoryForm.productType}
-                    onChange={(e) => setCategoryForm({ ...categoryForm, productType: e.target.value })}
-                    className="w-full px-4 py-2 bg-white border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-teal-500/10 focus:border-teal-500 text-sm font-medium text-gray-600 cursor-pointer"
-                  >
-                    <option value="">None (inherit from parent)</option>
-                    {productTypes.map((type) => (
-                      <option key={type.key} value={type.key}>{type.label}</option>
-                    ))}
-                  </select>
-                  <p className="text-xs text-gray-400 mt-1">
-                    The type's attributes apply to products in this category.
-                  </p>
-                </div>
-
-                <div>
-                  <span className="block text-sm font-medium text-gray-700 mb-1.5">
-                    Rooms
-                  </span>
-                  {rooms.length === 0 ? (
-                    <p className="text-xs text-gray-400">No rooms defined yet.</p>
-                  ) : (
-                    <div className="flex flex-wrap gap-x-4 gap-y-2">
-                      {rooms.map((room) => (
-                        <label key={room.slug} className="flex items-center gap-2 cursor-pointer text-sm text-gray-700">
-                          <input
-                            type="checkbox"
-                            checked={categoryForm.roomSlugs.includes(room.slug)}
-                            onChange={(e) =>
-                              setCategoryForm({
-                                ...categoryForm,
-                                roomSlugs: e.target.checked
-                                  ? [...categoryForm.roomSlugs, room.slug]
-                                  : categoryForm.roomSlugs.filter((slug) => slug !== room.slug),
-                              })
-                            }
-                            className="w-4 h-4 rounded border-gray-300 text-[#025E5D] focus:ring-[#025E5D]"
-                          />
-                          {room.label}
-                        </label>
-                      ))}
-                    </div>
-                  )}
-                </div>
-
-                <div className="grid grid-cols-2 gap-4">
-                  <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-1.5">
-                      Status
-                    </label>
-                    <select
-                      value={categoryForm.status}
-                      onChange={(e) => setCategoryForm({ ...categoryForm, status: e.target.value })}
-                      className="w-full px-4 py-2 bg-white border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-teal-500/10 focus:border-teal-500 text-sm font-medium text-gray-600 cursor-pointer"
-                    >
-                      <option value="active">Active</option>
-                      <option value="inactive">Inactive</option>
-                    </select>
-                  </div>
-                  <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-1.5">
-                      Sort Order
-                    </label>
-                    <input
-                      type="number"
-                      value={categoryForm.sortOrder}
-                      onChange={(e) => setCategoryForm({ ...categoryForm, sortOrder: parseInt(e.target.value) || 0 })}
-                      className="w-full px-4 py-2 bg-white border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-teal-500/10 focus:border-teal-500 text-sm font-medium text-gray-800"
-                    />
-                  </div>
-                </div>
-
-                <div className="flex gap-3 pt-4">
-                  <button
-                    type="button"
-                    onClick={() => setShowModal(false)}
-                    className="flex-1 px-4 py-2 bg-gray-100 text-gray-700 rounded-lg font-medium hover:bg-gray-200 transition-colors text-sm"
-                  >
-                    Cancel
-                  </button>
-                  <button
-                    type="submit"
-                    disabled={createMutation.isPending || updateMutation.isPending}
-                    className="flex-1 px-4 py-2 bg-teal-600 text-white rounded-lg font-medium hover:bg-teal-700 transition-colors disabled:opacity-50 text-sm cursor-pointer"
-                  >
-                    {(createMutation.isPending || updateMutation.isPending) ? (
-                      <Loader2 className="w-5 h-5 animate-spin mx-auto" />
-                    ) : (
-                      editingCategory ? 'Save Changes' : 'Add Category'
-                    )}
-                  </button>
-                </div>
-              </form>
-             </Dialog>
-            </motion.div>
-          </motion.div>
-        )}
-      </AnimatePresence>
+      <CategoryFormModal
+        showModal={showModal}
+        setShowModal={setShowModal}
+        editingCategory={editingCategory}
+        categoryForm={categoryForm}
+        setCategoryForm={setCategoryForm}
+        imagePreview={imagePreview}
+        setImagePreview={setImagePreview}
+        fileInputRef={fileInputRef}
+        handleImageChange={handleImageChange}
+        handleSubmit={handleSubmit}
+        parentOptions={parentOptions}
+        productTypes={productTypes}
+        rooms={rooms}
+        createMutation={createMutation}
+        updateMutation={updateMutation}
+      />
 
       <ConfirmationDialog
         isOpen={deleteModalOpen}
@@ -1050,15 +653,11 @@ export default function Categories() {
         isLoading={deleteMutation.isPending}
       />
 
-      <AnimatePresence>
-        {attributesCategory && (
-          <CategoryAttributesEditor
-            category={attributesCategory}
-            categories={categories}
-            onClose={() => setAttributesCategory(null)}
-          />
-        )}
-      </AnimatePresence>
+      <CategoryAttributesPanel
+        attributesCategory={attributesCategory}
+        categories={categories}
+        setAttributesCategory={setAttributesCategory}
+      />
     </div>
   );
 }

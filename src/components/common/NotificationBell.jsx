@@ -1,39 +1,22 @@
-import React, { useState, useEffect, useRef } from "react";
+import React, { useState, useEffect, useRef, useMemo } from "react";
 import { Bell } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import NotificationDropdown from "./NotificationDropdown";
 import useAdminNotificationSocket from "../../hooks/admin/useAdminNotificationSocket";
-import notificationApi from "../../api/notificationApi";
+import {
+  useNotifications,
+  useUnreadNotificationCount,
+  useMarkNotificationRead,
+  useMarkMultipleNotificationsRead,
+  mergeNotificationsById,
+  collectUnreadNotificationIds,
+} from "../../hooks/notification/useNotificationsTan";
 import { safeActionUrl } from "../../utils/safeUrl";
-
-const notifId = (n) => n?._id ?? n?.id;
-
-// FE-24: merge a REST page with what the socket already delivered.
-// Items the socket pushed that are not in the fetched page are the
-// NEWEST arrivals — they stay at the front instead of being silently
-// overwritten by the fetch result (the old code replaced the list
-// unconditionally). Items present in both keep the fresher REST copy.
-const mergeNotificationsById = (fetchedList, existingList) => {
-  const fetchedIds = new Set(
-    (fetchedList || []).map(notifId).filter((id) => id != null)
-  );
-  const socketOnly = (existingList || []).filter((n) => {
-    const id = notifId(n);
-    return id == null || !fetchedIds.has(id);
-  });
-  return [...socketOnly, ...(fetchedList || [])];
-};
 
 const NotificationBell = ({ user, token }) => {
   const navigate = useNavigate();
   const [showDropdown, setShowDropdown] = useState(false);
-  const [loading, setLoading] = useState(false);
-  const [fetchError, setFetchError] = useState(false);
   const bellRef = useRef(null);
-  // FE-24: monotonically increasing fetch sequence — a response is
-  // applied only if no newer fetch has started since (rapid
-  // open/close races let an older, slower response win before).
-  const fetchSeqRef = useRef(0);
 
   const {
     adminNotifications,
@@ -42,68 +25,53 @@ const NotificationBell = ({ user, token }) => {
     setUnreadAdminCount,
   } = useAdminNotificationSocket(token, user?._id, user?.role);
 
+  // REUSE-016: the list + unread count are React Query state now
+  // (useNotificationsTan); the hand-rolled fetch/sequence-ref logic is
+  // gone — React Query's fetch supersession replaces the FE-24
+  // sequence guard, and the merge-by-id with socket items is kept.
+  // Each open is a new query (keyExtra cycle): a response from a
+  // previous open can never overwrite the current one (the FE-24
+  // stale rule React Query's same-key dedupe alone would not give,
+  // because the first fetch is still in flight on a quick reopen).
+  const [openCycle, setOpenCycle] = useState(0);
+  const listQuery = useNotifications({
+    page: 1,
+    limit: 10,
+    enabled: !!user && showDropdown,
+    keyExtra: openCycle,
+  });
+  const unreadQuery = useUnreadNotificationCount({ enabled: !!user });
+  const markAsReadMutation = useMarkNotificationRead();
+  const markMultipleReadMutation = useMarkMultipleNotificationsRead();
+
   // FE-24: the badge comes from the dedicated unread-count endpoint
-  // on mount. Pre-fix nothing was fetched until the dropdown was
-  // first opened, and the badge was then computed as
-  // unread∩first-10-items — an admin with 25 unread saw no badge,
-  // then a badge capped at 10.
+  // on mount. The socket hook owns the live badge state (socket pushes
+  // increment it), so the query result is synced into it — pre-fix
+  // nothing was fetched until the dropdown was first opened, and the
+  // badge was then computed as unread∩first-10-items.
+  const unreadFromServer = unreadQuery.data;
   useEffect(() => {
-    if (!user) return;
-    let cancelled = false;
-    (async () => {
-      try {
-        const response = await notificationApi.getUnreadCount();
-        const count = response?.data?.unreadCount;
-        if (!cancelled && Number.isFinite(count)) {
-          setUnreadAdminCount(count);
-        }
-      } catch (error) {
-        console.error("Failed to fetch unread count:", error);
-      }
-    })();
-    return () => {
-      cancelled = true;
-    };
-  }, [user, setUnreadAdminCount]);
-
-  const fetchNotifications = async () => {
-    if (!user) return;
-
-    const seq = ++fetchSeqRef.current;
-    setLoading(true);
-
-    try {
-      const response = await notificationApi.getNotifications(1, 10);
-
-      if (seq !== fetchSeqRef.current) return; // stale response
-
-      const fetchedList =
-        response?.data?.notifications ||
-        response?.notifications ||
-        [];
-
-      setFetchError(false);
-      setAdminNotifications((prev) =>
-        mergeNotificationsById(fetchedList, prev)
-      );
-    } catch (error) {
-      if (seq !== fetchSeqRef.current) return; // stale response
-      console.error("Failed to fetch notifications:", error);
-      // FE-24: a failed fetch is an error state, not an empty list —
-      // the dropdown renders this instead of 'No notifications found'.
-      setFetchError(true);
-    } finally {
-      if (seq === fetchSeqRef.current) {
-        setLoading(false);
-      }
+    if (Number.isFinite(unreadFromServer)) {
+      setUnreadAdminCount(unreadFromServer);
     }
-  };
+  }, [unreadFromServer, setUnreadAdminCount]);
 
-  useEffect(() => {
-    if (showDropdown) {
-      fetchNotifications();
-    }
-  }, [showDropdown]);
+  // (openCycle is bumped in the toggle handler below, in the same
+  // state batch as opening, so the first enabled render already
+  // carries the new key.)
+
+  const fetchedList = useMemo(
+    () =>
+      listQuery.data?.data?.notifications || listQuery.data?.notifications || [],
+    [listQuery.data]
+  );
+  // Socket items not yet in the REST page stay at the front (FE-24).
+  const notifications = useMemo(
+    () => mergeNotificationsById(fetchedList, adminNotifications),
+    [fetchedList, adminNotifications]
+  );
+  const loading = showDropdown && listQuery.isFetching;
+  const fetchError = showDropdown && listQuery.isError;
 
   useEffect(() => {
     const handleClickOutside = (e) => {
@@ -120,34 +88,15 @@ const NotificationBell = ({ user, token }) => {
       document.removeEventListener("mousedown", handleClickOutside);
   }, [showDropdown]);
 
-  // FE-24: 'Mark all read' was dead — the bell rendered
-  // NotificationDropdown WITHOUT onMarkAllAsRead, so the button's
-  // onClick was undefined. This handler collects the ids of ALL
-  // unread notifications (paging the isRead=false filter, not just
-  // the visible first page) and marks them in one API call.
+  // FE-24: 'Mark all read' collects the ids of ALL unread
+  // notifications (paging the isRead=false filter, not just the
+  // visible first page) and marks them in one API call.
   const handleMarkAllAsRead = async () => {
     try {
-      const ids = [];
-      let page = 1;
-      let totalPages = 1;
-      do {
-        const response = await notificationApi.getNotifications(page, 50, {
-          isRead: false,
-        });
-        const list =
-          response?.data?.notifications || response?.notifications || [];
-        for (const n of list) {
-          const id = notifId(n);
-          if (id != null) ids.push(id);
-        }
-        totalPages = response?.data?.totalPages || 1;
-        page += 1;
-      } while (page <= totalPages && page <= 20);
-
+      const ids = await collectUnreadNotificationIds();
       if (ids.length > 0) {
-        await notificationApi.markMultipleAsRead(ids);
+        await markMultipleReadMutation.mutateAsync(ids);
       }
-
       setAdminNotifications((prev) =>
         prev.map((n) => ({ ...n, isRead: true }))
       );
@@ -159,8 +108,7 @@ const NotificationBell = ({ user, token }) => {
 
   const handleMarkAsRead = async (id) => {
     try {
-      await notificationApi.markAsRead(id);
-
+      await markAsReadMutation.mutateAsync(id);
       setAdminNotifications((prev) =>
         prev.map((n) =>
           n._id === id || n.id === id
@@ -168,7 +116,6 @@ const NotificationBell = ({ user, token }) => {
             : n
         )
       );
-
       setUnreadAdminCount((prev) => Math.max(0, prev - 1));
     } catch (error) {
       console.error("Failed to mark notification as read:", error);
@@ -178,7 +125,10 @@ const NotificationBell = ({ user, token }) => {
   return (
     <div className="relative inline-flex" ref={bellRef}>
       <button
-        onClick={() => setShowDropdown((prev) => !prev)}
+        onClick={() => {
+          if (!showDropdown) setOpenCycle((c) => c + 1);
+          setShowDropdown((prev) => !prev);
+        }}
         aria-label={unreadAdminCount > 0 ? `Notifications, ${unreadAdminCount} unread` : "Notifications"}
         aria-expanded={showDropdown}
         aria-haspopup="true"
@@ -204,7 +154,7 @@ const NotificationBell = ({ user, token }) => {
       {showDropdown && (
         <div className="absolute right-0 sm:right-[-60px] mt-2 z-50 min-w-[320px] sm:min-w-[380px] bg-white rounded-2xl border border-slate-200 shadow-2xl overflow-hidden origin-top-right">
           <NotificationDropdown
-            notifications={adminNotifications}
+            notifications={notifications}
             loading={loading}
             unreadCount={unreadAdminCount}
             onMarkAllAsRead={handleMarkAllAsRead}

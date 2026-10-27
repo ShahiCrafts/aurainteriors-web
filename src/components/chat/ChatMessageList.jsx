@@ -3,6 +3,7 @@ import { Loader2, MessageCircle, Sparkles, ChevronDown, User, Bot } from 'lucide
 import { ChatMessageSkeleton } from '../common/Skeleton';
 import ChatMessage from './ChatMessage';
 import useAuthStore from '../../store/authStore';
+import { useShallow } from "zustand/react/shallow";
 import { UserAvatar } from '../common/InitialsAvatar';
 
 
@@ -17,7 +18,7 @@ const ChatMessageList = ({
   typingStatus,
   onRetryMessage,
 }) => {
-  const { user } = useAuthStore();
+  const { user } = useAuthStore(useShallow((state) => ({ user: state.user })));
   const messagesEndRef = useRef(null);
   const messagesContainerRef = useRef(null);
 

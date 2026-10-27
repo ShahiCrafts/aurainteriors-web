@@ -1,3 +1,4 @@
+import { formatDate } from "../../utils/formatDate";
 import { useState, useEffect, useRef } from "react";
 import { 
   FileText, 
@@ -426,7 +427,7 @@ const KnowledgeBase = () => {
                       )}
                     </td>
                     <td className="px-6 py-4 text-sm text-gray-500">
-                      {new Date(doc.createdAt).toLocaleDateString(undefined, {
+                      {formatDate(doc.createdAt, {
                         month: "short",
                         day: "numeric",
                         year: "numeric",

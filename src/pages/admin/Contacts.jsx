@@ -1,3 +1,5 @@
+import { formatDate, formatTime } from "../../utils/formatDate";
+import useDebounce from "../../hooks/useDebounce";
 import { useRef, useState } from "react";
 import Dialog from "../../components/common/Dialog";
 import { motion, AnimatePresence } from "framer-motion";
@@ -29,7 +31,7 @@ import {
   useRespondToContact,
   useDeleteContact,
 } from "../../hooks/admin/useContactTan";
-import { toast } from "react-toastify";
+import { toast } from "../../lib/toast";
 import Pagination from "../../components/common/Pagination";
 import formatError from "../../utils/errorHandler";
 
@@ -44,6 +46,7 @@ const categoryLabels = {
 
 export default function Contacts() {
   const [searchQuery, setSearchQuery] = useState("");
+  const debouncedSearchQuery = useDebounce(searchQuery, 300); // PERF-F-007: input stays immediate; only the query-param value is debounced
   const [filterStatus, setFilterStatus] = useState("all");
   const [filterCategory, setFilterCategory] = useState("all");
   const [filterRead, setFilterRead] = useState("all");
@@ -60,7 +63,7 @@ export default function Contacts() {
   const queryParams = {
     page,
     limit: pageSize,
-    ...(searchQuery && { search: searchQuery }),
+    ...(debouncedSearchQuery && { search: debouncedSearchQuery }),
     ...(filterStatus !== "all" && { status: filterStatus }),
     ...(filterCategory !== "all" && { category: filterCategory }),
     ...(filterRead !== "all" && { isRead: filterRead === "read" }),
@@ -314,13 +317,10 @@ export default function Contacts() {
                     <td className="px-6 py-4">
                       <div className="text-xs text-gray-500">
                         <p className="font-medium text-gray-700">
-                          {new Date(contact.createdAt).toLocaleDateString()}
+                          {formatDate(contact.createdAt)}
                         </p>
                         <p className="text-[10px]">
-                          {new Date(contact.createdAt).toLocaleTimeString([], {
-                            hour: "2-digit",
-                            minute: "2-digit",
-                          })}
+                          {formatTime(contact.createdAt)}
                         </p>
                       </div>
                     </td>
@@ -439,7 +439,7 @@ export default function Contacts() {
                   </p>
                   <div className="flex items-center gap-2 text-xs font-semibold">
                     <Clock size={14} className="text-gray-400" />
-                    {new Date(selectedContact.createdAt).toLocaleTimeString()}
+                    {formatTime(selectedContact.createdAt, { hour: '2-digit', minute: '2-digit', second: '2-digit' })}
                   </div>
                 </div>
               </div>

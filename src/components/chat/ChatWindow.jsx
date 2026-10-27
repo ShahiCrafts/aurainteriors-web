@@ -13,6 +13,7 @@ import { useChatMessages, useMarkMessagesRead, useSendMessage } from '../../hook
 import useChatSocket from '../../hooks/chat/useChatSocket';
 import useNotificationSocket from '../../hooks/notification/useNotificationSocket';
 import useAuthStore from '../../store/authStore';
+import { useShallow } from "zustand/react/shallow";
 import { getGuestSessionId } from '../../utils/guestSessionStorage';
 import ChatMessageList from './ChatMessageList';
 import ChatInput from './ChatInput';
@@ -26,7 +27,7 @@ import ChatInput from './ChatInput';
 const EmptyStateAnimation = lazy(() => import('./DotLottieAnimation'));
 
 const ChatWindow = ({ chat, onClose, onStartNew, onResetView, isCreatingChat }) => {
-  const { user, token } = useAuthStore();
+  const { user, token } = useAuthStore(useShallow((state) => ({ user: state.user, token: state.token })));
   const guestSessionId = getGuestSessionId();
   const { socket, error: socketError } = useNotificationSocket(token, user?._id, guestSessionId);
 

@@ -27,18 +27,21 @@ import {
   DoorOpen,
   LayoutGrid,
 } from "lucide-react";
+import AdminSidebar from "./AdminSidebar";
+import AdminTopbar from "./AdminTopbar";
 import NotificationBell from "../../components/common/NotificationBell";
 import ErrorBoundary from "../../components/common/ErrorBoundary";
 import ConfirmationDialog from "../../components/modals/ConfirmationDialog";
 import Dialog from "../../components/common/Dialog";
 import useAuthStore from "../../store/authStore";
+import { useShallow } from "zustand/react/shallow";
 import useAdminNotificationSocket from "../../hooks/admin/useAdminNotificationSocket";
 import { safeActionUrl } from "../../utils/safeUrl";
 
 export default function AdminLayout() {
   const location = useLocation();
   const navigate = useNavigate();
-  const { user, token, logout } = useAuthStore();
+  const { user, token, logout } = useAuthStore(useShallow((state) => ({ user: state.user, token: state.token, logout: state.logout })));
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [logoutModalOpen, setLogoutModalOpen] = useState(false);
   const [policyModalOpen, setPolicyModalOpen] = useState(false);
@@ -258,222 +261,36 @@ export default function AdminLayout() {
 
   return (
     <div className="min-h-screen bg-gray-50/50 font-dm-sans text-slate-900">
-      {/* Sidebar Overlay (mobile) - covers full screen including header */}
-      {mobileMenuOpen && (
-        <div
-          className="lg:hidden fixed inset-0 bg-black/20 z-40"
-          onClick={() => setMobileMenuOpen(false)}
-        />
-      )}
+      <AdminSidebar
+        mobileMenuOpen={mobileMenuOpen}
+        setMobileMenuOpen={setMobileMenuOpen}
+        isCollapsed={isCollapsed}
+        toggleCollapse={toggleCollapse}
+        menuGroups={menuGroups}
+        isActive={isActive}
+      />
 
-      {/* Sidebar - starts from the very top of the page */}
-      <aside
-        className={`fixed top-0 left-0 h-screen bg-white border-r border-gray-100 z-50 transform transition-all duration-300 ease-in-out ${mobileMenuOpen ? "translate-x-0" : "-translate-x-full lg:translate-x-0"
-          } ${isCollapsed ? "w-20" : "w-72"}`}
-      >
-        <div className="flex flex-col h-full relative">
-          <div
-            className={`w-full flex items-center border-b border-gray-100 ${isCollapsed
-              ? "justify-center h-20 px-0"
-              : "justify-between h-20 px-5"
-              }`}
-          >
-            {!isCollapsed && (
-              <Link to="/dashboard" className="flex items-center min-w-0 shrink">
-                <img
-                  src="/admin-logo.png"
-                  alt="Aura"
-                  className="w-48 h-auto object-contain transition-all duration-300"
-                />
-              </Link>
-            )}
-
-            <button
-              onClick={toggleCollapse}
-              className="hidden lg:flex p-2 rounded-lg text-gray-500 bg-gray-100 hover:bg-gray-200 hover:text-gray-700 transition-colors shrink-0"
-              title={isCollapsed ? "Expand Sidebar" : "Collapse Sidebar"}
-            >
-              {isCollapsed ? <ChevronRight size={18} /> : <ChevronLeft size={18} />}
-            </button>
-          </div>
-
-          {/* Navigation */}
-          <nav className="flex-1 overflow-y-auto p-5 space-y-6 custom-scrollbar pb-28 pt-8">
-            {menuGroups.map((group) => (
-              <div key={group.title}>
-                {!isCollapsed ? (
-                  <h3 className="px-5 text-[12px] font-medium text-gray-400 uppercase mb-3 truncate">
-                    {group.title}
-                  </h3>
-                ) : (
-                  <div className="h-px bg-gray-100 my-4 mx-2" />
-                )}
-                <div className="space-y-1">
-                  {group.items.map((item) => (
-                    <NavLink
-                      key={item.id}
-                      item={item}
-                      active={isActive(item.path)}
-                      isCollapsed={isCollapsed}
-                      onClick={() => setMobileMenuOpen(false)}
-                    />
-                  ))}
-                </div>
-              </div>
-            ))}
-          </nav>
-        </div>
-      </aside>
-
-      {/* Top Navbar - sits only to the right of the sidebar, not full width */}
-      <header
-        className={`fixed top-0 right-0 left-0 h-20 bg-white border-b border-gray-100 z-30 flex items-center gap-4 px-4 sm:px-6 transition-all duration-300 ease-in-out ${isCollapsed ? "lg:left-20" : "lg:left-72"
-          }`}
-      >
-        {/* Mobile menu toggle */}
-        <button
-          onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
-          className="lg:hidden p-2 -ml-2 text-gray-600 shrink-0"
-        >
-          {mobileMenuOpen ? <X size={22} /> : <Menu size={22} />}
-        </button>
-
-        {/* Search bar */}
-        <div className="hidden md:flex w-110">
-          <div className="relative w-full">
-            <Search
-              size={16}
-              className="absolute left-3.5 top-1/2 -translate-y-1/2 text-gray-400"
-            />
-            <input
-              ref={searchInputRef}
-              type="text"
-              value={searchValue}
-              onChange={(e) => setSearchValue(e.target.value)}
-              placeholder="Search customers, orders, products, conversations..."
-              className="w-full pl-10 pr-14 py-2.5 bg-gray-100/90 rounded-lg text-sm text-gray-700 placeholder:text-gray-400 focus:outline-none focus:ring-2 focus:ring-teal-500/20 focus:border-teal-400 transition-all"
-            />
-            <span className="absolute right-3 top-1/2 -translate-y-1/2 text-[11px] font-semibold text-gray-400 bg-white border border-gray-200 rounded-md px-1.5 py-0.5">
-              ⌘K
-            </span>
-          </div>
-        </div>
-
-        {/* Right cluster */}
-        <div className="flex items-center gap-3 sm:gap-4 ml-auto">
-          {/* Online / Offline status */}
-          <div className="relative hidden sm:block" ref={statusRef}>
-            <button
-              onClick={() => setStatusMenuOpen((prev) => !prev)}
-              className="flex items-center gap-2 px-3 py-2 rounded-lg bg-gray-100/90 transition-colors"
-            >
-              <span
-                className={`w-2 h-2 rounded-full ${onlineStatus === "online" ? "bg-emerald-500" : "bg-gray-400"
-                  }`}
-              />
-              <span className="text-sm font-medium text-gray-700 capitalize">
-                {onlineStatus}
-              </span>
-              <ChevronDown size={14} className="text-gray-400" />
-            </button>
-
-            {statusMenuOpen && (
-              <div className="absolute right-0 mt-2 w-32 bg-white border border-gray-100 shadow-[0_2px_10px_-4px_rgba(0,0,0,0.05)] rounded-lg py-1.5 z-50">
-                <button
-                  onClick={() => {
-                    setOnlineStatus("online");
-                    setStatusMenuOpen(false);
-                  }}
-                  className="w-full flex items-center gap-2 px-4 py-2 text-sm text-gray-700 hover:bg-gray-50"
-                >
-                  <span className="w-2 h-2 rounded-full bg-emerald-500" />
-                  Online
-                </button>
-                <button
-                  onClick={() => {
-                    setOnlineStatus("offline");
-                    setStatusMenuOpen(false);
-                  }}
-                  className="w-full flex items-center gap-2 px-4 py-2 text-sm text-gray-700 hover:bg-gray-50"
-                >
-                  <span className="w-2 h-2 rounded-full bg-gray-400" />
-                  Offline
-                </button>
-              </div>
-            )}
-          </div>
-
-          {/* Notifications */}
-          <NotificationBell user={user} token={token} />
-
-          <div className="h-8 w-px bg-gray-100 hidden sm:block" />
-
-          {/* Profile dropdown */}
-          <div className="relative" ref={profileRef}>
-            <button
-              onClick={() => setProfileMenuOpen((prev) => !prev)}
-              className="flex items-center gap-3 pl-1 rounded-xl hover:bg-gray-50 py-1.5 pr-2 transition-colors"
-            >
-              <div className="w-9 h-9 rounded-xl bg-teal-600/10 flex items-center justify-center text-teal-700 font-bold text-sm border border-teal-100 shrink-0">
-                {user?.firstName?.charAt(0)?.toUpperCase() || "A"}
-              </div>
-              <div className="text-right hidden xl:block">
-                <p className="text-[14px] font-bold text-gray-900 leading-none">
-                  {user?.firstName} {user?.lastName}
-                </p>
-                <p className="text-[11px] font-bold text-teal-600 mt-1 uppercase tracking-wider">
-                  Administrator
-                </p>
-              </div>
-              <ChevronDown size={14} className="text-gray-400 hidden sm:block" />
-            </button>
-
-            {profileMenuOpen && (
-              <div className="absolute right-0 mt-2 w-56 bg-white border border-gray-100 rounded-xl shadow-lg py-1.5 z-50">
-                <div className="px-4 py-2.5 border-b border-gray-100">
-                  <p className="text-sm font-bold text-gray-900 truncate">
-                    {user?.firstName} {user?.lastName}
-                  </p>
-                  <p className="text-[11px] font-bold text-teal-600 uppercase tracking-wider mt-0.5">
-                    Administrator
-                  </p>
-                </div>
-                <button
-                  onClick={() => {
-                    setProfileMenuOpen(false);
-                    setHelpModalOpen(true);
-                  }}
-                  className="w-full flex items-center gap-2.5 px-4 py-2.5 text-sm text-gray-600 hover:bg-gray-50"
-                >
-                  <HelpCircle size={16} />
-                  Help & Support
-                </button>
-                <button
-                  onClick={() => {
-                    setProfileMenuOpen(false);
-                    setPolicyModalOpen(true);
-                  }}
-                  className="w-full flex items-center gap-2.5 px-4 py-2.5 text-sm text-gray-600 hover:bg-gray-50"
-                >
-                  <ShieldCheck size={16} />
-                  Privacy & Policies
-                </button>
-                <div className="h-px bg-gray-100 my-1" />
-                <button
-                  onClick={() => {
-                    setProfileMenuOpen(false);
-                    setLogoutModalOpen(true);
-                  }}
-                  className="w-full flex items-center gap-2.5 px-4 py-2.5 text-sm text-rose-500 hover:bg-rose-50/50"
-                >
-                  <LogOut size={16} />
-                  Sign Out
-                </button>
-              </div>
-            )}
-          </div>
-        </div>
-      </header>
+      <AdminTopbar
+        isCollapsed={isCollapsed}
+        mobileMenuOpen={mobileMenuOpen}
+        setMobileMenuOpen={setMobileMenuOpen}
+        searchValue={searchValue}
+        setSearchValue={setSearchValue}
+        searchInputRef={searchInputRef}
+        statusRef={statusRef}
+        statusMenuOpen={statusMenuOpen}
+        setStatusMenuOpen={setStatusMenuOpen}
+        onlineStatus={onlineStatus}
+        setOnlineStatus={setOnlineStatus}
+        user={user}
+        token={token}
+        profileRef={profileRef}
+        profileMenuOpen={profileMenuOpen}
+        setProfileMenuOpen={setProfileMenuOpen}
+        setHelpModalOpen={setHelpModalOpen}
+        setPolicyModalOpen={setPolicyModalOpen}
+        setLogoutModalOpen={setLogoutModalOpen}
+      />
 
       {/* Main Content Area - no padding here, each page controls its own */}
       <div
@@ -634,29 +451,3 @@ export default function AdminLayout() {
   );
 }
 
-function NavLink({ item, active, isCollapsed, onClick }) {
-  return (
-    <Link
-      to={item.path}
-      onClick={onClick}
-      title={isCollapsed ? item.label : undefined}
-      className={`group flex items-center px-4.5 py-2.5 mx-2.5 rounded-lg transition-all duration-200 relative overflow-hidden focus:outline-none ${isCollapsed ? "justify-center gap-0 px-2" : "gap-3.5"} ${active
-        ? "bg-teal-50 text-teal-700 font-semibold"
-        : "text-gray-600 hover:bg-gray-50 hover:text-gray-900 font-medium"
-        }`}
-    >
-
-      <item.icon
-        className={`w-5 h-5 shrink-0 transition-all duration-200 ${active ? "text-teal-600" : "text-gray-400 group-hover:text-gray-700"
-          }`}
-        strokeWidth={active ? 2.5 : 2}
-      />
-
-      {!isCollapsed && (
-        <span className="flex-1 text-[15px] tracking-tight truncate">
-          {item.label}
-        </span>
-      )}
-    </Link>
-  );
-}

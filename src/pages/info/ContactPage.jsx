@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { motion } from "framer-motion";
-import { toast } from 'react-toastify';
+import { toast } from "../../lib/toast";
 import {
   Mail,
   Phone,

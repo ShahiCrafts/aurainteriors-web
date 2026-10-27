@@ -19,6 +19,7 @@ import { usePublicAnnouncements, usePublicAnnouncement } from "../../hooks/admin
 import Skeleton from "../../components/common/Skeleton";
 import Pagination from "../../components/common/Pagination";
 import { validateMediaUrl, safeActionUrl } from "../../utils/safeUrl";
+import { formatDate } from "../../utils/formatDate";
 
 // FE-03: announcement images are admin-entered free text (see FE-04) —
 // they render only when validateMediaUrl accepts the value.
@@ -70,7 +71,7 @@ function AnnouncementCard({ announcement, onClick }) {
               {typeConfig.label}
             </span>
             <span className="text-xs text-gray-400">
-              {new Date(announcement.publishedAt).toLocaleDateString("en-US", {
+              {formatDate(announcement.publishedAt, {
                 year: "numeric",
                 month: "short",
                 day: "numeric",
@@ -161,7 +162,7 @@ function AnnouncementDetail({ announcement, onBack }) {
           )}
           <span className="text-gray-500 text-sm flex items-center gap-1">
             <Calendar className="w-4 h-4" />
-            {new Date(announcement.publishedAt).toLocaleDateString("en-US", {
+            {formatDate(announcement.publishedAt, {
               weekday: "long",
               year: "numeric",
               month: "long",

@@ -2,6 +2,7 @@ import { Suspense, lazy, memo } from "react";
 import { Check, CheckCheck, Info, Bot, Sparkles, User, AlertCircle, RotateCcw } from "lucide-react";
 import ChatAttachment from "./ChatAttachment";
 import { UserAvatar } from "../common/InitialsAvatar";
+import { formatTime } from "../../utils/formatDate";
 
 // FE-49: the react-markdown pipeline lives in BotMarkdown.jsx and is
 // loaded only when a bot message with content actually renders. User
@@ -86,7 +87,7 @@ const ChatMessage = ({ message, isOwnMessage, isAdminView = false, onRetry }) =>
                 : message.sender?.firstName || "Customer"}
             </span>
             <span className="text-[11px] text-gray-400 font-medium">
-              {new Date(message.createdAt).toLocaleTimeString([], {
+              {formatTime(message.createdAt, {
                 hour: "2-digit",
                 minute: "2-digit",
                 hour12: true,

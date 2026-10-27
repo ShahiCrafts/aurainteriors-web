@@ -2,6 +2,7 @@ import { MapPin, Truck, Tag, Users, HelpCircle } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import { useDefaultAddress } from "../../hooks/profile/useAddressTan";
 import useAuthStore from "../../store/authStore";
+import { useShallow } from "zustand/react/shallow";
 import { formatNPR } from "../../utils/formatCurrency";
 
 const G = "#F27318";
@@ -18,7 +19,7 @@ const topLinks = [
 
 export default function TopBar() {
   const navigate = useNavigate();
-  const { isAuthenticated, openAuthModal } = useAuthStore();
+  const { isAuthenticated, openAuthModal } = useAuthStore(useShallow((state) => ({ isAuthenticated: state.isAuthenticated, openAuthModal: state.openAuthModal })));
   const { defaultAddress, isLoading } = useDefaultAddress();
 
   const handleAddressClick = () => {
