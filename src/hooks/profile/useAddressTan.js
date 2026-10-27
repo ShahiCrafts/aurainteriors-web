@@ -9,6 +9,14 @@ import {
   setDefaultAddress,
 } from "../../api/addressApi";
 
+// FE-55: the mutation hooks below used to invalidate ["addresses"]
+// and ["address"] — the latter prefix-matches EVERY cached address
+// detail (every id, every user). Mutations now invalidate the
+// caller's list key plus only the mutated address's own detail key,
+// built with the exact shapes useAddresses/useAddress use.
+const addressListKey = () => ["addresses", useAuthStore.getState().user?._id || "guest"];
+const addressDetailKey = (id) => ["address", id, useAuthStore.getState().user?._id || "guest"];
+
 export const useAddresses = (options = {}) => {
   const userId = useAuthStore(state => state.user?._id);
   return useQuery({
@@ -47,8 +55,8 @@ export const useCreateAddress = () => {
       }
     },
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["addresses"] });
-      queryClient.invalidateQueries({ queryKey: ["address"] });
+      // FE-55: a create changes only the list — no detail exists yet.
+      queryClient.invalidateQueries({ queryKey: addressListKey() });
     },
   });
 };
@@ -65,9 +73,9 @@ export const useUpdateAddress = () => {
         throw error;
       }
     },
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["addresses"] });
-      queryClient.invalidateQueries({ queryKey: ["address"] });
+    onSuccess: (_, { id }) => {
+      queryClient.invalidateQueries({ queryKey: addressListKey() });
+      queryClient.invalidateQueries({ queryKey: addressDetailKey(id) });
     },
   });
 };
@@ -84,9 +92,11 @@ export const useDeleteAddress = () => {
         throw error;
       }
     },
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["addresses"] });
-      queryClient.invalidateQueries({ queryKey: ["address"] });
+    onSuccess: (_, id) => {
+      queryClient.invalidateQueries({ queryKey: addressListKey() });
+      // FE-55: the deleted address's detail is removed outright —
+      // invalidating it would refetch a 404 if it were mounted.
+      queryClient.removeQueries({ queryKey: addressDetailKey(id) });
     },
   });
 };
@@ -110,9 +120,9 @@ export const useSetDefaultAddress = () => {
         throw error;
       }
     },
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["addresses"] });
-      queryClient.invalidateQueries({ queryKey: ["address"] });
+    onSuccess: (_, id) => {
+      queryClient.invalidateQueries({ queryKey: addressListKey() });
+      queryClient.invalidateQueries({ queryKey: addressDetailKey(id) });
     },
   });
 };

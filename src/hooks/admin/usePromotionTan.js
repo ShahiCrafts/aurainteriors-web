@@ -1,12 +1,21 @@
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import promotionApi from "../../api/promotionApi";
+import { scopedAdminKey } from "../../lib/adminScope";
 
-const PROMOTION_KEYS = {
-  all: ["promotions"],
-  list: (params) => [...PROMOTION_KEYS.all, "list", params],
-  detail: (id) => [...PROMOTION_KEYS.all, "detail", id],
-  analytics: (id) => [...PROMOTION_KEYS.all, "analytics", id],
+// FE-08: keys are scoped to the signed-in admin's id (read at call time).
+export const PROMOTION_KEYS = {
+  all: () => scopedAdminKey("promotions"),
+  list: (params) => [...PROMOTION_KEYS.all(), "list", params],
+  detail: (id) => [...PROMOTION_KEYS.all(), "detail", id],
+  analytics: (id) => [...PROMOTION_KEYS.all(), "analytics", id],
 };
+// FE-55: mutations invalidate the narrowest keys that changed —
+// the list prefix plus the mutated promotion's detail (and its
+// analytics on send, which changes engagement state) — never
+// PROMOTION_KEYS.all(), whose prefix also matched every other
+// promotion's detail and analytics.
+const promotionListKey = () => [...PROMOTION_KEYS.all(), "list"];
+
 
 // Get all promotions (Admin)
 export const usePromotions = (params = {}) => {
@@ -43,7 +52,7 @@ export const useCreatePromotion = () => {
   return useMutation({
     mutationFn: (data) => promotionApi.create(data),
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: PROMOTION_KEYS.all });
+      queryClient.invalidateQueries({ queryKey: promotionListKey() });
     },
   });
 };
@@ -55,7 +64,7 @@ export const useUpdatePromotion = () => {
   return useMutation({
     mutationFn: ({ id, data }) => promotionApi.update(id, data),
     onSuccess: (_, { id }) => {
-      queryClient.invalidateQueries({ queryKey: PROMOTION_KEYS.all });
+      queryClient.invalidateQueries({ queryKey: promotionListKey() });
       queryClient.invalidateQueries({ queryKey: PROMOTION_KEYS.detail(id) });
     },
   });
@@ -68,7 +77,7 @@ export const useDeletePromotion = () => {
   return useMutation({
     mutationFn: (id) => promotionApi.delete(id),
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: PROMOTION_KEYS.all });
+      queryClient.invalidateQueries({ queryKey: promotionListKey() });
     },
   });
 };
@@ -80,8 +89,9 @@ export const useSendPromotion = () => {
   return useMutation({
     mutationFn: (id) => promotionApi.send(id),
     onSuccess: (_, id) => {
-      queryClient.invalidateQueries({ queryKey: PROMOTION_KEYS.all });
+      queryClient.invalidateQueries({ queryKey: promotionListKey() });
       queryClient.invalidateQueries({ queryKey: PROMOTION_KEYS.detail(id) });
+      queryClient.invalidateQueries({ queryKey: PROMOTION_KEYS.analytics(id) });
     },
   });
 };
@@ -93,7 +103,7 @@ export const useSchedulePromotion = () => {
   return useMutation({
     mutationFn: ({ id, scheduledAt }) => promotionApi.schedule(id, scheduledAt),
     onSuccess: (_, { id }) => {
-      queryClient.invalidateQueries({ queryKey: PROMOTION_KEYS.all });
+      queryClient.invalidateQueries({ queryKey: promotionListKey() });
       queryClient.invalidateQueries({ queryKey: PROMOTION_KEYS.detail(id) });
     },
   });
@@ -106,7 +116,7 @@ export const useCancelPromotion = () => {
   return useMutation({
     mutationFn: (id) => promotionApi.cancel(id),
     onSuccess: (_, id) => {
-      queryClient.invalidateQueries({ queryKey: PROMOTION_KEYS.all });
+      queryClient.invalidateQueries({ queryKey: promotionListKey() });
       queryClient.invalidateQueries({ queryKey: PROMOTION_KEYS.detail(id) });
     },
   });

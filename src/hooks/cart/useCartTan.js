@@ -1,10 +1,45 @@
 import useAuthStore from "../../store/authStore";
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
+import { toast } from "react-toastify";
 import cartApi from "../../api/cartApi";
+import formatError from "../../utils/errorHandler";
 
 const CART_KEYS = {
   all: ['cart'],
   list: () => [...CART_KEYS.all, 'list', useAuthStore.getState().user?._id || 'guest'],
+};
+
+/**
+ * FE-47 — cart mutations own their error reporting here in the hook
+ * (a hook-level onError overrides the QueryClient global default, so
+ * nothing double-toasts; call sites must NOT pass their own onError
+ * to these mutations any more).
+ *
+ * The server's AR-26 can answer a cart mutation with HTTP 409 when
+ * the cart changed underneath the client (concurrent mutation). The
+ * honest recovery is to resync from the server and say so: invalidate
+ * the cart queries and toast exactly "cart changed, refreshed".
+ * Every other failure toasts the formatted server/generic message.
+ */
+const makeCartErrorHandler = (queryClient) => (error) => {
+  if (error?.response?.status === 409) {
+    // Phase 7 (catalog): a variant conflict (VARIANT_UNAVAILABLE
+    // & friends) is NOT a cart-changed refresh — the shopper must
+    // see the server's specific reason and pick another variant.
+    // The production error body omits `code`, so the message is
+    // the fallback signal (Phase 4 messages all name the variant).
+    const code = error?.response?.data?.code;
+    const message = error?.response?.data?.message || "";
+    const isVariantError =
+      (typeof code === "string" && code.startsWith("VARIANT_")) ||
+      /variant/i.test(message);
+    if (!isVariantError) {
+      queryClient.invalidateQueries({ queryKey: CART_KEYS.all });
+      toast.error("cart changed, refreshed");
+      return;
+    }
+  }
+  toast.error(formatError(error));
 };
 
 export const useCart = (options = {}) => {
@@ -26,7 +61,7 @@ export const useAddToCart = () => {
       // Refetch to sync with server (ensures accurate prices, images, etc.)
       queryClient.invalidateQueries({ queryKey: CART_KEYS.all });
     },
-
+    onError: makeCartErrorHandler(queryClient),
   });
 };
 
@@ -38,6 +73,7 @@ export const useUpdateCartItem = () => {
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: CART_KEYS.all });
     },
+    onError: makeCartErrorHandler(queryClient),
   });
 };
 
@@ -49,6 +85,7 @@ export const useRemoveFromCart = () => {
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: CART_KEYS.all });
     },
+    onError: makeCartErrorHandler(queryClient),
   });
 };
 
@@ -60,5 +97,6 @@ export const useClearCart = () => {
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: CART_KEYS.all });
     },
+    onError: makeCartErrorHandler(queryClient),
   });
 };
