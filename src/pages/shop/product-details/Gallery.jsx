@@ -63,7 +63,7 @@ export default function Gallery({
 
         <ImageMagnifier
           src={getImageUrl(images[selectedImage])}
-          srcSet={getImageSrcSet(images[selectedImage], [800, 1200, 1600])}
+          srcSet={getImageSrcSet(images[selectedImage], [600, 1200, 1920])}
           sizes="(max-width: 1024px) 100vw, 60vw"
           alt={product.name}
           magnifierSize={120}
@@ -182,7 +182,7 @@ export function GalleryLightbox({
             animate={{ scale: 1, opacity: 1 }}
             transition={{ duration: 0.2 }}
             src={getImageUrl(images[selectedImage])}
-            srcSet={getImageSrcSet(images[selectedImage], [800, 1200, 1600, 2000])}
+            srcSet={getImageSrcSet(images[selectedImage], [600, 1200, 1920])}
             sizes="90vw"
             alt={product.name}
             className="max-w-[90vw] max-h-[85vh] object-contain"

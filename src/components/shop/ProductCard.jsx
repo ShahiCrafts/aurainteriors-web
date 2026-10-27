@@ -1,6 +1,6 @@
 import { memo, useCallback, useMemo } from "react";
 import { Link } from "react-router-dom";
-import { Heart, ShoppingCart, Loader2, Check, Box } from "lucide-react";
+import { Heart, ShoppingCart, Check, Box } from "lucide-react";
 import {
   useAddToWishlist,
   useRemoveFromWishlist,
@@ -106,11 +106,7 @@ function AddToCartAction({
       aria-label={`Add ${name} to cart`}
       className="relative z-20 flex h-9 w-9 shrink-0 items-center justify-center rounded-md bg-brand text-white shadow-sm transition-all hover:bg-brand-hover focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand disabled:opacity-60"
     >
-      {isAddingToCart ? (
-        <Loader2 size={16} className="animate-spin" />
-      ) : (
-        <ShoppingCart size={16} />
-      )}
+      <ShoppingCart size={16} />
     </button>
   );
 }
@@ -211,7 +207,7 @@ function ProductCardMain({
 
   const imageUrl = useMemo(() => getProductImageUrl(product), [product]);
   const imageSrcSet = useMemo(
-    () => getProductImageSrcSet(product, [320, 640, 960]),
+    () => getProductImageSrcSet(product, [600, 1200, 1920]),
     [product]
   );
   const isVariantProduct = product.hasVariants === true;

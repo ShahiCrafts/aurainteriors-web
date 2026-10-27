@@ -1,4 +1,5 @@
 import { shopCategoryUrl } from "../../utils/shopFilters";
+import { IMAGE_VARIANT_WIDTHS } from "../../utils/imageUrl";
 import { formatNPR } from "../../utils/formatCurrency";
 import { ArrowUpRight, Star } from "lucide-react";
 import { Link } from "react-router-dom";
@@ -36,6 +37,35 @@ const slides = [
   },
 ];
 
+const DECOR_IMAGE_URL =
+  "https://images.unsplash.com/photo-1524758631624-e2822e304c36?q=80&w=2070&auto=format&fit=crop";
+
+// FE-54: hero imagery ships as real WebP variants (600/1200/1920)
+// instead of the multi-thousand-pixel originals baked into the URLs.
+// The slide photos are compile-time static literals hosted on
+// plus.unsplash.com — a host the FE-03 media allowlist
+// (utils/safeUrl) does not include, so routing them through
+// getSizedImageUrl rejects them and silently swaps in the product
+// fallback image. They are not server data, so the imgix size /
+// format params are applied directly here; the photos themselves
+// are exactly the ones declared above.
+const sizedSlide = (url, width) => {
+  const u = new URL(url);
+  u.searchParams.set("w", String(width));
+  u.searchParams.set("fm", "webp");
+  u.searchParams.delete("auto");
+  return u.href;
+};
+const slideSrcSet = (url) =>
+  IMAGE_VARIANT_WIDTHS.map((w) => `${sizedSlide(url, w)} ${w}w`).join(", ");
+
+const mainSlideSrc = sizedSlide(slides[0].img, 1200);
+const mainSlideSrcSet = slideSrcSet(slides[0].img);
+const sideSlideSrc = sizedSlide(slides[1].img, 600);
+const sideSlideSrcSet = slideSrcSet(slides[1].img);
+const decorSlideSrc = sizedSlide(DECOR_IMAGE_URL, 600);
+const decorSlideSrcSet = slideSrcSet(DECOR_IMAGE_URL);
+
 export default function Hero() {
   return (
     <div className="font-dm-sans bg-white">
@@ -52,7 +82,9 @@ export default function Hero() {
               These three attributes together maximize LCP score.
             */}
             <img
-              src={slides[0].img}
+              src={mainSlideSrc}
+              srcSet={mainSlideSrcSet}
+              sizes="(max-width: 1024px) 100vw, 66vw"
               alt={slides[0].heading}
               fetchPriority="high"
               loading="eager"
@@ -111,7 +143,9 @@ export default function Hero() {
         <div className="hidden md:block lg:col-start-2 lg:row-start-1 h-[250px] sm:h-[286px] rounded-sm md:rounded-2xl overflow-hidden relative group shadow-sm bg-[#F9F8F6]">
           <div className="absolute inset-0 after:content-[''] after:absolute after:inset-0 after:bg-linear-to-t after:from-black/70 after:from-15% after:via-black/35 after:via-70% after:to-transparent">
             <img
-              src={slides[1].img}
+              src={sideSlideSrc}
+              srcSet={sideSlideSrcSet}
+              sizes="(max-width: 768px) 100vw, 33vw"
               alt={slides[1].heading}
               loading="lazy"
               decoding="async"
@@ -147,7 +181,9 @@ export default function Hero() {
         <div className="hidden md:block lg:col-start-2 lg:row-start-2 h-[250px] sm:h-[286px] rounded-sm md:rounded-2xl overflow-hidden relative group shadow-sm bg-[#F9F8F6]">
           <div className="absolute inset-0 after:content-[''] after:absolute after:inset-0 after:bg-linear-to-t after:from-black/70 after:from-15% after:via-black/35 after:via-70% after:to-transparent">
             <img
-              src="https://images.unsplash.com/photo-1524758631624-e2822e304c36?q=80&w=2070&auto=format&fit=crop"
+              src={decorSlideSrc}
+              srcSet={decorSlideSrcSet}
+              sizes="(max-width: 768px) 100vw, 33vw"
               alt="Premium Decor"
               loading="lazy"
               decoding="async"

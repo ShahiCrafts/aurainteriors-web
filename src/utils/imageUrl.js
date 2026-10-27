@@ -93,15 +93,25 @@ export const getImageUrl = (path, type = "products", fallback = null) => {
 /**
  * FE-54 — sized variants for responsive images.
  *
+ * The standard responsive widths for content imagery. Every variant
+ * is a REAL transform of the source — a different width AND WebP
+ * format — never the same file re-labelled with a new width.
+ */
+export const IMAGE_VARIANT_WIDTHS = [600, 1200, 1920];
+
+/**
  * Only hosts with a KNOWN transform scheme are rewritten:
- *  - res.cloudinary.com: the standard transformation segment
- *    `w_<width>,q_auto,f_auto` is inserted immediately after
- *    `/image/upload/` (before any version segment / public id). A URL
- *    that already carries a transformation segment is returned
- *    unchanged — transforms are never stacked.
- *  - images.unsplash.com (imgix): the `w` query param is set to the
- *    requested width (q/auto params are preserved, defaulted when
- *    absent).
+ *  - res.cloudinary.com: a transformation segment
+ *    `w_<width>,q_auto,f_webp` is applied immediately after
+ *    `/image/upload/` (before any version segment / public id). When
+ *    the URL already carries a transformation segment, its size,
+ *    quality and format params (w/q/f/dpr) are REPLACED with the
+ *    requested ones — any other params (crop, gravity, …) are kept —
+ *    so every requested width yields a genuinely different file
+ *    instead of collapsing to the one pre-baked variant.
+ *  - images.unsplash.com / plus.unsplash.com (imgix): the `w` query
+ *    param is set to the requested width and `fm=webp` forces WebP
+ *    delivery (the `auto=format` param is dropped — `fm` wins).
  * Every other host (the app's own uploads origin, S3, …) has no known
  * scheme here: the resolved URL is returned BYTE-IDENTICAL, never
  * corrupted with a guessed parameter.
@@ -126,19 +136,36 @@ function applySizeTransform(resolvedUrl, width) {
     const markerIndex = url.pathname.indexOf(marker);
     if (markerIndex === -1) return resolvedUrl;
     const afterUpload = url.pathname.slice(markerIndex + marker.length);
-    const firstSegment = afterUpload.split("/")[0];
-    if (CLOUDINARY_TRANSFORM_SEGMENT.test(firstSegment)) return resolvedUrl;
+    const segments = afterUpload.split("/");
+    const firstSegment = segments[0];
+    // A first segment counts as an existing transformation only when
+    // it is comma-joined or carries a size/format param — a lone
+    // folder name that merely looks like `key_value` is path, not a
+    // transform, and stays in place.
+    const looksLikeTransform =
+      CLOUDINARY_TRANSFORM_SEGMENT.test(firstSegment) &&
+      (firstSegment.includes(",") || /^(w|q|f|dpr)_/.test(firstSegment));
+    let keptParams = [];
+    if (looksLikeTransform) {
+      keptParams = firstSegment
+        .split(",")
+        .filter((param) => !["w", "q", "f", "dpr"].includes(param.split("_")[0]));
+      segments.shift();
+    }
+    const transform = [`w_${width}`, "q_auto", "f_webp", ...keptParams].join(",");
     url.pathname =
       url.pathname.slice(0, markerIndex + marker.length) +
-      `w_${width},q_auto,f_auto/` +
-      afterUpload;
+      transform +
+      "/" +
+      segments.join("/");
     return url.href;
   }
 
-  if (url.hostname === "images.unsplash.com") {
+  if (url.hostname === "images.unsplash.com" || url.hostname === "plus.unsplash.com") {
     url.searchParams.set("w", String(width));
+    url.searchParams.set("fm", "webp");
+    url.searchParams.delete("auto");
     if (!url.searchParams.has("q")) url.searchParams.set("q", "80");
-    if (!url.searchParams.has("auto")) url.searchParams.set("auto", "format");
     return url.href;
   }
 
@@ -202,7 +229,7 @@ export const getProductImageUrl = (product, fallback = null) => {
  * FE-54: srcSet for a product's primary image (see buildImageSrcSet —
  * undefined when the image's host has no transform scheme).
  */
-export const getProductImageSrcSet = (product, widths, fallback = null) => {
+export const getProductImageSrcSet = (product, widths = IMAGE_VARIANT_WIDTHS, fallback = null) => {
   return buildImageSrcSet(primaryImagePath(product), widths, {
     type: "products",
     fallback: fallback || FALLBACK_IMAGES.product,
@@ -314,4 +341,5 @@ export default {
   getChatImageUrl,
   getModelUrl,
   FALLBACK_IMAGES,
+  IMAGE_VARIANT_WIDTHS,
 };

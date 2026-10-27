@@ -383,7 +383,7 @@ export default function ProductTabs({
                   <div className="mb-8 relative">
                     <img
                       src={getImageUrl(images[selectedImage])}
-                      srcSet={getImageSrcSet(images[selectedImage], [640, 960, 1280])}
+                      srcSet={getImageSrcSet(images[selectedImage], [600, 1200, 1920])}
                       sizes="(max-width: 1024px) 100vw, 50vw"
                       loading="lazy"
                       alt={product.name}

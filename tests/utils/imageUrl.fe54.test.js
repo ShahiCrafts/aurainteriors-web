@@ -26,10 +26,10 @@ const S3 =
 describe("getSizedImageUrl (FE-54)", () => {
   it("a Cloudinary URL gains the standard width + auto quality/format segment", () => {
     expect(getSizedImageUrl(CLOUDINARY, 400)).toBe(
-      "https://res.cloudinary.com/demo/image/upload/w_400,q_auto,f_auto/v1234/sofa.jpg"
+      "https://res.cloudinary.com/demo/image/upload/w_400,q_auto,f_webp/v1234/sofa.jpg"
     );
     expect(getSizedImageUrl(CLOUDINARY, 1200)).toBe(
-      "https://res.cloudinary.com/demo/image/upload/w_1200,q_auto,f_auto/v1234/sofa.jpg"
+      "https://res.cloudinary.com/demo/image/upload/w_1200,q_auto,f_webp/v1234/sofa.jpg"
     );
   });
 
@@ -40,14 +40,57 @@ describe("getSizedImageUrl (FE-54)", () => {
         320
       )
     ).toBe(
-      "https://res.cloudinary.com/demo/image/upload/w_320,q_auto,f_auto/sofa.jpg"
+      "https://res.cloudinary.com/demo/image/upload/w_320,q_auto,f_webp/sofa.jpg"
     );
   });
 
-  it("an already-transformed Cloudinary URL is not stacked with a second segment", () => {
+  it("an already-transformed Cloudinary URL has its size/format params replaced (never a stale single variant)", () => {
     const already =
-      "https://res.cloudinary.com/demo/image/upload/w_800,q_auto,f_auto/v1/sofa.jpg";
-    expect(getSizedImageUrl(already, 400)).toBe(already);
+      "https://res.cloudinary.com/demo/image/upload/w_800,q_auto,f_webp/v1/sofa.jpg";
+    expect(getSizedImageUrl(already, 400)).toBe(
+      "https://res.cloudinary.com/demo/image/upload/w_400,q_auto,f_webp/v1/sofa.jpg"
+    );
+  });
+
+  it("non-size params of an existing Cloudinary transform (crop, gravity) survive the resize", () => {
+    expect(
+      getSizedImageUrl(
+        "https://res.cloudinary.com/demo/image/upload/c_fill,g_auto,w_800/v1/sofa.jpg",
+        600
+      )
+    ).toBe(
+      "https://res.cloudinary.com/demo/image/upload/w_600,q_auto,f_webp,c_fill,g_auto/v1/sofa.jpg"
+    );
+  });
+
+  it("the standard widths produce three genuinely different variants even for a pre-transformed URL", () => {
+    const already =
+      "https://res.cloudinary.com/demo/image/upload/w_800,q_auto,f_webp/v1/sofa.jpg";
+    const srcSet = buildImageSrcSet(already, [600, 1200, 1920]);
+    expect(srcSet).toContain("w_600,q_auto,f_webp");
+    expect(srcSet).toContain("600w");
+    expect(srcSet).toContain("w_1200,q_auto,f_webp");
+    expect(srcSet).toContain("1200w");
+    expect(srcSet).toContain("w_1920,q_auto,f_webp");
+    expect(srcSet).toContain("1920w");
+  });
+
+  it("an Unsplash URL is forced to WebP (fm=webp) at the requested width", () => {
+    const sized = getSizedImageUrl(
+      "https://images.unsplash.com/photo-123?w=800&auto=format&fit=crop",
+      1200
+    );
+    expect(sized).toContain("w=1200");
+    expect(sized).toContain("fm=webp");
+    expect(sized).not.toContain("auto=format");
+  });
+
+  it("getProductImageSrcSet defaults to the standard widths (600/1200/1920)", () => {
+    const product = { images: [{ url: CLOUDINARY, isPrimary: true }] };
+    const srcSet = getProductImageSrcSet(product);
+    expect(srcSet).toContain("600w");
+    expect(srcSet).toContain("1200w");
+    expect(srcSet).toContain("1920w");
   });
 
   it("an unknown-host URL is returned byte-identical (no transform scheme, no corruption)", () => {
@@ -92,8 +135,8 @@ describe("getSizedImageUrl (FE-54)", () => {
 describe("buildImageSrcSet (FE-54)", () => {
   it("builds width-descriptor entries from the sized Cloudinary variants", () => {
     expect(buildImageSrcSet(CLOUDINARY, [400, 800])).toBe(
-      "https://res.cloudinary.com/demo/image/upload/w_400,q_auto,f_auto/v1234/sofa.jpg 400w, " +
-        "https://res.cloudinary.com/demo/image/upload/w_800,q_auto,f_auto/v1234/sofa.jpg 800w"
+      "https://res.cloudinary.com/demo/image/upload/w_400,q_auto,f_webp/v1234/sofa.jpg 400w, " +
+        "https://res.cloudinary.com/demo/image/upload/w_800,q_auto,f_webp/v1234/sofa.jpg 800w"
     );
   });
 
@@ -104,7 +147,7 @@ describe("buildImageSrcSet (FE-54)", () => {
   it("getProductImageSrcSet builds variants for the product's primary image", () => {
     const product = { images: [{ url: CLOUDINARY, isPrimary: true }] };
     const srcSet = getProductImageSrcSet(product, [400, 800]);
-    expect(srcSet).toContain("w_400,q_auto,f_auto");
+    expect(srcSet).toContain("w_400,q_auto,f_webp");
     expect(srcSet).toContain("400w");
     expect(srcSet).toContain("800w");
   });

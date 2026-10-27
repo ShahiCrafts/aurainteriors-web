@@ -145,9 +145,9 @@ describe("ProductCard rating (FE-14)", () => {
     });
 
     const img = container.querySelector("img");
-    expect(img.getAttribute("srcSet")).toContain("w_320,q_auto,f_auto");
-    expect(img.getAttribute("srcSet")).toContain("320w");
-    expect(img.getAttribute("srcSet")).toContain("960w");
+    expect(img.getAttribute("srcSet")).toContain("w_600,q_auto,f_webp");
+    expect(img.getAttribute("srcSet")).toContain("600w");
+    expect(img.getAttribute("srcSet")).toContain("1920w");
     expect(img.getAttribute("sizes")).toBeTruthy();
     expect(img.getAttribute("loading")).toBe("lazy");
   });
