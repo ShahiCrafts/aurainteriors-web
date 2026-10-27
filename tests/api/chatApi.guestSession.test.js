@@ -152,8 +152,13 @@ describe("FE-40 pen-test: URL-hostile guest id never appears in a GET URL", () =
   });
 });
 
-describe("FE-40 scope pin: uploads still use the query param (SR-1)", () => {
-  it("uploadChatAttachment still sends guestSessionId as a query param", async () => {
+describe("VULN-001: uploads use the header, never the query param", () => {
+  // Replaces the former FE-40/SR-1 scope pin ("uploads still use the
+  // query param"): the server upload authoriser now uses the shared
+  // gated extractor (utils/guestSession.js), the query source is off
+  // by default, and the header is always accepted — so the upload
+  // follows the same transport rule as every other guest chat call.
+  it("uploadChatAttachment sends guestSessionId as a header and not as a query param", async () => {
     // Non-image file: compressFileIfNeeded returns it as-is, so this
     // test exercises upload transport without the canvas pipeline.
     // FE-11: the upload path now content-sniffs first, so the fixture
@@ -164,16 +169,16 @@ describe("FE-40 scope pin: uploads still use the query param (SR-1)", () => {
     expect(api.post).toHaveBeenCalledTimes(1);
     const [url, , config] = api.post.mock.calls[0];
     expect(url).toBe("/chats/chat-123/attachments");
-    // SR-1: the server upload middleware reads only the query, so the
-    // upload query param intentionally stays (logged server-side).
-    expect(config?.params).toEqual({ guestSessionId: GUEST_ID });
+    expect(config?.headers?.["x-guest-session-id"]).toBe(GUEST_ID);
+    expectNoGuestIdInUrl(url, config, GUEST_ID);
   });
 
-  it("uploadChatAttachment with no guest session sends no query param", async () => {
+  it("uploadChatAttachment with no guest session sends no header and no query param", async () => {
     getGuestSessionId.mockReturnValue(null);
     const file = new File(["%PDF-1.7\nhello"], "doc.pdf", { type: "application/pdf" });
     await uploadChatAttachment("chat-123", file);
     const [, , config] = api.post.mock.calls[0];
-    expect(config?.params).toEqual({});
+    expect(config?.headers?.["x-guest-session-id"]).toBeUndefined();
+    expect(config?.params).toBeUndefined();
   });
 });

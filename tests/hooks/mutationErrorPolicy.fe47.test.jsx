@@ -18,7 +18,7 @@ import { QueryClient, QueryClientProvider, useMutation } from "@tanstack/react-q
 
 // One shared toast mock registered for both module ids that resolve
 // to the app's toast singleton: src/lib/toast.js (imported directly by
-// queryClient.js) and "react-toastify" (the Vite alias used by hooks).
+// queryClient.js) and "../../src/lib/toast.js" (the Vite alias used by hooks).
 const toastMock = vi.hoisted(() => ({
   success: vi.fn(),
   error: vi.fn(),
@@ -26,7 +26,7 @@ const toastMock = vi.hoisted(() => ({
   warning: vi.fn(),
 }));
 vi.mock("../../src/lib/toast.js", () => ({ toast: toastMock }));
-vi.mock("react-toastify", () => ({ toast: toastMock }));
+vi.mock("../../src/lib/toast.js", () => ({ toast: toastMock }));
 vi.mock("../../src/api/cartApi.js", () => ({
   default: {
     getCart: vi.fn(),

@@ -44,7 +44,7 @@ vi.mock("../../../src/store/guestCartStore", () => ({
 vi.mock("../../../src/hooks/order/useOrderTan", () => ({
   useRequestReturn: () => ({ mutate: mocks.requestReturn, isPending: false }),
 }));
-vi.mock("react-toastify", () => ({
+vi.mock("../../../src/lib/toast.js", () => ({
   toast: { success: vi.fn(), error: vi.fn() },
 }));
 

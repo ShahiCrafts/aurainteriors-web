@@ -5,8 +5,14 @@
 // (FE-18). The allowed localStorage key set is EXACTLY:
 //
 //   guest_cart                 guestCartStore (cleared on logout)
-//   aura_guest_session_id      guestSessionStorage (kept on logout —
-//   aura_guest_email           lifecycle owned by ChatWidget)
+//   aura_guest_email           guestSessionStorage (kept on logout —
+//                              lifecycle owned by ChatWidget)
+//   aura_guest_session_id      NO LONGER PERSISTED (VULN-009): the guest
+//                              session credential lives in page-session
+//                              memory only; the durable copy is the
+//                              server-set httpOnly cookie. The key may
+//                              appear in src/ ONLY in removeItem calls
+//                              (legacy cleanup) — see REMOVAL_ONLY_KEYS.
 //   lastUsedEmail              login-form prefill (kept on logout)
 //   aura_chat_greeted          ChatWidget greeting dismissal
 //   admin_sidebar_collapsed    AdminLayout UI preference
@@ -23,10 +29,10 @@
 // GUEST_EMAIL_KEY="aura_guest_email") plus removeItem("token") /
 // removeItem("user") legacy cleanup in authStore/AuthCallback.
 // No dynamic/computed storage keys exist in src/. No discrepancy
-// vs the §7 inventory was found. (guestSessionStorage also mirrors
-// the guest session into two cookies, guestSessionId/guestEmail —
-// documented in §7; cookies are outside this test's web-storage
-// scope.)
+// vs the §7 inventory was found. (Post-VULN-009, guestSessionStorage
+// mirrors only the guest EMAIL into a cookie; the guestSessionId
+// cookie is set by the server as httpOnly — cookies are outside this
+// test's web-storage scope.)
 //
 // The runtime tests exercise the real paths: authStore import-time
 // boot (legacy cleanup) → signIn → guest cart add → guest session
@@ -50,13 +56,17 @@ vi.mock("../../src/api/index.js", () => ({
 
 const ALLOWED_LOCAL_KEYS = new Set([
   "guest_cart",
-  "aura_guest_session_id",
   "aura_guest_email",
   "lastUsedEmail",
   "aura_chat_greeted",
   "admin_sidebar_collapsed",
   "aura-ar-tutorial-dismissed",
 ]);
+// Keys that may be REFERENCED in src/ only to be removed, never to be
+// persisted: the legacy auth keys (authStore/AuthCallback cleanup) and,
+// since VULN-009, the legacy guest-session key (guestSessionStorage
+// legacy cleanup — the credential itself is memory-only now).
+const REMOVAL_ONLY_KEYS = new Set(["token", "user", "aura_guest_session_id"]);
 // Keys whose VALUES are email addresses by design (§7 dispositions).
 const SANCTIONED_EMAIL_KEYS = new Set(["aura_guest_email", "lastUsedEmail"]);
 
@@ -155,9 +165,9 @@ describe("storage audit — source census (inventory verification)", () => {
         (m[1] === "sessionStorage" ? sessionUsed : used).add(key);
       }
     }
-    // Legacy keys are only ever REMOVED (authStore/AuthCallback
-    // cleanup); they are not part of the allowed-to-persist set.
-    expect([...used].sort()).toEqual([...ALLOWED_LOCAL_KEYS, "token", "user"].sort());
+    // Removal-only keys are only ever REMOVED (legacy cleanup); they
+    // are not part of the allowed-to-persist set.
+    expect([...used].sort()).toEqual([...ALLOWED_LOCAL_KEYS, ...REMOVAL_ONLY_KEYS].sort());
     expect([...sessionUsed]).toEqual([]);
   });
 });
@@ -190,7 +200,11 @@ describe("storage audit — auth login → logout flow", () => {
     guestCartStore.getState().addItem({ _id: "prod-1", name: "Sofa", price: 100 }, 1);
     guestSession.setGuestSessionId(GUEST_SESSION_ID, "guest@example.com");
     expect(localStorage.getItem("guest_cart")).not.toBeNull();
-    expect(localStorage.getItem("aura_guest_session_id")).toBe(GUEST_SESSION_ID);
+    // VULN-009: the session credential is NOT persisted to
+    // localStorage; it is available from page-session memory for
+    // header use, and the durable copy is the server httpOnly cookie.
+    expect(localStorage.getItem("aura_guest_session_id")).toBeNull();
+    expect(guestSession.getGuestSessionId()).toBe(GUEST_SESSION_ID);
     expectStorageClean();
 
     // Login, then the sanctioned email prefill write (AuthModal's
@@ -202,13 +216,37 @@ describe("storage audit — auth login → logout flow", () => {
     await authStore.getState().logout();
     expect(authStore.getState().isAuthenticated).toBe(false);
 
-    // After logout: guest cart gone; guest session + lastUsedEmail
-    // KEPT by disposition (§7 / FE-18); legacy keys absent; nothing
-    // outside the allowed set; sessionStorage empty.
+    // After logout: guest cart gone; guest email + lastUsedEmail KEPT
+    // by disposition (§7 / FE-18); the guest session credential was
+    // never in localStorage (VULN-009) and its in-memory value is
+    // kept (ChatWidget owns clearing it); legacy keys absent;
+    // nothing outside the allowed set; sessionStorage empty.
     expect(localStorage.getItem("guest_cart")).toBeNull();
-    expect(localStorage.getItem("aura_guest_session_id")).toBe(GUEST_SESSION_ID);
+    expect(localStorage.getItem("aura_guest_session_id")).toBeNull();
+    expect(guestSession.getGuestSessionId()).toBe(GUEST_SESSION_ID);
     expect(localStorage.getItem("aura_guest_email")).toBe("guest@example.com");
     expect(localStorage.getItem("lastUsedEmail")).toBe(user.email);
+    expectStorageClean();
+  });
+
+  it("VULN-009: a legacy persisted guest session id is removed on load and never re-persisted", async () => {
+    // A credential written by an older build must not survive the
+    // new module: importing it removes the legacy entry, the getter
+    // does not resurrect it from storage, and set/clear keep it out.
+    localStorage.setItem("aura_guest_session_id", GUEST_SESSION_ID);
+    const { guestSession } = await importFresh(noSession);
+    expect(localStorage.getItem("aura_guest_session_id")).toBeNull();
+    expect(guestSession.getGuestSessionId()).toBeNull();
+
+    guestSession.setGuestSessionId(GUEST_SESSION_ID);
+    expect(localStorage.getItem("aura_guest_session_id")).toBeNull();
+    expect(guestSession.getGuestSessionId()).toBe(GUEST_SESSION_ID);
+    // No script-set guestSessionId cookie either (server owns it).
+    expect(document.cookie).not.toContain("guestSessionId=");
+
+    guestSession.clearGuestSession();
+    expect(guestSession.getGuestSessionId()).toBeNull();
+    expect(localStorage.getItem("aura_guest_session_id")).toBeNull();
     expectStorageClean();
   });
 

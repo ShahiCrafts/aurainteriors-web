@@ -37,12 +37,12 @@ vi.mock("../../../src/store/guestCartStore", () => ({
   default: () => ({ addItem: cartMocks.guestAddItem }),
 }));
 
-vi.mock("react-toastify", () => ({
+vi.mock("../../../src/lib/toast.js", () => ({
   toast: { success: vi.fn(), error: vi.fn() },
 }));
 
 import ProductCard from "../../../src/components/shop/ProductCard.jsx";
-import { toast } from "react-toastify";
+import { toast } from "../../../src/lib/toast.js";
 
 beforeEach(() => {
   vi.clearAllMocks();

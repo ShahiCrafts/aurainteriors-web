@@ -22,7 +22,7 @@ vi.mock("../../src/api/chatApi.js", () => ({
     return { attachment: { fileUrl: "https://example.com/x.png", fileName: "x.png" } };
   }),
 }));
-vi.mock("react-toastify", () => ({ toast: toastMock }));
+vi.mock("../../src/lib/toast.js", () => ({ toast: toastMock }));
 vi.mock("../../src/store/authStore.js", () => {
   const state = { openAuthModal: vi.fn(), user: null };
   const store = (selector) => (typeof selector === "function" ? selector(state) : state);

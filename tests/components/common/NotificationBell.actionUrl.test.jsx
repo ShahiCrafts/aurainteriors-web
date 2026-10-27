@@ -42,12 +42,21 @@ vi.mock("../../../src/api/notificationApi", () => ({
 }));
 
 import NotificationBell from "../../../src/components/common/NotificationBell";
+import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
+
+// REUSE-016: NotificationBell now reads notifications via React Query
+// (useNotificationsTan), so renders need a provider. retry:false keeps
+// the deferred/rejected fetch tests deterministic.
+const renderBell = (ui) => {
+  const client = new QueryClient({ defaultOptions: { queries: { retry: false }, mutations: { retry: false } } });
+  return render(<QueryClientProvider client={client}>{ui}</QueryClientProvider>);
+};
 
 const USER = { _id: "admin-1", role: "admin" };
 
 async function openAndClick(notification) {
   hoisted.notifications = [notification];
-  const { container } = render(<NotificationBell user={USER} token="t" />);
+  const { container } = renderBell(<NotificationBell user={USER} token="t" />);
   fireEvent.click(container.querySelector("button"));
   const item = await screen.findByText(notification.title);
   fireEvent.click(item);

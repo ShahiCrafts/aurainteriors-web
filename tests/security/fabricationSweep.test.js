@@ -72,7 +72,7 @@ const ALLOWLIST = [
       "Comment documenting the removed FE-14 fabrication (what the code used to do), not a rendered value.",
   },
   {
-    file: "src/pages/shop/ProductDetailsPage.jsx",
+    file: "src/pages/shop/product-details/PurchasePanel.jsx",
     pattern: "fake-bought-count",
     reason:
       "Comment at the fixed element documenting that the fabricated \"200+\" fallback was removed, not a rendered value.",

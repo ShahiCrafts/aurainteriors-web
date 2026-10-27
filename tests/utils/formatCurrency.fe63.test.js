@@ -73,13 +73,14 @@ describe("formatNPR (FE-63)", () => {
 
 // Grep-proof for the files this wave owns: no ₹, no NRs./Nrs.
 // literals, and no bare money toLocaleString() may remain in them.
-// Exception (2026-10-26): Hero.jsx is no longer in this list — the
-// owner directed the hero's original editorial copy (₹ prices
-// included, exactly as on the live site) be restored after the
-// FE-63 cleanup had removed it. The hero's strings are static
-// marketing copy, not data-driven prices; FE-63's single-formatter
-// rule still governs every price rendered from data.
+// Exception history: on 2026-10-26 Hero.jsx was removed from this
+// list when the owner directed the hero's original editorial copy
+// (₹ prices included, as on the live site) be restored. On
+// 2026-10-27 the owner reversed the currency part of that call —
+// the hero prices now render via formatNPR in NPR — so Hero.jsx
+// is back in the sweep and the single-formatter rule covers it too.
 const OWNED_FILES = [
+  "src/components/sections/Hero.jsx",
   "src/components/shop/FilterSidebar.jsx",
   "src/components/shop/ProductCard.jsx",
   "src/components/profile/OrderCard.jsx",

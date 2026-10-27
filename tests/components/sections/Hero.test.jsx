@@ -9,6 +9,11 @@
 // test pins the restored state: the rating, the starting price and
 // the Calmora prices render again, alongside the genuine content
 // (headline, CTAs, shop links) that never changed.
+//
+// Currency update (2026-10-27): the owner directed the hero prices
+// render in NPR instead of INR. The amounts are unchanged; the
+// strings now come from formatNPR (utils/formatCurrency), so the
+// expectations below pin "NPR 7,499" style output, not "₹7,499".
 
 import { describe, it, expect } from "vitest";
 import { render, screen } from "@testing-library/react";
@@ -26,7 +31,7 @@ describe("Hero: owner-restored rating and pricing render", () => {
 
     expect(screen.getByText(/4\.9\/5 \(2k\+ Reviews\)/)).toBeInTheDocument();
     expect(screen.getByText(/Starting from/)).toBeInTheDocument();
-    expect(screen.getByText("₹7,499")).toBeInTheDocument();
+    expect(screen.getByText(/NPR\s7,499/)).toBeInTheDocument();
   });
 
   it("renders the Calmora card's struck-through and sale prices", () => {
@@ -37,8 +42,8 @@ describe("Hero: owner-restored rating and pricing render", () => {
     );
 
     expect(screen.getByText("Calmora Bed Frame")).toBeInTheDocument();
-    expect(screen.getByText("₹24,999")).toBeInTheDocument();
-    expect(screen.getByText("₹19,999")).toBeInTheDocument();
+    expect(screen.getByText(/NPR\s24,999/)).toBeInTheDocument();
+    expect(screen.getByText(/NPR\s19,999/)).toBeInTheDocument();
   });
 
   it("still renders the genuine hero content and shop links", () => {

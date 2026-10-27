@@ -60,6 +60,15 @@ vi.mock("../../../src/api/notificationApi", () => ({
 }));
 
 import NotificationBell from "../../../src/components/common/NotificationBell";
+import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
+
+// REUSE-016: NotificationBell now reads notifications via React Query
+// (useNotificationsTan), so renders need a provider. retry:false keeps
+// the deferred/rejected fetch tests deterministic.
+const renderBell = (ui) => {
+  const client = new QueryClient({ defaultOptions: { queries: { retry: false }, mutations: { retry: false } } });
+  return render(<QueryClientProvider client={client}>{ui}</QueryClientProvider>);
+};
 
 const USER = { _id: "admin-1", role: "admin" };
 
@@ -99,7 +108,7 @@ describe("FE-24 NotificationBell", () => {
       data: { notifications: page, total: 25, totalPages: 3 },
     });
 
-    const { container } = render(<NotificationBell user={USER} token="t" />);
+    const { container } = renderBell(<NotificationBell user={USER} token="t" />);
 
     const badge = await screen.findByText("25");
     expect(badge).toBeInTheDocument();
@@ -124,7 +133,7 @@ describe("FE-24 NotificationBell", () => {
       return { data: { notifications: visible, total: 4, totalPages: 1 } };
     });
 
-    const { container } = render(<NotificationBell user={USER} token="t" />);
+    const { container } = renderBell(<NotificationBell user={USER} token="t" />);
     await screen.findByText("3");
     fireEvent.click(container.querySelector("button"));
     const markAll = await screen.findByText("Mark all read");
@@ -144,7 +153,7 @@ describe("FE-24 NotificationBell", () => {
     const slow = deferred();
     hoisted.api.getNotifications.mockReturnValue(slow.promise);
 
-    const { container } = render(<NotificationBell user={USER} token="t" />);
+    const { container } = renderBell(<NotificationBell user={USER} token="t" />);
     fireEvent.click(container.querySelector("button")); // open -> fetch starts
 
     act(() => {
@@ -168,7 +177,7 @@ describe("FE-24 NotificationBell", () => {
       .mockReturnValueOnce(first.promise)
       .mockReturnValueOnce(second.promise);
 
-    const { container } = render(<NotificationBell user={USER} token="t" />);
+    const { container } = renderBell(<NotificationBell user={USER} token="t" />);
     const bell = container.querySelector("button");
     fireEvent.click(bell); // open -> fetch #1 (slow)
     fireEvent.click(bell); // close
@@ -190,7 +199,7 @@ describe("FE-24 NotificationBell", () => {
     const slow = deferred();
     hoisted.api.getNotifications.mockReturnValue(slow.promise);
 
-    const { container } = render(<NotificationBell user={USER} token="t" />);
+    const { container } = renderBell(<NotificationBell user={USER} token="t" />);
     fireEvent.click(container.querySelector("button"));
 
     act(() => {
@@ -213,7 +222,7 @@ describe("FE-24 NotificationBell", () => {
   it("a failed fetch shows an error state, not 'No notifications found'", async () => {
     hoisted.api.getNotifications.mockRejectedValue(new Error("500"));
 
-    const { container } = render(<NotificationBell user={USER} token="t" />);
+    const { container } = renderBell(<NotificationBell user={USER} token="t" />);
     fireEvent.click(container.querySelector("button"));
 
     expect(

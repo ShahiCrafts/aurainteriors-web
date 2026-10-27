@@ -21,6 +21,9 @@ vi.mock("../../../src/hooks/cart/useWishlistTan", () => ({
     error: null,
   }),
   useRemoveFromWishlist: () => ({ mutate: vi.fn(), isPending: false }),
+  // REUSE-001 (Phase 5): the page now renders ProductCard (wishlist
+  // variant), which also consumes useAddToWishlist from this module.
+  useAddToWishlist: () => ({ mutate: vi.fn(), isPending: false }),
 }));
 
 vi.mock("../../../src/hooks/cart/useCartTan", () => ({
@@ -31,11 +34,11 @@ vi.mock("../../../src/hooks/cart/useCartTan", () => ({
   }),
 }));
 
-vi.mock("react-toastify", () => ({
+vi.mock("../../../src/lib/toast.js", () => ({
   toast: { success: vi.fn(), error: vi.fn(), warning: vi.fn() },
 }));
 
-import { toast } from "react-toastify";
+import { toast } from "../../../src/lib/toast.js";
 
 import Wishlist from "../../../src/components/profile/Wishlist.jsx";
 
@@ -96,7 +99,12 @@ describe("Wishlist rating (FE-14)", () => {
   it("shows the real average for a product with reviews", () => {
     renderWishlist({ ...baseProduct, rating: { average: 3.8, count: 9 } });
 
-    expect(screen.getByText("(3.8)")).toBeInTheDocument();
+    // REUSE-001 (Phase 5): the canonical card renders the average and
+    // the count separately ("3.8" + "(9)") via ui/Rating; the old
+    // inline card rendered "(3.8)". The FE-14 intent is unchanged:
+    // the REAL average (and count) must show.
+    expect(screen.getByText("3.8")).toBeInTheDocument();
+    expect(screen.getByText("(9)")).toBeInTheDocument();
     expect(screen.queryByText("No reviews yet")).not.toBeInTheDocument();
   });
 });
