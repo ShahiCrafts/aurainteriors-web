@@ -1,35 +1,30 @@
+import { useState } from 'react';
 import { Download, DollarSign, ShoppingBag, Box, Users } from 'lucide-react';
 import { DashboardSkeleton } from '../../components/common/Skeleton';
 import * as XLSX from 'xlsx';
 import { useDashboardStats, useRevenueAnalytics, useCategorySales, useTopProducts } from '../../hooks/admin/useAnalyticsTan';
 import { useAllOrders } from '../../hooks/order/useOrderTan';
 import useAuthStore from '../../store/authStore';
+import { formatNPR } from '../../utils/formatCurrency';
 
 // Extracted Components
 import StatCard from '../../components/admin/dashboard/StatCard';
 import RevenueChart from '../../components/admin/dashboard/RevenueChart';
+import { revenuePeriodDays, DEFAULT_REVENUE_PERIOD } from '../../utils/revenuePeriod';
 import CategorySalesChart from '../../components/admin/dashboard/CategorySalesChart';
 import SupportOverview from '../../components/admin/dashboard/SupportOverview';
 import RecentOrdersTable from '../../components/admin/dashboard/RecentOrdersTable';
 import AIInsights from '../../components/admin/dashboard/AIInsights';
 import QuickActions from '../../components/admin/dashboard/QuickActions';
 
-// Generates a small, stable (non-random) trend shape around a base value.
-// Used only for metrics that don't yet have a real historical series.
-function generatePlaceholderSparkline(baseValue, trendUp, points = 7) {
-  const safeBase = Math.max(baseValue, 1);
-  return Array.from({ length: points }, (_, i) => {
-    const progress = i / (points - 1);
-    const wave = Math.sin((i + safeBase) * 1.3) * 0.08;
-    const direction = trendUp ? progress * 0.25 : -progress * 0.25;
-    return Math.round(safeBase * (0.85 + direction + wave));
-  });
-}
-
 export default function Dashboard() {
   const { user } = useAuthStore();
   const { data: statsData, isLoading: statsLoading } = useDashboardStats();
-  const { data: revenueData, isLoading: revenueLoading } = useRevenueAnalytics(30);
+  // FE-38: the RevenueChart period select is wired to this state —
+  // picking a period re-queries the revenue endpoint with that
+  // window's day count (the server honours ?days=, clamped 1..365).
+  const [revenuePeriod, setRevenuePeriod] = useState(DEFAULT_REVENUE_PERIOD);
+  const { data: revenueData, isLoading: revenueLoading } = useRevenueAnalytics(revenuePeriodDays(revenuePeriod));
   const { data: categoryData, isLoading: categoryLoading } = useCategorySales();
   const { data: topProductsData, isLoading: productsLoading } = useTopProducts();
   const { data: recentOrdersData, isLoading: ordersLoading } = useAllOrders({ limit: 6 });
@@ -44,9 +39,6 @@ export default function Dashboard() {
   const chartData = revenueData?.data?.chartData || [];
   const pieData = categoryData?.data?.salesByCategory || [];
   const recentOrders = recentOrdersData?.data?.orders || [];
-
-  // Real trend: last 7 days of actual revenue data
-  const revenueSparkline = chartData.slice(-7).map((d) => d.revenue);
 
   const getGreeting = () => {
     const hour = new Date().getHours();
@@ -98,53 +90,42 @@ export default function Dashboard() {
 
   const formatRevenue = (amount) => {
     if (amount >= 100000) {
-      return `NRs. ${(amount / 100000).toFixed(1)}L`;
+      return `NPR ${(amount / 100000).toFixed(1)}L`;
     } else if (amount >= 1000) {
-      return `NRs. ${(amount / 1000).toFixed(0)}K`;
+      return `NPR ${(amount / 1000).toFixed(0)}K`;
     }
-    return `NRs. ${amount.toLocaleString()}`;
+    return formatNPR(amount);
   };
 
+  // FE-14: the analytics API returns no trend/growth fields for these
+  // metrics (GET /analytics/stats returns only the four totals, and the
+  // revenue endpoint's chartData series is already rendered by
+  // RevenueChart below), so the cards render their real values with no
+  // trend indicator or sparkline rather than invented ones.
   const statCards = [
     {
       label: 'Net Revenue',
       value: formatRevenue(stats.totalRevenue),
-      trend: '+0.4%',
-      trendUp: true,
-      trendLabel: 'vs last month',
       icon: DollarSign,
       color: 'emerald',
-      sparklineData: revenueSparkline.length > 1 ? revenueSparkline : generatePlaceholderSparkline(stats.totalRevenue, true),
     },
     {
       label: 'Total Orders',
       value: stats.totalOrders.toLocaleString(),
-      trend: '+32%',
-      trendUp: true,
-      trendLabel: 'vs last quarter',
       icon: ShoppingBag,
       color: 'blue',
-      sparklineData: generatePlaceholderSparkline(stats.totalOrders, true),
     },
     {
       label: 'Products',
       value: stats.totalProducts,
-      trend: '71%',
-      trendUp: true,
-      trendLabel: 'Goal: 100',
       icon: Box,
       color: 'orange',
-      sparklineData: generatePlaceholderSparkline(stats.totalProducts, true),
     },
     {
       label: 'Customers',
       value: stats.totalUsers.toLocaleString(),
-      trend: '+11%',
-      trendUp: true,
-      trendLabel: 'vs last quarter',
       icon: Users,
       color: 'purple',
-      sparklineData: generatePlaceholderSparkline(stats.totalUsers, true),
     },
   ];
 
@@ -200,7 +181,7 @@ export default function Dashboard() {
       {/* Main Charts Section - Sales Overview, Sales by Category, Support Overview */}
       {/* Main Charts Section - Sales Overview, Sales by Category, Support Overview */}
       <div className="grid grid-cols-1 lg:grid-cols-[1.4fr_1fr_1fr] gap-5">
-        <RevenueChart data={chartData} />
+        <RevenueChart data={chartData} period={revenuePeriod} onPeriodChange={setRevenuePeriod} />
         <CategorySalesChart data={pieData} />
         <SupportOverview />
       </div>

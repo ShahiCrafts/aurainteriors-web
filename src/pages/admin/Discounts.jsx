@@ -1,4 +1,5 @@
 import { useState } from "react";
+import Dialog from "../../components/common/Dialog";
 import { motion, AnimatePresence } from "framer-motion";
 import {
   Plus,
@@ -23,6 +24,8 @@ import {
 import { toast } from "react-toastify";
 import Pagination from "../../components/common/Pagination";
 import formatError from "../../utils/errorHandler";
+import { parseDiscountFormValues } from "../../utils/adminForms";
+import { formatNPR } from "../../utils/formatCurrency";
 
 export default function Discounts() {
   const [searchQuery, setSearchQuery] = useState("");
@@ -102,14 +105,20 @@ export default function Discounts() {
       return toast.error("Please fill in required fields");
     }
 
+    // FE-45: parse + bound-check against the server discount schema
+    // (percentage 1..100, minimum >= 0, usage limit integer >= 1).
+    // The old code parseInt'd with no guard and could send NaN.
+    const parsed = parseDiscountFormValues(discountForm);
+    if (!parsed.ok) {
+      return toast.error(parsed.error);
+    }
+
     const formData = {
       code: discountForm.code.toUpperCase(),
       description: discountForm.description,
-      discountPercentage: parseInt(discountForm.discountPercentage),
-      minimumOrderAmount: parseInt(discountForm.minimumOrderAmount) || 0,
-      maxUsageLimit: discountForm.maxUsageLimit
-        ? parseInt(discountForm.maxUsageLimit)
-        : null,
+      discountPercentage: parsed.values.discountPercentage,
+      minimumOrderAmount: parsed.values.minimumOrderAmount,
+      maxUsageLimit: parsed.values.maxUsageLimit,
       expiryDate: new Date(discountForm.expiryDate).toISOString(),
       isActive: discountForm.isActive,
     };
@@ -189,7 +198,7 @@ export default function Discounts() {
   };
 
   const filteredDiscounts = discounts.filter((d) =>
-    d.code.toLowerCase().includes(searchQuery.toLowerCase())
+    (d.code || '').toLowerCase().includes(searchQuery.toLowerCase())
   );
 
   return (
@@ -218,7 +227,7 @@ export default function Discounts() {
               <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
               <input
                 type="text"
-                placeholder="Search codes..."
+                placeholder="Search codes on this page…"
                 value={searchQuery}
                 onChange={(e) => {
                   setSearchQuery(e.target.value);
@@ -245,6 +254,14 @@ export default function Discounts() {
             </div>
           </div>
         </div>
+
+        {/* FE-28: the discounts API has no search parameter, so the
+            search filters only this page — say so while it is active. */}
+        {searchQuery && (
+          <p className="px-4 pt-3 text-xs text-gray-400">
+            Showing matches from this page only — other pages are not searched.
+          </p>
+        )}
 
         {isLoading ? (
           <div className="p-4">
@@ -315,7 +332,7 @@ export default function Discounts() {
                     </td>
                     <td className="px-6 py-4">
                       <span className="text-xs text-gray-600 font-medium">
-                        Min: Rs. {discount.minimumOrderAmount?.toLocaleString()}
+                        Min: {formatNPR(discount.minimumOrderAmount)}
                       </span>
                     </td>
                     <td className="px-6 py-4">
@@ -372,9 +389,10 @@ export default function Discounts() {
               initial={{ opacity: 0, scale: 0.95 }}
               animate={{ opacity: 1, scale: 1 }}
               exit={{ opacity: 0, scale: 0.95 }}
-              className="bg-white rounded-xl shadow-xl w-full max-w-lg overflow-hidden"
+              className="w-full max-w-lg"
               onClick={(e) => e.stopPropagation()}
             >
+             <Dialog open onClose={() => setModalOpen(false)} label="Discount code" className="bg-white rounded-xl shadow-xl w-full overflow-hidden relative">
               <div className="flex items-center justify-between px-6 py-4 border-b border-gray-100">
                 <h2 className="text-lg font-bold text-gray-900">
                   {editingDiscount ? "Edit Discount" : "New Discount Code"}
@@ -449,7 +467,7 @@ export default function Discounts() {
                 <div className="grid grid-cols-2 gap-4">
                   <div>
                     <label className="block text-xs font-bold uppercase text-gray-500 mb-1.5">
-                      Min. Order (Rs.)
+                      Min. Order (NPR)
                     </label>
                     <input
                       type="number"
@@ -543,6 +561,7 @@ export default function Discounts() {
                   )}
                 </button>
               </div>
+             </Dialog>
             </motion.div>
           </div>
         )}

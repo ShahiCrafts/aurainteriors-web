@@ -1,4 +1,5 @@
-import { useState } from "react";
+import { useRef, useState } from "react";
+import Dialog from "../../components/common/Dialog";
 import { motion, AnimatePresence } from "framer-motion";
 import {
   Search,
@@ -27,7 +28,8 @@ import {
 } from "../../hooks/review/useReviewTan";
 import { toast } from "react-toastify";
 import formatError from "../../utils/errorHandler";
-import { getAvatarUrl, getImageUrl } from "../../utils/imageUrl";
+import { getImageUrl } from "../../utils/imageUrl";
+import { UserAvatar } from "../../components/common/InitialsAvatar";
 import Pagination from "../../components/common/Pagination";
 
 export default function Reviews() {
@@ -71,13 +73,24 @@ export default function Reviews() {
     }
   };
 
+  // FE-37: no pending guard existed — a double-click on Delete
+  // Permanently fired duplicate DELETE mutations (the second erroring
+  // after the first succeeded). Guard re-entry and disable while pending.
+  const [isDeleting, setIsDeleting] = useState(false);
+  const deletingRef = useRef(false);
   const handleDeleteReview = async () => {
+    if (deletingRef.current || deleteReviewMutation.isPending) return;
+    deletingRef.current = true;
+    setIsDeleting(true);
     try {
       await deleteReviewMutation.mutateAsync(selectedReview._id);
       toast.success("Review deleted permanently");
       setShowDeleteModal(false);
     } catch (err) {
       toast.error(formatError(err, "Failed to delete review"));
+    } finally {
+      deletingRef.current = false;
+      setIsDeleting(false);
     }
   };
 
@@ -244,9 +257,12 @@ export default function Reviews() {
                   >
                     <td className="px-6 py-4">
                       <div className="flex items-center gap-3">
-                        <img
-                          src={getAvatarUrl(review.user)}
-                          className="w-9 h-9 rounded-full object-cover ring-2 ring-gray-100"
+                        {/* FE-06: real avatar img or local initials —
+                            never an external placeholder URL built
+                            from the reviewer's name. */}
+                        <UserAvatar
+                          user={review.user}
+                          className="w-9 h-9 rounded-full text-xs ring-2 ring-gray-100"
                           alt=""
                         />
                         <div className="min-w-0">
@@ -511,7 +527,8 @@ export default function Reviews() {
                 </button>
                 <button
                   onClick={handleDeleteReview}
-                  className="flex-1 py-2.5 bg-red-600 text-white rounded-lg text-sm font-medium hover:bg-red-700"
+                  disabled={isDeleting || deleteReviewMutation.isPending}
+                  className="flex-1 py-2.5 bg-red-600 text-white rounded-lg text-sm font-medium hover:bg-red-700 disabled:opacity-50 disabled:cursor-not-allowed"
                 >
                   Delete Permanently
                 </button>
@@ -539,18 +556,21 @@ function Modal({ title, children, onClose }) {
         animate={{ scale: 1, opacity: 1 }}
         exit={{ scale: 0.95, opacity: 0 }}
         onClick={(e) => e.stopPropagation()}
-        className="bg-white rounded-xl max-w-md w-full p-6 border border-gray-100 shadow-xl"
+        className="w-full max-w-md"
       >
+       <Dialog open onClose={onClose} label={title} className="bg-white rounded-xl max-w-md w-full p-6 border border-gray-100 shadow-xl">
         <div className="flex items-center justify-between mb-5">
           <h3 className="text-lg font-bold text-gray-900">{title}</h3>
           <button
             onClick={onClose}
+            aria-label="Close dialog"
             className="p-2 hover:bg-gray-100 rounded-lg transition-colors"
           >
             <X className="w-5 h-5 text-gray-400" />
           </button>
         </div>
         {children}
+       </Dialog>
       </motion.div>
     </motion.div>
   );

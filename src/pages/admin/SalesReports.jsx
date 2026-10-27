@@ -30,7 +30,9 @@ import {
 } from "recharts";
 import { motion } from "framer-motion";
 import { useSalesReports, useCategorySales, useTopProducts } from "../../hooks/admin/useAnalyticsTan";
+import { getImageUrl } from "../../utils/imageUrl";
 import * as XLSX from "xlsx";
+import { formatNPR } from "../../utils/formatCurrency";
 
 export default function SalesReports() {
     const [range, setRange] = useState("month");
@@ -135,10 +137,9 @@ export default function SalesReports() {
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
                 <StatCard
                     title="Net Revenue"
-                    value={salesSummary.totalRevenue}
+                    value={formatNPR(salesSummary.totalRevenue)}
                     growth={salesSummary.revenueGrowth}
                     icon={DollarSign}
-                    prefix="Rs. "
                 />
                 <StatCard
                     title="Total Orders"
@@ -153,9 +154,8 @@ export default function SalesReports() {
                 />
                 <StatCard
                     title="Avg. Order Value"
-                    value={salesSummary.avgOrderValue}
+                    value={formatNPR(salesSummary.avgOrderValue)}
                     icon={TrendingUp}
-                    prefix="Rs. "
                 />
             </div>
 
@@ -265,7 +265,7 @@ export default function SalesReports() {
                             <div key={product._id} className="flex items-center justify-between p-4 rounded-2xl bg-neutral-50/50 border border-neutral-100">
                                 <div className="flex items-center gap-4">
                                     <div className="w-12 h-12 rounded-xl bg-white overflow-hidden border border-neutral-100 p-1">
-                                        <img src={product.image} alt={product.name} className="w-full h-full object-cover rounded-lg" />
+                                        <img src={getImageUrl(product.image, "products")} alt={product.name} className="w-full h-full object-cover rounded-lg" />
                                     </div>
                                     <div>
                                         <p className="text-sm font-bold text-neutral-900 truncate max-w-[200px]">{product.name}</p>
@@ -273,7 +273,7 @@ export default function SalesReports() {
                                     </div>
                                 </div>
                                 <div className="text-right">
-                                    <p className="text-sm font-bold text-neutral-900">Rs. {product.revenue.toLocaleString()}</p>
+                                    <p className="text-sm font-bold text-neutral-900">{formatNPR(product.revenue)}</p>
                                     <p className="text-[10px] font-bold text-green-600 uppercase tracking-widest mt-1">Top {index + 1}</p>
                                 </div>
                             </div>

@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef, useMemo } from "react";
 import { MessageCircle, ArrowLeft, ShieldCheck, Zap } from "lucide-react";
 import { useAllChats, useWaitingQueue } from "../../hooks/chat/useChatTan";
 import ChatList from "../../components/admin/chat/ChatList";
@@ -6,9 +6,19 @@ import ChatConversation from "../../components/admin/chat/ChatConversation";
 import AiAssistantPanel from "../../components/admin/chat/AiAssistantPanel";
 
 const SupportChats = () => {
-  const [selectedChat, setSelectedChat] = useState(null);
+  // FE-25: selection is stored as an ID and the open chat is DERIVED
+  // from the latest polled list. The old code stored a snapshot object:
+  // polling updated the list but the open conversation kept rendering
+  // the snapshot's status/metadata, and the auto-select effect re-ran
+  // whenever selectedChat became null — so tapping Back instantly
+  // re-selected chats[0] and the list was unreachable on mobile.
+  const [selectedChatId, setSelectedChatId] = useState(null);
   const [statusFilter, setStatusFilter] = useState("all");
   const [page, setPage] = useState(1);
+  // FE-25: AI-panel replies are delivered to the composer as a draft
+  // (nonce-keyed so the same text can be inserted twice) instead of
+  // the old console.log stubs.
+  const [draftReply, setDraftReply] = useState(null);
 
   const {
     data: chatsData,
@@ -21,19 +31,39 @@ const SupportChats = () => {
     sortBy: "lastMessageAt",
   });
 
+  const chats = useMemo(
+    () => chatsData?.data?.chats || [],
+    [chatsData]
+  );
+  const selectedChat =
+    chats.find((c) => (c._id ?? c.id) === selectedChatId) ?? null;
+
+  // Auto-select the first chat ONCE, on first load only — never again
+  // after the user navigates back to the list.
+  const hasAutoSelectedRef = useRef(false);
   useEffect(() => {
-    const chats = chatsData?.data?.chats || [];
-    if (!selectedChat && chats.length > 0) {
-      setSelectedChat(chats[0]);
+    if (
+      !hasAutoSelectedRef.current &&
+      selectedChatId === null &&
+      chats.length > 0
+    ) {
+      hasAutoSelectedRef.current = true;
+      setSelectedChatId(chats[0]._id ?? chats[0].id);
     }
-  }, [chatsData, selectedChat]);
+  }, [chatsData, selectedChatId, chats]);
 
   const handleSelectChat = (chat) => {
-    setSelectedChat(chat);
+    setSelectedChatId(chat._id ?? chat.id);
   };
 
   const handleBack = () => {
-    setSelectedChat(null);
+    setSelectedChatId(null);
+  };
+
+  const handleUseReply = (text) => {
+    if (typeof text === "string" && text) {
+      setDraftReply({ text, nonce: Date.now() });
+    }
   };
 
   return (
@@ -86,6 +116,7 @@ const SupportChats = () => {
                   chat={selectedChat}
                   onClose={handleBack}
                   onChatUpdated={refetchChats}
+                  draftReply={draftReply}
                 />
               </div>
             </div>
@@ -125,10 +156,10 @@ const SupportChats = () => {
         {/* Column 3: AI Assistant (only visible when chat is selected) */}
         {selectedChat && (
           <div className="hidden xl:flex h-full shrink-0">
-             <AiAssistantPanel 
+             <AiAssistantPanel
                 chat={selectedChat}
-                onUseReply={(text) => console.log("Use text:", text)} 
-                onEditReply={(text) => console.log("Edit text:", text)}
+                onUseReply={handleUseReply}
+                onEditReply={handleUseReply}
              />
           </div>
         )}

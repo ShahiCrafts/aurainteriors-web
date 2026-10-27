@@ -1,4 +1,5 @@
 import { useState } from "react";
+import Dialog from "../../components/common/Dialog";
 import { motion, AnimatePresence } from "framer-motion";
 import {
   Plus,
@@ -39,6 +40,8 @@ import {
 import { toast } from "react-toastify";
 import Pagination from "../../components/common/Pagination";
 import formatError from "../../utils/errorHandler";
+import { reportSendOutcome } from "../../utils/queuedSend";
+import { safeActionUrl, validateMediaUrl } from "../../utils/safeUrl";
 
 const TYPE_OPTIONS = [
   { value: "general", label: "General", icon: Info, color: "bg-blue-500" },
@@ -103,6 +106,9 @@ export default function Announcements() {
     type: "danger",
     isLoading: false,
   });
+
+  // FE-04: inline validation errors for the free-text URL fields.
+  const [urlErrors, setUrlErrors] = useState({});
 
   // Fetch announcements
   const { data: announcementsData, isLoading } = useAnnouncements({
@@ -176,6 +182,27 @@ export default function Announcements() {
       return;
     }
 
+    // FE-04: validate the stored URL fields on WRITE, with the same
+    // helpers the consumers use. Both fields are optional — empty is
+    // allowed; a non-empty value that the helpers reject blocks the
+    // save with an inline error (nothing is submitted).
+    const nextUrlErrors = {};
+    if (announcementForm.actionUrl?.trim() && !safeActionUrl(announcementForm.actionUrl)) {
+      nextUrlErrors.actionUrl =
+        "Use a site-relative path (e.g. /dashboard/orders) or an https URL on an allowed host.";
+    }
+    if (
+      announcementForm.imageUrl?.trim() &&
+      !validateMediaUrl(announcementForm.imageUrl, { fallback: null })
+    ) {
+      nextUrlErrors.imageUrl =
+        "Use an image URL on an allowed host (this site, Cloudinary, Unsplash or an S3 bucket).";
+    }
+    setUrlErrors(nextUrlErrors);
+    if (Object.keys(nextUrlErrors).length > 0) {
+      return;
+    }
+
     const formData = {
       title: announcementForm.title,
       content: announcementForm.content,
@@ -223,8 +250,13 @@ export default function Announcements() {
       onConfirm: async () => {
         try {
           setConfirmModal((prev) => ({ ...prev, isLoading: true }));
-          await publishMutation.mutateAsync(id);
-          toast.success("Announcement published successfully");
+          const result = await publishMutation.mutateAsync(id);
+          // FE-41: in queue mode the announcement IS published but its
+          // notifications are only queued (202) — reportSendOutcome says
+          // exactly that, polls the job, and reports completion without
+          // inventing counts (the server records none for announcements).
+          // Inline 200 keeps the "published successfully" message.
+          void reportSendOutcome(result, { kind: "announcement", toast });
           setConfirmModal({ ...confirmModal, isOpen: false, isLoading: false });
         } catch (err) {
           toast.error(formatError(err, "Failed to publish"));
@@ -294,7 +326,7 @@ export default function Announcements() {
 
   // Filter announcements by search
   const filteredAnnouncements = announcements.filter((a) =>
-    a.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
+    (a.title || '').toLowerCase().includes(searchQuery.toLowerCase()) ||
     a.content?.toLowerCase().includes(searchQuery.toLowerCase())
   );
 
@@ -347,7 +379,7 @@ export default function Announcements() {
           <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400" />
           <input
             type="text"
-            placeholder="Search announcements..."
+            placeholder="Search announcements on this page…"
             value={searchQuery}
             onChange={(e) => {
               setSearchQuery(e.target.value);
@@ -384,6 +416,14 @@ export default function Announcements() {
           ))}
         </select>
       </div>
+
+      {/* FE-28: the announcements API has no search parameter, so the
+          search filters only this page — say so while it is active. */}
+      {searchQuery && (
+        <p className="text-xs text-gray-400">
+          Showing matches from this page only — other pages are not searched.
+        </p>
+      )}
 
       {/* Announcements List */}
       {isLoading ? (
@@ -559,9 +599,10 @@ export default function Announcements() {
               initial={{ scale: 0.95, opacity: 0 }}
               animate={{ scale: 1, opacity: 1 }}
               exit={{ scale: 0.95, opacity: 0 }}
-              className="bg-white rounded-2xl w-full max-w-2xl max-h-[90vh] overflow-y-auto"
+              className="w-full max-w-2xl"
               onClick={(e) => e.stopPropagation()}
             >
+             <Dialog open onClose={handleCloseModal} label="Announcement" className="bg-white rounded-2xl w-full max-h-[90vh] overflow-y-auto relative">
               {/* Modal Header */}
               <div className="flex items-center justify-between p-6 border-b border-gray-100">
                 <h2 className="text-xl font-bold text-gray-900 font-playfair">
@@ -692,10 +733,16 @@ export default function Announcements() {
                   <input
                     type="url"
                     value={announcementForm.imageUrl}
-                    onChange={(e) => setAnnouncementForm({ ...announcementForm, imageUrl: e.target.value })}
+                    onChange={(e) => {
+                      setAnnouncementForm({ ...announcementForm, imageUrl: e.target.value });
+                      setUrlErrors((prev) => ({ ...prev, imageUrl: undefined }));
+                    }}
                     placeholder="https://example.com/image.jpg"
                     className="w-full px-4 py-2.5 border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-teal-500/20 focus:border-teal-500"
                   />
+                  {urlErrors.imageUrl && (
+                    <p role="alert" className="text-xs text-red-500 mt-1">{urlErrors.imageUrl}</p>
+                  )}
                 </div>
 
                 {/* Action URL and Label */}
@@ -708,10 +755,16 @@ export default function Announcements() {
                     <input
                       type="url"
                       value={announcementForm.actionUrl}
-                      onChange={(e) => setAnnouncementForm({ ...announcementForm, actionUrl: e.target.value })}
-                      placeholder="https://example.com/promo"
+                      onChange={(e) => {
+                        setAnnouncementForm({ ...announcementForm, actionUrl: e.target.value });
+                        setUrlErrors((prev) => ({ ...prev, actionUrl: undefined }));
+                      }}
+                      placeholder="/dashboard/orders or https://…"
                       className="w-full px-4 py-2.5 border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-teal-500/20 focus:border-teal-500"
                     />
+                    {urlErrors.actionUrl && (
+                      <p role="alert" className="text-xs text-red-500 mt-1">{urlErrors.actionUrl}</p>
+                    )}
                   </div>
                   <div>
                     <label className="block text-sm font-medium text-gray-700 mb-2">
@@ -777,6 +830,7 @@ export default function Announcements() {
                   {editingAnnouncement ? "Update Announcement" : "Create Announcement"}
                 </button>
               </div>
+             </Dialog>
             </motion.div>
           </motion.div>
         )}
@@ -796,9 +850,10 @@ export default function Announcements() {
               initial={{ scale: 0.95, opacity: 0 }}
               animate={{ scale: 1, opacity: 1 }}
               exit={{ scale: 0.95, opacity: 0 }}
-              className="bg-white rounded-2xl w-full max-w-md"
+              className="w-full max-w-md"
               onClick={(e) => e.stopPropagation()}
             >
+             <Dialog open onClose={() => setScheduleModal(null)} label="Schedule Announcement" className="bg-white rounded-2xl w-full relative">
               <div className="flex items-center justify-between p-6 border-b border-gray-100">
                 <h2 className="text-xl font-bold text-gray-900 font-playfair flex items-center gap-2">
                   <Calendar className="w-5 h-5 text-blue-600" />
@@ -846,6 +901,7 @@ export default function Announcements() {
                   Schedule
                 </button>
               </div>
+             </Dialog>
             </motion.div>
           </motion.div>
         )}

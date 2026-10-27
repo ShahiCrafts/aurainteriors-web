@@ -1,4 +1,5 @@
 import { useState, useRef, useMemo, useEffect, useCallback } from "react";
+import Dialog from "../../components/common/Dialog";
 import { motion, AnimatePresence } from "framer-motion";
 import {
   Plus,
@@ -24,9 +25,18 @@ import {
   Ruler,
   Weight,
   Palette,
+  SlidersHorizontal,
+  Boxes,
 } from "lucide-react";
 import Skeleton from "../../components/common/Skeleton";
 import ConfirmationDialog from "../../components/modals/ConfirmationDialog";
+import CatalogProductFields from "../../components/admin/catalog/CatalogProductFields";
+import DynamicAttributesSection from "../../components/admin/catalog/DynamicAttributesSection";
+import VariantEditor from "../../components/admin/catalog/VariantEditor";
+import {
+  buildAttributesPayload,
+  missingRequiredAttributes,
+} from "../../utils/catalogAttributes";
 import {
   useProducts,
   useCreateProduct,
@@ -54,7 +64,9 @@ import {
   getProductImageUrl,
 } from "../../utils/imageUrl";
 import formatError from "../../utils/errorHandler";
+import { parseProductPriceStock } from "../../utils/adminForms";
 import { API_V1_URL } from "../../config/constants";
+import { formatNPR } from "../../utils/formatCurrency";
 
 const API_URL = API_V1_URL;
 
@@ -108,7 +120,22 @@ export default function Products() {
     weight: { value: "", unit: "kg" },
     materials: [],
     colors: [],
+    productType: "",
+    roomSlugs: [],
   });
+
+  // Phase 6 (catalog): the dynamic attributes section reports its
+  // resolution + values up here so Save can validate and build the
+  // catalogAttributes payload with the shared catalog utils.
+  const [catalogAttrState, setCatalogAttrState] = useState({
+    resolved: [],
+    values: {},
+    passthrough: {},
+  });
+  const [showAttrErrors, setShowAttrErrors] = useState(false);
+  const handleCatalogAttrChange = useCallback((state) => {
+    setCatalogAttrState(state);
+  }, []);
 
   const handleAddColor = () => {
     const input = document.createElement("input");
@@ -209,51 +236,65 @@ export default function Products() {
     "Rustic",
   ];
 
-  // Fetch all products for dynamic overview stats & instant client-side filtering
+  // FE-51: the products list is server-driven. The API already
+  // supports page/limit/search/category/status (verified in the server
+  // tree: product.controller getAllProducts), so the request carries
+  // them and the pager reports the server's totals. The old code
+  // fetched limit:1000 (silently capped to 100 server-side) and did
+  // everything client-side. "status: all" must be sent explicitly —
+  // for an admin the server treats it as "no status filter", while an
+  // omitted status defaults to active + out_of_stock only.
   const { data: productsData, isLoading } = useProducts({
-    status: "all",
-    limit: 1000,
+    page,
+    limit: pageSize,
+    status: statusFilter,
+    ...(searchQuery.trim() ? { search: searchQuery.trim() } : {}),
+    ...(selectedCategory !== "all" ? { category: selectedCategory } : {}),
   });
-  const allProducts = productsData?.data?.products || [];
+  const pageProducts = productsData?.data?.products || [];
+  const serverPagination = productsData?.data?.pagination || {
+    total: 0,
+    pages: 1,
+  };
+  const totalPages = serverPagination.pages || 1;
 
-  // Calculate dynamic stats
-  const totalProductsCount = allProducts.length;
-  const activeProductsCount = allProducts.filter((p) => p.status === "active").length;
-  const outOfStockCount = allProducts.filter((p) => p.stock === 0).length;
-  const lowStockCount = allProducts.filter((p) => p.stock > 0 && p.stock < 10).length;
-  const modelCount = allProducts.filter((p) => p.modelUrl || p.modelFiles?.length > 0).length;
+  // Stats that the API can total exactly are read from server
+  // pagination totals via limit:1 probes — never from a fetched
+  // array's length or full-array filter passes.
+  const { data: totalStatsData } = useProducts({ status: "all", limit: 1 });
+  const { data: activeStatsData } = useProducts({ status: "active", limit: 1 });
+  const { data: outOfStockStatsData } = useProducts({
+    status: "out_of_stock",
+    limit: 1,
+  });
+  const totalProductsCount = totalStatsData?.data?.pagination?.total ?? 0;
+  const activeProductsCount = activeStatsData?.data?.pagination?.total ?? 0;
+  const outOfStockCount = outOfStockStatsData?.data?.pagination?.total ?? 0;
 
-  // Filter products on the client side
-  const filteredProducts = useMemo(() => {
-    return allProducts.filter((product) => {
-      // 1. Search Query
-      if (searchQuery.trim()) {
-        const query = searchQuery.toLowerCase();
-        const matchesName = product.name?.toLowerCase().includes(query);
-        const matchesSku = product.sku?.toLowerCase().includes(query);
-        const matchesDesc = product.description?.toLowerCase().includes(query);
-        if (!matchesName && !matchesSku && !matchesDesc) return false;
-      }
+  // The API has no stock-band or 3D-model parameter, so those two
+  // filters honestly refine only the loaded page (their labels say
+  // "(this page)"), and the low-stock / model counts below are
+  // page-scoped and labelled as such. Memoised — the old code re-ran
+  // four full-array filter passes on every render.
+  const pageStats = useMemo(() => {
+    return {
+      lowStockCount: pageProducts.filter((p) => p.stock > 0 && p.stock < 10).length,
+      modelCount: pageProducts.filter((p) => p.modelUrl || p.modelFiles?.length > 0).length,
+    };
+  }, [pageProducts]);
+  const lowStockCount = pageStats.lowStockCount;
+  const modelCount = pageStats.modelCount;
 
-      // 2. Category Filter
-      if (selectedCategory !== "all") {
-        const categoryId = product.category?._id || product.category;
-        if (categoryId !== selectedCategory) return false;
-      }
-
-      // 3. Status Filter
-      if (statusFilter !== "all") {
-        if (product.status !== statusFilter) return false;
-      }
-
-      // 4. Stock Filter
+  const products = useMemo(() => {
+    return pageProducts.filter((product) => {
+      // Stock Filter (page-scoped — no server parameter exists)
       if (stockFilter !== "all") {
         if (stockFilter === "outofstock" && product.stock !== 0) return false;
         if (stockFilter === "lowstock" && (product.stock === 0 || product.stock >= 10)) return false;
         if (stockFilter === "instock" && product.stock === 0) return false;
       }
 
-      // 5. 3D Model Filter
+      // 3D Model Filter (page-scoped — no server parameter exists)
       if (modelFilter !== "all") {
         const hasModel = !!(product.modelUrl || product.modelFiles?.length > 0);
         if (modelFilter === "hasmodel" && !hasModel) return false;
@@ -262,15 +303,7 @@ export default function Products() {
 
       return true;
     });
-  }, [allProducts, searchQuery, selectedCategory, statusFilter, stockFilter, modelFilter]);
-
-  // Calculate paginated slice
-  const products = useMemo(() => {
-    const startIndex = (page - 1) * pageSize;
-    return filteredProducts.slice(startIndex, startIndex + pageSize);
-  }, [filteredProducts, page, pageSize]);
-
-  const totalPages = Math.ceil(filteredProducts.length / pageSize) || 1;
+  }, [pageProducts, stockFilter, modelFilter]);
 
   // Fetch categories for filter and form
   const { data: categoriesData } = useCategories();
@@ -280,6 +313,14 @@ export default function Products() {
   const createMutation = useCreateProduct();
   const updateMutation = useUpdateProduct();
   const deleteMutation = useDeleteProduct();
+
+  // The product's stored catalog attribute values (edit mode) —
+  // the dynamic section seeds from these and passes through any
+  // keys the current resolution does not render.
+  const storedCatalogAttributes = useMemo(
+    () => editingProduct?.catalogAttributes || {},
+    [editingProduct]
+  );
 
   const handleOpenModal = (product = null) => {
     if (product) {
@@ -302,6 +343,8 @@ export default function Products() {
         weight: product.weight || { value: "", unit: "kg" },
         materials: product.materials || [],
         colors: product.colors || [],
+        productType: product.productType || "",
+        roomSlugs: product.roomSlugs || [],
       });
       setModelInputType(
         product.modelUrl || product.modelFiles?.length > 0
@@ -357,6 +400,8 @@ export default function Products() {
         weight: { value: "", unit: "kg" },
         materials: [],
         colors: [],
+        productType: "",
+        roomSlugs: [],
       });
       setModelInputType("url");
       setImageFiles([]);
@@ -369,6 +414,10 @@ export default function Products() {
     setActiveTab("basic");
     setShowAllImages(false);
     setUploadProgress({});
+    // The attributes section re-seeds from the product and reports
+    // its resolution back through handleCatalogAttrChange.
+    setCatalogAttrState({ resolved: [], values: {}, passthrough: {} });
+    setShowAttrErrors(false);
     setModalOpen(true);
   };
 
@@ -563,16 +612,55 @@ export default function Products() {
       return;
     }
 
+    // FE-45: price/stock go to the server as NUMBERS within its
+    // bounds (price positive, stock integer >= 0 — product.validator).
+    // The old code sent the raw input strings.
+    const parsed = parseProductPriceStock(productForm);
+    if (!parsed.ok) {
+      toast.error(parsed.error);
+      return;
+    }
+
+    // Phase 6 (catalog): dynamic attributes validate client-side
+    // with the same rules the server applies (required, bounds,
+    // enum membership). A failure blocks the save, jumps to the
+    // Attributes tab and shows the per-field errors there; the
+    // server's own 400s still surface through the catch below.
+    const missingAttrs = missingRequiredAttributes(
+      catalogAttrState.resolved,
+      catalogAttrState.values
+    );
+    const builtAttrs = buildAttributesPayload(
+      catalogAttrState.resolved,
+      catalogAttrState.values,
+      catalogAttrState.passthrough
+    );
+    if (missingAttrs.length > 0 || Object.keys(builtAttrs.errors).length > 0) {
+      setShowAttrErrors(true);
+      setActiveTab("attributes");
+      if (missingAttrs.length > 0) {
+        toast.error(
+          `Missing required attribute${missingAttrs.length > 1 ? "s" : ""}: ${missingAttrs
+            .map((entry) => entry.label)
+            .join(", ")}`
+        );
+      } else {
+        const [firstKey, firstError] = Object.entries(builtAttrs.errors)[0];
+        toast.error(`${firstKey}: ${firstError}`);
+      }
+      return;
+    }
+
     const formData = {
       name: productForm.name,
       category: productForm.category,
-      price: productForm.price,
-      stock: productForm.stock || 0,
+      price: parsed.values.price,
+      stock: parsed.values.stock,
       status: productForm.status,
     };
 
-    if (productForm.originalPrice)
-      formData.originalPrice = productForm.originalPrice;
+    if (parsed.values.originalPrice !== undefined)
+      formData.originalPrice = parsed.values.originalPrice;
     if (productForm.description) formData.description = productForm.description;
     if (productForm.shortDescription)
       formData.shortDescription = productForm.shortDescription;
@@ -594,6 +682,14 @@ export default function Products() {
     }
     formData.materials = productForm.materials;
     formData.colors = productForm.colors;
+
+    // Phase 6 (catalog): product type ("" clears an override),
+    // rooms, and the dynamic attribute values built above.
+    formData.productType = productForm.productType || "";
+    formData.roomSlugs = productForm.roomSlugs;
+    if (editingProduct || Object.keys(builtAttrs.payload).length > 0) {
+      formData.catalogAttributes = builtAttrs.payload;
+    }
 
     // Add new images
     if (imageFiles.length > 0) {
@@ -772,7 +868,7 @@ export default function Products() {
             <div>
               <p className="text-sm font-medium text-gray-500 mb-1">Stock Alerts</p>
               <p className="text-2xl font-bold text-gray-900 tracking-tight">
-                {outOfStockCount} <span className="text-xs font-semibold text-red-500">Out</span> / {lowStockCount} <span className="text-xs font-semibold text-amber-500">Low</span>
+                {outOfStockCount} <span className="text-xs font-semibold text-red-500">Out</span> / {lowStockCount} <span className="text-xs font-semibold text-amber-500">Low (this page)</span>
               </p>
             </div>
             <div className="p-2.5 rounded-xl bg-rose-500 text-white shadow-sm">
@@ -788,7 +884,7 @@ export default function Products() {
         <div className="bg-white rounded-xl p-5 border border-gray-100 shadow-[0_2px_10px_-4px_rgba(0,0,0,0.05)] relative overflow-hidden">
           <div className="flex items-start justify-between">
             <div>
-              <p className="text-sm font-medium text-gray-500 mb-1">3D Models Ready</p>
+              <p className="text-sm font-medium text-gray-500 mb-1">3D Models Ready (this page)</p>
               <p className="text-2xl font-bold text-gray-900 tracking-tight">{modelCount}</p>
             </div>
             <div className="p-2.5 rounded-xl bg-purple-600 text-white shadow-sm">
@@ -849,10 +945,10 @@ export default function Products() {
                 }}
                 className="px-3.5 py-2 bg-white border border-gray-200 rounded-lg text-sm font-medium text-gray-600 focus:outline-none focus:border-teal-500 transition-colors cursor-pointer hover:border-gray-300"
               >
-                <option value="all">Stock Status: All</option>
-                <option value="instock">In Stock</option>
-                <option value="lowstock">Low Stock (&lt;10)</option>
-                <option value="outofstock">Out of Stock</option>
+                <option value="all">Stock Status: All (this page)</option>
+                <option value="instock">In Stock (this page)</option>
+                <option value="lowstock">Low Stock (&lt;10) (this page)</option>
+                <option value="outofstock">Out of Stock (this page)</option>
               </select>
 
               {/* 3D Model Availability Filter */}
@@ -864,9 +960,9 @@ export default function Products() {
                 }}
                 className="px-3.5 py-2 bg-white border border-gray-200 rounded-lg text-sm font-medium text-gray-600 focus:outline-none focus:border-teal-500 transition-colors cursor-pointer hover:border-gray-300"
               >
-                <option value="all">3D Model: All</option>
-                <option value="hasmodel">Has 3D Model</option>
-                <option value="nomodel">No 3D Model</option>
+                <option value="all">3D Model: All (this page)</option>
+                <option value="hasmodel">Has 3D Model (this page)</option>
+                <option value="nomodel">No 3D Model (this page)</option>
               </select>
 
               {/* Status Filter (Active / Draft) */}
@@ -998,11 +1094,11 @@ export default function Products() {
                     <td className="px-6 py-4">
                       <div>
                         <span className="font-bold text-gray-900">
-                          NRs. {product.price?.toLocaleString()}
+                          {formatNPR(product.price)}
                         </span>
                         {product.originalPrice && (
                           <span className="text-xs text-gray-400 line-through ml-2">
-                            NRs. {product.originalPrice?.toLocaleString()}
+                            {formatNPR(product.originalPrice)}
                           </span>
                         )}
                       </div>
@@ -1092,7 +1188,7 @@ export default function Products() {
         page={page}
         totalPages={totalPages}
         pageSize={pageSize}
-        totalItems={filteredProducts.length}
+        totalItems={serverPagination.total}
         onPageChange={setPage}
       />
 
@@ -1120,9 +1216,10 @@ export default function Products() {
               initial={{ opacity: 0, scale: 0.95, y: 20 }}
               animate={{ opacity: 1, scale: 1, y: 0 }}
               exit={{ opacity: 0, scale: 0.95, y: 20 }}
-              className="bg-white rounded-2xl shadow-2xl w-full max-w-xl max-h-[80vh] overflow-hidden flex flex-col"
+              className="w-full max-w-xl"
               onClick={(e) => e.stopPropagation()}
             >
+             <Dialog open onClose={() => setModalOpen(false)} label="Product" className="bg-white rounded-2xl shadow-2xl w-full max-h-[80vh] overflow-hidden flex flex-col relative">
               {/* Modal Header */}
               <div className="flex items-center justify-between p-6 border-b border-gray-100">
                 <h2 className="text-xl font-bold text-gray-900">
@@ -1140,8 +1237,12 @@ export default function Products() {
               <div className="flex border-b border-gray-100 px-6">
                 {[
                   { id: "basic", label: "Basic Info", icon: FileText },
+                  { id: "attributes", label: "Attributes", icon: SlidersHorizontal },
                   { id: "3dmodel", label: "3D Model", icon: Box },
                   { id: "details", label: "Details", icon: Layers },
+                  ...(editingProduct
+                    ? [{ id: "variants", label: "Variants", icon: Boxes }]
+                    : []),
                 ].map((tab) => (
                   <button
                     key={tab.id}
@@ -1369,6 +1470,17 @@ export default function Products() {
                       </div>
                     </div>
 
+                    <CatalogProductFields
+                      productType={productForm.productType}
+                      onProductTypeChange={(value) =>
+                        setProductForm({ ...productForm, productType: value })
+                      }
+                      roomSlugs={productForm.roomSlugs}
+                      onRoomSlugsChange={(value) =>
+                        setProductForm({ ...productForm, roomSlugs: value })
+                      }
+                    />
+
                     <div className="grid grid-cols-3 gap-4">
                       <div>
                         <label className="block text-sm font-medium text-gray-700 mb-2">
@@ -1376,7 +1488,7 @@ export default function Products() {
                         </label>
                         <div className="relative">
                           <span className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-500">
-                            Rs.
+                            NPR
                           </span>
                           <input
                             type="number"
@@ -1398,7 +1510,7 @@ export default function Products() {
                         </label>
                         <div className="relative">
                           <span className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-500">
-                            Rs.
+                            NPR
                           </span>
                           <input
                             type="number"
@@ -2064,6 +2176,27 @@ export default function Products() {
                     </div>
                   </div>
                 )}
+
+                {/* Attributes Tab — kept mounted (hidden) so the
+                    resolution loads and required-attribute validation
+                    works even if the tab was never opened. */}
+                <div className={activeTab === "attributes" ? "" : "hidden"}>
+                  <DynamicAttributesSection
+                    categoryId={productForm.category}
+                    productType={productForm.productType}
+                    storedAttributes={storedCatalogAttributes}
+                    showErrors={showAttrErrors}
+                    onChange={handleCatalogAttrChange}
+                  />
+                </div>
+
+                {/* Variants Tab — edit mode only, also mounted-but-
+                    hidden so the variant list is ready. */}
+                {editingProduct && (
+                  <div className={activeTab === "variants" ? "" : "hidden"}>
+                    <VariantEditor product={editingProduct} />
+                  </div>
+                )}
               </div>
 
               {/* Modal Footer */}
@@ -2094,6 +2227,7 @@ export default function Products() {
                   )}
                 </button>
               </div>
+             </Dialog>
             </motion.div>
           </motion.div>
         )}

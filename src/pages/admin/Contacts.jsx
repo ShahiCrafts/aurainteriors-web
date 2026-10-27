@@ -1,4 +1,5 @@
-import { useState } from "react";
+import { useRef, useState } from "react";
+import Dialog from "../../components/common/Dialog";
 import { motion, AnimatePresence } from "framer-motion";
 import {
   Search,
@@ -85,7 +86,15 @@ export default function Contacts() {
     }
   };
 
+  // FE-37: no pending guard existed — a double-click on Delete fired
+  // duplicate DELETE mutations (the second erroring after the first
+  // succeeded). Guard re-entry and disable while pending.
+  const [isDeleting, setIsDeleting] = useState(false);
+  const deletingRef = useRef(false);
   const handleDelete = async () => {
+    if (deletingRef.current || deleteMutation.isPending) return;
+    deletingRef.current = true;
+    setIsDeleting(true);
     try {
       await deleteMutation.mutateAsync(selectedContactId);
       toast.success("Message deleted");
@@ -93,6 +102,9 @@ export default function Contacts() {
       setSelectedContactId(null);
     } catch (err) {
       toast.error(formatError(err, "Delete failed"));
+    } finally {
+      deletingRef.current = false;
+      setIsDeleting(false);
     }
   };
 
@@ -249,7 +261,7 @@ export default function Contacts() {
                             : "bg-gray-100 text-gray-500"
                             }`}
                         >
-                          {contact.name[0].toUpperCase()}
+                          {(contact.name || '?')[0].toUpperCase()}
                         </div>
                         <div className="min-w-0">
                           <p
@@ -392,7 +404,7 @@ export default function Contacts() {
             <div className="space-y-6">
               <div className="flex items-center gap-4 p-4 bg-gray-50 rounded-xl">
                 <div className="w-12 h-12 bg-white rounded-full flex items-center justify-center border border-gray-200 shadow-sm text-teal-600 font-bold">
-                  {selectedContact.name[0]}
+                  {(selectedContact.name || '?')[0]}
                 </div>
                 <div>
                   <p className="text-sm font-bold text-gray-900">
@@ -418,7 +430,7 @@ export default function Contacts() {
                           : "text-blue-500"
                       }
                     />
-                    {selectedContact.priority.toUpperCase()}
+                    {(selectedContact.priority || '').toUpperCase()}
                   </div>
                 </div>
                 <div className="p-3 border border-gray-100 rounded-lg">
@@ -531,7 +543,8 @@ export default function Contacts() {
                 </button>
                 <button
                   onClick={handleDelete}
-                  className="flex-1 py-2.5 bg-red-600 text-white rounded-lg text-sm font-medium hover:bg-red-700"
+                  disabled={isDeleting || deleteMutation.isPending}
+                  className="flex-1 py-2.5 bg-red-600 text-white rounded-lg text-sm font-medium hover:bg-red-700 disabled:opacity-50 disabled:cursor-not-allowed"
                 >
                   Delete
                 </button>
@@ -559,18 +572,21 @@ function Modal({ title, children, onClose }) {
         animate={{ scale: 1, opacity: 1 }}
         exit={{ scale: 0.95, opacity: 0 }}
         onClick={(e) => e.stopPropagation()}
-        className="bg-white rounded-xl max-w-lg w-full p-6 shadow-2xl border border-gray-100"
+        className="w-full max-w-lg"
       >
+       <Dialog open onClose={onClose} label={title} className="bg-white rounded-xl max-w-lg w-full p-6 shadow-2xl border border-gray-100">
         <div className="flex items-center justify-between mb-6">
           <h3 className="text-lg font-bold text-gray-900">{title}</h3>
           <button
             onClick={onClose}
+            aria-label="Close dialog"
             className="p-2 hover:bg-gray-100 rounded-lg transition-colors"
           >
             <X className="w-5 h-5 text-gray-400" />
           </button>
         </div>
         {children}
+       </Dialog>
       </motion.div>
     </motion.div>
   );

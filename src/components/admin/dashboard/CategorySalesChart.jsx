@@ -8,8 +8,9 @@ import {
 
 const COLORS = ['#3b82f6', '#22c55e', '#f97316', '#a78bfa', '#ec4899', '#facc15'];
 
-export default function CategorySalesChart({ data }) {
-    const total = data.reduce((sum, entry) => sum + (entry.value || 0), 0);
+export default function CategorySalesChart({ data = [] }) {
+    const safeData = data || [];
+    const total = safeData.reduce((sum, entry) => sum + (entry.value || 0), 0);
 
     return (
         <div className="bg-white rounded-2xl border border-gray-100 p-5 shadow-[0_2px_10px_-4px_rgba(0,0,0,0.05)]">
@@ -26,7 +27,7 @@ export default function CategorySalesChart({ data }) {
                     <ResponsiveContainer width="100%" height="100%">
                         <PieChart>
                             <Pie
-                                data={data}
+                                data={safeData}
                                 cx="50%"
                                 cy="50%"
                                 innerRadius={40}
@@ -35,7 +36,7 @@ export default function CategorySalesChart({ data }) {
                                 dataKey="value"
                                 strokeWidth={0}
                             >
-                                {data.map((entry, index) => (
+                                {safeData.map((entry, index) => (
                                     <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
                                 ))}
                             </Pie>
@@ -52,8 +53,8 @@ export default function CategorySalesChart({ data }) {
                 </div>
 
                 <div className="w-full mt-4 grid grid-cols-2 gap-x-4 gap-y-2">
-                    {data.slice(0, 6).map((entry, index) => {
-                        const percent = total > 0 ? Math.round((entry.value / total) * 100) : 0;
+                    {safeData.slice(0, 6).map((entry, index) => {
+                        const percent = total > 0 ? Math.round(((entry.value || 0) / total) * 100) : 0;
                         return (
                             <div key={entry.name} className="flex items-center justify-between text-xs gap-2">
                                 <div className="flex items-center gap-1.5 min-w-0">

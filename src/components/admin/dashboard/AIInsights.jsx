@@ -1,14 +1,28 @@
 import { Link } from 'react-router-dom';
-import { CreditCard, AlertCircle, Gauge, ArrowRight, Sparkles } from 'lucide-react';
+import { CreditCard, AlertCircle, Gauge, Sparkles } from 'lucide-react';
 
 export default function AIInsights({ insights }) {
-    const data = insights || {
-        paymentIssueChange: 23,
-        topIssue: 'Payment Failure',
-        topIssueCount: 23,
-        resolutionRate: 88,
-        resolutionRateChange: 5,
-    };
+    // FE-14: no insights data means an honest empty state — never
+    // substitute invented insight numbers.
+    if (!insights) {
+        return (
+            <div className="bg-white rounded-2xl border border-gray-100 p-5 shadow-[0_2px_10px_-4px_rgba(0,0,0,0.05)]">
+                <div className="flex items-center gap-2 mb-1">
+                    <h2 className="text-base font-bold text-gray-900">AI Insights</h2>
+                </div>
+                <p className="text-[13px] text-gray-500">No insights available</p>
+                <Link
+                    to="/dashboard/support"
+                    className="mt-6 w-full flex items-center justify-center gap-1.5 py-2.5 rounded-xl border border-gray-200 text-gray-700 text-sm font-semibold hover:bg-gray-50 transition-colors"
+                >
+                    <Sparkles className="w-4 h-4 text-teal-600" />
+                    View all insights
+                </Link>
+            </div>
+        );
+    }
+
+    const data = insights;
 
     return (
         <div className="bg-white rounded-2xl border border-gray-100 p-5 shadow-[0_2px_10px_-4px_rgba(0,0,0,0.05)]">

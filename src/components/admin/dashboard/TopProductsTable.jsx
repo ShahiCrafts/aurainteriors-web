@@ -1,7 +1,10 @@
 import { Link } from 'react-router-dom';
 import { Package, ArrowRight } from 'lucide-react';
+import { getImageUrl } from '../../../utils/imageUrl';
+import { formatNPR } from '../../../utils/formatCurrency';
 
-export default function TopProductsTable({ products }) {
+export default function TopProductsTable({ products = [] }) {
+    const safeProducts = products || [];
     return (
         <div className="bg-white rounded-2xl border border-gray-100 overflow-hidden shadow-[0_2px_10px_-4px_rgba(0,0,0,0.05)]">
             <div className="px-6 py-4 border-b border-gray-100 flex items-center justify-between">
@@ -20,13 +23,13 @@ export default function TopProductsTable({ products }) {
                         </tr>
                     </thead>
                     <tbody className="divide-y divide-gray-50">
-                        {products.map((product) => (
+                        {safeProducts.map((product) => (
                             <tr key={product._id} className="hover:bg-gray-50/50 transition-colors">
                                 <td className="px-6 py-4">
                                     <div className="flex items-center gap-3">
                                         <div className="w-9 h-9 rounded-lg bg-gray-100 shrink-0 overflow-hidden flex items-center justify-center border border-gray-200">
                                             {product.image ? (
-                                                <img src={product.image} alt={product.name} className="w-full h-full object-cover" />
+                                                <img src={getImageUrl(product.image, "products")} alt={product.name} className="w-full h-full object-cover" />
                                             ) : (
                                                 <Package className="w-4 h-4 text-gray-400" />
                                             )}
@@ -34,11 +37,11 @@ export default function TopProductsTable({ products }) {
                                         <p className="font-medium text-gray-900 truncate max-w-[140px]">{product.name}</p>
                                     </div>
                                 </td>
-                                <td className="px-6 py-4 text-right text-gray-600">{product.sales.toLocaleString()}</td>
-                                <td className="px-6 py-4 text-right font-semibold text-gray-900">NRs. {product.revenue.toLocaleString()}</td>
+                                <td className="px-6 py-4 text-right text-gray-600">{(product.sales || 0).toLocaleString()}</td>
+                                <td className="px-6 py-4 text-right font-semibold text-gray-900">{formatNPR(product.revenue || 0)}</td>
                             </tr>
                         ))}
-                        {products.length === 0 && (
+                        {safeProducts.length === 0 && (
                             <tr>
                                 <td colSpan="3" className="px-6 py-10 text-center text-gray-400">No sales data yet</td>
                             </tr>

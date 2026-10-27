@@ -2,12 +2,42 @@ import { Link } from 'react-router-dom';
 import { MessageSquare, UserCog, AlertTriangle, Sparkles, ArrowRight } from 'lucide-react';
 
 export default function SupportOverview({ stats }) {
-    const data = stats || {
-        openConversations: 18,
-        waitingForHuman: 5,
-        urgent: 2,
-        aiResolved: 23,
-    };
+    // FE-14: no support data means an honest empty state — never
+    // substitute invented queue numbers.
+    if (!stats) {
+        return (
+            <div className="bg-white rounded-2xl border border-gray-100 p-5 shadow-[0_2px_10px_-4px_rgba(0,0,0,0.05)] flex flex-col">
+                <div className="flex items-center justify-between mb-4">
+                    <div>
+                        <h2 className="text-base font-bold text-gray-900">
+                            Support Overview
+                        </h2>
+                        <p className="text-[13px] text-gray-500 mt-0.5">
+                            View customer support activity
+                        </p>
+                    </div>
+
+                    <Link
+                        to="/dashboard/support"
+                        className="text-teal-600 text-xs font-medium hover:text-teal-700 flex items-center gap-1 transition-colors"
+                    >
+                        View all <ArrowRight className="w-3.5 h-3.5" />
+                    </Link>
+                </div>
+
+                <p className="text-[13px] text-gray-500 flex-1">No support data available</p>
+
+                <Link
+                    to="/dashboard/support"
+                    className="mt-3 w-full text-center py-2.5 rounded-xl bg-indigo-50 text-indigo-700 text-sm font-semibold hover:bg-indigo-100 transition-colors"
+                >
+                    Go to Support Center
+                </Link>
+            </div>
+        );
+    }
+
+    const data = stats;
 
     const rows = [
         {
