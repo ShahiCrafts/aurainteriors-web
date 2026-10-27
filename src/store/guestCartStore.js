@@ -36,7 +36,11 @@ const useGuestCartStore = create((set, get) => ({
   items: loadGuestCart(),
 
   // Add item to guest cart
-  addItem: (product, quantity = 1, variant = {}) => {
+  // Phase 7 (catalog): `meta` carries a catalog variant identity
+  // ({ variantId, sku, unitPrice, options }) for variant products.
+  // Line identity then includes the variantId — two variants of
+  // one product are two lines; the same variant merges.
+  addItem: (product, quantity = 1, variant = {}, meta = null) => {
     if (!product?._id || !Number.isSafeInteger(quantity) || quantity <= 0) return;
     const { items } = get();
 
@@ -44,6 +48,7 @@ const useGuestCartStore = create((set, get) => ({
     const existingIndex = items.findIndex(
       (item) =>
         item.product._id === product._id &&
+        (item.variantId || null) === (meta?.variantId || null) &&
         variantKey(item.variant) === variantKey(variant)
     );
 
@@ -70,6 +75,14 @@ const useGuestCartStore = create((set, get) => ({
         },
         quantity,
         variant,
+        ...(meta?.variantId
+          ? {
+              variantId: meta.variantId,
+              sku: meta.sku,
+              unitPrice: meta.unitPrice,
+              variantOptions: meta.options,
+            }
+          : {}),
       };
       newItems = [...items, newItem];
     }
@@ -117,7 +130,7 @@ const useGuestCartStore = create((set, get) => ({
     const { items } = get();
     const itemCount = items.reduce((sum, item) => sum + item.quantity, 0);
     const subtotal = items.reduce(
-      (sum, item) => sum + item.product.price * item.quantity,
+      (sum, item) => sum + (item.unitPrice ?? item.product.price) * item.quantity,
       0
     );
     return { itemCount, subtotal };
