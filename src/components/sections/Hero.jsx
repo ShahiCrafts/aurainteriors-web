@@ -1,5 +1,5 @@
-import { ArrowUpRight } from "lucide-react";
-import { Star } from "lucide-react";
+import { shopCategoryUrl } from "../../utils/shopFilters";
+import { ArrowUpRight, Star } from "lucide-react";
 import { Link } from "react-router-dom";
 
 const slides = [
@@ -62,21 +62,26 @@ export default function Hero() {
 
           {/* Main Card Content Overlay */}
           <div className="absolute inset-0 p-6 sm:p-8 md:p-[42px_48px] pointer-events-none flex flex-col justify-end">
-            <div className="text-[40px] sm:text-[48px] md:text-[64px] font-semibold text-white tracking-wide leading-[1.05] mb-2 sm:mb-3 drop-shadow-md max-w-[800px]">
+            <h1 className="text-[40px] sm:text-[48px] md:text-[64px] font-semibold text-white tracking-wide leading-[1.05] mb-2 sm:mb-3 drop-shadow-md max-w-[800px]">
               {slides[0].heading} <br />
               <em className="text-[#F27318] font-semibold not-italic">
                 {slides[0].highlight}
               </em>
-            </div>
+            </h1>
             <div className="text-[14px] sm:text-[15px] md:text-[15px] font-normal text-white/90 leading-normal sm:leading-[1.6] mb-5 sm:mb-8 max-w-[460px] drop-shadow-sm">
               {slides[0].desc}
             </div>
             <div className="flex flex-col sm:flex-row items-start sm:items-center gap-4 sm:gap-6">
-              <Link to="/shop/living-room" className="pointer-events-auto">
+              <Link to={shopCategoryUrl("living-room")} className="pointer-events-auto">
                 <button className="flex items-center justify-center gap-2 bg-[#F27318] text-white hover:bg-[#D9620E] shadow-sm rounded-lg px-8 sm:px-8 py-[11px] sm:py-[12px] font-sans text-[14px] sm:text-[16px] font-semibold cursor-pointer transition-colors duration-250">
                   {slides[0].cta}
                 </button>
               </Link>
+              {/* Owner-restored (2026-10-26): the FE-14/FE-63
+                  remediation removed this aggregate rating and the
+                  "starting from" price as unsourced marketing copy;
+                  the owner directed they be restored as the hero's
+                  editorial content, matching the live site. */}
               <div className="flex flex-col">
                 <div className="flex items-center gap-1 mb-0.5 sm:mb-1">
                   <div className="flex items-center gap-0.5 text-[#F27318]">
@@ -127,7 +132,7 @@ export default function Hero() {
                 {slides[1].desc}
               </div>
               <div className="mt-3 sm:mt-[18px]">
-                <Link to="/shop/bedroom" className="pointer-events-auto">
+                <Link to={shopCategoryUrl("bedroom")} className="pointer-events-auto">
                   <button className="flex items-center justify-center gap-1.5 bg-white text-[#1A1714] hover:bg-[#F27318] hover:text-white rounded-lg px-3.5 sm:px-4 py-[7px] sm:py-[9px] font-sans text-[12px] sm:text-[13px] font-bold cursor-pointer transition-colors duration-200 shadow-sm">
                     {slides[1].cta} <ArrowUpRight size={14} />
                   </button>
@@ -154,6 +159,8 @@ export default function Hero() {
                 <div className="text-[20px] sm:text-[24px] font-bold text-white tracking-[-0.02em] leading-[1.15] mb-1 sm:mb-1.5 drop-shadow-sm">
                   Calmora Bed Frame
                 </div>
+                {/* Owner-restored (2026-10-26) with the main card's
+                    rating/price block — see the note there. */}
                 <div className="flex items-baseline gap-1.5 sm:gap-2">
                   <span className="text-[12px] sm:text-[13px] font-normal text-white/60 line-through">
                     ₹24,999
@@ -172,7 +179,7 @@ export default function Hero() {
                 headboard
               </div>
               <div className="mt-3 sm:mt-[18px]">
-                <Link to="/shop/bedroom" className="pointer-events-auto">
+                <Link to={shopCategoryUrl("bedroom")} className="pointer-events-auto">
                   <button className="flex items-center justify-center gap-1.5 bg-white text-[#1A1714] hover:bg-[#F27318] hover:text-white rounded-lg px-3.5 sm:px-4 py-[7px] sm:py-[9px] font-sans text-[12px] sm:text-[13px] font-bold cursor-pointer transition-colors duration-200 shadow-sm">
                     Shop Sale <ArrowUpRight size={14} />
                   </button>

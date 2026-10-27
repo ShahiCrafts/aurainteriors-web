@@ -1,7 +1,5 @@
 import { Suspense, lazy, useEffect } from "react";
-import { Navigate, useNavigate } from "react-router-dom";
 import { useQueryClient } from "@tanstack/react-query";
-import useAuthStore from "../store/authStore";
 import { prefetchHomeData } from "../utils/prefetchHome";
 
 // Above-the-fold — always eager, needed for first paint
@@ -14,7 +12,6 @@ import Hero from "../components/sections/Hero";
 const TrustBanner = lazy(() => import("../components/sections/TrustBanner"));
 const ShopByCategory = lazy(() => import("../components/sections/ShopByCategory"));
 const FeaturedPieces = lazy(() => import("../components/sections/FeaturedPieces"));
-const BlogSection = lazy(() => import("../components/sections/BlogSection"));
 const Testimonials = lazy(() => import("../components/sections/Testimonials"));
 const Footer = lazy(() => import("../layouts/customer/Footer"));
 
@@ -33,7 +30,6 @@ function SectionSkeleton({ minHeight, className = "" }) {
 
 // ─── HomePage ────────────────────────────────────────────────────────────────
 export default function HomePage() {
-  const { isAuthenticated, user } = useAuthStore();
   const queryClient = useQueryClient();
 
   // OPTIMIZATION: Phase 2c - Prefetch home page data on component mount
@@ -43,10 +39,9 @@ export default function HomePage() {
     prefetchHomeData(queryClient);
   }, [queryClient]);
 
-  // Redirect admin users to admin dashboard
-  if (isAuthenticated && user?.role === "admin") {
-    return <Navigate to="/admin" replace />;
-  }
+  // FE-16: admins previously bounced to the /admin path, a route that does not
+  // exist in the customer app (404 catch-all), and no admin-origin config
+  // exists in this codebase. The homepage now renders normally for admins.
 
   return (
     <>
@@ -62,7 +57,10 @@ export default function HomePage() {
         {/* ── BELOW THE FOLD (lazy, each in its own Suspense) ─────────── */}
 
         {/*
-          TrustBanner: countdown timer + value-props strip.
+          TrustBanner: sale countdown card + value-props strip. The
+          countdown was removed under FE-14 as a hardcoded fake and
+          restored at the owner's request; it now takes a saleEndsAt
+          target (end of day until the sale feature supplies one).
           No API calls; skeleton ~120px to match its compact height.
         */}
         <Suspense fallback={<SectionSkeleton minHeight="120px" />}>
@@ -85,14 +83,6 @@ export default function HomePage() {
         */}
         <Suspense fallback={<SectionSkeleton minHeight="400px" />}>
           <FeaturedPieces />
-        </Suspense>
-
-        {/*
-          BlogSection: static hardcoded posts — no API calls.
-          Skeleton ~500px matches the 4-column blog card grid.
-        */}
-        <Suspense fallback={<SectionSkeleton minHeight="500px" />}>
-          <BlogSection />
         </Suspense>
 
         {/*

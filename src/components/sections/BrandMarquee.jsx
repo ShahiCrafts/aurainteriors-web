@@ -1,11 +1,18 @@
 import React from "react";
 
+// FE-06: press logos are SELF-HOSTED under public/brands/ (fetched
+// once from the publishers' own CDNs and verified as real images
+// < 100 KB). They used to be hot-linked, which disclosed every
+// visitor's IP/Referer to the logo hosts and broke whenever a
+// publisher moved a file. `logo: null` renders a styled text
+// wordmark instead — used for any brand whose logo cannot be
+// fetched; never a placeholder from another service.
 const BRANDS = [
-  { name: "Kantipur", url: "https://ekantipur.com/assets/images/kantipur-logo.svg" },
-  { name: "Onlinekhabar", url: "https://www.onlinekhabar.com/wp-content/themes/onlinekhabar-2021/img/logoMain.png" },
-  { name: "Techpana", url: "https://techpana.prixacdn.net/static/assets/images/techpana-logo.png" },
-  { name: "Codavatar", url: "https://codavatar.com/wp-content/uploads/2023/06/codavatar-logo.svg" },
-  { name: "Setopati", url: "https://www.setopati.com/themes/setopati/images/logo.svg?v=1.9" },
+  { name: "Kantipur", logo: "/brands/kantipur.svg" },
+  { name: "Onlinekhabar", logo: "/brands/onlinekhabar.png" },
+  { name: "Techpana", logo: "/brands/techpana.png" },
+  { name: "Codavatar", logo: "/brands/codavatar.svg" },
+  { name: "Setopati", logo: "/brands/setopati.svg" },
 ];
 
 export default function BrandMarquee() {
@@ -17,14 +24,25 @@ export default function BrandMarquee() {
       <div className="relative flex overflow-hidden">
 
         <div className="animate-marquee flex items-center gap-16 md:gap-24">
-          {brands.map((brand, idx) => (
-            <img
-              key={idx}
-              src={brand.url}
-              alt={brand.name}
-              className="h-6 md:h-7 w-auto object-contain grayscale opacity-60 hover:grayscale-0 hover:opacity-100 transition-all duration-500 cursor-default select-none"
-            />
-          ))}
+          {brands.map((brand, idx) =>
+            brand.logo ? (
+              <img
+                key={idx}
+                src={brand.logo}
+                alt={idx < BRANDS.length ? brand.name : ""}
+                aria-hidden={idx >= BRANDS.length || undefined}
+                className="h-6 md:h-7 w-auto object-contain grayscale opacity-60 hover:grayscale-0 hover:opacity-100 transition-all duration-500 cursor-default select-none"
+              />
+            ) : (
+              <span
+                key={idx}
+                aria-hidden={idx >= BRANDS.length || undefined}
+                className="text-lg md:text-xl font-playfair font-semibold text-neutral-800 opacity-60 hover:opacity-100 transition-all duration-500 cursor-default select-none whitespace-nowrap"
+              >
+                {brand.name}
+              </span>
+            )
+          )}
         </div>
 
 

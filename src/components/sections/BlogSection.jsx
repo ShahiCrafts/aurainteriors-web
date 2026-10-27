@@ -44,7 +44,7 @@ export default function BlogSection() {
             <p className="col-span-full text-sm text-black/50">{isError ? "Design stories are temporarily unavailable." : "No design stories available yet."}</p>
           )}
           {!isLoading && !isError && blogPosts.map((post) => (
-            <Link to={`/blog/${post.slug || post._id}`} key={post._id} className="flex flex-col group cursor-pointer">
+            <Link to={`/blog/${encodeURIComponent(post.slug || post._id)}`} key={post._id} className="flex flex-col group cursor-pointer">
               {/* IMAGE: PERMANENT OVERLAYS */}
               <div className="relative aspect-[4/3] overflow-hidden rounded-md mb-5 bg-[#F6F6F6] shadow-sm">
                 <img
