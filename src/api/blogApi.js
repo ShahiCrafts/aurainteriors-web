@@ -9,7 +9,7 @@ export const blogApi = {
 
     // Get single blog by ID or slug
     getById: async (id) => {
-        const response = await api.get(`/blogs/${id}`);
+        const response = await api.get(`/blogs/${encodeURIComponent(id)}`);
         return response.data;
     },
 
@@ -33,13 +33,13 @@ export const blogApi = {
 
     // Get related blogs
     getRelated: async (id, limit = 3) => {
-        const response = await api.get(`/blogs/${id}/related`, { params: { limit } });
+        const response = await api.get(`/blogs/${encodeURIComponent(id)}/related`, { params: { limit } });
         return response.data;
     },
 
     // Like a blog (simple increment)
     toggleLike: async (id) => {
-        const response = await api.post(`/blogs/${id}/like`);
+        const response = await api.post(`/blogs/${encodeURIComponent(id)}/like`);
         return response.data;
     },
 

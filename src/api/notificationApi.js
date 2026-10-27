@@ -29,7 +29,7 @@ const notificationApi = {
      * Get notification detail
      */
     getNotificationDetail: async (id) => {
-        const response = await api.get(`/notifications/${id}`);
+        const response = await api.get(`/notifications/${encodeURIComponent(id)}`);
         return response.data;
     },
 
@@ -37,7 +37,7 @@ const notificationApi = {
      * Mark notification as read
      */
     markAsRead: async (id) => {
-        const response = await api.put(`/notifications/${id}/read`, {});
+        const response = await api.put(`/notifications/${encodeURIComponent(id)}/read`, {});
         return response.data;
     },
 
@@ -53,7 +53,7 @@ const notificationApi = {
      * Archive notification
      */
     archiveNotification: async (id) => {
-        const response = await api.put(`/notifications/${id}/archive`, {});
+        const response = await api.put(`/notifications/${encodeURIComponent(id)}/archive`, {});
         return response.data;
     },
 
@@ -87,7 +87,7 @@ const notificationApi = {
      * Unregister device
      */
     unregisterDevice: async (deviceId) => {
-        const response = await api.delete(`/notifications/push-tokens/${deviceId}`);
+        const response = await api.delete(`/notifications/push-tokens/${encodeURIComponent(deviceId)}`);
         return response.data;
     },
 

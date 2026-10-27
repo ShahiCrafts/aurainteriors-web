@@ -3,43 +3,43 @@ import api from './index';
 export const reviewApi = {
     // Get all reviews for a product
     getProductReviews: async (productId, params = {}) => {
-        const response = await api.get(`/products/${productId}/reviews`, { params });
+        const response = await api.get(`/products/${encodeURIComponent(productId)}/reviews`, { params });
         return response.data;
     },
 
     // Get user's review for a product
     getUserReview: async (productId) => {
-        const response = await api.get(`/products/${productId}/reviews/my-review`);
+        const response = await api.get(`/products/${encodeURIComponent(productId)}/reviews/my-review`);
         return response.data;
     },
 
     // Check if user can review a product
     canReview: async (productId) => {
-        const response = await api.get(`/products/${productId}/reviews/can-review`);
+        const response = await api.get(`/products/${encodeURIComponent(productId)}/reviews/can-review`);
         return response.data;
     },
 
     // Create a new review
     create: async (productId, data) => {
-        const response = await api.post(`/products/${productId}/reviews`, data);
+        const response = await api.post(`/products/${encodeURIComponent(productId)}/reviews`, data);
         return response.data;
     },
 
     // Update a review
     update: async (productId, reviewId, data) => {
-        const response = await api.patch(`/products/${productId}/reviews/${reviewId}`, data);
+        const response = await api.patch(`/products/${encodeURIComponent(productId)}/reviews/${encodeURIComponent(reviewId)}`, data);
         return response.data;
     },
 
     // Delete a review
     delete: async (productId, reviewId) => {
-        const response = await api.delete(`/products/${productId}/reviews/${reviewId}`);
+        const response = await api.delete(`/products/${encodeURIComponent(productId)}/reviews/${encodeURIComponent(reviewId)}`);
         return response.data;
     },
 
     // Mark review as helpful
     markHelpful: async (productId, reviewId) => {
-        const response = await api.post(`/products/${productId}/reviews/${reviewId}/helpful`);
+        const response = await api.post(`/products/${encodeURIComponent(productId)}/reviews/${encodeURIComponent(reviewId)}/helpful`);
         return response.data;
     },
 
@@ -51,19 +51,19 @@ export const reviewApi = {
 
     // Admin: Add response to review
     addAdminResponse: async (reviewId, comment) => {
-        const response = await api.post(`/reviews/${reviewId}/response`, { comment });
+        const response = await api.post(`/reviews/${encodeURIComponent(reviewId)}/response`, { comment });
         return response.data;
     },
 
     // Admin: Toggle review approval
     toggleApproval: async (reviewId) => {
-        const response = await api.patch(`/reviews/${reviewId}/toggle-approval`);
+        const response = await api.patch(`/reviews/${encodeURIComponent(reviewId)}/toggle-approval`);
         return response.data;
     },
 
     // Admin: Delete review
     adminDeleteReview: async (reviewId) => {
-        const response = await api.delete(`/reviews/${reviewId}`);
+        const response = await api.delete(`/reviews/${encodeURIComponent(reviewId)}`);
         return response.data;
     },
 };

@@ -11,7 +11,7 @@ const discountApi = {
 
     // Get single discount (Admin)
     getById: async (id) => {
-        const response = await api.get(`/discounts/${id}`);
+        const response = await api.get(`/discounts/${encodeURIComponent(id)}`);
         return response.data;
     },
 
@@ -23,13 +23,13 @@ const discountApi = {
 
     // Update discount (Admin)
     update: async (id, data) => {
-        const response = await api.patch(`/discounts/${id}`, data);
+        const response = await api.patch(`/discounts/${encodeURIComponent(id)}`, data);
         return response.data;
     },
 
     // Delete discount (Admin)
     delete: async (id) => {
-        const response = await api.delete(`/discounts/${id}`);
+        const response = await api.delete(`/discounts/${encodeURIComponent(id)}`);
         return response.data;
     },
 
@@ -48,7 +48,7 @@ const discountApi = {
 
     // Validate discount code (User)
     validate: async (code) => {
-        const response = await api.get(`/discounts/validate/${code}`);
+        const response = await api.get(`/discounts/validate/${encodeURIComponent(code)}`);
         return response.data;
     },
 };

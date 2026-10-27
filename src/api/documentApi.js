@@ -22,11 +22,11 @@ export const listDocuments = async ({ page = 1, limit = 20 } = {}) => {
 };
 
 export const deleteDocument = async (id) => {
-    const response = await api.delete(`/documents/${id}`);
+    const response = await api.delete(`/documents/${encodeURIComponent(id)}`);
     return response.data;
 };
 
 export const retryDocument = async (id) => {
-    const response = await api.post(`/documents/${id}/retry`);
+    const response = await api.post(`/documents/${encodeURIComponent(id)}/retry`);
     return response.data;
 };

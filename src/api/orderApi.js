@@ -27,7 +27,7 @@ const orderApi = {
 
     // Get single order
     getOrder: async (id) => {
-        const response = await api.get(`/orders/${id}`);
+        const response = await api.get(`/orders/${encodeURIComponent(id)}`);
         return response.data;
     },
 
@@ -41,31 +41,31 @@ const orderApi = {
 
     // Get order details (admin)
     getOrderAdmin: async (id) => {
-        const response = await api.get(`/orders/admin/${id}`);
+        const response = await api.get(`/orders/admin/${encodeURIComponent(id)}`);
         return response.data;
     },
 
     // Update order status (admin)
     updateOrderStatus: async (id, data) => {
-        const response = await api.patch(`/orders/${id}/status`, data);
+        const response = await api.patch(`/orders/${encodeURIComponent(id)}/status`, data);
         return response.data;
     },
 
     // Cancel order (user)
     cancelOrder: async (id, data) => {
-        const response = await api.patch(`/orders/${id}/cancel`, data);
+        const response = await api.patch(`/orders/${encodeURIComponent(id)}/cancel`, data);
         return response.data;
     },
 
     // Request return (user)
     requestReturn: async (id, data) => {
-        const response = await api.post(`/orders/${id}/return`, data);
+        const response = await api.post(`/orders/${encodeURIComponent(id)}/return`, data);
         return response.data;
     },
 
     // Process return request (admin)
     processReturnRequest: async (id, data) => {
-        const response = await api.patch(`/orders/${id}/return`, data);
+        const response = await api.patch(`/orders/${encodeURIComponent(id)}/return`, data);
         return response.data;
     },
 };

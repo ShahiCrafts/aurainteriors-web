@@ -11,7 +11,7 @@ const promotionApi = {
 
     // Get single promotion (Admin)
     getById: async (id) => {
-        const response = await api.get(`/promotions/${id}`);
+        const response = await api.get(`/promotions/${encodeURIComponent(id)}`);
         return response.data;
     },
 
@@ -23,37 +23,37 @@ const promotionApi = {
 
     // Update promotion (Admin)
     update: async (id, data) => {
-        const response = await api.patch(`/promotions/${id}`, data);
+        const response = await api.patch(`/promotions/${encodeURIComponent(id)}`, data);
         return response.data;
     },
 
     // Delete promotion (Admin)
     delete: async (id) => {
-        const response = await api.delete(`/promotions/${id}`);
+        const response = await api.delete(`/promotions/${encodeURIComponent(id)}`);
         return response.data;
     },
 
     // Send promotion immediately (Admin)
     send: async (id) => {
-        const response = await api.post(`/promotions/${id}/send`);
+        const response = await api.post(`/promotions/${encodeURIComponent(id)}/send`);
         return response.data;
     },
 
     // Schedule promotion (Admin)
     schedule: async (id, scheduledAt) => {
-        const response = await api.post(`/promotions/${id}/schedule`, { scheduledAt });
+        const response = await api.post(`/promotions/${encodeURIComponent(id)}/schedule`, { scheduledAt });
         return response.data;
     },
 
     // Cancel promotion (Admin)
     cancel: async (id) => {
-        const response = await api.post(`/promotions/${id}/cancel`);
+        const response = await api.post(`/promotions/${encodeURIComponent(id)}/cancel`);
         return response.data;
     },
 
     // Get promotion analytics (Admin)
     getAnalytics: async (id) => {
-        const response = await api.get(`/promotions/${id}/analytics`);
+        const response = await api.get(`/promotions/${encodeURIComponent(id)}/analytics`);
         return response.data;
     },
 

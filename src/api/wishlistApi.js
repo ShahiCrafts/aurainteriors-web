@@ -15,13 +15,13 @@ const wishlistApi = {
 
     // Remove product from wishlist
     removeFromWishlist: async (productId) => {
-        const response = await api.delete(`/wishlist/${productId}`);
+        const response = await api.delete(`/wishlist/${encodeURIComponent(productId)}`);
         return response.data;
     },
 
     // Check if product is in wishlist
     checkWishlist: async (productId) => {
-        const response = await api.get(`/wishlist/check/${productId}`);
+        const response = await api.get(`/wishlist/check/${encodeURIComponent(productId)}`);
         return response.data;
     },
 
