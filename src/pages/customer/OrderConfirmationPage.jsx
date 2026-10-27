@@ -11,6 +11,7 @@ import Navbar from "../../layouts/customer/Navbar";
 import Footer from "../../layouts/customer/Footer";
 import { useTrackOrder } from "../../hooks/order/useOrderTan";
 import { toast } from "react-toastify";
+import { formatNPR, formatNPRNumber } from "../../utils/formatCurrency";
 
 export default function OrderConfirmationPage() {
   const { orderId } = useParams();
@@ -62,10 +63,13 @@ export default function OrderConfirmationPage() {
     });
   };
 
-  // Calculate estimated delivery (7-10 days from order date)
+  // Calculate estimated delivery (10 days from the order date). The
+  // public tracking view returns createdAt, never orderedAt (server
+  // FA-45); with no createdAt there is no honest estimate — never
+  // anchor to today.
   const getEstimatedDelivery = () => {
-    const baseDate = order?.orderedAt ? new Date(order.orderedAt) : new Date();
-    const deliveryDate = new Date(baseDate);
+    if (!order?.createdAt) return "N/A";
+    const deliveryDate = new Date(order.createdAt);
     deliveryDate.setDate(deliveryDate.getDate() + 10);
     return deliveryDate.toLocaleDateString("en-US", {
       year: "numeric",
@@ -74,20 +78,13 @@ export default function OrderConfirmationPage() {
     });
   };
 
-  const orderDate = order?.orderedAt
-    ? formatDate(order.orderedAt)
-    : formatDate(new Date());
+  const orderDate = formatDate(order?.createdAt);
   const estimatedDelivery = getEstimatedDelivery();
-  const customerEmail =
-    order?.guestInfo?.email || email || "your email address";
-  const customerName =
-    order?.shippingAddress?.fullName ||
-    (order?.guestInfo?.firstName
-      ? `${order.guestInfo.firstName} ${order.guestInfo.lastName || ""}`.trim()
-      : order?.user?.fullName ||
-        (order?.user?.firstName
-          ? `${order.user.firstName} ${order.user.lastName || ""}`.trim()
-          : "Customer"));
+  // The tracking view carries no guestInfo, shippingAddress or user
+  // object — the only identity this page truly has is the email the
+  // customer tracked with (query param), and no name at all.
+  const customerEmail = email || "your email address";
+  const customerName = "Guest Customer";
   const invoiceNo = orderId ? `INV-${String(orderId).slice(-8).toUpperCase()}` : "N/A";
 
   return (
@@ -183,7 +180,7 @@ export default function OrderConfirmationPage() {
                         Billed To
                       </p>
                       <p className="font-bold text-[#1A1714] text-[16px] leading-snug">
-                        {customerName || "Guest Customer"}
+                        {customerName}
                       </p>
                       <p className="text-neutral-600 text-[14px] leading-snug break-all">
                         {customerEmail}
@@ -233,14 +230,14 @@ export default function OrderConfirmationPage() {
                                 {item.name}
                               </p>
                               <p className="text-[14px] text-neutral-600 mt-0.5 font-mono tabular-nums">
-                                NRs. {item.price?.toLocaleString()} / unit
+                                {formatNPR(item.price)} / unit
                               </p>
                             </div>
                             <span className="text-center text-neutral-700 font-mono tabular-nums">
                               {item.quantity}
                             </span>
                             <span className="text-right font-semibold text-[#1A1714] font-mono tabular-nums">
-                              {(item.price * item.quantity).toLocaleString()}
+                              {formatNPRNumber(item.price * item.quantity)}
                             </span>
                           </div>
                         ))}
@@ -252,7 +249,7 @@ export default function OrderConfirmationPage() {
                       <div className="flex justify-between items-center text-neutral-500">
                         <span>Subtotal</span>
                         <span className="font-semibold text-[#1A1714] font-mono tabular-nums">
-                          NRs. {order.subtotal?.toLocaleString()}
+                          {formatNPR(order.subtotal)}
                         </span>
                       </div>
 
@@ -260,7 +257,7 @@ export default function OrderConfirmationPage() {
                         <div className="flex justify-between items-center text-neutral-500">
                           <span>VAT (13%)</span>
                           <span className="font-semibold text-[#1A1714] font-mono tabular-nums">
-                            NRs. {order.tax.toLocaleString()}
+                            {formatNPR(order.tax)}
                           </span>
                         </div>
                       )}
@@ -276,7 +273,7 @@ export default function OrderConfirmationPage() {
                         >
                           {order.shippingCost === 0
                             ? "Free"
-                            : `NRs. ${order.shippingCost.toLocaleString()}`}
+                            : formatNPR(order.shippingCost)}
                         </span>
                       </div>
 
@@ -284,7 +281,7 @@ export default function OrderConfirmationPage() {
                         <div className="flex justify-between items-center text-emerald-600">
                           <span>Discount Applied</span>
                           <span className="font-bold font-mono tabular-nums">
-                            -NRs. {order.discountAmount.toLocaleString()}
+                            -{formatNPR(order.discountAmount)}
                           </span>
                         </div>
                       )}
@@ -298,7 +295,7 @@ export default function OrderConfirmationPage() {
                           : "Amount Due"}
                       </span>
                       <span className="text-[#F27318] text-[24px] font-extrabold font-mono tabular-nums">
-                        NRs. {order.total?.toLocaleString()}
+                        {formatNPR(order.total)}
                       </span>
                     </div>
                   </div>

@@ -1,6 +1,8 @@
 import React from "react";
 import { IoClose, IoCheckmarkCircle } from "react-icons/io5";
 import { HiOutlineCube } from "react-icons/hi2";
+import Dialog from "../../common/Dialog";
+import { formatNPR } from "../../../utils/formatCurrency";
 
 const COLOR_HEX_MAP = {
   white: "#FFFFFF",
@@ -39,7 +41,8 @@ const getColorHex = (colorName) => {
   return COLOR_HEX_MAP[normalized] || null;
 };
 
-const formatNPR = (amount) => `Nrs. ${amount?.toLocaleString("en-IN") || "0"}`;
+// FE-63: the shared formatter replaces this file's own local
+// copy, which used en-IN (lakh) grouping.
 
 const CustomizeSheet = ({
   show,
@@ -60,9 +63,11 @@ const CustomizeSheet = ({
       className="fixed inset-0 bg-black/60 backdrop-blur-sm flex items-end z-200 animate-[fade-in_0.2s_ease]"
       onClick={onClose}
     >
-      <div
+      <Dialog
+        open={show}
+        onClose={onClose}
+        label="Customize product"
         className="w-full bg-black/80 backdrop-blur-xl rounded-t-3xl flex flex-col animate-[slide-up_0.35s_cubic-bezier(0.4,0,0.2,1)]"
-        onClick={(e) => e.stopPropagation()}
       >
         <div className="flex justify-center pt-3 pb-1">
           <div className="w-10 h-1 bg-white/30 rounded-full" />
@@ -102,14 +107,14 @@ const CustomizeSheet = ({
           {/* Color Options */}
           {selectedProduct?.colors && selectedProduct.colors.length > 0 && (
             <div className="mb-4">
-              <label className="text-[10px] font-medium text-white/40 uppercase tracking-wider mb-2 block">
+              <span className="text-[10px] font-medium text-white/40 uppercase tracking-wider mb-2 block">
                 Color{" "}
                 {customization?.color && (
                   <span className="text-teal-400 capitalize">
                     • {customization.color}
                   </span>
                 )}
-              </label>
+              </span>
               <div className="flex gap-3 flex-wrap">
                 <button
                   onClick={() => {
@@ -127,25 +132,34 @@ const CustomizeSheet = ({
                 </button>
                 {selectedProduct.colors.map((color, idx) => {
                   const hexColor = getColorHex(color);
+                  // FE-21: a colour name outside COLOR_HEX_MAP can never
+                  // recolour the model. Treat it as unavailable —
+                  // disable the swatch so the label can never claim a
+                  // colour the scene does not show.
+                  const isUnavailable = !hexColor;
                   return (
                     <button
                       key={idx}
+                      disabled={isUnavailable}
                       onClick={() => {
+                        if (isUnavailable) return;
                         onCustomize?.({ ...customization, color });
                         if (currentAnchor && hexColor) {
                           setModelColor(currentAnchor, hexColor);
                         }
                         triggerHaptic("light");
                       }}
-                      className="group"
-                      title={color}
+                      className={`group ${isUnavailable ? "opacity-50 cursor-not-allowed" : ""}`}
+                      title={isUnavailable ? `${color} (unavailable in AR)` : color}
                     >
                       <div
                         style={{ backgroundColor: hexColor || "#888" }}
-                        className={`w-10 h-10 rounded-full flex items-center justify-center text-white active:scale-95 transition-all border-2 ${
-                          customization?.color === color
-                            ? "ring-2 ring-offset-2 ring-offset-black/80 ring-teal-400 scale-110 border-white/50"
-                            : "border-white/20 hover:border-white/40"
+                        className={`w-10 h-10 rounded-full flex items-center justify-center text-white transition-all border-2 ${
+                          isUnavailable
+                            ? "border-white/20"
+                            : customization?.color === color
+                              ? "ring-2 ring-offset-2 ring-offset-black/80 ring-teal-400 scale-110 border-white/50 active:scale-95"
+                              : "border-white/20 hover:border-white/40 active:scale-95"
                         }`}
                       >
                         {customization?.color === color && (
@@ -165,9 +179,9 @@ const CustomizeSheet = ({
           {/* Material Options */}
           {selectedProduct?.materials && selectedProduct.materials.length > 0 && (
             <div className="mb-4">
-              <label className="text-[10px] font-medium text-white/40 uppercase tracking-wider mb-2 block">
+              <span className="text-[10px] font-medium text-white/40 uppercase tracking-wider mb-2 block">
                 Material
-              </label>
+              </span>
               <div className="flex flex-wrap gap-2">
                 {selectedProduct.materials.map((material, idx) => (
                   <button
@@ -209,7 +223,7 @@ const CustomizeSheet = ({
             Done
           </button>
         </div>
-      </div>
+      </Dialog>
     </div>
   );
 };

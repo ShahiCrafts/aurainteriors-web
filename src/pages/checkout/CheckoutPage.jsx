@@ -28,10 +28,13 @@ import {
 } from "lucide-react";
 import Skeleton from "../../components/common/Skeleton";
 import { getProductImageUrl } from "../../utils/imageUrl";
+import VariantLineSummary from "../../components/cart/VariantLineSummary";
+import { variantSummaryProps, lineUnitPrice } from "../../utils/cartLine";
 import formatError from "../../utils/errorHandler";
 import { useForm, FormProvider } from "react-hook-form";
 import { yupResolver } from "@hookform/resolvers/yup";
 import { shippingSchema } from "../../utils/validationSchemas";
+import { formatNPR } from "../../utils/formatCurrency";
 
 // Custom checkbox: native checkboxes can't guarantee a white tick across
 // browsers (accent-color styling of the check glyph itself isn't
@@ -197,9 +200,10 @@ export default function CheckoutPage() {
     setSelectedItemIds(allSelected ? new Set() : new Set(cartItems.map((item) => item._id)));
   };
 
+  // Phase 7 (catalog): a variant line prices at its variant —
+  // the Phase 4 price authority — never the product scalar.
   const subtotal = selectedCartItems.reduce(
-    (sum, item) =>
-      sum + (item.product?.price || 0) * item.quantity,
+    (sum, item) => sum + lineUnitPrice(item) * item.quantity,
     0,
   );
   const promoDiscount = appliedDiscount ? Math.round(subtotal * appliedDiscount.discountPercentage / 100) : 0;
@@ -320,13 +324,8 @@ export default function CheckoutPage() {
       updateGuestCartQuantity(itemId, newQuantity);
       return;
     }
-    updateCartItem(
-      { itemId, quantity: newQuantity },
-      {
-        onError: (err) =>
-          toast.error(formatError(err, "Failed to update quantity")),
-      },
-    );
+    // FE-47: cart errors are reported by the cart hook itself.
+    updateCartItem({ itemId, quantity: newQuantity });
   };
 
   const handleRemoveItem = (itemId) => {
@@ -337,7 +336,7 @@ export default function CheckoutPage() {
     }
     removeFromCart(itemId, {
       onSuccess: () => toast.success("Item removed"),
-      onError: (err) => toast.error(formatError(err, "Failed to remove item")),
+      // FE-47: no per-call onError — the cart hook reports errors.
     });
   };
 
@@ -432,6 +431,11 @@ export default function CheckoutPage() {
           productId: item.product._id,
           quantity: item.quantity,
           variant: item.variant || {},
+          // Phase 7 (catalog): guest variant lines name the exact
+          // variant so checkout revalidates + prices it (Phase 4).
+          ...(item.variantId
+            ? { variantId: item.variantId, sku: item.sku }
+            : {}),
         }));
         result = await guestCheckoutMutation.mutateAsync(
           keyedCheckout(getGuestCheckoutData(formattedItems)),
@@ -457,9 +461,9 @@ export default function CheckoutPage() {
       if (!isAuthenticated) selectedCartItems.forEach(item => removeGuestCartItem(item._id));
       reset();
       navigate(
-        `/order-confirmation/${order.orderId}?email=${encodeURIComponent(
+        `/order-confirmation/${encodeURIComponent(order.orderId)}?email=${encodeURIComponent(
           order.email || guestInfo.email,
-        )}&emailSent=${result.data?.emailSent ? "true" : "false"}`,
+        )}&emailSent=${encodeURIComponent(result.data?.emailSent ? "true" : "false")}`,
       );
     } catch (error) {
       toast.error(formatError(error, "Failed to place order"));
@@ -608,6 +612,12 @@ export default function CheckoutPage() {
                                   {item.variant?.size &&
                                     ` • Size: ${item.variant.size}`}
                                 </p>
+                                {variantSummaryProps(item) && (
+                                  <VariantLineSummary
+                                    {...variantSummaryProps(item)}
+                                    className="text-[13px] text-neutral-400 mt-0.5"
+                                  />
+                                )}
                               </div>
                             </div>
 
@@ -645,10 +655,7 @@ export default function CheckoutPage() {
                             {/* Price */}
                             <div className="text-right">
                               <p className="text-[16px] font-bold text-[#1A1714]">
-                                NRs.{" "}
-                                {(
-                                  (item.product?.price || 0) * item.quantity
-                                ).toLocaleString()}
+                                {formatNPR(lineUnitPrice(item) * item.quantity)}
                               </p>
                             </div>
 
@@ -731,7 +738,7 @@ export default function CheckoutPage() {
                     <div className="flex justify-between items-center text-[16px]">
                       <span className="text-neutral-500">Subtotal</span>
                       <span className="font-semibold text-[#1A1714]">
-                        NRs. {subtotal.toLocaleString()}
+                        {formatNPR(subtotal)}
                       </span>
                     </div>
 
@@ -742,7 +749,7 @@ export default function CheckoutPage() {
                           Discount
                         </span>
                         <span className="font-semibold text-emerald-600">
-                          − NRs. {promoDiscount.toLocaleString()}
+                          − {formatNPR(promoDiscount)}
                         </span>
                       </div>
                     )}
@@ -750,14 +757,14 @@ export default function CheckoutPage() {
                     <div className="flex justify-between items-center text-[16px]">
                       <span className="text-neutral-500">Tax</span>
                       <span className="font-semibold text-[#1A1714]">
-                        NRs. {taxAmount.toLocaleString()}
+                        {formatNPR(taxAmount)}
                       </span>
                     </div>
 
                     <div className="flex justify-between items-center text-[16px]">
                       <span className="text-neutral-500">Shipping</span>
                       <span className={`font-medium ${shippingCost === 0 ? "text-emerald-600" : "text-[#1A1714]"}`}>
-                        {shippingCost === 0 ? "Free" : `NRs. ${shippingCost.toLocaleString()}`}
+                        {shippingCost === 0 ? "Free" : formatNPR(shippingCost)}
                       </span>
                     </div>
                   </div>
@@ -767,7 +774,7 @@ export default function CheckoutPage() {
                     <span className="text-[20px] font-semibold text-[#1A1714]">Total</span>
                     <div className="text-right">
                       <p className="text-[24px] font-semibold text-[#1A1714] leading-none">
-                        NRs. {total.toLocaleString()}
+                        {formatNPR(total)}
                       </p>
                       <p className="text-[13px] text-neutral-500 mt-3">VAT included</p>
                     </div>

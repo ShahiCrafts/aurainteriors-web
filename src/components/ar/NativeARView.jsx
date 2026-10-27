@@ -25,6 +25,41 @@ import {
 
 import { getProductImageUrl, getModelUrl as getModelUrlUtil } from "../../utils/imageUrl";
 
+// FE-53: background prefetch of the non-selected catalog models.
+// The library's preloadModels is Promise.all over the given URLs, so
+// the app layer issues one single-URL call per model: a failure is
+// isolated to that model (allSettled semantics — the worker catches
+// per model and keeps going) and at most PREFETCH_CONCURRENCY loads
+// are in flight at once. Fire-and-forget by design: session start
+// never awaits this, and a background failure never surfaces in the
+// start UI — switching to a model that failed to prefetch loads it
+// on demand through switchModel/placeModel, which report their own
+// errors (FE-21).
+const PREFETCH_CONCURRENCY = 2;
+
+const prefetchModelsInBackground = (view, urls) => {
+  if (!view || urls.length === 0) return;
+  let nextIndex = 0;
+  const worker = async () => {
+    while (nextIndex < urls.length) {
+      const url = urls[nextIndex];
+      nextIndex += 1;
+      try {
+        await view.preloadModels([url]);
+      } catch {
+        // Isolated: one bad/CORS/404 model must not reject the batch
+        // or disturb the live session.
+      }
+    }
+  };
+  const workers = Array.from(
+    { length: Math.min(PREFETCH_CONCURRENCY, urls.length) },
+    () => worker()
+  );
+  // Never awaited; allSettled documents that no outcome is fatal.
+  void Promise.allSettled(workers);
+};
+
 const getProductImage = (product) => getProductImageUrl(product);
 
 const getModelUrl = (product) => getModelUrlUtil(product);
@@ -151,6 +186,14 @@ const NativeARView = ({
     selectedProductRef.current = selectedProduct;
   }, [selectedProduct]);
 
+  // FE-21: gesture callbacks are registered once at session start and
+  // capture whatever render created them; they must read the CURRENT
+  // tutorial step through a ref, never a stale closure value.
+  const tutorialStepRef = useRef(tutorialStep);
+  useEffect(() => {
+    tutorialStepRef.current = tutorialStep;
+  }, [tutorialStep]);
+
   const filteredProducts = useMemo(() => {
     let result = [...products];
 
@@ -260,8 +303,17 @@ const NativeARView = ({
         }
       });
 
-      const modelUrls = [...new Set(products.map(getModelUrl).filter(Boolean))];
-      await view.preloadModels(modelUrls);
+      // FE-53: only the SELECTED product's model gates the session.
+      // Previously every catalog model was awaited here, so
+      // time-to-AR and memory scaled with the whole catalog and one
+      // bad model rejected the whole start (FE-21 teardown). The
+      // selected model still gates: if IT cannot load, the start
+      // fails as before. Everything else prefetches in the
+      // background once the session is live (below).
+      const selectedModelUrl = getModelUrl(selectedProductRef.current);
+      if (selectedModelUrl) {
+        await view.preloadModels([selectedModelUrl]);
+      }
 
       gestureCleanupRef.current?.();
       gestureCleanupRef.current = view.enableCustomization({
@@ -273,17 +325,50 @@ const NativeARView = ({
             setShowActions((prev) => !prev);
           }
         },
-        onScale: () => { if (tutorialStep === 0) setTutorialStep(1); },
-        onRotate: () => { if (tutorialStep === 0) setTutorialStep(1); },
+        // FE-21: the tutorial has a single step now. The installed
+        // capacitor-arcore ARView.enableCustomization wires only
+        // onTap/onPinch/onRotate — it never forwards the gesture
+        // controller's onDrag — so the old step 2 ("Move Position")
+        // could never advance and obstructed the first session until
+        // Skip. A rotate/scale gesture therefore COMPLETES the
+        // tutorial (step 2 is the existing "done" sentinel).
+        onScale: () => { if (tutorialStepRef.current === 0) setTutorialStep(2); },
+        onRotate: () => { if (tutorialStepRef.current === 0) setTutorialStep(2); },
       });
       setIsSessionActive(true);
       setNeedsResume(false);
       setArError(null);
+      // FE-53: the session is live — prefetch the remaining catalog
+      // models lazily in the background (deduped, selected model
+      // excluded, per-model failure isolation, concurrency-capped).
+      const backgroundModelUrls = [...new Set(products.map(getModelUrl).filter(Boolean))]
+        .filter((url) => url !== selectedModelUrl);
+      prefetchModelsInBackground(view, backgroundModelUrls);
     } catch (err) {
+      // FE-21: view.create() has already started the camera/session by
+      // the time preloadModels/enableCustomization can fail. Tear the
+      // view down (destroy() stops gestures + the engine session, i.e.
+      // the camera) BEFORE resetting the UI, so "Camera Access
+      // Required" never describes a session that is still live, and a
+      // retry never calls create() on an engine with a live session.
+      // A rejecting destroy must not block the UI reset.
+      frameCleanupRef.current?.();
+      frameCleanupRef.current = null;
+      gestureCleanupRef.current?.();
+      gestureCleanupRef.current = null;
+      try {
+        await view.destroy();
+      } catch {
+        // Session already gone — the UI reset below is what matters.
+      }
+      setSurfaceDetected(false);
+      setHasPlacedModel(false);
+      setCurrentAnchor(null);
+      setShowActions(false);
       setArError(err.message || "Failed to start AR");
       setIsSessionActive(false);
     }
-  }, [isSupported, products, tutorialStep, triggerHaptic]);
+  }, [isSupported, products, triggerHaptic]);
 
   const placeModelAtCenter = useCallback(async () => {
     const view = arViewRef.current;
@@ -321,6 +406,11 @@ const NativeARView = ({
 
   const handleChangeProduct = useCallback(
     async (product) => {
+      // FE-21: the selection is optimistic, so remember what was
+      // selected (and actually in the scene) to roll back to if the
+      // model switch fails — otherwise the catalog/price would show
+      // product B while the scene still shows product A.
+      const previousProduct = selectedProductRef.current;
       onProductSelect(product);
       triggerHaptic("light");
       const view = arViewRef.current;
@@ -333,6 +423,9 @@ const NativeARView = ({
         setCurrentAnchor(result.modelId || view.activeModelId);
         triggerHaptic("success");
       } catch (err) {
+        if (previousProduct && previousProduct._id !== product._id) {
+          onProductSelect(previousProduct);
+        }
         setArError(err.message);
         triggerHaptic("error");
       } finally {
@@ -568,6 +661,7 @@ const NativeARView = ({
         >
           <button
             onClick={onClose}
+            aria-label="Close AR view"
             className="w-11 h-11 rounded-full bg-black/40 backdrop-blur-xl text-white flex items-center justify-center active:scale-95 transition-all"
           >
             <IoClose size={22} />
@@ -580,6 +674,7 @@ const NativeARView = ({
 
           <button
             onClick={() => setShowInfo(true)}
+            aria-label="Gesture guide"
             className="w-11 h-11 rounded-full bg-black/40 backdrop-blur-xl text-white flex items-center justify-center active:scale-95 transition-all"
           >
             <IoInformationCircle size={22} />
@@ -676,6 +771,7 @@ const NativeARView = ({
             <span className="text-sm font-medium">{arError}</span>
             <button
               onClick={() => setArError(null)}
+              aria-label="Dismiss error"
               className="w-6 h-6 bg-white/20 rounded-full flex items-center justify-center active:scale-90 transition-all hover:bg-white/30"
             >
               <IoClose size={14} />
@@ -689,6 +785,7 @@ const NativeARView = ({
             <span className="text-sm font-medium">{screenshotError}</span>
             <button
               onClick={() => setScreenshotError(null)}
+              aria-label="Dismiss error"
               className="w-6 h-6 bg-white/20 rounded-full flex items-center justify-center active:scale-90 transition-all"
             >
               <IoClose size={14} />

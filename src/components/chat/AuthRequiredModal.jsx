@@ -1,20 +1,23 @@
 import { motion, AnimatePresence } from 'framer-motion';
 import { LogIn, UserPlus, X } from 'lucide-react';
 import useAuthStore from '../../store/authStore';
+import Dialog from '../common/Dialog';
 
 const AuthRequiredModal = ({ isOpen, onClose, message, suggestion }) => {
-  const { user } = useAuthStore();
+  const openAuthModal = useAuthStore((state) => state.openAuthModal);
 
+  // The customer app has no /login or /signup route: auth is the global
+  // AuthModal (magic-link email flow). Its single 'email' view serves both
+  // sign-in and sign-up ("Enter your email to sign in or create an
+  // account"), and authStore maps 'login'/'signup' to 'email' as well.
   const handleSignIn = () => {
     onClose();
-    // Navigate to login page or open login modal
-    window.location.href = '/login';
+    openAuthModal('email');
   };
 
   const handleSignUp = () => {
     onClose();
-    // Navigate to signup page or open signup modal
-    window.location.href = '/signup';
+    openAuthModal('email');
   };
 
   return (
@@ -37,12 +40,13 @@ const AuthRequiredModal = ({ isOpen, onClose, message, suggestion }) => {
             exit={{ opacity: 0, scale: 0.95, y: 20 }}
             className="fixed top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 z-[101] w-[90%] max-w-md"
           >
-            <div className="bg-white rounded-2xl shadow-xl border border-gray-200/50 overflow-hidden">
+            <Dialog open={isOpen} onClose={onClose} labelledBy="auth-required-title" className="bg-white rounded-2xl shadow-xl border border-gray-200/50 overflow-hidden">
               {/* Header */}
               <div className="bg-gradient-to-r from-[#F27318]/5 to-[#1A1714]/5 px-6 py-5 flex items-center justify-between border-b border-gray-100">
-                <h2 className="text-lg font-bold text-gray-900">Account Required</h2>
+                <h2 id="auth-required-title" className="text-lg font-bold text-gray-900">Account Required</h2>
                 <button
                   onClick={onClose}
+                  aria-label="Close dialog"
                   className="p-1 hover:bg-gray-200 rounded-lg transition-colors"
                 >
                   <X size={20} className="text-gray-600" />
@@ -91,7 +95,7 @@ const AuthRequiredModal = ({ isOpen, onClose, message, suggestion }) => {
                   Sign Up
                 </button>
               </div>
-            </div>
+            </Dialog>
           </motion.div>
         </>
       )}

@@ -1,10 +1,11 @@
 import { useState, useMemo, useEffect } from 'react';
 import { MessageSquare, X } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { useMyChats, useStartChat, useSendMessage } from '../../hooks/chat/useChatTan';
+import { useMyChats, useStartChat, useSendMessage, useChatDetails } from '../../hooks/chat/useChatTan';
 import useAuthStore from '../../store/authStore';
 import { getGuestSessionId, setGuestSessionId, clearGuestSession } from '../../utils/guestSessionStorage';
 import ChatWindow from './ChatWindow';
+import { toast } from "react-toastify";
 
 const ChatWidget = () => {
   const [isOpen, setIsOpen] = useState(false);
@@ -49,26 +50,37 @@ const ChatWidget = () => {
 
   const startChatMutation = useStartChat();
 
+  // FE-33: the first page holds only the 10 most recent chats. An
+  // active chat older than that is NOT in this list — resolve the
+  // in-page / guest copies first, and fetch the chat by id (the
+  // existing getChatDetails API, via useChatDetails) when the stored
+  // active id is missing from the page, instead of falling back to
+  // the welcome screen.
+  const chatsList = chatsData?.data?.chats || [];
+  const guestChat =
+    activeChatData && activeChatData._id === activeChatId ? activeChatData : null;
+  const listedChat = activeChatId
+    ? chatsList.find(chat => chat._id === activeChatId) || null
+    : null;
+  const needsDetailsFetch = !!activeChatId && !guestChat && !listedChat;
+  const { data: activeChatDetailsData } = useChatDetails(activeChatId, {
+    enabled: needsDetailsFetch,
+  });
+
   const activeChat = useMemo(() => {
     if (!activeChatId) return null;
-    // For guests: use stored chat data
-    if (activeChatData && activeChatData._id === activeChatId) {
-      return activeChatData;
-    }
-    // For auth users: lookup in chats list
-    if (chatsData?.data?.chats) {
-      return chatsData.data.chats.find(chat => chat._id === activeChatId) || null;
-    }
-    return null;
-  }, [activeChatId, activeChatData, chatsData]);
+    if (guestChat) return guestChat;
+    if (listedChat) return listedChat;
+    const fetched = activeChatDetailsData?.data?.chat || null;
+    return fetched && fetched._id === activeChatId ? fetched : null;
+  }, [activeChatId, guestChat, listedChat, activeChatDetailsData]);
 
-  const totalUnread = useMemo(() => {
-    // Only show unread count for the active chat
-    if (activeChat?.unreadCountCustomer) {
-      return activeChat.unreadCountCustomer;
-    }
-    return 0;
-  }, [activeChat]);
+  // FE-33: badge the SUM of unread counts across the fetched chat
+  // list — unread replies in a non-active conversation badge too.
+  const totalUnread = chatsList.reduce(
+    (sum, chat) => sum + (Number(chat.unreadCountCustomer) || 0),
+    0
+  );
 
   const handleToggle = () => {
     if (!isOpen) {
@@ -118,12 +130,23 @@ const ChatWidget = () => {
           }
         },
         onError: (error) => {
+          // FE-19: EVERY start-chat failure must be visible — the old
+          // handler spoke only for RATE_LIMIT_EXCEEDED (via alert())
+          // and was silent for everything else, so a failed click did
+          // nothing at all. The retryAfter division also produced
+          // "NaN minutes" when the field was absent; guard it.
           const response = error.response?.data;
-          
-          // Handle RATE_LIMIT errors on chat creation
-          if (response?.code === "RATE_LIMIT_EXCEEDED") {
-            alert(`Too many chat sessions started. Please try again in ${Math.ceil(response.retryAfter / 60)} minutes.`);
+          const status = error.response?.status;
+          const retryAfter = Number(error.retryAfter ?? response?.retryAfter);
+          if (response?.code === "RATE_LIMIT_EXCEEDED" || status === 429) {
+            if (Number.isFinite(retryAfter) && retryAfter > 0) {
+              toast.error(`Too many chat sessions started. Please try again in ${Math.ceil(retryAfter / 60)} minute${Math.ceil(retryAfter / 60) === 1 ? "" : "s"}.`);
+            } else {
+              toast.error("Too many chat sessions started. Please wait a moment and try again.");
+            }
+            return;
           }
+          toast.error(error.displayMessage || response?.message || "Could not start a new chat. Please try again.");
         }
       }
     );

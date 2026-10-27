@@ -11,7 +11,7 @@ import {
 import { useMarkHelpful, useDeleteReview } from "../../hooks/review/useReviewTan";
 import useAuthStore from "../../store/authStore";
 import { toast } from "react-toastify";
-import { getAvatarUrl } from "../../utils/imageUrl";
+import { UserAvatar } from "../common/InitialsAvatar";
 import ConfirmationDialog from "../modals/ConfirmationDialog";
 import formatError from "../../utils/errorHandler";
 
@@ -70,8 +70,6 @@ export default function ReviewItem({ review, productId, onEdit, isOwner }) {
     return `${Math.floor(days / 365)} years ago`;
   };
 
-  const getUserAvatar = () => getAvatarUrl(review.user);
-
   const getUserName = () => {
     return `${review.user?.firstName || "Anonymous"} ${review.user?.lastName || ""
       }`.trim();
@@ -80,10 +78,12 @@ export default function ReviewItem({ review, productId, onEdit, isOwner }) {
   return (
     <div className="bg-white border border-neutral-100 rounded-xl p-4 sm:p-5">
       <div className="flex items-start gap-3">
-        <img
-          src={getUserAvatar()}
+        {/* FE-06: real avatar img or local initials — never an
+            external placeholder URL built from the reviewer's name. */}
+        <UserAvatar
+          user={review.user}
           alt={getUserName()}
-          className="w-10 h-10 sm:w-12 sm:h-12 rounded-full object-cover shrink-0"
+          className="w-10 h-10 sm:w-12 sm:h-12 rounded-full text-sm"
         />
 
         <div className="flex-1 min-w-0">

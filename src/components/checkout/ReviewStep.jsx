@@ -10,6 +10,9 @@ import { useCart } from "../../hooks/cart/useCartTan";
 import useAuthStore from "../../store/authStore";
 import useGuestCartStore from "../../store/guestCartStore";
 import { getProductImageUrl } from "../../utils/imageUrl";
+import { formatNPR } from "../../utils/formatCurrency";
+import VariantLineSummary from "../cart/VariantLineSummary";
+import { variantSummaryProps, lineUnitPrice } from "../../utils/cartLine";
 
 export default function ReviewStep() {
   const {
@@ -112,7 +115,7 @@ export default function ReviewStep() {
         <div className="divide-y divide-neutral-100">
           {items.map((item) => {
             const product = item.product || {};
-            const price = product.salePrice || product.price || 0;
+            const price = lineUnitPrice(item);
 
             return (
               <div key={item._id || item.productId} className="flex gap-4 py-3">
@@ -132,12 +135,18 @@ export default function ReviewStep() {
                         .join(", ")}
                     </p>
                   )}
+                  {variantSummaryProps(item) && (
+                    <VariantLineSummary
+                      {...variantSummaryProps(item)}
+                      className="text-sm text-neutral-500 font-lato"
+                    />
+                  )}
                   <p className="text-sm text-neutral-600 font-lato">
                     Qty: {item.quantity}
                   </p>
                 </div>
                 <p className="font-medium text-neutral-900 font-lato">
-                  NRs. {(price * item.quantity).toLocaleString()}
+                  {formatNPR(price * item.quantity)}
                 </p>
               </div>
             );
@@ -149,7 +158,7 @@ export default function ReviewStep() {
         <div className="flex justify-between text-sm font-lato">
           <span className="text-neutral-600">Subtotal</span>
           <span className="text-neutral-900">
-            NRs. {subtotal.toLocaleString()}
+            {formatNPR(subtotal)}
           </span>
         </div>
         {discountAmount > 0 && (
@@ -158,7 +167,7 @@ export default function ReviewStep() {
               Discount ({appliedDiscount.code})
             </span>
             <span className="text-[#F27318]">
-              - NRs. {discountAmount.toLocaleString()}
+              - {formatNPR(discountAmount)}
             </span>
           </div>
         )}
@@ -167,7 +176,7 @@ export default function ReviewStep() {
           <span className="text-neutral-900">
             {shippingCost === 0
               ? "Free"
-              : `NRs. ${shippingCost.toLocaleString()}`}
+              : formatNPR(shippingCost)}
           </span>
         </div>
         <div className="flex justify-between pt-2 border-t border-neutral-200">
@@ -175,7 +184,7 @@ export default function ReviewStep() {
             Total
           </span>
           <span className="text-xl font-bold text-[#F27318] font-playfair">
-            NRs. {total.toLocaleString()}
+            {formatNPR(total)}
           </span>
         </div>
       </div>

@@ -1,9 +1,9 @@
-import { useRef, useEffect, useLayoutEffect, useState } from 'react';
+import { useRef, useEffect, useLayoutEffect, useState, memo } from 'react';
 import { Loader2, MessageCircle, Sparkles, ChevronDown, User, Bot } from 'lucide-react';
 import { ChatMessageSkeleton } from '../common/Skeleton';
 import ChatMessage from './ChatMessage';
 import useAuthStore from '../../store/authStore';
-import { getAvatarUrl } from '../../utils/imageUrl';
+import { UserAvatar } from '../common/InitialsAvatar';
 
 
 const ChatMessageList = ({
@@ -15,6 +15,7 @@ const ChatMessageList = ({
   currentUserId,
   isAdminView = false,
   typingStatus,
+  onRetryMessage,
 }) => {
   const { user } = useAuthStore();
   const messagesEndRef = useRef(null);
@@ -162,6 +163,7 @@ const ChatMessageList = ({
             message={message}
             isOwnMessage={isOwnMessage}
             isAdminView={isAdminView}
+            onRetry={onRetryMessage}
           />
         );
       })}
@@ -185,19 +187,14 @@ const ChatMessageList = ({
                   <User size={14} strokeWidth={1.5} />
                 </div>
               ) : (
-                <div className="w-8 h-8 rounded-full flex items-center justify-center border shadow-xs shrink-0 overflow-hidden bg-gray-50 border-gray-100">
-                  <img
-                    src={getAvatarUrl(userObj)}
-                    alt={typingStatus.userRole === 'admin' ? "Admin" : userObj?.firstName || "User"}
-                    className="w-full h-full object-cover"
-                    onError={(e) => {
-                      e.target.onerror = null;
-                      e.target.src = `https://ui-avatars.com/api/?name=${encodeURIComponent(
-                        typingStatus.userRole === 'admin' ? "Admin" : userObj?.firstName || "U"
-                      )}&background=${typingStatus.userRole === 'admin' ? 'E0E7FF' : 'F3F4F6'}&color=${typingStatus.userRole === 'admin' ? '4338CA' : '9CA3AF'}`;
-                    }}
-                  />
-                </div>
+                /* FE-06: real avatar img or local initials — never an
+                   external placeholder URL built from the user's name. */
+                <UserAvatar
+                  user={userObj}
+                  name={typingStatus.userRole === 'admin' ? "Admin" : undefined}
+                  alt={typingStatus.userRole === 'admin' ? "Admin" : userObj?.firstName || "User"}
+                  className="w-8 h-8 rounded-full text-xs border shadow-xs"
+                />
               )}
               {/* Bubble */}
               <div className="bg-gray-100 px-4 py-2.5 rounded-2xl flex gap-1 items-center justify-center w-fit">
@@ -231,4 +228,7 @@ const ChatMessageList = ({
   );
 };
 
-export default ChatMessageList;
+// FE-52: memoised list + memoised rows (ChatMessage) — when the list
+// does re-render (typing bubble), unchanged rows skip and their bot
+// markdown is not re-parsed.
+export default memo(ChatMessageList);

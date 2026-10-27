@@ -1,7 +1,8 @@
+import { shopCategoryUrl, findCategoryChain } from "../../utils/shopFilters";
 import { ProductDetailsSkeleton } from "../../components/shop/ProductLoadingSkeletons";
 import { useState, useEffect, useRef } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import { useParams, Link } from "react-router-dom";
+import { useParams, Link, useNavigate } from "react-router-dom";
 import {
   ChevronRight,
   ChevronLeft,
@@ -31,6 +32,19 @@ import {
 import Navbar from "../../layouts/customer/Navbar";
 import Footer from "../../layouts/customer/Footer";
 import { useProduct, useRelatedProducts } from "../../hooks/product/useProductTan";
+import { useCategoryTree } from "../../hooks/product/useCategoryTan";
+import { useCatalogSchema } from "../../hooks/catalog/useCatalogTan";
+import VariantSelector from "../../components/shop/VariantSelector";
+import {
+  findVariantBySelection,
+  defaultVariantSelection,
+  variantAvailableCount,
+  isVariantPurchasable,
+  variantGalleryImages,
+  variantOptionsObject,
+  effectiveModelUrl,
+  groupSpecifications,
+} from "../../utils/variantSelection";
 import { useAddToWishlist, useRemoveFromWishlist, useCheckWishlist } from "../../hooks/cart/useWishlistTan";
 import { useAddToCart } from "../../hooks/cart/useCartTan";
 import useAuthStore from "../../store/authStore";
@@ -42,9 +56,11 @@ import ARViewModal from "../../components/modals/ARViewModal";
 import ReviewModal from "../../components/modals/ReviewModal";
 import ReviewSection from "../../components/shop/ReviewSection";
 import arIcon from "../../assets/icons/ar_icon.png";
-import { getImageUrl as getImageUrlUtil } from "../../utils/imageUrl";
+import { getImageUrl as getImageUrlUtil, buildImageSrcSet } from "../../utils/imageUrl";
 import formatError from "../../utils/errorHandler";
+import { formatNPR } from "../../utils/formatCurrency";
 import CategoryBar from "../../components/navigation/CategoryBar";
+import Dialog from "../../components/common/Dialog";
 import { useCanReview, useUserReview } from "../../hooks/review/useReviewTan";
 
 // Simple line-art dimension diagram, driven by the product's dimensions data.
@@ -93,10 +109,12 @@ function DimensionDiagram({ dimensions }) {
 
 export default function ProductDetailsPage() {
   const { productSlug } = useParams();
+  const navigate = useNavigate();
   const { isAuthenticated } = useAuthStore();
 
   const [selectedImage, setSelectedImage] = useState(0);
   const [selectedColor, setSelectedColor] = useState(null);
+  const [variantSelection, setVariantSelection] = useState({});
   const [quantity, setQuantity] = useState(1);
   const [activeMainTab, setActiveMainTab] = useState("description");
   const [isARModalOpen, setIsARModalOpen] = useState(false);
@@ -121,28 +139,25 @@ export default function ProductDetailsPage() {
     return () => window.removeEventListener("scroll", handleScroll);
   }, []);
 
-  // Lock body scroll + support Escape/Arrow keys when lightbox is open
+  // FE-64: scroll lock + Escape now come from the shared Dialog
+  // primitive (the lightbox panel below). This effect keeps only the
+  // lightbox-specific ArrowLeft/ArrowRight image navigation.
   useEffect(() => {
     if (!isLightboxOpen) return;
 
-    const originalOverflow = document.body.style.overflow;
-    document.body.style.overflow = "hidden";
-
     const handleKeyDown = (e) => {
-      if (e.key === "Escape") setIsLightboxOpen(false);
       if (e.key === "ArrowLeft") setSelectedImage((prev) => (prev === 0 ? images.length - 1 : prev - 1));
       if (e.key === "ArrowRight") setSelectedImage((prev) => (prev === images.length - 1 ? 0 : prev + 1));
     };
     window.addEventListener("keydown", handleKeyDown);
 
     return () => {
-      document.body.style.overflow = originalOverflow;
       window.removeEventListener("keydown", handleKeyDown);
     };
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [isLightboxOpen]);
 
-  const { data: productData, isLoading, error } = useProduct(productSlug);
+  const { data: productData, isLoading, error, refetch } = useProduct(productSlug);
   const product = productData?.data?.product;
 
   const { data: wishlistCheck } = useCheckWishlist(product?._id, { enabled: isAuthenticated && !!product?._id });
@@ -169,27 +184,122 @@ export default function ProductDetailsPage() {
   const { mutate: addToCart, isPending: isAddingToCart } = useAddToCart();
   const { addItem: addToGuestCart } = useGuestCartStore();
 
-  const handleAddToCart = () => {
+  // FE-22: stock is nullish-checked, never `|| 10` — a stock of 0 is a
+  // real value (out of stock), not a missing one.
+  const stock = product?.stock ?? 0;
+
+  // Phase 7 (catalog): variant products are driven by the selected
+  // catalog variant — its price, stock, gallery and AR model — and
+  // cart lines name it by variantId (+ sku). The catalog schema
+  // supplies the option-group + specification labels.
+  const { data: schemaData } = useCatalogSchema();
+  const definitions = schemaData?.data?.definitions || {};
+  const isVariantProduct =
+    !!product && product.hasVariants === true && (product.catalogVariants?.length ?? 0) > 0;
+  const selectedVariant = isVariantProduct
+    ? findVariantBySelection(product, variantSelection)
+    : null;
+  const displayStock = isVariantProduct
+    ? selectedVariant
+      ? variantAvailableCount(selectedVariant)
+      : 0
+    : stock;
+  const isOutOfStock =
+    !!product &&
+    (isVariantProduct ? !isVariantPurchasable(selectedVariant) : stock <= 0);
+  const displayPrice = selectedVariant?.price ?? product?.price;
+  const displayCompareAt = selectedVariant
+    ? selectedVariant.compareAtPrice > selectedVariant.price
+      ? selectedVariant.compareAtPrice
+      : null
+    : product?.originalPrice;
+
+  const buildVariant = () => {
     const variant = {};
     if (selectedColor) variant.color = typeof selectedColor === "object" ? selectedColor.name : selectedColor;
+    return variant;
+  };
+
+  // The add payload for the current product state: variant
+  // products send variantId + sku (the legacy triple stays empty —
+  // the server stores {} for variant lines); legacy products send
+  // exactly the payload they always have.
+  const buildAddPayload = () => {
+    if (isVariantProduct) {
+      return {
+        auth: {
+          productId: product._id,
+          quantity,
+          variant: {},
+          variantId: selectedVariant._id,
+          sku: selectedVariant.sku,
+        },
+        guestMeta: {
+          variantId: selectedVariant._id,
+          sku: selectedVariant.sku,
+          unitPrice: selectedVariant.price,
+          options: variantOptionsObject(selectedVariant),
+        },
+      };
+    }
+    return { auth: { productId: product._id, quantity, variant: buildVariant() }, guestMeta: null };
+  };
+
+  const handleAddToCart = () => {
+    if (!product || isOutOfStock) return;
+    if (isVariantProduct && !selectedVariant) {
+      toast.error("Please select all options");
+      return;
+    }
+    const payload = buildAddPayload();
 
     if (!isAuthenticated) {
-      addToGuestCart(product, quantity, variant);
+      // Legacy guest lines keep the exact 3-argument call (FE-22);
+      // the variant meta rides along only for variant products.
+      if (payload.guestMeta) {
+        addToGuestCart(product, quantity, payload.auth.variant, payload.guestMeta);
+      } else {
+        addToGuestCart(product, quantity, payload.auth.variant);
+      }
       toast.success("Added to cart");
       setQuantity(1);
       return;
     }
 
-    addToCart(
-      { productId: product._id, quantity, variant },
-      {
-        onSuccess: () => {
-          toast.success("Added to cart");
-          setQuantity(1);
-        },
-        onError: (err) => toast.error(formatError(err, "Failed to add to cart")),
+    addToCart(payload.auth, {
+      onSuccess: () => {
+        toast.success("Added to cart");
+        setQuantity(1);
+      },
+      // FE-47: no per-call onError — the cart hook reports errors.
+    });
+  };
+
+  // FE-22: Buy Now is an express path — add the item, then go straight
+  // to checkout. Navigation happens only once the add has succeeded
+  // (for signed-in users, in the mutation's onSuccess).
+  const handleBuyNow = () => {
+    if (!product || isOutOfStock) return;
+    if (isVariantProduct && !selectedVariant) {
+      toast.error("Please select all options");
+      return;
+    }
+    const payload = buildAddPayload();
+
+    if (!isAuthenticated) {
+      if (payload.guestMeta) {
+        addToGuestCart(product, quantity, payload.auth.variant, payload.guestMeta);
+      } else {
+        addToGuestCart(product, quantity, payload.auth.variant);
       }
-    );
+      navigate("/checkout");
+      return;
+    }
+
+    addToCart(payload.auth, {
+      onSuccess: () => navigate("/checkout"),
+      // FE-47: no per-call onError — the cart hook reports errors.
+    });
   };
 
   const handleWishlistToggle = () => {
@@ -233,19 +343,51 @@ export default function ProductDetailsPage() {
   const { data: relatedData } = useRelatedProducts(product?._id, 4);
   const relatedProducts = relatedData?.data?.products || [];
 
+  // FE-22: navigating to another product reuses this component with a
+  // new route param — reset every per-product selection so the previous
+  // product's colour/image/quantity can never leak into the next
+  // product's cart variant. Keyed on the product id, not the product
+  // object, so refetches of the SAME product do not wipe a selection.
   useEffect(() => {
-    if (product) {
-      if (product.colors?.length > 0 && !selectedColor) setSelectedColor(product.colors[0]);
-    }
-  }, [product]);
+    if (!product?._id) return;
+    setSelectedColor(product.colors?.length > 0 ? product.colors[0] : null);
+    // Phase 7: variant products land on a real, purchasable
+    // combination (never a partial selection).
+    setVariantSelection(
+      product.hasVariants === true ? defaultVariantSelection(product) : {}
+    );
+    setSelectedImage(0);
+    setQuantity(1);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [product?._id]);
 
+  // Phase 7: switching variants restarts the gallery at the
+  // variant's first image.
+  useEffect(() => {
+    setSelectedImage(0);
+  }, [selectedVariant?._id]);
+
+  // Phase 7: breadcrumbs walk the category's full ancestors chain
+  // from the tree (the product payload populates only one parent
+  // level; the legacy parent crumb remains the fallback).
+  const { data: categoryTreeData } = useCategoryTree();
   const buildBreadcrumbs = () => {
     const crumbs = [{ name: "Home", path: "/" }];
     if (product?.category) {
-      if (product.category.parent) {
-        crumbs.push({ name: product.category.parent.name, path: `/shop/${product.category.parent.slug}` });
+      const chain = findCategoryChain(
+        categoryTreeData?.data?.categories || [],
+        product.category.slug
+      );
+      if (chain.length > 0) {
+        for (const ancestor of chain) {
+          crumbs.push({ name: ancestor.name, path: shopCategoryUrl(ancestor.slug) });
+        }
+      } else {
+        if (product.category.parent) {
+          crumbs.push({ name: product.category.parent.name, path: shopCategoryUrl(product.category.parent.slug) });
+        }
+        crumbs.push({ name: product.category.name, path: shopCategoryUrl(product.category.slug) });
       }
-      crumbs.push({ name: product.category.name, path: `/shop/${product.category.slug}` });
     }
     if (product) crumbs.push({ name: product.name, path: "#" });
     return crumbs;
@@ -258,29 +400,40 @@ export default function ProductDetailsPage() {
     }
     return product.images;
   };
-  const images = getImages();
+  // Phase 7: the selected variant's images take precedence over
+  // the product gallery when the variant carries its own.
+  const images = variantGalleryImages(selectedVariant) || getImages();
   const getImageUrl = (image) => {
-    // Backend returns full Cloudinary URLs, just return them directly
-    if (image?.url?.startsWith("http")) {
-      return image.url;
-    }
-    // Fallback for relative paths
+    // FE-03: no verbatim passthrough for absolute URLs — the central
+    // helper validates them against the media allowlist (Cloudinary
+    // URLs keep working) and joins relative paths to the uploads base.
     return getImageUrlUtil(image?.url, "products");
   };
-
-  const formatPrice = (price) => new Intl.NumberFormat("en-NP", { minimumFractionDigits: 0 }).format(price);
+  // FE-54: responsive variants for gallery images (undefined when the
+  // image's host has no transform scheme — the plain src is used).
+  const getImageSrcSet = (image, widths) =>
+    buildImageSrcSet(image?.url, widths, { type: "products" });
 
   const getDiscount = () => {
-    if (product?.originalPrice && product?.price) {
-      const discount = Math.round(((product.originalPrice - product.price) / product.originalPrice) * 100);
+    // Phase 7: the discount follows the DISPLAYED price pair —
+    // the selected variant's price/compareAt for variant products,
+    // the product's price/originalPrice otherwise.
+    if (displayCompareAt && displayPrice) {
+      const discount = Math.round(((displayCompareAt - displayPrice) / displayCompareAt) * 100);
       return discount > 0 ? discount : null;
     }
     return null;
   };
 
   const handleQuantityChange = (delta) => {
+    // FE-22: cap at the real stock (nullish, so stock 0 caps at 0 and
+    // the stepper can never raise the quantity of an out-of-stock item).
+    // Phase 7: for variant products the cap is the SELECTED
+    // variant's available stock.
+    const cap = displayStock;
+    if (cap <= 0) return;
     const newQuantity = quantity + delta;
-    if (newQuantity >= 1 && newQuantity <= (product?.stock || 10)) setQuantity(newQuantity);
+    if (newQuantity >= 1 && newQuantity <= cap) setQuantity(newQuantity);
   };
 
   const detailSections = [
@@ -317,6 +470,23 @@ export default function ProductDetailsPage() {
 
   const colors = product?.colors || [];
 
+  // Phase 7: stored catalog attributes for the specifications
+  // tab — definition labels, grouped by displayGroup, values
+  // formatted per type; attributes with no stored value are
+  // omitted (groupSpecifications). The first-class weight field
+  // joins the general group (dimensions already render above).
+  const catalogSpecGroups = groupSpecifications(product, definitions);
+  if (product?.weight?.value) {
+    const weightItem = {
+      key: "weight",
+      label: "Weight",
+      value: `${product.weight.value} ${product.weight.unit || "kg"}`,
+    };
+    const general = catalogSpecGroups.find((group) => group.group === "Specifications");
+    if (general) general.items.push(weightItem);
+    else catalogSpecGroups.push({ group: "Specifications", items: [weightItem] });
+  }
+
   const detailIcons = [Sparkles, Layers, ShieldCheck, LayoutGrid];
 
   if (isLoading) {
@@ -325,6 +495,23 @@ export default function ProductDetailsPage() {
         <Navbar />
         <CategoryBar />
         <ProductDetailsSkeleton />
+        <Footer />
+      </>
+    );
+  }
+
+  if (error && error.response?.status !== 404) {
+    return (
+      <>
+        <Navbar />
+        <CategoryBar />
+        <main className="min-h-screen bg-white pt-20 font-dm-sans">
+          <div className="max-w-7xl mx-auto px-6 py-16 text-center" role="alert">
+            <h1 className="text-2xl font-playfair text-neutral-900 mb-4">Unable to load product</h1>
+            <p className="text-neutral-500 mb-6">We couldn’t load this product right now. Please try again.</p>
+            <button type="button" onClick={() => refetch()} className="rounded-lg bg-[#F27318] px-6 py-3 font-semibold text-white hover:bg-[#D9620E]">Try again</button>
+          </div>
+        </main>
         <Footer />
       </>
     );
@@ -390,7 +577,7 @@ export default function ProductDetailsPage() {
                       className={`relative shrink-0 w-20 h-20 rounded-lg overflow-hidden border-2 transition-all ${selectedImage === index ? "border-[#F27318]" : "border-transparent hover:border-black/10"
                         }`}
                     >
-                      <img src={getImageUrl(image)} alt={`${product.name} thumbnail ${index + 1}`} className="w-full h-full object-cover" />
+                      <img src={getImageUrl(image)} srcSet={getImageSrcSet(image, [160, 320])} sizes="80px" loading="lazy" alt={`${product.name} thumbnail ${index + 1}`} className="w-full h-full object-cover" />
                       {isLastVisible && (
                         <div className="absolute inset-0 bg-black/50 flex items-center justify-center">
                           <span className="text-white text-xs font-bold">+{images.length - 5}</span>
@@ -416,6 +603,8 @@ export default function ProductDetailsPage() {
 
                 <ImageMagnifier
                   src={getImageUrl(images[selectedImage])}
+                  srcSet={getImageSrcSet(images[selectedImage], [800, 1200, 1600])}
+                  sizes="(max-width: 1024px) 100vw, 60vw"
                   alt={product.name}
                   magnifierSize={120}
                   zoomLevel={2.5}
@@ -483,21 +672,46 @@ export default function ProductDetailsPage() {
                 </div>
                 <span className="font-bold text-[#1A1714]">{(product?.rating?.average || 0).toFixed(1)}</span>
                 <span className="text-black/40 font-medium">({product?.rating?.count || 0} reviews)</span>
-                <span className="w-1 h-1 rounded-full bg-black/20"></span>
-                <span className="text-black/40 font-medium">{product.soldCount || "200+"} bought in last month</span>
+                {/* FE-14: the product API provides no soldCount field (the
+                    server product model has none), so render this element
+                    only when a real numeric count is actually supplied —
+                    never the fabricated "200+" fallback. */}
+                {typeof product.soldCount === "number" && (
+                  <>
+                    <span className="w-1 h-1 rounded-full bg-black/20"></span>
+                    <span className="text-black/40 font-medium">{product.soldCount} bought in last month</span>
+                  </>
+                )}
               </div>
 
-              {/* Price - inline */}
+              {/* Price - inline (Phase 7: the selected variant's
+                  price + compareAt drive this block for variant
+                  products) */}
               <div className="flex items-baseline gap-2.5 mb-1.5">
-                <span className="text-[30px] font-bold text-[#1A1714]">Rs. {formatPrice(product.price)}</span>
-                {product.originalPrice && product.originalPrice > product.price && (
+                <span className="text-[30px] font-bold text-[#1A1714]">{formatNPR(displayPrice ?? 0)}</span>
+                {displayCompareAt && displayCompareAt > displayPrice && (
                   <>
-                    <span className="text-[16px] text-black/35 line-through font-medium">Rs. {formatPrice(product.originalPrice)}</span>
+                    <span className="text-[16px] text-black/35 line-through font-medium">{formatNPR(displayCompareAt)}</span>
                     <span className="bg-[#F27318]/[0.08] text-[#F27318] px-2.5 py-1 rounded text-[13px] font-bold">{discount}% OFF</span>
                   </>
                 )}
               </div>
               <p className="text-[14px] text-black/50 mb-4">Inclusive of all taxes</p>
+
+              {/* Phase 7: variant availability line */}
+              {isVariantProduct && (
+                <p className="text-[14px] font-medium mb-4 -mt-2" aria-live="polite">
+                  {!selectedVariant ? (
+                    <span className="text-black/50">Select options to see availability</span>
+                  ) : selectedVariant.enabled === false ? (
+                    <span className="text-red-600">This variant is unavailable</span>
+                  ) : displayStock > 0 ? (
+                    <span className="text-emerald-600">In stock — {displayStock} available</span>
+                  ) : (
+                    <span className="text-red-600">Out of stock for this variant</span>
+                  )}
+                </p>
+              )}
 
               {/* Product Description */}
               {product.description && (
@@ -537,7 +751,7 @@ export default function ProductDetailsPage() {
                     <Truck size={18} className="text-[#F27318] shrink-0 mt-0.5" />
                     <div>
                       <h4 className="text-[14px] font-bold text-[#1A1714] leading-tight">Free Delivery</h4>
-                      <p className="text-[13px] text-black/50 leading-tight mt-0.5">above Rs. 5,000</p>
+                      <p className="text-[13px] text-black/50 leading-tight mt-0.5">above NPR 5,000</p>
                     </div>
                   </div>
                   <div className="flex items-start gap-2">
@@ -564,8 +778,21 @@ export default function ProductDetailsPage() {
                 </div>
               </div> */}
 
+              {/* Phase 7: variant selector — for variant products
+                  the variant axes ARE the option surface, so the
+                  legacy color selector below is suppressed (its
+                  value could never reach a variant cart line). */}
+              {isVariantProduct && (
+                <VariantSelector
+                  product={product}
+                  definitions={definitions}
+                  selection={variantSelection}
+                  onSelectionChange={setVariantSelection}
+                />
+              )}
+
               {/* Color Selector */}
-              {colors.length > 0 && (
+              {!isVariantProduct && colors.length > 0 && (
                 <div className="mb-5">
                   <h3 className="text-[15px] font-semibold text-black/80 mb-3">
                     Select Color:{" "}
@@ -601,7 +828,8 @@ export default function ProductDetailsPage() {
                 <div className="flex items-center bg-white border border-black/10 rounded-lg h-[52px] shrink-0 justify-center sm:justify-start">
                   <button
                     onClick={() => handleQuantityChange(-1)}
-                    disabled={quantity <= 1}
+                    disabled={quantity <= 1 || isOutOfStock}
+                    aria-label="Decrease quantity"
                     className="w-10 h-full flex items-center justify-center text-black/40 hover:text-black/90 disabled:opacity-20 transition-all"
                   >
                     <Minus size={15} />
@@ -609,7 +837,8 @@ export default function ProductDetailsPage() {
                   <span className="w-9 text-center font-bold text-[15px] text-[#1A1714]">{quantity}</span>
                   <button
                     onClick={() => handleQuantityChange(1)}
-                    disabled={quantity >= (product.stock || 10)}
+                    disabled={isOutOfStock || quantity >= displayStock}
+                    aria-label="Increase quantity"
                     className="w-10 h-full flex items-center justify-center text-black/40 hover:text-black/90 disabled:opacity-20 transition-all"
                   >
                     <Plus size={15} />
@@ -619,16 +848,16 @@ export default function ProductDetailsPage() {
                 <button
                   id="main-add-to-cart"
                   onClick={handleAddToCart}
-                  disabled={isAddingToCart}
+                  disabled={isAddingToCart || isOutOfStock}
                   className="flex-2 bg-[#F27318] text-white h-[52px] rounded-lg font-bold text-[16px] hover:bg-[#D9620E] transition-all duration-300 flex items-center justify-center gap-2.5 disabled:bg-neutral-200"
                 >
                   {isAddingToCart ? <Loader2 size={20} className="animate-spin" /> : <ShoppingCart size={18} />}
-                  {isAddingToCart ? "Adding..." : "Add to Cart"}
+                  {isOutOfStock ? "Out of Stock" : isAddingToCart ? "Adding..." : "Add to Cart"}
                 </button>
 
                 <button
-                  onClick={handleAddToCart}
-                  disabled={isAddingToCart}
+                  onClick={handleBuyNow}
+                  disabled={isAddingToCart || isOutOfStock}
                   className="flex-1 bg-white text-[#1A1714] border border-black/15 h-[52px] rounded-lg font-bold text-[16px] hover:border-black/30 transition-all duration-300 disabled:opacity-50"
                 >
                   Buy Now
@@ -796,6 +1025,26 @@ export default function ProductDetailsPage() {
                         </div>
                       ))}
                     </div>
+
+                    {/* Phase 7: catalog attribute specifications —
+                        stored values only, grouped by displayGroup. */}
+                    {catalogSpecGroups.length > 0 && (
+                      <div className="mt-10 grid grid-cols-1 lg:grid-cols-2 gap-x-10 gap-y-7">
+                        {catalogSpecGroups.map((group) => (
+                          <div key={group.group}>
+                            <h4 className="text-[14px] font-bold text-[#1A1714] mb-2 uppercase tracking-widest">{group.group}</h4>
+                            <dl className="space-y-1.5">
+                              {group.items.map((item) => (
+                                <div key={item.key} className="flex gap-2 text-[15px]">
+                                  <dt className="text-black/45 font-medium">{item.label}:</dt>
+                                  <dd className="text-black/70 font-medium">{item.value}</dd>
+                                </div>
+                              ))}
+                            </dl>
+                          </div>
+                        ))}
+                      </div>
+                    )}
                   </motion.div>
                 ) : activeMainTab === "materials" ? (
                   <motion.div
@@ -879,8 +1128,11 @@ export default function ProductDetailsPage() {
                       <div className="flex flex-col">
                         {/* Product Image */}
                         <div className="mb-8 relative">
-                          <img 
-                            src={getImageUrl(images[selectedImage])} 
+                          <img
+                            src={getImageUrl(images[selectedImage])}
+                            srcSet={getImageSrcSet(images[selectedImage], [640, 960, 1280])}
+                            sizes="(max-width: 1024px) 100vw, 50vw"
+                            loading="lazy"
                             alt={product.name}
                             className="w-full h-auto rounded-lg object-cover"
                           />
@@ -989,9 +1241,20 @@ export default function ProductDetailsPage() {
       </main>
       <Footer />
 
-      <ARViewModal isOpen={isARModalOpen} onClose={() => setIsARModalOpen(false)} product={product} />
+      {/* Phase 7: the selected variant's modelUrl overrides the
+          product model for AR when the variant carries one. */}
+      <ARViewModal
+        isOpen={isARModalOpen}
+        onClose={() => setIsARModalOpen(false)}
+        product={
+          isVariantProduct
+            ? { ...product, modelUrl: effectiveModelUrl(product, selectedVariant) }
+            : product
+        }
+      />
 
       <ReviewModal
+        key={editingReview?._id ?? 'new'}
         isOpen={isReviewModalOpen}
         onClose={handleCloseReviewModal}
         productId={product?._id}
@@ -1010,11 +1273,13 @@ export default function ProductDetailsPage() {
             className="fixed inset-0 z-[100] bg-black/90 flex items-center justify-center"
             onClick={() => setIsLightboxOpen(false)}
           >
+           <Dialog open={isLightboxOpen} onClose={() => setIsLightboxOpen(false)} label="Product image viewer" className="absolute inset-0 flex items-center justify-center">
             {/* Close button */}
             <button
               onClick={() => setIsLightboxOpen(false)}
               className="absolute top-5 right-5 w-11 h-11 bg-white/10 hover:bg-white/20 rounded-full flex items-center justify-center text-white transition-all z-10"
               title="Close"
+              aria-label="Close image viewer"
             >
               <X size={22} />
             </button>
@@ -1057,6 +1322,8 @@ export default function ProductDetailsPage() {
               animate={{ scale: 1, opacity: 1 }}
               transition={{ duration: 0.2 }}
               src={getImageUrl(images[selectedImage])}
+              srcSet={getImageSrcSet(images[selectedImage], [800, 1200, 1600, 2000])}
+              sizes="90vw"
               alt={product.name}
               className="max-w-[90vw] max-h-[85vh] object-contain"
               onClick={(e) => e.stopPropagation()}
@@ -1075,11 +1342,12 @@ export default function ProductDetailsPage() {
                     className={`shrink-0 w-12 h-12 rounded-lg overflow-hidden border-2 transition-all ${selectedImage === index ? "border-white" : "border-transparent opacity-60 hover:opacity-100"
                       }`}
                   >
-                    <img src={getImageUrl(image)} alt={`${product.name} thumbnail ${index + 1}`} className="w-full h-full object-cover" />
+                    <img src={getImageUrl(image)} srcSet={getImageSrcSet(image, [96, 192])} sizes="48px" loading="lazy" alt={`${product.name} thumbnail ${index + 1}`} className="w-full h-full object-cover" />
                   </button>
                 ))}
               </div>
             )}
+           </Dialog>
           </motion.div>
         )}
       </AnimatePresence>

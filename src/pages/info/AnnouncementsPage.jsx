@@ -12,13 +12,18 @@ import {
   CheckCircle,
   FileText,
   Loader2,
-  ChevronLeft,
-  ChevronRight,
 } from "lucide-react";
 import Navbar from "../../layouts/customer/Navbar";
 import Footer from "../../layouts/customer/Footer";
 import { usePublicAnnouncements, usePublicAnnouncement } from "../../hooks/admin/useAnnouncementTan";
 import Skeleton from "../../components/common/Skeleton";
+import Pagination from "../../components/common/Pagination";
+import { validateMediaUrl, safeActionUrl } from "../../utils/safeUrl";
+
+// FE-03: announcement images are admin-entered free text (see FE-04) —
+// they render only when validateMediaUrl accepts the value.
+const announcementImage = (announcement) =>
+  validateMediaUrl(announcement?.imageUrl, { fallback: null });
 
 const TYPE_CONFIG = {
   general: { icon: Info, color: "bg-blue-500", label: "General" },
@@ -95,9 +100,9 @@ function AnnouncementCard({ announcement, onClick }) {
         </div>
 
         {/* Image Preview */}
-        {announcement.imageUrl && (
+        {announcementImage(announcement) && (
           <img
-            src={announcement.imageUrl}
+            src={announcementImage(announcement)}
             alt=""
             className="w-20 h-20 object-cover rounded-lg shrink-0 hidden sm:block"
           />
@@ -110,6 +115,10 @@ function AnnouncementCard({ announcement, onClick }) {
 function AnnouncementDetail({ announcement, onBack }) {
   const typeConfig = TYPE_CONFIG[announcement.type] || TYPE_CONFIG.general;
   const TypeIcon = typeConfig.icon;
+  // FE-04: the stored actionUrl renders as a link only when
+  // safeActionUrl accepts it (site-relative, own origin, or an
+  // allowlisted https host) — otherwise no link is rendered at all.
+  const actionTarget = safeActionUrl(announcement.actionUrl);
 
   return (
     <motion.div
@@ -118,10 +127,10 @@ function AnnouncementDetail({ announcement, onBack }) {
       className="bg-white rounded-2xl shadow-sm border border-gray-100 overflow-hidden"
     >
       {/* Header Image */}
-      {announcement.imageUrl && (
+      {announcementImage(announcement) && (
         <div className="w-full h-48 md:h-64 overflow-hidden">
           <img
-            src={announcement.imageUrl}
+            src={announcementImage(announcement)}
             alt={announcement.title}
             className="w-full h-full object-cover"
           />
@@ -174,9 +183,9 @@ function AnnouncementDetail({ announcement, onBack }) {
         </div>
 
         {/* Action Button */}
-        {announcement.actionUrl && (
+        {actionTarget && (
           <a
-            href={announcement.actionUrl}
+            href={actionTarget}
             target="_blank"
             rel="noopener noreferrer"
             className="inline-flex items-center gap-2 bg-amber-600 hover:bg-amber-700 text-white px-6 py-3 rounded-lg font-medium transition-colors"
@@ -352,30 +361,16 @@ export default function AnnouncementsPage() {
                       ))}
                     </div>
 
-                    {/* Pagination */}
-                    {pagination.totalPages > 1 && (
-                      <div className="flex items-center justify-center gap-4 mt-8">
-                        <button
-                          onClick={() => setPage((p) => Math.max(1, p - 1))}
-                          disabled={page === 1}
-                          className="flex items-center gap-1 px-4 py-2 bg-white border border-gray-200 rounded-lg text-gray-600 hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
-                        >
-                          <ChevronLeft className="w-4 h-4" />
-                          Previous
-                        </button>
-                        <span className="text-gray-600">
-                          Page {pagination.page} of {pagination.totalPages}
-                        </span>
-                        <button
-                          onClick={() => setPage((p) => Math.min(pagination.totalPages, p + 1))}
-                          disabled={page === pagination.totalPages}
-                          className="flex items-center gap-1 px-4 py-2 bg-white border border-gray-200 rounded-lg text-gray-600 hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
-                        >
-                          Next
-                          <ChevronRight className="w-4 h-4" />
-                        </button>
-                      </div>
-                    )}
+                    {/* Pagination — the shared Pagination,
+                        simple variant (Wave A). */}
+                    <div className="mt-8">
+                      <Pagination
+                        variant="simple"
+                        page={page}
+                        totalPages={pagination.totalPages}
+                        onPageChange={setPage}
+                      />
+                    </div>
                   </>
                 )}
               </motion.div>

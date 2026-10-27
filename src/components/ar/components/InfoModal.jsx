@@ -1,6 +1,7 @@
 import React from "react";
 import { TbRotate360, TbHandFinger } from "react-icons/tb";
 import { HiOutlineArrowsPointingOut } from "react-icons/hi2";
+import Dialog from "../../common/Dialog";
 
 const InfoModal = ({ show, onClose }) => {
   if (!show) return null;
@@ -16,9 +17,11 @@ const InfoModal = ({ show, onClose }) => {
       className="fixed inset-0 z-200 animate-[fade-in_0.2s_ease]"
       onClick={onClose}
     >
-      <div
+      <Dialog
+        open={show}
+        onClose={onClose}
+        label="Gesture guide"
         className="absolute top-28 left-4 right-4 animate-[actions-in_0.3s_cubic-bezier(0.34,1.56,0.64,1)]"
-        onClick={(e) => e.stopPropagation()}
       >
         <div className="bg-black/90 backdrop-blur-xl rounded-2xl p-4 shadow-xl">
           <div className="flex justify-around items-start gap-2">
@@ -39,7 +42,7 @@ const InfoModal = ({ show, onClose }) => {
             Tap anywhere to dismiss
           </p>
         </div>
-      </div>
+      </Dialog>
     </div>
   );
 };

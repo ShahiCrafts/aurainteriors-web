@@ -2,7 +2,8 @@ import React from "react";
 import { IoCheckmarkCircle, IoFilter } from "react-icons/io5";
 import { HiOutlineCube } from "react-icons/hi2";
 
-const formatNPR = (amount) => `NRs. ${amount?.toLocaleString("en-NP") || "0"}`;
+// FE-63: the shared formatter replaces this file's own local copy.
+import { formatNPR } from "../../../utils/formatCurrency";
 
 const ProductCatalog = ({
   products,

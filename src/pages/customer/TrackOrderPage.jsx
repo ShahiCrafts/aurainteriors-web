@@ -8,7 +8,6 @@ import {
   Loader2,
   AlertCircle,
   MapPin,
-  Phone,
   Calendar,
   CreditCard,
 } from "lucide-react";
@@ -20,6 +19,7 @@ import { getImageUrl as getImageUrlUtil } from "../../utils/imageUrl";
 import { useForm } from "react-hook-form";
 import { yupResolver } from "@hookform/resolvers/yup";
 import { trackOrderSchema } from "../../utils/validationSchemas";
+import { formatNPR } from "../../utils/formatCurrency";
 
 const STATUS_COLORS = {
   pending: "bg-amber-50 text-amber-600 border-amber-200",
@@ -112,8 +112,14 @@ export default function TrackOrderPage() {
     if (order?.deliveredAt) {
       return formatDate(order.deliveredAt);
     }
-    const baseDate = order?.orderedAt ? new Date(order.orderedAt) : new Date();
-    const deliveryDate = new Date(baseDate);
+    // FE-39: the public tracking view (server FA-45) carries createdAt
+    // as its only order date. Anchor the estimate to createdAt; with no
+    // order date there is no honest estimate, so do not fabricate one
+    // from today.
+    if (!order?.createdAt) {
+      return "N/A";
+    }
+    const deliveryDate = new Date(order.createdAt);
     deliveryDate.setDate(deliveryDate.getDate() + 7);
     return formatDate(deliveryDate);
   };
@@ -230,7 +236,7 @@ export default function TrackOrderPage() {
                       Order #{order.orderId}
                     </h2>
                     <p className="text-neutral-500 font-dm-sans mt-1">
-                      Placed on {formatDate(order.orderedAt)}
+                      Placed on {formatDate(order.createdAt)}
                     </p>
                   </div>
                   <span
@@ -331,7 +337,7 @@ export default function TrackOrderPage() {
                       </div>
                       <div className="text-right">
                         <p className="font-semibold text-teal-700 font-dm-sans">
-                          NRs. {(item.price * item.quantity).toLocaleString()}
+                          {formatNPR(item.price * item.quantity)}
                         </p>
                       </div>
                     </div>
@@ -343,17 +349,14 @@ export default function TrackOrderPage() {
                   <div className="flex justify-between text-sm">
                     <span className="text-neutral-500 font-dm-sans">Subtotal</span>
                     <span className="text-neutral-900 font-dm-sans">
-                      NRs. {order.subtotal?.toLocaleString()}
+                      {formatNPR(order.subtotal)}
                     </span>
                   </div>
                   {order.discountAmount > 0 && (
                     <div className="flex justify-between text-sm text-green-600">
+                      <span className="font-dm-sans">Discount</span>
                       <span className="font-dm-sans">
-                        Discount{" "}
-                        {order.discountCode?.code && `(${order.discountCode.code})`}
-                      </span>
-                      <span className="font-dm-sans">
-                        -NRs. {order.discountAmount?.toLocaleString()}
+                        -{formatNPR(order.discountAmount)}
                       </span>
                     </div>
                   )}
@@ -361,7 +364,7 @@ export default function TrackOrderPage() {
                     <span className="text-neutral-500 font-dm-sans">Shipping</span>
                     <span className="text-neutral-900 font-dm-sans">
                       {order.shippingCost > 0
-                        ? `NRs. ${order.shippingCost?.toLocaleString()}`
+                        ? formatNPR(order.shippingCost)
                         : "Free"}
                     </span>
                   </div>
@@ -369,7 +372,7 @@ export default function TrackOrderPage() {
                     <div className="flex justify-between text-sm">
                       <span className="text-neutral-500 font-dm-sans">Tax</span>
                       <span className="text-neutral-900 font-dm-sans">
-                        NRs. {order.tax?.toLocaleString()}
+                        {formatNPR(order.tax)}
                       </span>
                     </div>
                   )}
@@ -378,39 +381,15 @@ export default function TrackOrderPage() {
                       Total
                     </span>
                     <span className="text-xl font-bold text-teal-700 font-dm-sans">
-                      NRs. {order.total?.toLocaleString()}
+                      {formatNPR(order.total)}
                     </span>
                   </div>
                 </div>
               </div>
 
-              {/* Shipping Address */}
-              <div className="bg-white rounded-2xl shadow-sm border border-neutral-100 p-6 sm:p-8">
-                <h3 className="text-lg font-semibold text-neutral-900 font-dm-sans mb-4 flex items-center gap-2">
-                  <MapPin size={20} className="text-teal-600" />
-                  Shipping Address
-                </h3>
-                <div className="text-neutral-600 font-dm-sans space-y-1">
-                  <p className="font-medium text-neutral-900">
-                    {order.shippingAddress?.fullName}
-                  </p>
-                  <p>{order.shippingAddress?.addressLine1}</p>
-                  {order.shippingAddress?.addressLine2 && (
-                    <p>{order.shippingAddress.addressLine2}</p>
-                  )}
-                  <p>
-                    {order.shippingAddress?.city}
-                    {order.shippingAddress?.state &&
-                      `, ${order.shippingAddress.state}`}{" "}
-                    {order.shippingAddress?.postalCode}
-                  </p>
-                  <p>{order.shippingAddress?.country}</p>
-                  <p className="flex items-center gap-2 mt-2 text-neutral-500">
-                    <Phone size={14} />
-                    {order.shippingAddress?.phone}
-                  </p>
-                </div>
-              </div>
+              {/* FE-39: no Shipping Address block — the public tracking
+                  view (server FA-45) deliberately does not return the
+                  delivery address, so the block was permanently empty. */}
             </div>
           )}
         </div>

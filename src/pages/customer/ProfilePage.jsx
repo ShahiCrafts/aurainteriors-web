@@ -18,7 +18,7 @@ import SavedAddresses from "../../components/profile/SavedAddresses";
 import PersonalInformation from "../../components/profile/PersonalInformation";
 import Wishlist from "../../components/profile/Wishlist";
 import OrdersSection from "../../components/profile/OrdersSection";
-import { getAvatarUrl } from "../../utils/imageUrl";
+import { UserAvatar } from "../../components/common/InitialsAvatar";
 
 export default function ProfilePage() {
   const queryClient = useQueryClient();
@@ -65,19 +65,14 @@ export default function ProfilePage() {
                   Aura Interiors Account
                 </h3>
                 <div className="flex items-center gap-3.5">
-                  <div className="w-12 h-12 rounded-full overflow-hidden flex items-center justify-center bg-[#F27318] text-white text-[15px] font-black shadow-sm shrink-0">
-                    {user?.avatar ? (
-                      <img
-                        src={getAvatarUrl(user)}
-                        alt={`${user.firstName} ${user.lastName}`}
-                        className="w-full h-full object-cover"
-                      />
-                    ) : (
-                      <>
-                        {user?.firstName?.charAt(0)}
-                        {user?.lastName?.charAt(0)}
-                      </>
-                    )}
+                  {/* FE-06: real avatar img or local initials
+                      (UserAvatar) inside the same 48px circle. */}
+                  <div className="w-12 h-12 rounded-full overflow-hidden flex items-center justify-center shadow-sm shrink-0">
+                    <UserAvatar
+                      user={user}
+                      alt={`${user?.firstName || ""} ${user?.lastName || ""}`.trim()}
+                      className="w-full h-full rounded-full text-[15px]"
+                    />
                   </div>
                   <div className="min-w-0">
                     <p className="text-[18px] font-semibold text-[#1A1714] leading-none mb-1.5">
