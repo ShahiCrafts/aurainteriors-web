@@ -1,7 +1,8 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { X, Star, Loader2 } from "lucide-react";
 import { toast } from "react-toastify";
+import Dialog from "../common/Dialog";
 import { useCreateReview, useUpdateReview } from "../../hooks/review/useReviewTan";
 import { useForm } from "react-hook-form";
 import { yupResolver } from "@hookform/resolvers/yup";
@@ -15,6 +16,7 @@ export default function ReviewModal({ isOpen, onClose, productId, existingReview
     handleSubmit,
     setValue,
     watch,
+    reset,
     formState: { errors },
   } = useForm({
     resolver: yupResolver(reviewSchema),
@@ -25,6 +27,21 @@ export default function ReviewModal({ isOpen, onClose, productId, existingReview
       comment: existingReview?.comment || "",
     },
   });
+
+  // FE-15: defaultValues are captured once at mount and this component
+  // stays mounted while closed, so without this reset the form kept the
+  // previous review's values while submitting against the new review's id.
+  // On every open (and whenever the target review changes), reset to the
+  // CURRENT target — blank for a new review — and clear transient state.
+  useEffect(() => {
+    if (!isOpen) return;
+    reset({
+      rating: existingReview?.rating || 0,
+      title: existingReview?.title || "",
+      comment: existingReview?.comment || "",
+    });
+    setHoveredRating(0);
+  }, [isOpen, existingReview, reset]);
 
   const rating = watch("rating");
   const title = watch("title", "");
@@ -75,11 +92,13 @@ export default function ReviewModal({ isOpen, onClose, productId, existingReview
           initial={{ opacity: 0, scale: 0.95, y: 20 }}
           animate={{ opacity: 1, scale: 1, y: 0 }}
           exit={{ opacity: 0, scale: 0.95, y: 20 }}
-          className="bg-white w-full max-w-[480px] rounded-xl overflow-hidden relative shadow-[0_20px_60px_rgba(0,0,0,0.3)] font-dm-sans"
+          className="w-full max-w-[480px]"
         >
+         <Dialog open={isOpen} onClose={onClose} labelledBy="review-modal-title" className="bg-white w-full rounded-xl overflow-hidden relative shadow-[0_20px_60px_rgba(0,0,0,0.3)] font-dm-sans">
           {/* Close Button */}
           <button
             onClick={onClose}
+            aria-label="Close dialog"
             className="absolute top-4 right-4 z-20 w-8 h-8 flex items-center justify-center bg-gray-100 text-gray-600 hover:bg-black hover:text-white transition-all rounded-lg border-none cursor-pointer"
           >
             <X size={18} />
@@ -89,7 +108,7 @@ export default function ReviewModal({ isOpen, onClose, productId, existingReview
           <div className="w-full p-8 md:p-10 flex flex-col justify-center bg-white overflow-y-auto max-h-[90vh]">
             <div className="w-full">
               <div className="mb-6">
-                <h3 className="text-[24px] font-bold text-[#1A1714] mb-1">
+                <h3 id="review-modal-title" className="text-[24px] font-bold text-[#1A1714] mb-1">
                   {isEditing ? "Update Your Review" : "Write a Review"}
                 </h3>
                 <p className="text-[#64748B] text-[14px]">
@@ -100,16 +119,24 @@ export default function ReviewModal({ isOpen, onClose, productId, existingReview
               <form onSubmit={handleSubmit(onSubmit)} className="flex flex-col gap-5">
                 {/* Star Rating */}
                 <div>
-                  <label className="text-[14px] font-medium text-[#1A1714] mb-2 block">Rating</label>
-                  <div className="flex items-center gap-1.5">
+                  <span className="text-[14px] font-medium text-[#1A1714] mb-2 block">Rating</span>
+                  <div className="flex items-center gap-1.5" role="radiogroup" aria-label="Rating">
                     {[1, 2, 3, 4, 5].map((star) => (
                       <button
                         key={star}
                         type="button"
+                        role="radio"
+                        aria-checked={rating === star}
+                        aria-label={`${star} star${star > 1 ? "s" : ""}`}
+                        tabIndex={star === (rating || 1) ? 0 : -1}
                         onMouseEnter={() => setHoveredRating(star)}
                         onMouseLeave={() => setHoveredRating(0)}
                         onClick={() => handleStarClick(star)}
-                        className="focus:outline-none transition-transform hover:scale-110 bg-transparent border-none cursor-pointer p-0"
+                        onKeyDown={(e) => {
+                          if (e.key === "ArrowRight" || e.key === "ArrowUp") { e.preventDefault(); handleStarClick(Math.min(5, star + 1)); }
+                          if (e.key === "ArrowLeft" || e.key === "ArrowDown") { e.preventDefault(); handleStarClick(Math.max(1, star - 1)); }
+                        }}
+                        className="focus:outline-none focus-visible:ring-2 focus-visible:ring-[#F27318] rounded-full transition-transform hover:scale-110 bg-transparent border-none cursor-pointer p-0"
                       >
                         <Star
                           size={28}
@@ -134,8 +161,9 @@ export default function ReviewModal({ isOpen, onClose, productId, existingReview
 
                 {/* Title */}
                 <div className="flex flex-col gap-1.5">
-                  <label className="text-[14px] font-medium text-[#1A1714]">Review Title (Optional)</label>
+                  <label htmlFor="review-modal-title-input" className="text-[14px] font-medium text-[#1A1714]">Review Title (Optional)</label>
                   <input
+                    id="review-modal-title-input"
                     type="text"
                     {...register("title")}
                     placeholder="Summarize your experience"
@@ -150,8 +178,9 @@ export default function ReviewModal({ isOpen, onClose, productId, existingReview
 
                 {/* Comment */}
                 <div className="flex flex-col gap-1.5">
-                  <label className="text-[14px] font-medium text-[#1A1714]">Your Review *</label>
+                  <label htmlFor="review-modal-comment" className="text-[14px] font-medium text-[#1A1714]">Your Review *</label>
                   <textarea
+                    id="review-modal-comment"
                     {...register("comment")}
                     placeholder="Share your experience with this piece. What did you love?"
                     rows={4}
@@ -190,6 +219,7 @@ export default function ReviewModal({ isOpen, onClose, productId, existingReview
               </form>
             </div>
           </div>
+         </Dialog>
         </motion.div>
       </div>
     </AnimatePresence>

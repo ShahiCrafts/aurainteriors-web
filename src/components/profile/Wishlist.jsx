@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
 import {
   Heart,
@@ -8,11 +8,10 @@ import {
   Star,
   ArrowRight,
   X,
-  ChevronLeft,
-  ChevronRight,
   Filter,
 } from "lucide-react";
 import { ProductCardSkeleton, WishlistSkeleton } from "../common/Skeleton";
+import Pagination from "../common/Pagination";
 import { toast } from "react-toastify";
 import {
   useWishlist,
@@ -20,6 +19,7 @@ import {
 } from "../../hooks/cart/useWishlistTan";
 import { useAddToCart } from "../../hooks/cart/useCartTan";
 import { getProductImageUrl } from "../../utils/imageUrl";
+import { formatNPR } from "../../utils/formatCurrency";
 import formatError from "../../utils/errorHandler";
 
 const ITEMS_PER_PAGE = 8;
@@ -33,7 +33,12 @@ export default function Wishlist() {
   const { data, isLoading, error } = useWishlist();
   const { mutate: removeFromWishlist, isPending: isRemoving } =
     useRemoveFromWishlist();
-  const { mutate: addToCart, isPending: isAddingToCart } = useAddToCart();
+  const {
+    mutate: addToCart,
+    mutateAsync: addToCartAsync,
+    isPending: isAddingToCart,
+  } = useAddToCart();
+  const [isAddingAll, setIsAddingAll] = useState(false);
 
   const wishlistItems = data?.data?.wishlist?.items || [];
 
@@ -66,6 +71,14 @@ export default function Wishlist() {
     });
 
   const totalPages = Math.ceil(filteredItems.length / ITEMS_PER_PAGE);
+
+  // FE-27: never strand on an out-of-range page — when removals or
+  // filters shrink the list below the current page, clamp to the last
+  // page that still has items.
+  useEffect(() => {
+    if (totalPages > 0 && page > totalPages) setPage(totalPages);
+  }, [page, totalPages]);
+
   const paginatedItems = filteredItems.slice(
     (page - 1) * ITEMS_PER_PAGE,
     page * ITEMS_PER_PAGE,
@@ -80,31 +93,47 @@ export default function Wishlist() {
   };
 
   const handleAddToCart = (product) => {
+    // FE-47: cart errors are reported by the cart hook itself.
     addToCart(
       { productId: product._id, quantity: 1 },
       {
         onSuccess: () => toast.success(`${product.name} added to cart`),
-        onError: (err) =>
-          toast.error(formatError(err, "Failed to add to cart")),
       },
     );
   };
 
-  const handleAddAllToCart = () => {
-    filteredItems.forEach((item) => {
-      if (item.product) {
-        addToCart(
-          { productId: item.product._id, quantity: 1 },
-          {
-            onError: (err) =>
-              toast.error(
-                formatError(err, `Failed to add ${item.product.name} to cart`),
-              ),
-          },
+  // FE-27: success may only be announced after the requests resolve,
+  // and the report must be the real outcome. The old code fired one
+  // mutation per item and toasted success synchronously, so a partial
+  // failure looked identical to success; the shared isPending flag also
+  // flipped off when the FIRST mutation settled, re-enabling the button
+  // mid-flight — this flow tracks its own pending state instead.
+  const handleAddAllToCart = async () => {
+    const targets = filteredItems.filter((item) => item.product);
+    if (targets.length === 0 || isAddingAll) return;
+    setIsAddingAll(true);
+    try {
+      const results = await Promise.allSettled(
+        targets.map((item) =>
+          addToCartAsync({ productId: item.product._id, quantity: 1 }),
+        ),
+      );
+      const added = results.filter((r) => r.status === "fulfilled").length;
+      const failed = targets.length - added;
+      if (failed === 0) {
+        toast.success(
+          added === 1 ? "1 item added to cart" : `${added} items added to cart`,
+        );
+      } else if (added === 0) {
+        toast.error("Could not add any items to cart. Please try again.");
+      } else {
+        toast.warning(
+          `${added} of ${targets.length} items added to cart — ${failed} failed. Please retry the rest.`,
         );
       }
-    });
-    toast.success("Adding all items to cart");
+    } finally {
+      setIsAddingAll(false);
+    }
   };
 
   const getImageUrl = (product) => getProductImageUrl(product);
@@ -227,11 +256,11 @@ export default function Wishlist() {
             {/* Quick Actions */}
             <button
               onClick={handleAddAllToCart}
-              disabled={isAddingToCart || filteredItems.length === 0}
+              disabled={isAddingAll || filteredItems.length === 0}
               className="flex items-center justify-center gap-2 px-5 py-2 bg-[#F27318] hover:bg-[#E6651B] text-white text-[13px] font-medium rounded-lg transition-colors whitespace-nowrap disabled:opacity-50"
             >
               <ShoppingCart size={13} />
-              {isAddingToCart ? "Adding..." : "Add All to Cart"}
+              {isAddingAll ? "Adding..." : "Add All to Cart"}
             </button>
           </div>
 
@@ -251,7 +280,11 @@ export default function Wishlist() {
                 {paginatedItems.map((item) => {
                   const product = item.product;
                   if (!product) return null;
-                  const rating = product.rating?.average || 4.5;
+                  // FE-14: never invent a rating — 4.5 was hardcoded here
+                  // for every unrated product.
+                  const ratingAverage = product.rating?.average || 0;
+                  const ratingCount = product.rating?.count || 0;
+                  const hasRating = ratingAverage > 0 && ratingCount > 0;
 
                   return (
                     <div
@@ -260,7 +293,7 @@ export default function Wishlist() {
                     >
                       {/* Image Area */}
                       <Link
-                        to={`/product/${product.slug || product._id}`}
+                        to={`/product/${encodeURIComponent(product.slug || product._id)}`}
                         className="relative aspect-[16/11] rounded-lg overflow-hidden bg-neutral-50 mb-3.5"
                       >
                         <img
@@ -300,37 +333,43 @@ export default function Wishlist() {
 
                       {/* Info Area */}
                       <div className="flex flex-col flex-1">
-                        <Link to={`/product/${product.slug || product._id}`} className="space-y-2">
+                        <Link to={`/product/${encodeURIComponent(product.slug || product._id)}`} className="space-y-2">
                           <h3 className="text-[14px] font-bold text-[#1A1714] group-hover:text-[#F27318] transition-colors leading-snug line-clamp-2 h-9">
                             {product.name}
                           </h3>
 
                           {/* Ratings */}
-                          <div className="flex items-center gap-1 text-[11px] text-black/40">
-                            <div className="flex items-center text-[#F27318] gap-0.5">
-                              {[...Array(5)].map((_, i) => (
-                                <Star
-                                  key={i}
-                                  size={9}
-                                  className={
-                                    i < Math.round(rating)
-                                      ? "fill-[#F27318] text-[#F27318]"
-                                      : "fill-black/10 text-transparent"
-                                  }
-                                />
-                              ))}
+                          {hasRating ? (
+                            <div className="flex items-center gap-1 text-[11px] text-black/40">
+                              <div className="flex items-center text-[#F27318] gap-0.5">
+                                {[...Array(5)].map((_, i) => (
+                                  <Star
+                                    key={i}
+                                    size={9}
+                                    className={
+                                      i < Math.round(ratingAverage)
+                                        ? "fill-[#F27318] text-[#F27318]"
+                                        : "fill-black/10 text-transparent"
+                                    }
+                                  />
+                                ))}
+                              </div>
+                              <span className="font-semibold ml-0.5">({ratingAverage.toFixed(1)})</span>
                             </div>
-                            <span className="font-semibold ml-0.5">({rating.toFixed(1)})</span>
-                          </div>
+                          ) : (
+                            <div className="flex items-center gap-1 text-[11px] text-black/40">
+                              <span>No reviews yet</span>
+                            </div>
+                          )}
 
                           {/* Price */}
                           <div className="pt-1.5 flex items-baseline gap-2">
                             <span className="text-[15px] font-black text-[#1A1714]">
-                              NRs. {product.price?.toLocaleString()}
+                              {formatNPR(product.price)}
                             </span>
                             {product.originalPrice && product.originalPrice > product.price && (
                               <span className="text-[11px] text-black/25 line-through">
-                                {product.originalPrice.toLocaleString()}
+                                {formatNPR(product.originalPrice)}
                               </span>
                             )}
                           </div>
@@ -341,64 +380,18 @@ export default function Wishlist() {
                 })}
               </div>
 
-              {/* Pagination */}
+              {/* Pagination — the shared Pagination, customer
+                  theme (Wave A); the count footer below stays. */}
               {totalPages > 1 && (
-                <div className="flex items-center justify-between py-6 border-t border-neutral-100">
-                  <button
-                    onClick={() => setPage((p) => Math.max(1, p - 1))}
-                    disabled={page === 1}
-                    className="flex items-center gap-1.5 px-4.5 py-2 text-xs font-bold text-[#1A1714] border border-neutral-200 rounded-lg hover:bg-neutral-50 disabled:opacity-30 disabled:cursor-not-allowed transition-all bg-white"
-                  >
-                    <ChevronLeft size={13} />
-                    Previous
-                  </button>
-
-                  <div className="flex items-center gap-1">
-                    {Array.from({ length: totalPages }, (_, i) => i + 1).map((pageNum) => {
-                      const isActive = pageNum === page;
-                      const isNear =
-                        Math.abs(pageNum - page) <= 1 ||
-                        pageNum === 1 ||
-                        pageNum === totalPages;
-
-                      if (!isNear) {
-                        if (
-                          (pageNum === 2 && page > 3) ||
-                          (pageNum === totalPages - 1 && page < totalPages - 2)
-                        ) {
-                          return (
-                            <span key={pageNum} className="w-8 text-center text-xs text-neutral-300">
-                              …
-                            </span>
-                          );
-                        }
-                        return null;
-                      }
-
-                      return (
-                        <button
-                          key={pageNum}
-                          onClick={() => setPage(pageNum)}
-                          className={`w-8.5 h-8.5 rounded-lg text-xs font-bold transition-all ${
-                            isActive
-                              ? "bg-[#F27318] text-white"
-                              : "border border-neutral-200 text-neutral-500 hover:bg-neutral-50 bg-white"
-                          }`}
-                        >
-                          {pageNum}
-                        </button>
-                      );
-                    })}
-                  </div>
-
-                  <button
-                    onClick={() => setPage((p) => Math.min(totalPages, p + 1))}
-                    disabled={page === totalPages}
-                    className="flex items-center gap-1.5 px-4.5 py-2 text-xs font-bold text-[#1A1714] border border-neutral-200 rounded-lg hover:bg-neutral-50 disabled:opacity-30 disabled:cursor-not-allowed transition-all bg-white"
-                  >
-                    Next
-                    <ChevronRight size={13} />
-                  </button>
+                <div className="py-6 border-t border-neutral-100">
+                  <Pagination
+                    theme="customer"
+                    page={page}
+                    totalPages={totalPages}
+                    pageSize={ITEMS_PER_PAGE}
+                    totalItems={filteredItems.length}
+                    onPageChange={setPage}
+                  />
                 </div>
               )}
 

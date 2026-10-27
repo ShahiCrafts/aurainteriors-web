@@ -1,13 +1,12 @@
-import { Navigate } from "react-router-dom";
 import useAuthStore from "../../store/authStore";
 
 export default function CustomerRoute({ children }) {
-  const { loading, isAuthenticated, user } = useAuthStore();
+  const { loading } = useAuthStore();
   if (loading) return null;
 
-  if (isAuthenticated && user?.role === "admin") {
-    return <Navigate to="/admin" replace />;
-  }
-
+  // FE-16: admins are no longer bounced to the /admin path — that route does not
+  // exist in the customer app (it rendered the 404 catch-all) and no
+  // admin-origin config exists in this codebase. Admins render the
+  // customer pages like any other visitor.
   return children;
 }

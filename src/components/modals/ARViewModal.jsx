@@ -1,29 +1,24 @@
 import { useEffect, useState, useMemo } from "react";
 import { X, ExternalLink, Camera } from "lucide-react";
 import { QRCodeSVG } from "qrcode.react";
+import Dialog from "../common/Dialog";
 import { MdViewInAr } from "react-icons/md";
 
 export default function ARViewModal({ isOpen, onClose, product }) {
   const [isMobile, setIsMobile] = useState(false);
   const [deviceInfo, setDeviceInfo] = useState({ isIOS: false, isAndroid: false });
-  const [localIp, setLocalIp] = useState(null);
 
-  useEffect(() => {
-    const fetchIp = async () => {
-      try {
-        const response = await fetch(`${import.meta.env.VITE_API_BASE_URL || "http://localhost:8080"}/api/v1/system/info`);
-        const result = await response.json();
-        if (result.status === "success") {
-          setLocalIp(result.data.localIp);
-        }
-      } catch (err) {
-        console.error("Failed to fetch local IP:", err);
-      }
-    };
-    if (import.meta.env.DEV) {
-      fetchIp();
-    }
-  }, []);
+  // FE-46: the former DEV "LAN IP" lookup fetched
+  // `${VITE_API_BASE_URL || "http://localhost:8080"}/api/v1/system/info`
+  // on mount (even while the modal was closed). That endpoint does not
+  // exist: the server's routes/system.routes.js defines ONLY
+  // GET /keep-alive-status (admin-only, {success:true} envelope),
+  // mounted at /api/v1/system in app.js:212, and no `localIp` field
+  // exists anywhere in the server tree — the request 404'd in every
+  // environment (and the hardcoded :8080 fallback disagreed with
+  // apiConfig's canonical http://localhost:3001). The dead call and
+  // fallback are removed; the QR base below is derived locally from
+  // VITE_APP_URL / window.location.origin only.
 
   useEffect(() => {
     const checkDevice = () => {
@@ -35,17 +30,6 @@ export default function ARViewModal({ isOpen, onClose, product }) {
     };
     checkDevice();
   }, []);
-
-  useEffect(() => {
-    if (isOpen) {
-      document.body.style.overflow = "hidden";
-    } else {
-      document.body.style.overflow = "";
-    }
-    return () => {
-      document.body.style.overflow = "";
-    };
-  }, [isOpen]);
 
   // Check if product has AR models for different platforms
   const modelAvailability = useMemo(() => {
@@ -72,24 +56,12 @@ export default function ARViewModal({ isOpen, onClose, product }) {
 
   if (!isOpen || !product) return null;
 
-  const getBaseUrl = () => {
-    if (import.meta.env.VITE_APP_URL) {
-      return import.meta.env.VITE_APP_URL;
-    }
-    if (import.meta.env.DEV && window.location.hostname !== "localhost") {
-      return window.location.origin;
-    }
-    return window.location.origin;
-  };
+  // FE-46: QR base comes from existing config only — VITE_APP_URL when
+  // configured, otherwise the origin the app is actually served from.
+  // No server round-trip, no hardcoded host/port.
+  const baseUrl = (import.meta.env.VITE_APP_URL || window.location.origin).replace(/\/+$/, "");
 
-  const baseUrl = getBaseUrl();
-
-  // Use local IP for QR code if available during development
-  const displayBaseUrl = (import.meta.env.DEV && localIp)
-    ? baseUrl.replace("localhost", localIp).replace("127.0.0.1", localIp)
-    : baseUrl;
-
-  const arViewUrl = `${displayBaseUrl}/ar/${product.slug || product._id}`;
+  const arViewUrl = `${baseUrl}/ar/${encodeURIComponent(product.slug || product._id)}`;
 
   const handleOpenLink = () => {
     window.location.href = arViewUrl;
@@ -112,7 +84,10 @@ export default function ARViewModal({ isOpen, onClose, product }) {
         onClick={onClose}
       />
       <div className="min-h-full flex items-center justify-center p-4 sm:p-6">
-        <div
+        <Dialog
+          open={isOpen}
+          onClose={onClose}
+          labelledBy="ar-view-title"
           className="relative w-full max-w-[440px] bg-white shadow-2xl flex flex-col items-center justify-center p-8 md:p-12 rounded-xl"
           style={{
             animation: "fadeInScale 0.3s cubic-bezier(0.4, 0, 0.2, 1) forwards",
@@ -121,12 +96,13 @@ export default function ARViewModal({ isOpen, onClose, product }) {
           {/* Close Button */}
           <button
             onClick={onClose}
+            aria-label="Close dialog"
             className="absolute top-4 right-4 z-10 w-8 h-8 flex items-center justify-center rounded-lg bg-gray-100 text-gray-600 hover:bg-black hover:text-white transition-colors"
           >
             <X size={18} strokeWidth={2} />
           </button>
 
-          <h3 className="text-2xl font-bold text-gray-900 mb-2 text-center">
+          <h3 id="ar-view-title" className="text-2xl font-bold text-gray-900 mb-2 text-center">
             View in Your Space
           </h3>
 
@@ -188,7 +164,7 @@ export default function ARViewModal({ isOpen, onClose, product }) {
               </p>
             </div>
           )}
-        </div>
+        </Dialog>
       </div>
       <style>{`
         @keyframes fadeInScale {

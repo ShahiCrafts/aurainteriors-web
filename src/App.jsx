@@ -1,9 +1,12 @@
-import { Routes, Route } from "react-router-dom";
+import { Routes, Route, useLocation } from "react-router-dom";
 import { Suspense, lazy } from "react";
 import "./styles/index.css";
+import ErrorBoundary from "./components/common/ErrorBoundary";
+import LoadingSpinner from "./components/common/LoadingSpinner";
 import AuthCallback from "./components/auth/AuthCallback";
 import ProtectedRoute from "./components/auth/ProtectedRoute";
 import CustomerRoute from "./components/auth/CustomerRoute";
+import LegacyShopCategoryRedirect from "./components/navigation/LegacyShopCategoryRedirect";
 
 // ─────────────────────────────────────────────────────────────────────────────
 // CUSTOMER PORTAL — App.jsx
@@ -21,6 +24,8 @@ const VerifyMagicLinkPage = lazy(() => import("./pages/auth/VerifyMagicLinkPage"
 const ProfilePage         = lazy(() => import("./pages/customer/ProfilePage"));
 const NotificationsPage   = lazy(() => import("./pages/customer/NotificationsPage"));
 const ShopPage            = lazy(() => import("./pages/shop/ShopPage"));
+const RoomPage            = lazy(() => import("./pages/shop/RoomPage"));
+const CollectionPage      = lazy(() => import("./pages/shop/CollectionPage"));
 const BlogsPage           = lazy(() => import("./pages/blog/BlogsPage"));
 const BlogDetailsPage     = lazy(() => import("./pages/blog/BlogDetailsPage"));
 const ProductDetailsPage  = lazy(() => import("./pages/shop/ProductDetailsPage"));
@@ -35,11 +40,8 @@ const FAQPage             = lazy(() => import("./pages/info/FAQPage"));
 const NotFoundPage        = lazy(() => import("./pages/info/NotFoundPage"));
 const AnnouncementsPage   = lazy(() => import("./pages/info/AnnouncementsPage"));
 
-function LoadingSpinner() {
-  return null;
-}
-
 function App() {
+  const location = useLocation();
   return (
     <>
       {/* AuthModal: null fallback — renders nothing while chunk downloads */}
@@ -47,6 +49,10 @@ function App() {
         <AuthModal />
       </Suspense>
 
+      {/* Route-level boundary (FE-56/FE-17): a crashed page degrades to the
+          fallback while the shell (AuthModal, ChatWidget) stays alive, and
+          navigating (resetKey = pathname) clears the error state. */}
+      <ErrorBoundary resetKey={location.pathname}>
       <Routes>
         <Route
           path="/"
@@ -58,12 +64,14 @@ function App() {
         />
 
         {/* Auth Routes */}
-        <Route path="/auth/verify" element={<VerifyMagicLinkPage />} />
+        <Route path="/auth/verify" element={<Suspense fallback={<LoadingSpinner />}><VerifyMagicLinkPage /></Suspense>} />
         <Route path="/auth/success" element={<AuthCallback />} />
 
         {/* Customer-facing routes */}
         <Route path="/shop" element={<CustomerRoute><Suspense fallback={<LoadingSpinner />}><ShopPage /></Suspense></CustomerRoute>} />
-        <Route path="/shop/:categorySlug" element={<CustomerRoute><Suspense fallback={<LoadingSpinner />}><ShopPage /></Suspense></CustomerRoute>} />
+        <Route path="/shop/:categorySlug" element={<CustomerRoute><LegacyShopCategoryRedirect /></CustomerRoute>} />
+        <Route path="/rooms/:slug" element={<CustomerRoute><Suspense fallback={<LoadingSpinner />}><RoomPage /></Suspense></CustomerRoute>} />
+        <Route path="/collections/:slug" element={<CustomerRoute><Suspense fallback={<LoadingSpinner />}><CollectionPage /></Suspense></CustomerRoute>} />
         <Route path="/product/:productSlug" element={<CustomerRoute><Suspense fallback={<LoadingSpinner />}><ProductDetailsPage /></Suspense></CustomerRoute>} />
         <Route path="/ar/:productSlug" element={<CustomerRoute><Suspense fallback={<LoadingSpinner />}><ARViewPage /></Suspense></CustomerRoute>} />
         <Route path="/native-ar" element={<CustomerRoute><Suspense fallback={<LoadingSpinner />}><NativeARPage /></Suspense></CustomerRoute>} />
@@ -90,11 +98,16 @@ function App() {
         <Route path="/newsletter/unsubscribe" element={<Suspense fallback={<LoadingSpinner />}><NewsletterActionPage /></Suspense>} />
         <Route path="*" element={<Suspense fallback={<LoadingSpinner />}><NotFoundPage /></Suspense>} />
       </Routes>
+      </ErrorBoundary>
 
-      {/* ChatWidget: null fallback — the FAB appears once chunk is ready */}
-      <Suspense fallback={null}>
-        <ChatWidget />
-      </Suspense>
+      {/* ChatWidget: widget-level boundary (FE-56) so a chat crash cannot
+          take the storefront page down; null Suspense fallback — the FAB
+          appears once chunk is ready */}
+      <ErrorBoundary>
+        <Suspense fallback={null}>
+          <ChatWidget />
+        </Suspense>
+      </ErrorBoundary>
     </>
   );
 }

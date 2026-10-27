@@ -109,7 +109,12 @@ const NotificationDropdown = ({
         ) : notifications.length === 0 ? (
           <div className="p-10 text-center text-gray-400">
             <BellOff className="mx-auto mb-2 opacity-20" size={32} />
-            <p className="text-sm font-medium">No notifications found.</p>
+            {/* FE-24: a fetch failure is an error state, not an empty
+                list — the bell passes `error` and it is rendered here
+                instead of the misleading 'No notifications found'. */}
+            <p className="text-sm font-medium">
+              {error || "No notifications found."}
+            </p>
           </div>
         ) : (
           <div className="flex flex-col">
@@ -160,14 +165,10 @@ const NotificationDropdown = ({
         )}
       </div>
 
-      <div className="p-3 border-t border-gray-100 bg-gray-50 text-center">
-        <a
-          href="/notifications"
-          className="text-xs font-bold text-gray-500 hover:text-teal-600"
-        >
-          View All Notifications
-        </a>
-      </div>
+      {/* FE-16: the "View All Notifications" link to /notifications was
+          removed — this dropdown is rendered only inside the admin app
+          (via NotificationBell in AdminLayout), whose route table has no
+          /notifications route (it rendered the 404 catch-all). */}
     </div>
   );
 };

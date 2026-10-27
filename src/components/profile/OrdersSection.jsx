@@ -1,8 +1,6 @@
 import { useState, useEffect } from "react";
 import {
   Package,
-  ChevronLeft,
-  ChevronRight,
   AlertCircle,
   Search,
   ChevronDown,
@@ -13,6 +11,7 @@ import {
 import { useMyOrders } from "../../hooks/order/useOrderTan";
 import OrderCard from "./OrderCard";
 import { OrderItemSkeleton, default as Skeleton } from "../common/Skeleton";
+import Pagination from "../common/Pagination";
 import OrderStatsCards from "./OrderStatsCards";
 import { Link, useLocation } from "react-router-dom";
 
@@ -67,12 +66,23 @@ export default function OrdersSection() {
     }
   });
 
+  // FE-28: GET /orders/my-orders accepts only status/page/limit and
+  // always sorts newest-first (verified in the server tree) — there is
+  // no server search/sort to send, so search and sort are honestly
+  // scoped to the loaded page (see the note under the controls). The
+  // in-page search matches product names as well as order IDs, which
+  // its placeholder always promised but the old filter never did.
   const filteredOrders = searchQuery
-    ? sortedOrders.filter(
-        (o) =>
-          o.orderId?.toLowerCase().includes(searchQuery.toLowerCase()) ||
-          o._id?.toLowerCase().includes(searchQuery.toLowerCase()),
-      )
+    ? sortedOrders.filter((o) => {
+        const q = searchQuery.toLowerCase();
+        return (
+          o.orderId?.toLowerCase().includes(q) ||
+          o._id?.toLowerCase().includes(q) ||
+          (o.items || []).some((item) =>
+            (item.name || item.product?.name || "").toLowerCase().includes(q),
+          )
+        );
+      })
     : sortedOrders;
 
   if (isLoading && !rawOrders.length) {
@@ -163,7 +173,7 @@ export default function OrdersSection() {
               <Search size={15} className="absolute left-3.5 top-1/2 -translate-y-1/2 text-neutral-400" />
               <input
                 type="text"
-                placeholder="Search by order ID, product..."
+                placeholder="Search this page by order ID or product…"
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
                 className="w-full pl-10 pr-9 py-3 border border-neutral-200 rounded-xl focus:border-[#F27318] outline-none text-sm text-[#1A1714] placeholder:text-neutral-400 bg-white font-medium transition-colors"
@@ -212,13 +222,19 @@ export default function OrdersSection() {
             </div>
           </div>
 
+          {/* FE-28: the server offers no search/sort for order history,
+              so say plainly that both operate on the loaded page. */}
+          <p className="text-xs text-neutral-400 shrink-0 -mt-2">
+            Search and sort apply only to the orders loaded on this page.
+          </p>
+
           {/* Results — single table-like container, rows divided by hairlines */}
           {filteredOrders.length === 0 ? (
             <div className="flex-1 min-h-0 flex flex-col items-center justify-center text-center bg-neutral-50 rounded-2xl">
               <SlidersHorizontal size={30} className="text-neutral-300 mb-4" />
-              <h3 className="text-[16px] font-semibold text-[#1A1714] mb-1">No Orders Match</h3>
+              <h3 className="text-[16px] font-semibold text-[#1A1714] mb-1">No Orders Match on This Page</h3>
               <p className="text-[14px] text-neutral-400 max-w-xs">
-                No orders match your filter criteria. Try changing your search query or status filter.
+                No orders on this page match your search. Try another page, or change your search query or status filter.
               </p>
             </div>
           ) : (
@@ -229,56 +245,16 @@ export default function OrdersSection() {
                 ))}
               </div>
 
-              {pagination.pages > 1 && (
-                <div className="flex items-center justify-center gap-2 py-2">
-                  <button
-                    onClick={() => setPage((p) => Math.max(1, p - 1))}
-                    disabled={page === 1}
-                    className="w-9 h-9 flex items-center justify-center border border-neutral-200 rounded-lg text-neutral-500 hover:border-neutral-900 hover:text-neutral-900 disabled:opacity-30 disabled:cursor-not-allowed transition-colors bg-white"
-                  >
-                    <ChevronLeft size={15} />
-                  </button>
-
-                  {Array.from({ length: pagination.pages }, (_, i) => i + 1).map((pageNum) => {
-                    const isActive = pageNum === page;
-                    const isNear =
-                      Math.abs(pageNum - page) <= 1 || pageNum === 1 || pageNum === pagination.pages;
-
-                    if (!isNear) {
-                      if (pageNum === 2 || pageNum === pagination.pages - 1) {
-                        return (
-                          <span key={pageNum} className="w-9 text-center text-xs text-neutral-300">
-                            …
-                          </span>
-                        );
-                      }
-                      return null;
-                    }
-
-                    return (
-                      <button
-                        key={pageNum}
-                        onClick={() => setPage(pageNum)}
-                        className={`w-9 h-9 rounded-lg text-xs font-bold transition-colors ${
-                          isActive
-                            ? "bg-[#F27318] text-white"
-                            : "border border-neutral-200 text-neutral-500 hover:border-neutral-900 bg-white"
-                        }`}
-                      >
-                        {pageNum}
-                      </button>
-                    );
-                  })}
-
-                  <button
-                    onClick={() => setPage((p) => Math.min(pagination.pages, p + 1))}
-                    disabled={page === pagination.pages}
-                    className="w-9 h-9 flex items-center justify-center border border-neutral-200 rounded-lg text-neutral-500 hover:border-neutral-900 hover:text-neutral-900 disabled:opacity-30 disabled:cursor-not-allowed transition-colors bg-white"
-                  >
-                    <ChevronRight size={15} />
-                  </button>
-                </div>
-              )}
+              {/* Pagination — the shared Pagination, customer
+                  theme (Wave A); renders nothing at one page. */}
+              <Pagination
+                theme="customer"
+                page={page}
+                totalPages={pagination.pages}
+                pageSize={ITEMS_PER_PAGE}
+                totalItems={pagination.total}
+                onPageChange={setPage}
+              />
             </div>
           )}
         </>

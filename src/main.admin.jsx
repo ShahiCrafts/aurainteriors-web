@@ -1,8 +1,10 @@
 import { StrictMode } from "react";
 import { createRoot } from "react-dom/client";
 import { BrowserRouter } from "react-router-dom";
-import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
+import { QueryClientProvider } from "@tanstack/react-query";
+import { queryClient } from "./lib/queryClient";
 import AdminApp from "./AdminApp.jsx";
+import ErrorBoundary from "./components/common/ErrorBoundary.jsx";
 import ToastProvider from "./components/ui/ToastProvider.jsx";
 import "./styles/index.css";
 
@@ -17,16 +19,9 @@ import "./styles/index.css";
 // Admin entry:    src/main.admin.jsx → AdminApp.jsx
 // ─────────────────────────────────────────────────────────────────────────────
 
-const queryClient = new QueryClient({
-  defaultOptions: {
-    queries: {
-      staleTime: 5 * 60 * 1000,
-      gcTime: 10 * 60 * 1000,
-      retry: 1,
-      refetchOnWindowFocus: false,
-    },
-  },
-});
+// FE-08: shared configured client from src/lib/queryClient.js — the
+// config is identical to the customer entry's, and sharing the instance
+// lets the auth store clear the cache on sign-out / identity change.
 
 document.body.classList.add("admin-theme");
 
@@ -35,7 +30,9 @@ createRoot(document.getElementById("root")).render(
     <BrowserRouter>
       <QueryClientProvider client={queryClient}>
         <ToastProvider>
-          <AdminApp />
+          <ErrorBoundary>
+            <AdminApp />
+          </ErrorBoundary>
         </ToastProvider>
       </QueryClientProvider>
     </BrowserRouter>

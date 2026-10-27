@@ -1,7 +1,8 @@
 import { Link } from "react-router-dom";
 import { X, ShoppingBag, Plus, Minus, Trash2 } from "lucide-react";
 import { CartItemSkeleton } from "../common/Skeleton";
-import { useEffect } from "react";
+import { useRef } from "react";
+import { useDialogBehaviour } from "../common/useDialogBehaviour";
 import {
   useCart,
   useUpdateCartItem,
@@ -11,7 +12,9 @@ import useAuthStore from "../../store/authStore";
 import useGuestCartStore from "../../store/guestCartStore";
 import { toast } from "react-toastify";
 import { getProductImageUrl } from "../../utils/imageUrl";
-import formatError from "../../utils/errorHandler";
+import { formatNPR } from "../../utils/formatCurrency";
+import VariantLineSummary from "./VariantLineSummary";
+import { variantSummaryProps, lineUnitPrice } from "../../utils/cartLine";
 
 export default function CartSlider({ isOpen, onClose }) {
   const { isAuthenticated } = useAuthStore();
@@ -44,25 +47,16 @@ export default function CartSlider({ isOpen, onClose }) {
       return;
     }
 
-    updateCartItem(
-      { itemId, quantity: newQuantity },
-      {
-        onError: (err) => toast.error(formatError(err, "Failed to update quantity")),
-      }
-    );
+    // FE-47: cart errors are reported by the cart hook itself.
+    updateCartItem({ itemId, quantity: newQuantity });
   };
 
-  useEffect(() => {
-  if (isOpen) {
-    document.body.style.overflow = "hidden";
-  } else {
-    document.body.style.overflow = "";
-  }
-
-  return () => {
-    document.body.style.overflow = "";
-  };
-}, [isOpen]);
+  // FE-64: the drawer stays mounted for its slide animation, so it
+  // uses the shared dialog behaviour hook directly: Escape, focus
+  // trap/return and the scroll lock (which replaces the ad-hoc
+  // overflow effect that used to live here).
+  const panelRef = useRef(null);
+  useDialogBehaviour({ open: isOpen, onClose, containerRef: panelRef });
 
   const handleRemoveItem = (itemId) => {
     if (!isAuthenticated) {
@@ -73,7 +67,7 @@ export default function CartSlider({ isOpen, onClose }) {
 
     removeFromCart(itemId, {
       onSuccess: () => toast.success("Item removed from cart"),
-      onError: (err) => toast.error(formatError(err, "Failed to remove item")),
+      // FE-47: no per-call onError — the cart hook reports errors.
     });
   };
 
@@ -89,6 +83,13 @@ export default function CartSlider({ isOpen, onClose }) {
       />
 
       <div
+        ref={panelRef}
+        role={isOpen ? "dialog" : undefined}
+        aria-modal={isOpen ? "true" : undefined}
+        aria-label="Shopping cart"
+        aria-hidden={!isOpen || undefined}
+        inert={!isOpen}
+        tabIndex={-1}
         className={`fixed top-0 right-0 z-101 h-full w-full sm:max-w-[480px] bg-white shadow-2xl transition-transform duration-300 ease-out flex flex-col font-sans ${isOpen ? "translate-x-0" : "translate-x-full"
           }`}
       >
@@ -113,6 +114,7 @@ export default function CartSlider({ isOpen, onClose }) {
           </div>
           <button
             onClick={onClose}
+            aria-label="Close cart"
             className="w-8 h-8 flex items-center justify-center bg-gray-100 text-gray-600 hover:bg-black hover:text-white transition-colors rounded-lg"
           >
             <X size={18} strokeWidth={2} />
@@ -157,7 +159,7 @@ export default function CartSlider({ isOpen, onClose }) {
                     className="flex gap-5 bg-white p-4 border border-gray-100 shadow-sm rounded-lg"
                   >
                     <Link
-                      to={`/product/${product.slug || product._id}`}
+                      to={`/product/${encodeURIComponent(product.slug || product._id)}`}
                       onClick={onClose}
                       className="w-[84px] h-[84px] shrink-0 rounded-lg overflow-hidden bg-gray-100"
                     >
@@ -172,7 +174,7 @@ export default function CartSlider({ isOpen, onClose }) {
                       <div>
                         <div className="flex items-start justify-between gap-2 mb-1">
                           <Link
-                            to={`/product/${product.slug || product._id}`}
+                            to={`/product/${encodeURIComponent(product.slug || product._id)}`}
                             onClick={onClose}
                             className="flex-1 min-w-0"
                           >
@@ -192,6 +194,12 @@ export default function CartSlider({ isOpen, onClose }) {
                           <p className="text-[11px] font-bold text-[#F27318] tracking-widest uppercase">
                             {product.category.name}
                           </p>
+                        )}
+                        {variantSummaryProps(item) && (
+                          <VariantLineSummary
+                            {...variantSummaryProps(item)}
+                            className="text-[12px] text-gray-500 mt-1 space-y-0.5"
+                          />
                         )}
                       </div>
 
@@ -220,7 +228,7 @@ export default function CartSlider({ isOpen, onClose }) {
                           </button>
                         </div>
                         <p className="text-[15px] font-bold text-gray-900">
-                          NRs. {(product.price * item.quantity)?.toLocaleString()}
+                          {formatNPR(lineUnitPrice(item) * item.quantity)}
                         </p>
                       </div>
                     </div>
@@ -238,7 +246,7 @@ export default function CartSlider({ isOpen, onClose }) {
                 Subtotal
               </span>
               <span className="text-2xl font-bold text-gray-900 tracking-tight">
-                NRs. {subtotal.toLocaleString()}
+                {formatNPR(subtotal)}
               </span>
             </div>
 
