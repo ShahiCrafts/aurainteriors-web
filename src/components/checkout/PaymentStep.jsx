@@ -1,8 +1,9 @@
 import { Banknote, Check } from "lucide-react";
 import useCheckoutStore from "../../store/checkoutStore";
+import { useShallow } from "zustand/react/shallow";
 
 export default function PaymentStep() {
-  const { paymentMethod, setPaymentMethod } = useCheckoutStore();
+  const { paymentMethod, setPaymentMethod } = useCheckoutStore(useShallow((state) => ({ paymentMethod: state.paymentMethod, setPaymentMethod: state.setPaymentMethod })));
 
   return (
     <div className="space-y-8 font-dm-sans">

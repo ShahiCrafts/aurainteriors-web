@@ -1,5 +1,6 @@
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import useAuthStore from "../../store/authStore";
+import { useShallow } from "zustand/react/shallow";
 import {
   getAllAddresses,
   getAddress,
@@ -8,22 +9,26 @@ import {
   deleteAddress,
   setDefaultAddress,
 } from "../../api/addressApi";
+import { addressKeys } from "../queryKeys";
 
 // FE-55: the mutation hooks below used to invalidate ["addresses"]
 // and ["address"] — the latter prefix-matches EVERY cached address
 // detail (every id, every user). Mutations now invalidate the
 // caller's list key plus only the mutated address's own detail key,
 // built with the exact shapes useAddresses/useAddress use.
-const addressListKey = () => ["addresses", useAuthStore.getState().user?._id || "guest"];
-const addressDetailKey = (id) => ["address", id, useAuthStore.getState().user?._id || "guest"];
+// Phase 6: the shapes come from hooks/queryKeys (addressKeys) —
+// identical arrays, one construction site.
+const addressListKey = () => addressKeys.list(useAuthStore.getState().user?._id);
+const addressDetailKey = (id) => addressKeys.detail(id, useAuthStore.getState().user?._id);
 
 export const useAddresses = (options = {}) => {
   const userId = useAuthStore(state => state.user?._id);
   return useQuery({
-    queryKey: ["addresses", userId || "guest"],
+    queryKey: addressKeys.list(userId),
     queryFn: async () => {
-      const response = await getAllAddresses();
-      return response.data.data.addresses;
+      // Phase 6: addressApi resolves to the body (see api/addressApi).
+      const body = await getAllAddresses();
+      return body.data.addresses;
     },
     ...options,
     enabled: !!userId && options.enabled !== false,
@@ -33,10 +38,11 @@ export const useAddresses = (options = {}) => {
 export const useAddress = (id) => {
   const userId = useAuthStore(state => state.user?._id);
   return useQuery({
-    queryKey: ["address", id, userId || "guest"],
+    queryKey: addressKeys.detail(id, userId),
     queryFn: async () => {
-      const response = await getAddress(id);
-      return response.data;
+      // Phase 6: the api resolves to the body — the same value this
+      // hook used to derive via response.data.
+      return getAddress(id);
     },
     enabled: !!id && !!userId,
   });
@@ -48,8 +54,7 @@ export const useCreateAddress = () => {
     mutationKey: ["createAddress"],
     mutationFn: async (data) => {
       try {
-        const response = await createAddress(data);
-        return response.data;
+        return await createAddress(data);
       } catch (error) {
         throw error;
       }
@@ -67,8 +72,7 @@ export const useUpdateAddress = () => {
     mutationKey: ["updateAddress"],
     mutationFn: async ({ id, data }) => {
       try {
-        const response = await updateAddress(id, data);
-        return response.data;
+        return await updateAddress(id, data);
       } catch (error) {
         throw error;
       }
@@ -86,8 +90,7 @@ export const useDeleteAddress = () => {
     mutationKey: ["deleteAddress"],
     mutationFn: async (id) => {
       try {
-        const response = await deleteAddress(id);
-        return response.data;
+        return await deleteAddress(id);
       } catch (error) {
         throw error;
       }
@@ -102,7 +105,7 @@ export const useDeleteAddress = () => {
 };
 
 export const useDefaultAddress = () => {
-  const { isAuthenticated } = useAuthStore();
+  const { isAuthenticated } = useAuthStore(useShallow((state) => ({ isAuthenticated: state.isAuthenticated })));
   const { data: addresses, isLoading } = useAddresses({ enabled: isAuthenticated });
   const defaultAddress = addresses?.find((addr) => addr.isDefault) || addresses?.[0];
   return { defaultAddress, isLoading };
@@ -114,8 +117,7 @@ export const useSetDefaultAddress = () => {
     mutationKey: ["setDefaultAddress"],
     mutationFn: async (id) => {
       try {
-        const response = await setDefaultAddress(id);
-        return response.data;
+        return await setDefaultAddress(id);
       } catch (error) {
         throw error;
       }

@@ -1,13 +1,13 @@
 import useAuthStore from "../../store/authStore";
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
-import { toast } from "react-toastify";
+import { toast } from "../../lib/toast";
 import cartApi from "../../api/cartApi";
 import formatError from "../../utils/errorHandler";
+import { cartKeys } from "../queryKeys";
 
-const CART_KEYS = {
-  all: ['cart'],
-  list: () => [...CART_KEYS.all, 'list', useAuthStore.getState().user?._id || 'guest'],
-};
+// Phase 6: key construction lives in hooks/queryKeys (cartKeys) —
+// the arrays are identical to the CART_KEYS literal this replaces.
+const CART_KEYS = cartKeys;
 
 /**
  * FE-47 — cart mutations own their error reporting here in the hook
@@ -45,7 +45,7 @@ const makeCartErrorHandler = (queryClient) => (error) => {
 export const useCart = (options = {}) => {
   const userId = useAuthStore(state => state.user?._id);
   return useQuery({
-    queryKey: [...CART_KEYS.all, 'list', userId || 'guest'],
+    queryKey: CART_KEYS.list(userId),
     queryFn: () => cartApi.getCart(),
     ...options,
     enabled: !!userId && options.enabled !== false,

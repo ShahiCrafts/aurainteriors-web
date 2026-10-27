@@ -76,6 +76,20 @@ export const addressSchema = yup.object().shape({
     isDefault: yup.boolean(),
 });
 
+/**
+ * Phase 6 (REUSE-013) — the guest variant of the address schema.
+ * AddEditAddressModal used to build this locally with its own email
+ * rule (email + required, no maximum). The shared house email rule
+ * won the consolidation: it is the rule shippingSchema and
+ * contactSchema already carry — email + required + max 254, the
+ * server's cap (FE-45). Behaviour note: a >254-char guest email
+ * previously passed client validation and failed only at the
+ * server; it now fails client-side with "Maximum 254 characters".
+ */
+export const guestAddressSchema = addressSchema.shape({
+    email: yup.string().email("Invalid email").required("Email is required").max(254, "Maximum 254 characters"),
+});
+
 export const personalInfoSchema = yup.object().shape({
     firstName: yup.string().required("First name is required").min(2, "Minimum 2 characters").max(50, "Maximum 50 characters"),
     lastName: yup.string().required("Last name is required").min(2, "Minimum 2 characters").max(50, "Maximum 50 characters"),

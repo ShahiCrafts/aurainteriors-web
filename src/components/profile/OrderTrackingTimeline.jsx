@@ -1,4 +1,5 @@
 import { Clock, CheckCircle, Box, Truck } from "lucide-react";
+import { formatDate } from "../../utils/formatDate";
 
 const STEPS = ["pending", "confirmed", "processing", "shipped", "delivered"];
 
@@ -12,7 +13,7 @@ const STATUS_MAP = {
 
 const formatShortDate = (date) => {
   if (!date) return "—";
-  return new Date(date).toLocaleDateString("en-US", { month: "short", day: "numeric" });
+  return formatDate(date, { month: "short", day: "numeric" });
 };
 
 export default function OrderTrackingTimeline({ status, dates = {}, compact = false }) {

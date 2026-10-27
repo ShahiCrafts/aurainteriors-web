@@ -14,12 +14,15 @@ import {
   XCircle,
 } from "lucide-react";
 import { getImageUrl as getImageUrlUtil } from "../../utils/imageUrl";
-import { toast } from "react-toastify";
+import ImageWithFallback from "../fallbacks/ImageWithFallback";
+import { toast } from "../../lib/toast";
 import useAuthStore from "../../store/authStore";
+import { useShallow } from "zustand/react/shallow";
 import { useAddToCart } from "../../hooks/cart/useCartTan";
 import useGuestCartStore from "../../store/guestCartStore";
 import { useRequestReturn } from "../../hooks/order/useOrderTan";
 import { formatNPR } from "../../utils/formatCurrency";
+import { formatDate as formatDateShared } from "../../utils/formatDate";
 import OrderTrackingTimeline from "./OrderTrackingTimeline";
 
 const STATUS_STYLE = {
@@ -45,8 +48,7 @@ export default function OrderCard({ order, defaultExpanded = false }) {
   const [copied, setCopied] = useState(false);
   const getImageUrl = (item) => getImageUrlUtil(item.image, "products");
 
-  const formatDate = (date) =>
-    new Date(date).toLocaleDateString("en-US", { month: "short", day: "numeric", year: "numeric" });
+  const formatDate = (date) => formatDateShared(date, { month: "short", day: "numeric", year: "numeric" });
 
   const status = STATUS_STYLE[order.orderStatus] || STATUS_STYLE.pending;
   const StatusIcon = status.icon;
@@ -77,9 +79,9 @@ export default function OrderCard({ order, defaultExpanded = false }) {
   // Request Return uses useRequestReturn (delivered orders only —
   // the server rejects returns for any other status), and Invoice
   // was removed (no invoice endpoint exists in the client API).
-  const { isAuthenticated } = useAuthStore();
+  const { isAuthenticated } = useAuthStore(useShallow((state) => ({ isAuthenticated: state.isAuthenticated })));
   const { mutate: addToCart } = useAddToCart();
-  const { addItem: addToGuestCart } = useGuestCartStore();
+  const { addItem: addToGuestCart } = useGuestCartStore(useShallow((state) => ({ addItem: state.addItem })));
   const { mutate: requestReturnMutate, isPending: isRequestingReturn } =
     useRequestReturn();
   const [showReturnForm, setShowReturnForm] = useState(false);
@@ -176,7 +178,7 @@ export default function OrderCard({ order, defaultExpanded = false }) {
               className="w-12 h-12 rounded-lg overflow-hidden border-2 border-white bg-white"
               style={{ zIndex: previewItems.length - idx }}
             >
-              <img src={getImageUrl(item)} alt="" className="w-full h-full object-cover" />
+              <ImageWithFallback src={getImageUrl(item)} alt="" loading="lazy" width={48} height={48} className="w-full h-full object-cover" />
             </div>
           ))}
           {extraCount > 0 && (
@@ -272,7 +274,7 @@ export default function OrderCard({ order, defaultExpanded = false }) {
                   className="flex gap-4 min-w-[450px] max-w-[380px] shrink-0 bg-white border border-neutral-200 rounded-xl p-4"
                 >
                   <div className="w-24 h-24 bg-white rounded-lg overflow-hidden shrink-0 border border-neutral-100">
-                    <img src={getImageUrl(item)} alt={item.name} className="w-full h-full object-cover" />
+                    <ImageWithFallback src={getImageUrl(item)} alt={item.name} loading="lazy" width={96} height={96} className="w-full h-full object-cover" />
                   </div>
                   <div className="min-w-0">
                     <h5 className="text-[16px] font-semibold text-neutral-900 leading-snug">

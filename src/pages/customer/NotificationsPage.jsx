@@ -1,4 +1,4 @@
-import { useState, useEffect, useCallback, useRef } from "react";
+import { useState, useEffect } from "react";
 import {
   Bell,
   Trash2,
@@ -14,11 +14,21 @@ import {
   CheckCheck
 } from "lucide-react";
 import useAuthStore from "../../store/authStore";
+import { useShallow } from "zustand/react/shallow";
 import Navbar from "../../layouts/customer/Navbar";
-import notificationApi from "../../api/notificationApi";
 import Skeleton from "../../components/common/Skeleton";
 import Pagination from "../../components/common/Pagination";
 import useNotificationSocket from "../../hooks/notification/useNotificationSocket";
+import { useQueryClient } from "@tanstack/react-query";
+import {
+  useNotifications,
+  useUnreadNotificationCount,
+  useMarkNotificationRead,
+  useMarkMultipleNotificationsRead,
+  useArchiveNotification,
+  NOTIFICATION_KEYS,
+} from "../../hooks/notification/useNotificationsTan";
+import { formatRelative } from "../../utils/formatDate";
 import { Link } from "react-router-dom";
 import { safeActionUrl } from "../../utils/safeUrl";
 
@@ -33,52 +43,46 @@ const notificationTarget = (n) =>
   n.actionUrl ? safeActionUrl(n.actionUrl, { inAppOnly: true }) : null;
 
 export default function NotificationsPage() {
-  const { user, token } = useAuthStore();
-  const [notifications, setNotifications] = useState([]);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState(null);
+  const { user } = useAuthStore(useShallow((state) => ({ user: state.user })));
+  const { token } = useAuthStore(useShallow((state) => ({ token: state.token })));
   const [page, setPage] = useState(1);
-  const [totalPages, setTotalPages] = useState(1);
   const [filter, setFilter] = useState("all"); // all, unread, orders, promos, designs, system
 
   const { socket } = useNotificationSocket(token, user?._id);
-  const [unreadCount, setUnreadCount] = useState(0);
-  const requestSequence = useRef(0);
-  const fetchNotifications = useCallback(async (pageNum = 1) => {
-    if (!user?._id) return;
-    const sequence = ++requestSequence.current;
-    setLoading(true);
-    setError(null);
-    try {
-      const categories = { orders: "order", promos: "promotion", designs: "design", system: "system" };
-      const filters = filter === "unread" ? { isRead: false } : categories[filter] ? { category: categories[filter] } : {};
-      const [response, countResponse] = await Promise.all([
-        notificationApi.getNotifications(pageNum, 20, filters),
-        notificationApi.getUnreadCount(),
-      ]);
-      if (sequence !== requestSequence.current) return;
-      const result = response.data;
-      const lastPage = Math.max(1, result.totalPages);
-      if (pageNum > lastPage) return fetchNotifications(lastPage);
-      setNotifications(result.notifications);
-      setPage(result.page);
-      setTotalPages(lastPage);
-      setUnreadCount(countResponse.data.unreadCount);
-    } catch (err) {
-      if (sequence === requestSequence.current) setError("Failed to load notifications");
-    } finally {
-      if (sequence === requestSequence.current) setLoading(false);
-    }
-  }, [user?._id, filter]);
+  const queryClient = useQueryClient();
 
-  useEffect(() => {
-    fetchNotifications(1);
-    return () => { requestSequence.current++; };
-  }, [fetchNotifications]);
+  // REUSE-016 / PERF-F-007: server state is React Query now
+  // (useNotificationsTan) — the hand-rolled fetch and sequence-ref
+  // logic is gone; the query key (page + filters) supersedes it.
+  const categories = { orders: "order", promos: "promotion", designs: "design", system: "system" };
+  const queryFilters = filter === "unread" ? { isRead: false } : categories[filter] ? { category: categories[filter] } : {};
+  const listQuery = useNotifications({ page, limit: 20, filters: queryFilters, enabled: !!user?._id });
+  const unreadQuery = useUnreadNotificationCount({ enabled: !!user?._id });
+  const markReadMutation = useMarkNotificationRead();
+  const markMultipleReadMutation = useMarkMultipleNotificationsRead();
+  const archiveMutation = useArchiveNotification();
 
+  const result = listQuery.data?.data;
+  const notifications = result?.notifications || [];
+  const totalPages = Math.max(1, result?.totalPages || 1);
+  const unreadCount = unreadQuery.data ?? 0;
+  const loading = listQuery.isFetching;
+  const error = listQuery.isError ? "Failed to load notifications" : null;
+
+  // The pre-Query fetch clamped an out-of-range page to the last
+  // page; the server clamps the page it echoes back, and the list
+  // above comes from that response — the pager displays the clamped
+  // page so state and view cannot diverge.
+  const displayPage = Math.min(page, totalPages);
+
+  // Socket updates refresh page 1 (the pre-Query behaviour refetched
+  // page 1 on every event).
   useEffect(() => {
     if (!socket) return;
-    const refresh = () => fetchNotifications(1);
+    const refresh = () => {
+      setPage(1);
+      queryClient.invalidateQueries({ queryKey: NOTIFICATION_KEYS.all });
+    };
     socket.on("notification:new", refresh);
     socket.on("notification:broadcast", refresh);
     socket.on("connect", refresh);
@@ -87,12 +91,11 @@ export default function NotificationsPage() {
       socket.off("notification:broadcast", refresh);
       socket.off("connect", refresh);
     };
-  }, [socket, fetchNotifications]);
+  }, [socket, queryClient]);
 
   const handleMarkAsRead = async (id) => {
     try {
-      await notificationApi.markAsRead(id);
-      await fetchNotifications(page);
+      await markReadMutation.mutateAsync(id);
     } catch (err) {
       console.error("Failed to mark read:", err);
     }
@@ -103,9 +106,7 @@ export default function NotificationsPage() {
       // Only mark the unread notifications on this page.
       const ids = notifications.filter(n => !n.isRead).map(n => n._id);
       if (ids.length === 0) return;
-
-      await notificationApi.markMultipleAsRead(ids);
-      await fetchNotifications(page);
+      await markMultipleReadMutation.mutateAsync(ids);
     } catch (err) {
       console.error("Failed to mark all read:", err);
     }
@@ -113,8 +114,7 @@ export default function NotificationsPage() {
 
   const handleDelete = async (id) => {
     try {
-      await notificationApi.archiveNotification(id);
-      await fetchNotifications(page);
+      await archiveMutation.mutateAsync(id);
     } catch (err) {
       console.error("Failed to delete:", err);
     }
@@ -142,20 +142,7 @@ export default function NotificationsPage() {
 
   const filteredNotifications = notifications;
 
-  const formatTimeAgo = (date) => {
-    const seconds = Math.floor((new Date() - new Date(date)) / 1000);
-    let interval = seconds / 31536000;
-    if (interval > 1) return Math.floor(interval) + " years ago";
-    interval = seconds / 2592000;
-    if (interval > 1) return Math.floor(interval) + " months ago";
-    interval = seconds / 86400;
-    if (interval > 1) return Math.floor(interval) + " days ago";
-    interval = seconds / 3600;
-    if (interval > 1) return Math.floor(interval) + " hours ago";
-    interval = seconds / 60;
-    if (interval > 1) return Math.floor(interval) + " minutes ago";
-    return "Just now";
-  };
+  const formatTimeAgo = (date) => formatRelative(date);
 
   // Filter Tabs
   const filters = [
@@ -238,7 +225,7 @@ export default function NotificationsPage() {
             ) : error ? (
               <div className="p-5 text-center text-red-600" role="alert">
                 <p>{error}</p>
-                <button onClick={() => fetchNotifications(page)} className="mt-3 underline">Try again</button>
+                <button onClick={() => listQuery.refetch()} className="mt-3 underline">Try again</button>
               </div>
             ) : filteredNotifications.length === 0 ? (
               <div className="flex flex-col items-center justify-center py-20 bg-white rounded-2xl border border-gray-100 shadow-sm text-center">
@@ -337,9 +324,9 @@ export default function NotificationsPage() {
           <div className="mt-10">
             <Pagination
               variant="simple"
-              page={page}
+              page={displayPage}
               totalPages={totalPages}
-              onPageChange={(p) => fetchNotifications(p)}
+              onPageChange={(p) => setPage(p)}
               disabled={loading}
             />
           </div>

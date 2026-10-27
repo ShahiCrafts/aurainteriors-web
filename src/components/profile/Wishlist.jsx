@@ -1,26 +1,20 @@
-import { useEffect, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { Link } from "react-router-dom";
 import {
   Heart,
   Search,
   ShoppingCart,
   ChevronDown,
-  Star,
   ArrowRight,
   X,
   Filter,
 } from "lucide-react";
-import { ProductCardSkeleton, WishlistSkeleton } from "../common/Skeleton";
+import { WishlistSkeleton } from "../common/Skeleton";
 import Pagination from "../common/Pagination";
-import { toast } from "react-toastify";
-import {
-  useWishlist,
-  useRemoveFromWishlist,
-} from "../../hooks/cart/useWishlistTan";
+import ProductCard from "../shop/ProductCard";
+import { toast } from "../../lib/toast";
+import { useWishlist } from "../../hooks/cart/useWishlistTan";
 import { useAddToCart } from "../../hooks/cart/useCartTan";
-import { getProductImageUrl } from "../../utils/imageUrl";
-import { formatNPR } from "../../utils/formatCurrency";
-import formatError from "../../utils/errorHandler";
 
 const ITEMS_PER_PAGE = 8;
 
@@ -31,50 +25,51 @@ export default function Wishlist() {
   const [page, setPage] = useState(1);
 
   const { data, isLoading, error } = useWishlist();
-  const { mutate: removeFromWishlist, isPending: isRemoving } =
-    useRemoveFromWishlist();
-  const {
-    mutate: addToCart,
-    mutateAsync: addToCartAsync,
-    isPending: isAddingToCart,
-  } = useAddToCart();
+  const { mutateAsync: addToCartAsync } = useAddToCart();
   const [isAddingAll, setIsAddingAll] = useState(false);
 
-  const wishlistItems = data?.data?.wishlist?.items || [];
+  const wishlistItems = useMemo(
+    () => data?.data?.wishlist?.items || [],
+    [data]
+  );
 
-  const categories = [
-    ...new Set(
-      wishlistItems.map((item) => item.product?.category?.name).filter(Boolean),
-    ),
-  ];
+  const categories = useMemo(
+    () => [
+      ...new Set(
+        wishlistItems.map((item) => item.product?.category?.name).filter(Boolean),
+      ),
+    ],
+    [wishlistItems]
+  );
 
-  const filteredItems = wishlistItems
-    .filter((item) => {
-      const product = item.product;
-      if (!product) return false;
-      const matchesSearch =
-        searchQuery === "" ||
-        product.name?.toLowerCase().includes(searchQuery.toLowerCase());
-      const matchesCategory =
-        categoryFilter === "all" || product.category?.name === categoryFilter;
-      return matchesSearch && matchesCategory;
-    })
-    .sort((a, b) => {
-      if (sortBy === "recent") return new Date(b.addedAt) - new Date(a.addedAt);
-      if (sortBy === "price-low")
-        return (a.product?.price || 0) - (b.product?.price || 0);
-      if (sortBy === "price-high")
-        return (b.product?.price || 0) - (a.product?.price || 0);
-      if (sortBy === "name")
-        return (a.product?.name || "").localeCompare(b.product?.name || "");
-      return 0;
-    });
+  const filteredItems = useMemo(
+    () =>
+      wishlistItems
+        .filter((item) => {
+          const product = item.product;
+          if (!product) return false;
+          const matchesSearch =
+            searchQuery === "" ||
+            product.name?.toLowerCase().includes(searchQuery.toLowerCase());
+          const matchesCategory =
+            categoryFilter === "all" || product.category?.name === categoryFilter;
+          return matchesSearch && matchesCategory;
+        })
+        .sort((a, b) => {
+          if (sortBy === "recent") return new Date(b.addedAt) - new Date(a.addedAt);
+          if (sortBy === "price-low")
+            return (a.product?.price || 0) - (b.product?.price || 0);
+          if (sortBy === "price-high")
+            return (b.product?.price || 0) - (a.product?.price || 0);
+          if (sortBy === "name")
+            return (a.product?.name || "").localeCompare(b.product?.name || "");
+          return 0;
+        }),
+    [wishlistItems, searchQuery, categoryFilter, sortBy]
+  );
 
   const totalPages = Math.ceil(filteredItems.length / ITEMS_PER_PAGE);
 
-  // FE-27: never strand on an out-of-range page — when removals or
-  // filters shrink the list below the current page, clamp to the last
-  // page that still has items.
   useEffect(() => {
     if (totalPages > 0 && page > totalPages) setPage(totalPages);
   }, [page, totalPages]);
@@ -84,30 +79,6 @@ export default function Wishlist() {
     page * ITEMS_PER_PAGE,
   );
 
-  const handleRemove = (productId) => {
-    removeFromWishlist(productId, {
-      onSuccess: () => toast.success("Removed from wishlist"),
-      onError: (err) =>
-        toast.error(formatError(err, "Failed to remove from wishlist")),
-    });
-  };
-
-  const handleAddToCart = (product) => {
-    // FE-47: cart errors are reported by the cart hook itself.
-    addToCart(
-      { productId: product._id, quantity: 1 },
-      {
-        onSuccess: () => toast.success(`${product.name} added to cart`),
-      },
-    );
-  };
-
-  // FE-27: success may only be announced after the requests resolve,
-  // and the report must be the real outcome. The old code fired one
-  // mutation per item and toasted success synchronously, so a partial
-  // failure looked identical to success; the shared isPending flag also
-  // flipped off when the FIRST mutation settled, re-enabling the button
-  // mid-flight — this flow tracks its own pending state instead.
   const handleAddAllToCart = async () => {
     const targets = filteredItems.filter((item) => item.product);
     if (targets.length === 0 || isAddingAll) return;
@@ -136,8 +107,6 @@ export default function Wishlist() {
     }
   };
 
-  const getImageUrl = (product) => getProductImageUrl(product);
-
   if (isLoading) {
     return <WishlistSkeleton />;
   }
@@ -162,7 +131,6 @@ export default function Wishlist() {
 
   return (
     <div className="h-full flex flex-col space-y-8">
-      {/* Header Info */}
       <div className="flex items-center justify-between shrink-0">
         <div>
           <h2 className="text-[18px] font-semibold text-[#1A1714]">Your Wishlist</h2>
@@ -179,10 +147,8 @@ export default function Wishlist() {
 
       {!isEmpty ? (
         <>
-          {/* Controls Panel */}
-          <div className="flex flex-col md:flex-row gap-4 items-stretch md:items-center justify-between bg-neutral-50 p-4 rounded-xl shrink-0">
+          <div className="flex flex-col md:flex-row gap-4 items-stretch md:items-center justify-between shrink-0">
             <div className="flex flex-col sm:flex-row gap-3 items-stretch sm:items-center flex-1">
-              {/* Search Box */}
               <div className="relative flex-1 max-w-sm">
                 <Search
                   size={15}
@@ -196,7 +162,7 @@ export default function Wishlist() {
                     setSearchQuery(e.target.value);
                     setPage(1);
                   }}
-                  className="w-full pl-10 pr-9 py-2 border border-neutral-200 rounded-lg focus:border-[#F27318] focus:bg-white outline-none text-sm text-[#1A1714] placeholder:text-neutral-400 bg-white transition-all font-medium"
+                  className="w-full pl-10 pr-9 py-3 border border-neutral-200 rounded-lg focus:border-brand focus:bg-white outline-none text-sm text-[#1A1714] placeholder:text-neutral-400 bg-white transition-all font-medium"
                 />
                 {searchQuery && (
                   <button
@@ -208,7 +174,6 @@ export default function Wishlist() {
                 )}
               </div>
 
-              {/* Category Filter */}
               <div className="relative min-w-[150px]">
                 <select
                   value={categoryFilter}
@@ -216,7 +181,7 @@ export default function Wishlist() {
                     setCategoryFilter(e.target.value);
                     setPage(1);
                   }}
-                  className="w-full pl-3.5 pr-9 py-2 border border-neutral-200 rounded-lg focus:border-[#F27318] focus:bg-white outline-none text-sm text-[#1A1714] bg-white appearance-none cursor-pointer font-medium transition-all"
+                  className="w-full pl-3.5 pr-9 py-3 border border-neutral-200 rounded-lg focus:border-brand focus:bg-white outline-none text-sm text-[#1A1714] bg-white appearance-none cursor-pointer font-medium transition-all"
                 >
                   <option value="all">All Categories</option>
                   {categories.map((cat) => (
@@ -231,7 +196,6 @@ export default function Wishlist() {
                 />
               </div>
 
-              {/* Sorting Filter */}
               <div className="relative min-w-[150px]">
                 <select
                   value={sortBy}
@@ -239,7 +203,7 @@ export default function Wishlist() {
                     setSortBy(e.target.value);
                     setPage(1);
                   }}
-                  className="w-full pl-3.5 pr-9 py-2 border border-neutral-200 rounded-lg focus:border-[#F27318] focus:bg-white outline-none text-sm text-[#1A1714] bg-white appearance-none cursor-pointer font-medium transition-all"
+                  className="w-full pl-3.5 pr-9 py-3 border border-neutral-200 rounded-lg focus:border-brand focus:bg-white outline-none text-sm text-[#1A1714] bg-white appearance-none cursor-pointer font-medium transition-all"
                 >
                   <option value="recent">Recently Added</option>
                   <option value="price-low">Price: Low to High</option>
@@ -253,18 +217,16 @@ export default function Wishlist() {
               </div>
             </div>
 
-            {/* Quick Actions */}
             <button
               onClick={handleAddAllToCart}
               disabled={isAddingAll || filteredItems.length === 0}
-              className="flex items-center justify-center gap-2 px-5 py-2 bg-[#F27318] hover:bg-[#E6651B] text-white text-[13px] font-medium rounded-lg transition-colors whitespace-nowrap disabled:opacity-50"
+              className="flex items-center justify-center gap-2 px-5 py-3 bg-brand hover:bg-[#E6651B] text-white text-[13px] font-medium rounded-lg transition-colors whitespace-nowrap disabled:opacity-50"
             >
               <ShoppingCart size={13} />
               {isAddingAll ? "Adding..." : "Add All to Cart"}
             </button>
           </div>
 
-          {/* Grid Layout */}
           {filteredItems.length === 0 ? (
             <div className="flex-1 min-h-0 flex flex-col items-center justify-center text-center bg-neutral-50 rounded-2xl">
               <Filter size={32} className="text-neutral-300 mb-4" />
@@ -275,113 +237,19 @@ export default function Wishlist() {
             </div>
           ) : (
             <div className="flex-1 min-h-0 overflow-y-auto space-y-8">
-              {/* Product Grid */}
-              <div className="grid grid-cols-2 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
+              <div className="grid grid-cols-2 gap-4 md:grid-cols-3 md:gap-5 lg:grid-cols-2 xl:grid-cols-[repeat(auto-fill,calc((min(100vw-64px,1440px)-80px)*0.2))]">
                 {paginatedItems.map((item) => {
                   const product = item.product;
                   if (!product) return null;
-                  // FE-14: never invent a rating — 4.5 was hardcoded here
-                  // for every unrated product.
-                  const ratingAverage = product.rating?.average || 0;
-                  const ratingCount = product.rating?.count || 0;
-                  const hasRating = ratingAverage > 0 && ratingCount > 0;
-
                   return (
-                    <div
+                    <ProductCard
                       key={item._id || product._id}
-                      className="group bg-white border border-neutral-200 rounded-xl p-3 flex flex-col transition-all duration-300 hover:border-neutral-300"
-                    >
-                      {/* Image Area */}
-                      <Link
-                        to={`/product/${encodeURIComponent(product.slug || product._id)}`}
-                        className="relative aspect-[16/11] rounded-lg overflow-hidden bg-neutral-50 mb-3.5"
-                      >
-                        <img
-                          src={getImageUrl(product)}
-                          alt={product.name}
-                          className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105"
-                        />
-
-                        {/* Top-Right Badges/Buttons */}
-                        <div className="absolute top-2 right-2 flex flex-col gap-1.5 z-10">
-                          <button
-                            onClick={(e) => {
-                              e.preventDefault();
-                              e.stopPropagation();
-                              handleRemove(product._id);
-                            }}
-                            disabled={isRemoving}
-                            className="w-7 h-7 rounded-md bg-white/90 backdrop-blur-md flex items-center justify-center text-[#F27318] hover:text-red-600 hover:bg-white transition-all"
-                            title="Remove from wishlist"
-                          >
-                            <Heart size={13} className="fill-red-500 text-red-500" />
-                          </button>
-                          <button
-                            onClick={(e) => {
-                              e.preventDefault();
-                              e.stopPropagation();
-                              handleAddToCart(product);
-                            }}
-                            disabled={isAddingToCart}
-                            className="w-7 h-7 rounded-md bg-white/90 backdrop-blur-md flex items-center justify-center text-neutral-500 hover:text-[#F27318] hover:bg-white transition-all"
-                            title="Add to cart"
-                          >
-                            <ShoppingCart size={13} />
-                          </button>
-                        </div>
-                      </Link>
-
-                      {/* Info Area */}
-                      <div className="flex flex-col flex-1">
-                        <Link to={`/product/${encodeURIComponent(product.slug || product._id)}`} className="space-y-2">
-                          <h3 className="text-[14px] font-bold text-[#1A1714] group-hover:text-[#F27318] transition-colors leading-snug line-clamp-2 h-9">
-                            {product.name}
-                          </h3>
-
-                          {/* Ratings */}
-                          {hasRating ? (
-                            <div className="flex items-center gap-1 text-[11px] text-black/40">
-                              <div className="flex items-center text-[#F27318] gap-0.5">
-                                {[...Array(5)].map((_, i) => (
-                                  <Star
-                                    key={i}
-                                    size={9}
-                                    className={
-                                      i < Math.round(ratingAverage)
-                                        ? "fill-[#F27318] text-[#F27318]"
-                                        : "fill-black/10 text-transparent"
-                                    }
-                                  />
-                                ))}
-                              </div>
-                              <span className="font-semibold ml-0.5">({ratingAverage.toFixed(1)})</span>
-                            </div>
-                          ) : (
-                            <div className="flex items-center gap-1 text-[11px] text-black/40">
-                              <span>No reviews yet</span>
-                            </div>
-                          )}
-
-                          {/* Price */}
-                          <div className="pt-1.5 flex items-baseline gap-2">
-                            <span className="text-[15px] font-black text-[#1A1714]">
-                              {formatNPR(product.price)}
-                            </span>
-                            {product.originalPrice && product.originalPrice > product.price && (
-                              <span className="text-[11px] text-black/25 line-through">
-                                {formatNPR(product.originalPrice)}
-                              </span>
-                            )}
-                          </div>
-                        </Link>
-                      </div>
-                    </div>
+                      product={product}
+                    />
                   );
                 })}
               </div>
 
-              {/* Pagination — the shared Pagination, customer
-                  theme (Wave A); the count footer below stays. */}
               {totalPages > 1 && (
                 <div className="py-6 border-t border-neutral-100">
                   <Pagination
@@ -395,17 +263,17 @@ export default function Wishlist() {
                 </div>
               )}
 
-              {/* Count footer */}
-              <p className="text-[11px] text-neutral-400 text-center tracking-wide">
-                Showing page {page} of {totalPages || 1} · {filteredItems.length} total items
-              </p>
+              {totalPages > 1 && (
+                <p className="text-[11px] text-neutral-400 text-center tracking-wide">
+                  Showing page {page} of {totalPages || 1} · {filteredItems.length} total items
+                </p>
+              )}
             </div>
           )}
         </>
       ) : (
-        /* Empty State */
         <div className="flex-1 min-h-0 flex flex-col items-center justify-center text-center bg-neutral-50 rounded-2xl">
-          <div className="w-16 h-16 rounded-2xl bg-white flex items-center justify-center mb-5 text-[#F27318]">
+          <div className="w-16 h-16 rounded-2xl bg-white flex items-center justify-center mb-5 text-brand">
             <Heart size={26} className="fill-[#FFF8F2]" />
           </div>
           <h3 className="text-[18px] font-semibold text-[#1A1714]">Your wishlist is empty</h3>
@@ -414,7 +282,7 @@ export default function Wishlist() {
           </p>
           <Link
             to="/shop"
-            className="inline-flex items-center gap-2 px-6 py-2.5 bg-[#F27318] hover:bg-[#E6651B] text-white text-[14px] font-medium rounded-lg transition-all"
+            className="inline-flex items-center gap-2 px-6 py-2.5 bg-brand hover:bg-[#E6651B] text-white text-[14px] font-medium rounded-lg transition-all"
           >
             Explore Catalog
             <ArrowRight size={13} />
