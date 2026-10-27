@@ -22,7 +22,7 @@
     "axios": "^1.20.0",
     "capacitor-arcore": "https://github.com/ShahiCrafts/arcore-react.git#334a9ab9158c2e63f0ddc483762f4a94cb5a38be",
     "framer-motion": "^12.23.25",
-    "lottie-react": "^2.4.1",
+    "lottie-react": "^3.1.2",
     "lucide-react": "^0.555.0",
     "qrcode.react": "^4.2.0",
     "react": "^19.2.0",
