@@ -6,7 +6,7 @@ import {
     sendTrendEmail,
     getNewsletterStats,
 } from '../../api/newsletterApi';
-import { toast } from 'react-toastify';
+import { toast } from "../../lib/toast";
 import { formatError } from '../../utils/errorHandler';
 import { reportSendOutcome } from '../../utils/queuedSend';
 import { scopedAdminKey } from '../../lib/adminScope';

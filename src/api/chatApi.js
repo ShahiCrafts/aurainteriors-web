@@ -34,10 +34,13 @@ export const uploadChatAttachment = async (chatId, file, { signal, onProgress } 
   if (preparedError) throw new Error(preparedError);
   const formData = new FormData();
   formData.append("file", prepared);
-  const guestSessionId = getGuestSessionId();
+  // VULN-001: the guest credential travels in the x-guest-session-id
+  // header (always accepted server-side), never in the URL query —
+  // the server upload authoriser now uses the same gated extractor
+  // as every other chat path, and the query source is off by default.
+  const guestHeaders = guestSessionHeaders();
   const response = await api.post(`/chats/${encodeURIComponent(chatId)}/attachments`, formData, {
-    params: guestSessionId ? { guestSessionId } : {},
-    headers: { "Content-Type": "multipart/form-data" }, timeout: 60000,
+    headers: { "Content-Type": "multipart/form-data", ...(guestHeaders || {}) }, timeout: 60000,
     // FE-31: callers upload in parallel and need per-file progress and
     // an abort path; both ride the axios config.
     signal,

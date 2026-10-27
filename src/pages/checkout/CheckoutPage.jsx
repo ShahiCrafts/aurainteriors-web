@@ -1,6 +1,7 @@
 import { useEffect, useMemo, useRef, useState } from "react";
 import { useNavigate, Link } from "react-router-dom";
 import useCheckoutStore from "../../store/checkoutStore";
+import { useShallow } from "zustand/react/shallow";
 import useAuthStore from "../../store/authStore";
 import useGuestCartStore from "../../store/guestCartStore";
 import { useDefaultAddress } from "../../hooks/profile/useAddressTan";
@@ -11,14 +12,17 @@ import {
 } from "../../hooks/cart/useCartTan";
 import { usePreviewDiscount } from "../../hooks/admin/useDiscountTan";
 import { useGuestCheckout, useCheckout } from "../../hooks/order/useOrderTan";
+import { useCheckoutTotals } from "../../hooks/useCheckoutTotals";
+import { useShippingFormSync } from "../../hooks/useShippingFormSync";
 import Navbar from "../../layouts/customer/Navbar";
 import Footer from "../../layouts/customer/Footer";
 import ShippingStep from "../../components/checkout/ShippingStep";
+import OrderSummary from "../../components/checkout/OrderSummary";
+import QuantitySelector from "../../components/ui/QuantitySelector";
 import PaymentStep from "../../components/checkout/PaymentStep";
-import { toast } from "react-toastify";
+import { toast } from "../../lib/toast";
 import {
   ChevronLeft,
-  Plus,
   Minus,
   Trash2,
   Tag,
@@ -28,6 +32,7 @@ import {
 } from "lucide-react";
 import Skeleton from "../../components/common/Skeleton";
 import { getProductImageUrl } from "../../utils/imageUrl";
+import ImageWithFallback from "../../components/fallbacks/ImageWithFallback";
 import VariantLineSummary from "../../components/cart/VariantLineSummary";
 import { variantSummaryProps, lineUnitPrice } from "../../utils/cartLine";
 import formatError from "../../utils/errorHandler";
@@ -64,9 +69,8 @@ function SelectionCheckbox({ checked, indeterminate, onChange, ariaLabel }) {
 
 export default function CheckoutPage() {
   const navigate = useNavigate();
-  const { isAuthenticated, user } = useAuthStore();
-  const {
-    guestInfo,
+  const { isAuthenticated, user } = useAuthStore(useShallow((state) => ({ isAuthenticated: state.isAuthenticated, user: state.user })));
+  const { guestInfo,
     setGuestInfo,
     shippingAddress,
     shippingAddressId,
@@ -83,18 +87,13 @@ export default function CheckoutPage() {
     setStep,
     getGuestCheckoutData,
     getAuthenticatedCheckoutData,
-    reset,
-  } = useCheckoutStore();
+    reset, } = useCheckoutStore(useShallow((state) => ({ guestInfo: state.guestInfo, setGuestInfo: state.setGuestInfo, shippingAddress: state.shippingAddress, shippingAddressId: state.shippingAddressId, setShippingAddress: state.setShippingAddress, setShippingAddressId: state.setShippingAddressId, appliedDiscount: state.appliedDiscount, setAppliedDiscount: state.setAppliedDiscount, clearDiscount: state.clearDiscount, paymentMethod: state.paymentMethod, setPaymentMethod: state.setPaymentMethod, currentStep: state.currentStep, nextStep: state.nextStep, prevStep: state.prevStep, setStep: state.setStep, getGuestCheckoutData: state.getGuestCheckoutData, getAuthenticatedCheckoutData: state.getAuthenticatedCheckoutData, reset: state.reset })));
 
   const { data: cartData, isLoading: isCartLoading } = useCart({
     enabled: isAuthenticated,
   });
 
-  const {
-    items: guestCartItems,
-    updateItemQuantity: updateGuestCartQuantity,
-    removeItem: removeGuestCartItem,
-  } = useGuestCartStore();
+  const { guestCartItems, updateGuestCartQuantity, removeGuestCartItem } = useGuestCartStore(useShallow((state) => ({ guestCartItems: state.items, updateGuestCartQuantity: state.updateItemQuantity, removeGuestCartItem: state.removeItem })));
 
   const { mutate: updateCartItem, isPending: isUpdating } = useUpdateCartItem();
   const { mutate: removeFromCart, isPending: isRemoving } = useRemoveFromCart();
@@ -200,16 +199,11 @@ export default function CheckoutPage() {
     setSelectedItemIds(allSelected ? new Set() : new Set(cartItems.map((item) => item._id)));
   };
 
-  // Phase 7 (catalog): a variant line prices at its variant —
-  // the Phase 4 price authority — never the product scalar.
-  const subtotal = selectedCartItems.reduce(
-    (sum, item) => sum + lineUnitPrice(item) * item.quantity,
-    0,
-  );
-  const promoDiscount = appliedDiscount ? Math.round(subtotal * appliedDiscount.discountPercentage / 100) : 0;
-  const shippingCost = 0;
-  const taxAmount = 0;
-  const total = subtotal - promoDiscount + shippingCost + taxAmount;
+  // Phase 6 (REUSE-010): the totals arithmetic lives in
+  // hooks/useCheckoutTotals — characterization-tested bit-for-bit
+  // (a variant line prices at its variant, never the product scalar).
+  const { subtotal, promoDiscount, shippingCost, taxAmount, total } =
+    useCheckoutTotals(selectedCartItems, appliedDiscount);
 
   const getImageUrl = (product) => getProductImageUrl(product);
 
@@ -219,88 +213,20 @@ export default function CheckoutPage() {
     setPaymentMethod("cod");
   }, []);
 
-  useEffect(() => {
-    if (isAuthenticated && user) {
-      const userData = {
-        email: user.email || "",
-        firstName: user.firstName || "",
-        lastName: user.lastName || "",
-        phone: user.phone || "",
-      };
-      const state = useCheckoutStore.getState();
-      const guestInfoChanged =
-        state.guestInfo.email !== userData.email ||
-        state.guestInfo.firstName !== userData.firstName ||
-        state.guestInfo.lastName !== userData.lastName ||
-        state.guestInfo.phone !== userData.phone;
-
-      if (guestInfoChanged) {
-        setGuestInfo(userData);
-      }
-
-      resetForm({
-        firstName: userData.firstName,
-        lastName: userData.lastName,
-        email: userData.email,
-        phone: userData.phone,
-        addressLine1: state.shippingAddress.addressLine1 || "",
-        city: state.shippingAddress.city || "",
-        postalCode: state.shippingAddress.postalCode || "",
-        country: state.shippingAddress.country || "Nepal",
-        state: state.shippingAddress.state || "",
-      });
-    }
-  }, [isAuthenticated, user, setGuestInfo, resetForm]);
-
-  useEffect(() => {
-    if (!isAuthenticated || !user || !defaultAddress || shippingAddressId) {
-      return;
-    }
-
-    const hasSavedShippingData = Boolean(
-      shippingAddress.addressLine1 ||
-        shippingAddress.city ||
-        shippingAddress.postalCode ||
-        shippingAddress.state ||
-        shippingAddress.phone,
-    );
-
-    if (hasSavedShippingData) {
-      return;
-    }
-
-    const defaultShippingAddress = {
-      phone: defaultAddress.phone || user.phone || "",
-      addressLine1: defaultAddress.addressLine1 || "",
-      addressLine2: defaultAddress.addressLine2 || "",
-      city: defaultAddress.city || "",
-      state: defaultAddress.state || "",
-      postalCode: defaultAddress.postalCode || "",
-      country: defaultAddress.country || "Nepal",
-    };
-
-    setShippingAddress(defaultShippingAddress);
-    setShippingAddressId(defaultAddress._id);
-    setValue("phone", defaultShippingAddress.phone, { shouldDirty: false });
-    setValue("addressLine1", defaultShippingAddress.addressLine1, {
-      shouldDirty: false,
-    });
-    setValue("city", defaultShippingAddress.city, { shouldDirty: false });
-    setValue("state", defaultShippingAddress.state, { shouldDirty: false });
-    setValue("postalCode", defaultShippingAddress.postalCode, {
-      shouldDirty: false,
-    });
-    setValue("country", defaultShippingAddress.country, { shouldDirty: false });
-  }, [
-    defaultAddress,
+  // Phase 6 (REUSE-013): account/default-address -> form sync
+  // lives in hooks/useShippingFormSync (effects moved verbatim).
+  useShippingFormSync({
     isAuthenticated,
+    user,
+    defaultAddress,
     shippingAddress,
     shippingAddressId,
+    setGuestInfo,
     setShippingAddress,
     setShippingAddressId,
+    resetForm,
     setValue,
-    user,
-  ]);
+  });
 
   
 
@@ -596,9 +522,12 @@ export default function CheckoutPage() {
                             {/* Item */}
                             <div className="flex items-center gap-4 min-w-0">
                               <div className="w-16 h-16 rounded-lg overflow-hidden bg-[#FCFBFA] border border-neutral-100 shrink-0">
-                                <img
+                                <ImageWithFallback
                                   src={getImageUrl(item.product)}
                                   alt={item.product?.name}
+                                  loading="lazy"
+                                  width={64}
+                                  height={64}
                                   className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
                                 />
                               </div>
@@ -621,35 +550,19 @@ export default function CheckoutPage() {
                               </div>
                             </div>
 
-                            {/* Qty */}
+                            {/* Qty — Phase 6 (REUSE-010): shared
+                                QuantitySelector; same per-click update
+                                path and the same clamps (min 1, disabled
+                                while an update is pending). */}
                             <div className="flex justify-center">
-                              <div className="flex items-center border border-neutral-200 rounded-lg px-1 py-1 bg-white">
-                                <button
-                                  type="button"
-                                  onClick={() =>
-                                    handleUpdateQuantity(item._id, item.quantity - 1)
-                                  }
-                                  disabled={item.quantity <= 1 || isUpdating}
-                                  className="p-1 hover:text-[#F27318] transition-colors disabled:opacity-30 disabled:hover:text-inherit disabled:cursor-not-allowed"
-                                  aria-label="Decrease quantity"
-                                >
-                                  <Minus size={14} />
-                                </button>
-                                <span className="w-8 text-center text-[14px] font-bold">
-                                  {item.quantity}
-                                </span>
-                                <button
-                                  type="button"
-                                  onClick={() =>
-                                    handleUpdateQuantity(item._id, item.quantity + 1)
-                                  }
-                                  disabled={isUpdating}
-                                  className="p-1 hover:text-[#F27318] transition-colors disabled:opacity-30 disabled:cursor-not-allowed"
-                                  aria-label="Increase quantity"
-                                >
-                                  <Plus size={14} />
-                                </button>
-                              </div>
+                              <QuantitySelector
+                                size="sm"
+                                value={item.quantity}
+                                onChange={(next) =>
+                                  handleUpdateQuantity(item._id, next)
+                                }
+                                disabled={isUpdating}
+                              />
                             </div>
 
                             {/* Price */}
@@ -717,70 +630,18 @@ export default function CheckoutPage() {
             </div>
           </div>
 
-          {/* Right Side: Order Summary (Sidepanel) */}
-          <div className="w-full lg:w-[380px] xl:w-[512px] shrink-0 bg-gray-100">
-            <div className="lg:sticky lg:top-20 px-4 sm:px-6 lg:px-12 py-12">
-              <div className="bg-white rounded-xl overflow-hidden">
-
-                {/* Header */}
-                <div className="px-6 py-5">
-                  <h2 className="text-[20px] font-semibold text-[#1A1714]">
-                    Order Summary
-                    <span className="ml-2 text-[15px] font-medium text-neutral-500">
-                      ({selectedCartItems.length} {selectedCartItems.length === 1 ? "item" : "items"})
-                    </span>
-                  </h2>
-                </div>
-
-                <div className="px-6 pb-6 space-y-5">
-                  {/* Line items */}
-                  <div className="space-y-5">
-                    <div className="flex justify-between items-center text-[16px]">
-                      <span className="text-neutral-500">Subtotal</span>
-                      <span className="font-semibold text-[#1A1714]">
-                        {formatNPR(subtotal)}
-                      </span>
-                    </div>
-
-                    {promoDiscount > 0 && (
-                      <div className="flex justify-between items-center text-[16px]">
-                        <span className="text-emerald-600 font-medium flex items-center gap-1.5">
-                          <Tag size={13} />
-                          Discount
-                        </span>
-                        <span className="font-semibold text-emerald-600">
-                          − {formatNPR(promoDiscount)}
-                        </span>
-                      </div>
-                    )}
-
-                    <div className="flex justify-between items-center text-[16px]">
-                      <span className="text-neutral-500">Tax</span>
-                      <span className="font-semibold text-[#1A1714]">
-                        {formatNPR(taxAmount)}
-                      </span>
-                    </div>
-
-                    <div className="flex justify-between items-center text-[16px]">
-                      <span className="text-neutral-500">Shipping</span>
-                      <span className={`font-medium ${shippingCost === 0 ? "text-emerald-600" : "text-[#1A1714]"}`}>
-                        {shippingCost === 0 ? "Free" : formatNPR(shippingCost)}
-                      </span>
-                    </div>
-                  </div>
-
-                  <div className="h-px w-full bg-[repeating-linear-gradient(to_right,#d4d4d4_0_10px,transparent_10px_18px)]" />
-                  <div className="flex justify-between items-center">
-                    <span className="text-[20px] font-semibold text-[#1A1714]">Total</span>
-                    <div className="text-right">
-                      <p className="text-[24px] font-semibold text-[#1A1714] leading-none">
-                        {formatNPR(total)}
-                      </p>
-                      <p className="text-[13px] text-neutral-500 mt-3">VAT included</p>
-                    </div>
-                  </div>
-
-                  <div className="h-px w-full bg-[repeating-linear-gradient(to_right,#d4d4d4_0_10px,transparent_10px_18px)]" />
+          {/* Right Side: Order Summary (Sidepanel) — Phase 6
+              (REUSE-010): the panel is components/checkout/
+              OrderSummary; the promo block and CTA stay here as its
+              children so their order in the panel is unchanged. */}
+          <OrderSummary
+            itemCount={selectedCartItems.length}
+            subtotal={subtotal}
+            promoDiscount={promoDiscount}
+            shippingCost={shippingCost}
+            taxAmount={taxAmount}
+            total={total}
+          >
                   {/* Promo code */}
                   <div>
                     {appliedPromo ? (
@@ -868,10 +729,7 @@ export default function CheckoutPage() {
                       )}
                     </button>
                   </div>
-                </div>
-              </div>
-            </div>
-          </div>
+          </OrderSummary>
         </div>
       </main>
       <Footer />

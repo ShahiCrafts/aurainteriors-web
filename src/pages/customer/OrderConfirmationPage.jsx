@@ -10,8 +10,9 @@ import {
 import Navbar from "../../layouts/customer/Navbar";
 import Footer from "../../layouts/customer/Footer";
 import { useTrackOrder } from "../../hooks/order/useOrderTan";
-import { toast } from "react-toastify";
+import { toast } from "../../lib/toast";
 import { formatNPR, formatNPRNumber } from "../../utils/formatCurrency";
+import { formatDate as formatDateShared } from "../../utils/formatDate";
 
 export default function OrderConfirmationPage() {
   const { orderId } = useParams();
@@ -56,11 +57,7 @@ export default function OrderConfirmationPage() {
   // Format date helper
   const formatDate = (dateString) => {
     if (!dateString) return "N/A";
-    return new Date(dateString).toLocaleDateString("en-US", {
-      year: "numeric",
-      month: "short",
-      day: "numeric",
-    });
+    return formatDateShared(dateString, { year: "numeric", month: "short", day: "numeric" });
   };
 
   // Calculate estimated delivery (10 days from the order date). The
@@ -71,11 +68,7 @@ export default function OrderConfirmationPage() {
     if (!order?.createdAt) return "N/A";
     const deliveryDate = new Date(order.createdAt);
     deliveryDate.setDate(deliveryDate.getDate() + 10);
-    return deliveryDate.toLocaleDateString("en-US", {
-      year: "numeric",
-      month: "short",
-      day: "numeric",
-    });
+    return formatDateShared(deliveryDate, { year: "numeric", month: "short", day: "numeric" });
   };
 
   const orderDate = formatDate(order?.createdAt);

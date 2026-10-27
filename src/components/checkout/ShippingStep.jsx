@@ -2,6 +2,7 @@ import { useEffect, useMemo, useRef, useState } from "react";
 import { useDialogBehaviour } from "../common/useDialogBehaviour";
 import { Truck, Check, MapPin, Home, Building2, Users, Edit3 } from "lucide-react";
 import useCheckoutStore from "../../store/checkoutStore";
+import { useShallow } from "zustand/react/shallow";
 import useAuthStore from "../../store/authStore";
 import { useAddresses } from "../../hooks/profile/useAddressTan";
 import AddEditAddressModal from "../modals/AddEditAddressModal";
@@ -40,8 +41,7 @@ function AddressSkeletonCard() {
 }
 
 export default function ShippingStep() {
-  const {
-    shippingMethod,
+  const { shippingMethod,
     setShippingMethod,
     shippingAddress,
     shippingAddressId,
@@ -49,9 +49,8 @@ export default function ShippingStep() {
     setShippingAddressId,
     currentStep,
     guestInfo,
-    setGuestInfo,
-  } = useCheckoutStore();
-  const { isAuthenticated } = useAuthStore();
+    setGuestInfo, } = useCheckoutStore(useShallow((state) => ({ shippingMethod: state.shippingMethod, setShippingMethod: state.setShippingMethod, shippingAddress: state.shippingAddress, shippingAddressId: state.shippingAddressId, setShippingAddress: state.setShippingAddress, setShippingAddressId: state.setShippingAddressId, currentStep: state.currentStep, guestInfo: state.guestInfo, setGuestInfo: state.setGuestInfo })));
+  const { isAuthenticated } = useAuthStore(useShallow((state) => ({ isAuthenticated: state.isAuthenticated })));
   const {
     data: addresses = [],
     isLoading: isAddressesLoading,

@@ -20,6 +20,7 @@ import { useForm } from "react-hook-form";
 import { yupResolver } from "@hookform/resolvers/yup";
 import { trackOrderSchema } from "../../utils/validationSchemas";
 import { formatNPR } from "../../utils/formatCurrency";
+import { formatDate as formatDateShared } from "../../utils/formatDate";
 
 const STATUS_COLORS = {
   pending: "bg-amber-50 text-amber-600 border-amber-200",
@@ -99,11 +100,7 @@ export default function TrackOrderPage() {
 
   const formatDate = (dateString) => {
     if (!dateString) return "N/A";
-    return new Date(dateString).toLocaleDateString("en-US", {
-      year: "numeric",
-      month: "long",
-      day: "numeric",
-    });
+    return formatDateShared(dateString, { year: "numeric", month: "long", day: "numeric" });
   };
 
   const getImageUrl = (item) => getImageUrlUtil(item.image, "products");

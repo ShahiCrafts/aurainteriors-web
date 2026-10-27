@@ -1,5 +1,6 @@
 import { Link } from "react-router-dom";
-import { X, ShoppingBag, Plus, Minus, Trash2 } from "lucide-react";
+import { X, ShoppingBag, Trash2 } from "lucide-react";
+import QuantitySelector from "../ui/QuantitySelector";
 import { CartItemSkeleton } from "../common/Skeleton";
 import { useRef } from "react";
 import { useDialogBehaviour } from "../common/useDialogBehaviour";
@@ -9,25 +10,22 @@ import {
   useRemoveFromCart,
 } from "../../hooks/cart/useCartTan";
 import useAuthStore from "../../store/authStore";
+import { useShallow } from "zustand/react/shallow";
 import useGuestCartStore from "../../store/guestCartStore";
-import { toast } from "react-toastify";
+import { toast } from "../../lib/toast";
 import { getProductImageUrl } from "../../utils/imageUrl";
+import ImageWithFallback from "../fallbacks/ImageWithFallback";
 import { formatNPR } from "../../utils/formatCurrency";
 import VariantLineSummary from "./VariantLineSummary";
 import { variantSummaryProps, lineUnitPrice } from "../../utils/cartLine";
 
 export default function CartSlider({ isOpen, onClose }) {
-  const { isAuthenticated } = useAuthStore();
+  const { isAuthenticated } = useAuthStore(useShallow((state) => ({ isAuthenticated: state.isAuthenticated })));
   const { data, isLoading } = useCart({ enabled: isAuthenticated });
   const { mutate: updateCartItem, isPending: isUpdating } = useUpdateCartItem();
   const { mutate: removeFromCart, isPending: isRemoving } = useRemoveFromCart();
 
-  const {
-    items: guestCartItems,
-    updateItemQuantity: updateGuestCartQuantity,
-    removeItem: removeGuestCartItem,
-    getCartTotals: getGuestCartTotals,
-  } = useGuestCartStore();
+  const { guestCartItems, updateGuestCartQuantity, removeGuestCartItem, getGuestCartTotals } = useGuestCartStore(useShallow((state) => ({ guestCartItems: state.items, updateGuestCartQuantity: state.updateItemQuantity, removeGuestCartItem: state.removeItem, getGuestCartTotals: state.getCartTotals })));
 
   const cart = data?.data?.cart;
   const cartItems = isAuthenticated ? cart?.items || [] : guestCartItems;
@@ -163,9 +161,12 @@ export default function CartSlider({ isOpen, onClose }) {
                       onClick={onClose}
                       className="w-[84px] h-[84px] shrink-0 rounded-lg overflow-hidden bg-gray-100"
                     >
-                      <img
+                      <ImageWithFallback
                         src={getImageUrl(product)}
                         alt={product.name}
+                        loading="lazy"
+                        width={84}
+                        height={84}
                         className="w-full h-full object-cover"
                       />
                     </Link>
@@ -204,29 +205,19 @@ export default function CartSlider({ isOpen, onClose }) {
                       </div>
 
                       <div className="flex items-end justify-between mt-3">
-                        <div className="flex items-center border border-gray-200 rounded-md overflow-hidden bg-white">
-                          <button
-                            onClick={() =>
-                              handleUpdateQuantity(item._id, item.quantity - 1)
-                            }
-                            disabled={isUpdating || item.quantity <= 1}
-                            className="w-8 h-8 flex items-center justify-center text-gray-600 hover:bg-gray-50 hover:text-black disabled:opacity-40 transition-colors"
-                          >
-                            <Minus size={12} strokeWidth={2.5} />
-                          </button>
-                          <span className="w-8 h-8 flex items-center justify-center text-[13px] font-bold text-gray-900 border-x border-gray-200 bg-gray-50/50">
-                            {item.quantity}
-                          </span>
-                          <button
-                            onClick={() =>
-                              handleUpdateQuantity(item._id, item.quantity + 1)
-                            }
-                            disabled={isUpdating}
-                            className="w-8 h-8 flex items-center justify-center text-gray-600 hover:bg-gray-50 hover:text-black disabled:opacity-40 transition-colors"
-                          >
-                            <Plus size={12} strokeWidth={2.5} />
-                          </button>
-                        </div>
+                        {/* Phase 6 (REUSE-010): shared QuantitySelector.
+                            Same semantics as the old stepper: per-click
+                            updates through handleUpdateQuantity, minus
+                            clamped at 1, all controls disabled while a
+                            cart update is pending. */}
+                        <QuantitySelector
+                          size="sm"
+                          value={item.quantity}
+                          onChange={(next) =>
+                            handleUpdateQuantity(item._id, next)
+                          }
+                          disabled={isUpdating}
+                        />
                         <p className="text-[15px] font-bold text-gray-900">
                           {formatNPR(lineUnitPrice(item) * item.quantity)}
                         </p>

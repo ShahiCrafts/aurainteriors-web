@@ -11,6 +11,7 @@ import {
 import { motion, AnimatePresence } from "framer-motion";
 import { useQueryClient } from "@tanstack/react-query";
 import useAuthStore from "../../store/authStore";
+import { useShallow } from "zustand/react/shallow";
 import Navbar from "../../layouts/customer/Navbar";
 import Footer from "../../layouts/customer/Footer";
 import CategoryBar from "../../components/navigation/CategoryBar";
@@ -22,7 +23,7 @@ import { UserAvatar } from "../../components/common/InitialsAvatar";
 
 export default function ProfilePage() {
   const queryClient = useQueryClient();
-  const { user, logout } = useAuthStore();
+  const { user, logout } = useAuthStore(useShallow((state) => ({ user: state.user, logout: state.logout })));
   const location = useLocation();
   const [activeTab, setActiveTab] = useState(
     location.state?.activeTab || "personal-information",

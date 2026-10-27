@@ -1,8 +1,9 @@
 import { useState, useRef, useEffect } from "react";
 import { Upload, Trash2, Lock, Check, Camera, Loader } from "lucide-react";
 import Skeleton from "../common/Skeleton";
-import { toast } from "react-toastify";
+import { toast } from "../../lib/toast";
 import useAuthStore, { getAuthRevision } from "../../store/authStore";
+import { useShallow } from "zustand/react/shallow";
 import {
   useProfile,
   useUpdateProfile,
@@ -20,7 +21,7 @@ const currentYear = new Date().getFullYear();
 
 export default function PersonalInformation() {
   const fileInputRef = useRef(null);
-  const { user: authUser, signIn } = useAuthStore();
+  const { authUser, signIn } = useAuthStore(useShallow((state) => ({ authUser: state.user, signIn: state.signIn })));
 
 
   const { data, isLoading } = useProfile();
