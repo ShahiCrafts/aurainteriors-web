@@ -1,5 +1,4 @@
 import react from "@vitejs/plugin-react";
-import path from "path";
 import { defineConfig } from "vitest/config";
 
 // Test convention (Phase 0): tests live in a top-level `tests/` tree that
@@ -10,9 +9,9 @@ export default defineConfig({
   plugins: [react()],
   resolve: {
     alias: {
-      // Mirror the production alias in vite.config.js so imports of
-      // "react-toastify" resolve to the app's own toast implementation.
-      "react-toastify": path.resolve("./src/lib/toast.js"),
+      // REUSE-015: the former "react-toastify" alias was removed with
+      // the dependency — src and tests both import src/lib/toast.js
+      // directly now.
     },
   },
   test: {

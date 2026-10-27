@@ -31,6 +31,11 @@ jobs:
       - run: npm run lint
       - run: npm test
       - run: npm run build:customer
+      # Bundle-size budget gate (Phase 8, PERF-F-008): fails if the
+      # customer entry / vendor-react / vendor-three chunks exceed the
+      # budgets in scripts/check-bundle-budget.mjs. Runs against
+      # dist/customer, so it must stay between the two builds.
+      - run: npm run check:bundle
       - run: npm run build:admin
 
   # Dependency vulnerability scan (Phase 5). Uses osv-scanner PINNED to
