@@ -1,0 +1,123 @@
+name: CI
+
+# Required gates for the FE remediation (Phase 0): install, lint, tests and
+# both production builds. NOTE: at Phase 0 exit this workflow is expected to
+# be RED on the lint step (185 baseline problems, incl. the FE-13
+# rules-of-hooks errors) and on the test step (the FE-39 contract
+# reproduction fails by design until Phase 1). The gates exist so each
+# later phase's progress is measured against this baseline, not so the
+# tree looks green.
+
+on:
+  push:
+    branches: [main, fe-hardening]
+  pull_request:
+
+jobs:
+  verify:
+    runs-on: ubuntu-latest
+    env:
+      # Placeholder only: production builds fail fast without an API base
+      # URL (src/config/apiConfig.js). CI builds verify compilation, they
+      # do not deploy, and this is not a credential.
+      VITE_API_BASE_URL: http://localhost:3001
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 24
+          cache: npm
+      - run: npm ci
+      - run: npm run lint
+      - run: npm test
+      - run: npm run build:customer
+      - run: npm run build:admin
+
+  # Dependency vulnerability scan (Phase 5). Uses osv-scanner PINNED to
+  # v2.0.3 — the exact version used for every scan in this audit — downloaded
+  # from the official google/osv-scanner GitHub release and verified two
+  # ways before it is trusted: sha256 checksum (the digest below was
+  # measured locally on 2026-10-24 and is byte-identical to the audit's
+  # local v2.0.3 binary) and a `--version` execution check.
+  #
+  # Three outcomes are deliberately unmistakable and never conflated:
+  #   * SCANNER-UNAVAILABLE — download / checksum / version check failed.
+  #     Emits `::error title=OSV-SCANNER UNAVAILABLE::` and exits 78.
+  #     This is NOT a clean scan and NOT a findings result.
+  #   * FINDINGS-PRESENT — the scanner ran and reported vulnerabilities;
+  #     the step exits with the scanner's own non-zero exit code and the
+  #     scanner's table (which lists every finding) is in the log.
+  #   * CLEAN — the scanner ran and exited 0.
+  #
+  # EXPECTED STATE (honest, as of Phase 5, 2026-10-24): this job will
+  # report FINDINGS-PRESENT. A local v2.0.3 run against the committed
+  # lockfile found exactly 3 rows: xlsx 0.20.3 × 2 advisories
+  # (GHSA-4r6h-8v6p-xvw6, GHSA-5pgg-2g8v-p4x9 — owner decision OD-6, no
+  # fixed release exists) and zod 4.1.13 (dev) × 1 (GHSA-mrhx-c7xc-m3w5).
+  # Those rows are NOT suppressed, allowlisted, or ignored anywhere in
+  # this workflow; the job stays red on them until OD-6 is decided and
+  # the lockfile actually changes. See
+  # audit/fe/remediation/phase5/ci-notes.md for the full local result.
+  dependency-scan:
+    name: Dependency scan (osv-scanner, pinned v2.0.3)
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Download, verify and run osv-scanner v2.0.3 on package-lock.json
+        shell: bash
+        run: |
+          set -uo pipefail
+          OSV_VERSION="v2.0.3"
+          OSV_ASSET="osv-scanner_linux_amd64"
+          OSV_URL="https://github.com/google/osv-scanner/releases/download/${OSV_VERSION}/${OSV_ASSET}"
+          OSV_SHA256="9acf365f60abd1c8cefeea4db897b0a6afdfe1e1f56776f634bc7bce64be5149"
+          OSV_BIN="${RUNNER_TEMP}/osv-scanner"
+
+          unavailable() {
+            echo "=============================================================="
+            echo "OSV RESULT: SCANNER-UNAVAILABLE"
+            echo "osv-scanner ${OSV_VERSION} could not be downloaded,"
+            echo "checksum-verified, or executed. This run produced NO scan"
+            echo "result: it is neither CLEAN nor FINDINGS-PRESENT."
+            echo "=============================================================="
+            echo "::error title=OSV-SCANNER UNAVAILABLE::osv-scanner ${OSV_VERSION} download, checksum, or --version check failed; no scan was performed (exit 78, distinct from a findings exit and from clean/0)."
+            exit 78
+          }
+
+          echo "=== OSV-SCANNER: DOWNLOAD pinned ${OSV_VERSION} ==="
+          echo "Source: ${OSV_URL}"
+          curl -fsSL -o "${OSV_BIN}" "${OSV_URL}" || unavailable
+          chmod +x "${OSV_BIN}" || unavailable
+
+          echo "=== OSV-SCANNER: CHECKSUM VERIFICATION ==="
+          echo "${OSV_SHA256}  ${OSV_BIN}" | sha256sum -c - || unavailable
+
+          echo "=== OSV-SCANNER: VERSION CHECK (proves the binary executes) ==="
+          VERSION_OUT="$("${OSV_BIN}" --version 2>&1)" || unavailable
+          echo "${VERSION_OUT}"
+          case "${VERSION_OUT}" in
+            *"osv-scanner version: 2.0.3"*) echo "Pinned version confirmed: 2.0.3" ;;
+            *) echo "Unexpected --version output; refusing to trust this binary."; unavailable ;;
+          esac
+
+          echo "=== OSV-SCANNER: SCAN package-lock.json ==="
+          set +e
+          "${OSV_BIN}" scan source --lockfile package-lock.json
+          SCAN_RC=$?
+          set -e
+          if [ "${SCAN_RC}" -eq 0 ]; then
+            echo "=============================================================="
+            echo "OSV RESULT: CLEAN"
+            echo "osv-scanner ${OSV_VERSION} scanned package-lock.json and"
+            echo "reported no known vulnerabilities."
+            echo "=============================================================="
+            exit 0
+          fi
+          echo "=============================================================="
+          echo "OSV RESULT: FINDINGS-PRESENT (scanner exit ${SCAN_RC})"
+          echo "The scanner's table above lists every finding. Known rows"
+          echo "at Phase 5: xlsx x2 (OD-6) and zod (dev) x1 — see the job"
+          echo "comment in .github/workflows/ci.yml. Nothing is allowlisted."
+          echo "=============================================================="
+          echo "::error title=OSV-SCANNER FINDINGS::osv-scanner ${OSV_VERSION} reported vulnerabilities in package-lock.json (exit ${SCAN_RC}); see the scanner table above for the full list."
+          exit "${SCAN_RC}"
