@@ -1,8 +1,12 @@
 import { ShoppingBag, Clock, Truck, CheckCircle2 } from "lucide-react";
 
-// Note: pending/processing/delivered counts are derived from the orders
-// currently loaded on this page. For fully accurate totals across every
-// page, expose an orders-summary endpoint from the API and pass those
+// FE-28: pending/processing/delivered counts are derived from the
+// orders currently loaded on this page, and the labels say so — the old
+// labels presented page counts as account totals (and the mapping
+// folds confirmed→Pending and shipped→Processing, so the cards needn't
+// sum to the total). Only "Total Orders" is an account total, and it
+// comes from the server pagination. For fully accurate per-status
+// totals, expose an orders-summary endpoint from the API and pass those
 // numbers in via props instead.
 export default function OrderStatsCards({ orders = [], totalCount }) {
   const stats = orders.reduce(
@@ -24,21 +28,21 @@ export default function OrderStatsCards({ orders = [], totalCount }) {
       bg: "bg-[#F27318]/10",
     },
     {
-      label: "Pending",
+      label: "Pending (this page)",
       value: stats.pending,
       icon: Clock,
       color: "text-amber-500",
       bg: "bg-amber-50",
     },
     {
-      label: "Processing",
+      label: "Processing (this page)",
       value: stats.processing,
       icon: Truck,
       color: "text-blue-500",
       bg: "bg-blue-50",
     },
     {
-      label: "Delivered",
+      label: "Delivered (this page)",
       value: stats.delivered,
       icon: CheckCircle2,
       color: "text-emerald-500",

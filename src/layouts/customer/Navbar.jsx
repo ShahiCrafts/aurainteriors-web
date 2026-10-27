@@ -22,7 +22,9 @@ import { useCart } from "../../hooks/cart/useCartTan";
 import { useWishlist } from "../../hooks/cart/useWishlistTan";
 import useDebounce from "../../hooks/useDebounce";
 import { useProducts } from "../../hooks/product/useProductTan";
-import { getAvatarUrl } from "../../utils/imageUrl";
+import { getProductImageUrl } from "../../utils/imageUrl";
+import { UserAvatar } from "../../components/common/InitialsAvatar";
+import { formatNPR } from "../../utils/formatCurrency";
 
 // Lazy: CartSlider is 10KB + its own deps. Mount it only after the first time
 // the user opens the cart so it never appears in the initial HTML paint.
@@ -40,10 +42,6 @@ export default function Navbar() {
   const { data: cartData } = useCart({ enabled: isAuthenticated });
   const { data: wishlistData } = useWishlist({ enabled: isAuthenticated });
   const guestCartItems = useGuestCartStore((state) => state.items);
-
-  const getInitials = (firstName, lastName) => {
-    return `${firstName?.charAt(0) || ""}${lastName?.charAt(0) || ""}`.toUpperCase() || "U";
-  };
 
   const cartCount = isAuthenticated
     ? cartData?.data?.cart?.totalItems || 0
@@ -120,7 +118,11 @@ export default function Navbar() {
 
   return (
     <>
-      <nav className="sticky top-0 z-40 bg-white border-b border-[#F0EFED] font-dm-sans">
+      {/* z-50, one layer above the CategoryBar (z-40): the profile and
+          search dropdowns live in this stacking context, and at z-40
+          the later-in-DOM CategoryBar painted its bar and mega-menu
+          popup over them. Drawers/modals sit higher still (60+). */}
+      <nav className="sticky top-0 z-50 bg-white border-b border-[#F0EFED] font-dm-sans">
         <div className="px-4 md:px-6 lg:px-8 h-16 md:h-20 flex items-center justify-between gap-3 md:gap-6">
           <Link
             to="/"
@@ -188,13 +190,13 @@ export default function Navbar() {
                         {searchResults.map((product) => (
                           <Link
                             key={product._id}
-                            to={`/product/${product.slug}`}
+                            to={`/product/${encodeURIComponent(product.slug)}`}
                             onClick={() => setIsSearchFocused(false)}
                             className="flex items-center gap-4 px-4 py-3 hover:bg-[#F9F8F6] transition-colors no-underline group"
                           >
                             <div className="w-12 h-12 rounded-lg overflow-hidden bg-[#F6F6F6] shrink-0 border border-[#F0EFED]">
                               <img
-                                src={product.images?.[0]?.url || "/placeholder.png"}
+                                src={getProductImageUrl(product)}
                                 alt={product.name}
                                 className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-300"
                               />
@@ -209,7 +211,7 @@ export default function Navbar() {
                             </div>
                             <div className="text-right">
                               <span className="text-[14px] font-bold text-[#F27318]">
-                                NPR {product.price?.toLocaleString()}
+                                {formatNPR(product.price)}
                               </span>
                             </div>
                           </Link>
@@ -292,17 +294,15 @@ export default function Navbar() {
               >
                 {isAuthenticated && user ? (
                   <div className="flex items-center gap-1">
-                    {user.avatar ? (
-                      <img
-                        src={getAvatarUrl(user)}
-                        alt="Profile"
-                        className="w-10 h-10 rounded-full object-cover"
-                      />
-                    ) : (
-                      <div className="w-5 h-5 rounded-full bg-[#F27318] text-white flex items-center justify-center font-bold text-[9px] md:text-[10px] font-dm-sans">
-                        {getInitials(user.firstName, user.lastName)}
-                      </div>
-                    )}
+                    {/* FE-06: real avatar img or local initials.
+                        (Pre-fix this branch pair was already local
+                        when avatar-less; UserAvatar unifies it and
+                        adds the img-error → initials path.) */}
+                    <UserAvatar
+                      user={user}
+                      alt="Profile"
+                      className="w-10 h-10 rounded-full text-[10px] font-dm-sans"
+                    />
                     <ChevronDown size={12} className="text-[#6A6058] group-hover:text-[#1A1714] transition-colors" />
                   </div>
                 ) : (
@@ -325,17 +325,12 @@ export default function Navbar() {
                     {/* User Info Header if Logged In */}
                     {isAuthenticated && user && (
                       <div className="px-4 py-3 border-b border-[#F0EFED] bg-[#FAFAFA] flex items-center gap-3">
-                        {user.avatar ? (
-                          <img
-                            src={getAvatarUrl(user)}
-                            alt="Profile"
-                            className="w-10 h-10 rounded-full object-cover border border-neutral-100"
-                          />
-                        ) : (
-                          <div className="w-10 h-10 rounded-full bg-[#F27318] text-white flex items-center justify-center font-bold text-xs font-dm-sans">
-                            {getInitials(user.firstName, user.lastName)}
-                          </div>
-                        )}
+                        {/* FE-06: real avatar img or local initials (UserAvatar). */}
+                        <UserAvatar
+                          user={user}
+                          alt="Profile"
+                          className="w-10 h-10 rounded-full text-xs font-dm-sans border border-neutral-100"
+                        />
                         <div className="min-w-0">
                           <p className="text-[14px] font-bold text-[#1A1714] truncate mb-0.5">
                             {user.firstName} {user.lastName}

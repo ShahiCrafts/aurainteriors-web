@@ -90,6 +90,12 @@ html::-webkit-scrollbar {
     animation: none !important;
     display: none !important;
   }
+  /* FE-66: the brand marquee loops forever; stop it for users who
+     prefer reduced motion (the duplicated logos are aria-hidden, so
+     a static row loses nothing). */
+  .animate-marquee {
+    animation: none !important;
+  }
 }
 
 .admin-theme {

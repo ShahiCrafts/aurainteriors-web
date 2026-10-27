@@ -8,6 +8,7 @@ import { useUpdateProfile } from "../../hooks/profile/useProfileTan";
 import useAuthStore from "../../store/authStore";
 import { toast } from "react-toastify";
 import formatError from "../../utils/errorHandler";
+import Dialog from "../common/Dialog";
 
 const ORANGE = "#F27318";
 
@@ -115,12 +116,14 @@ export default function AuthModal() {
           animate={{ y: 0, scale: 1 }}
           exit={{ y: reduceMotion ? 0 : 8, scale: reduceMotion ? 1 : 0.98 }}
           transition={{ duration: reduceMotion ? 0 : 0.22, ease: [0.22, 1, 0.36, 1] }}
-          className="bg-white w-full max-w-[840px] h-full max-h-[560px] rounded-2xl overflow-hidden flex relative shadow-[0_24px_70px_rgba(0,0,0,0.35)] font-dm-sans"
+          className="w-full max-w-[840px] h-full max-h-[560px]"
         >
+         <Dialog open={isAuthModalOpen} onClose={showCloseButton ? closeAuthModal : undefined} label="Sign in or create an account" className="bg-white w-full h-full rounded-2xl overflow-hidden flex relative shadow-[0_24px_70px_rgba(0,0,0,0.35)] font-dm-sans">
           {/* Close Button */}
           {showCloseButton && (
             <button
               onClick={closeAuthModal}
+              aria-label="Close dialog"
               className="absolute top-4 right-4 z-20 w-8 h-8 flex items-center justify-center bg-gray-100 text-gray-600 hover:bg-black hover:text-white transition-all duration-200 rounded-lg border-none cursor-pointer"
             >
               <X size={18} />
@@ -162,10 +165,11 @@ export default function AuthModal() {
 
                     <form onSubmit={handleEmailSubmit} className="flex flex-col gap-4">
                       <div className="flex flex-col gap-1.5">
-                        <label className="text-[13px] font-semibold text-[#1A1714] tracking-wide uppercase">
+                        <label htmlFor="auth-email" className="text-[13px] font-semibold text-[#1A1714] tracking-wide uppercase">
                           Email Address
                         </label>
                         <input
+                          id="auth-email"
                           type="email"
                           value={email}
                           onChange={(e) => {
@@ -215,10 +219,13 @@ export default function AuthModal() {
 
                     <div className="mt-8 text-center">
                       <p className="text-[11px] text-[#94A3B8] leading-relaxed">
+                        {/* FE-16: /terms and /privacy have no routes in
+                            either app; rendered as plain text until the
+                            owner publishes those pages. */}
                         By continuing, you agree to our{" "}
-                        <a href="/terms" className="text-[#64748B] hover:text-[#1A1714] underline font-medium">Terms</a>
+                        <span className="text-[#64748B] font-medium">Terms</span>
                         {" "}&{" "}
-                        <a href="/privacy" className="text-[#64748B] hover:text-[#1A1714] underline font-medium">Privacy Policy</a>.
+                        <span className="text-[#64748B] font-medium">Privacy Policy</span>.
                       </p>
                     </div>
                   </motion.div>
@@ -288,11 +295,12 @@ export default function AuthModal() {
 
                     <form onSubmit={handleOnboardingSubmit} className="flex flex-col gap-4">
                       <div className="flex flex-col gap-1.5">
-                        <label className="text-[13px] font-semibold text-[#1A1714] tracking-wide uppercase">
+                        <label htmlFor="auth-fullname" className="text-[13px] font-semibold text-[#1A1714] tracking-wide uppercase">
                           Full Name
                         </label>
                         <div className="relative">
                           <input
+                            id="auth-fullname"
                             type="text"
                             value={fullName}
                             onChange={(e) => setFullName(e.target.value)}
@@ -325,6 +333,7 @@ export default function AuthModal() {
               </AnimatePresence>
             </div>
           </div>
+         </Dialog>
         </motion.div>
       </motion.div>}
     </AnimatePresence>

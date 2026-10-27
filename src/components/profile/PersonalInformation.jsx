@@ -2,7 +2,7 @@ import { useState, useRef, useEffect } from "react";
 import { Upload, Trash2, Lock, Check, Camera, Loader } from "lucide-react";
 import Skeleton from "../common/Skeleton";
 import { toast } from "react-toastify";
-import useAuthStore from "../../store/authStore";
+import useAuthStore, { getAuthRevision } from "../../store/authStore";
 import {
   useProfile,
   useUpdateProfile,
@@ -10,7 +10,7 @@ import {
   useRemoveAvatar,
 } from "../../hooks/profile/useProfileTan";
 
-import { getAvatarUrl } from "../../utils/imageUrl";
+import { UserAvatar } from "../common/InitialsAvatar";
 import formatError from "../../utils/errorHandler";
 import { useForm } from "react-hook-form";
 import { yupResolver } from "@hookform/resolvers/yup";
@@ -93,12 +93,16 @@ export default function PersonalInformation() {
       dateOfBirth: data.dateOfBirth || null,
     };
 
+    // FE-18: capture the auth revision as the mutation STARTS; if the
+    // user signs out while it is in flight, the completion must not
+    // resurrect the session via signIn.
+    const revisionAtStart = getAuthRevision();
     updateProfile(updateData, {
       onSuccess: (resData) => {
         toast.success("Profile updated successfully");
         // Reset form with new values to clear isDirty
         reset(data);
-        if (resData?.data?.user) {
+        if (resData?.data?.user && getAuthRevision() === revisionAtStart) {
           const token = useAuthStore.getState().token;
           signIn(resData.data.user, token);
         }
@@ -124,10 +128,12 @@ export default function PersonalInformation() {
         toast.error("Please upload an image file");
         return;
       }
+      // FE-18: revision-gated signIn — see onSubmit.
+      const revisionAtStart = getAuthRevision();
       updateAvatar(file, {
         onSuccess: (data) => {
           toast.success("Avatar updated successfully");
-          if (data?.data?.user) {
+          if (data?.data?.user && getAuthRevision() === revisionAtStart) {
             const token = useAuthStore.getState().token;
             signIn(data.data.user, token);
           }
@@ -140,10 +146,12 @@ export default function PersonalInformation() {
   };
 
   const handleRemoveAvatar = () => {
+    // FE-18: revision-gated signIn — see onSubmit.
+    const revisionAtStart = getAuthRevision();
     removeAvatar(undefined, {
       onSuccess: (data) => {
         toast.success("Avatar removed successfully");
-        if (data?.data?.user) {
+        if (data?.data?.user && getAuthRevision() === revisionAtStart) {
           const token = useAuthStore.getState().token;
           signIn(data.data.user, token);
         }
@@ -152,15 +160,6 @@ export default function PersonalInformation() {
         toast.error(formatError(err, "Failed to remove avatar"));
       },
     });
-  };
-
-  const getInitials = (firstName, lastName) => {
-    return `${firstName?.charAt(0) || ""}${lastName?.charAt(0) || ""
-      }`.toUpperCase();
-  };
-
-  const getUserAvatar = () => {
-    return getAvatarUrl(user);
   };
 
   if (isLoading) {
@@ -266,17 +265,14 @@ export default function PersonalInformation() {
 
         <div className="flex flex-col sm:flex-row items-center sm:items-start gap-6">
           <div className="relative shrink-0">
-            {user?.avatar ? (
-              <img
-                src={getUserAvatar()}
-                alt="Profile"
-                className="w-24 h-24 rounded-2xl object-cover"
-              />
-            ) : (
-              <div className="w-24 h-24 rounded-2xl bg-[#F27318] flex items-center justify-center text-white text-3xl font-semibold font-dm-sans">
-                {getInitials(user?.firstName, user?.lastName)}
-              </div>
-            )}
+            {/* FE-06: real avatar img or local initials (UserAvatar)
+                — never an external placeholder URL built from the
+                user's name. */}
+            <UserAvatar
+              user={user}
+              alt="Profile"
+              className="w-24 h-24 rounded-2xl text-3xl font-dm-sans"
+            />
           </div>
 
           <div className="flex-1 text-center sm:text-left">
@@ -344,10 +340,10 @@ export default function PersonalInformation() {
           {/* First Name & Last Name */}
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
             <div>
-              <label className="block text-sm font-medium text-neutral-800 mb-1 font-dm-sans">
+              <label htmlFor="profile-firstName" className="block text-sm font-medium text-neutral-800 mb-1 font-dm-sans">
                 First Name <span className="text-red-500">*</span>
               </label>
-              <input
+              <input id="profile-firstName"
                 type="text"
                 {...register("firstName")}
                 className={`w-full px-4 py-2.5 rounded-lg border focus:ring-1 outline-none transition-all font-dm-sans text-neutral-900 ${errors.firstName ? "border-red-500 focus:border-red-500 focus:ring-red-500/20" : "border-neutral-200 focus:border-[#F27318] focus:ring-[#F27318]"}`}
@@ -359,10 +355,10 @@ export default function PersonalInformation() {
               )}
             </div>
             <div>
-              <label className="block text-sm font-medium text-neutral-800 mb-1 font-dm-sans">
+              <label htmlFor="profile-lastName" className="block text-sm font-medium text-neutral-800 mb-1 font-dm-sans">
                 Last Name <span className="text-red-500">*</span>
               </label>
-              <input
+              <input id="profile-lastName"
                 type="text"
                 {...register("lastName")}
                 className={`w-full px-4 py-2.5 rounded-lg border focus:ring-1 outline-none transition-all font-dm-sans text-neutral-900 ${errors.lastName ? "border-red-500 focus:border-red-500 focus:ring-red-500/20" : "border-neutral-200 focus:border-[#F27318] focus:ring-[#F27318]"}`}
@@ -377,11 +373,11 @@ export default function PersonalInformation() {
 
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
             <div>
-              <label className="block text-sm font-medium text-neutral-800 mb-1 font-dm-sans">
+              <label htmlFor="profile-email" className="block text-sm font-medium text-neutral-800 mb-1 font-dm-sans">
                 Email Address <span className="text-red-500">*</span>
               </label>
               <div className="relative">
-                <input
+                <input id="profile-email"
                   type="email"
                   {...register("email")}
                   disabled
@@ -402,17 +398,18 @@ export default function PersonalInformation() {
               )}
             </div>
             <div>
-              <label className="block text-sm font-medium text-neutral-800 mb-1 font-dm-sans">
+              <label htmlFor="profile-phone" className="block text-sm font-medium text-neutral-800 mb-1 font-dm-sans">
                 Phone Number
               </label>
               <div className="flex gap-2">
                 <select
+                  aria-label="Phone country code"
                   className="px-3 py-2.5 rounded-lg border border-neutral-200 focus:border-[#F27318] focus:ring-1 focus:ring-[#F27318] outline-none transition-all font-dm-sans text-neutral-900 bg-white"
                   defaultValue="+977"
                 >
                   <option value="+977">+977</option>
                 </select>
-                <input
+                <input id="profile-phone"
                   type="tel"
                   {...register("phone")}
                   placeholder="98XXXXXXXX"
@@ -429,14 +426,15 @@ export default function PersonalInformation() {
 
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
             <div>
-              <label className="block text-sm font-medium text-neutral-800 mb-2 font-dm-sans">
+              <span className="block text-sm font-medium text-neutral-800 mb-2 font-dm-sans">
                 Gender
-              </label>
+              </span>
               <div className="flex flex-wrap gap-2">
                 {["male", "female", "other"].map((option) => (
                   <button
                     key={option}
                     type="button"
+                    aria-pressed={gender === option}
                     onClick={() =>
                       setValue("gender", option, { shouldDirty: true })
                     }
@@ -457,10 +455,10 @@ export default function PersonalInformation() {
             </div>
 
             <div>
-              <label className="block text-sm font-medium text-neutral-800 mb-2 font-dm-sans text-left">
+              <label htmlFor="profile-dateOfBirth" className="block text-sm font-medium text-neutral-800 mb-2 font-dm-sans text-left">
                 Date of Birth
               </label>
-              <input
+              <input id="profile-dateOfBirth"
                 type="date"
                 {...register("dateOfBirth")}
                 max={new Date().toISOString().split("T")[0]}

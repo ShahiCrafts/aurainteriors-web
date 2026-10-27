@@ -13,6 +13,10 @@ import AdminLoginPage from "./pages/admin/AdminLoginPage";
 const AdminLayout        = lazy(() => import("./layouts/admin/AdminLayout"));
 const AdminDashboard     = lazy(() => import("./pages/admin/Dashboard"));
 const AdminCategories    = lazy(() => import("./pages/admin/Categories"));
+const AdminAttributes    = lazy(() => import("./pages/admin/Attributes"));
+const AdminProductTypes  = lazy(() => import("./pages/admin/ProductTypes"));
+const AdminRooms         = lazy(() => import("./pages/admin/Rooms"));
+const AdminCollections   = lazy(() => import("./pages/admin/Collections"));
 const AdminProducts      = lazy(() => import("./pages/admin/Products"));
 const AdminOrders        = lazy(() => import("./pages/admin/Orders"));
 const AdminDiscounts     = lazy(() => import("./pages/admin/Discounts"));
@@ -65,6 +69,10 @@ export default function AdminApp() {
         >
           <Route index element={<Suspense fallback={<LoadingSpinner />}><AdminDashboard /></Suspense>} />
           <Route path="categories"    element={<Suspense fallback={<LoadingSpinner />}><AdminCategories /></Suspense>} />
+          <Route path="attributes"    element={<Suspense fallback={<LoadingSpinner />}><AdminAttributes /></Suspense>} />
+          <Route path="product-types" element={<Suspense fallback={<LoadingSpinner />}><AdminProductTypes /></Suspense>} />
+          <Route path="rooms"         element={<Suspense fallback={<LoadingSpinner />}><AdminRooms /></Suspense>} />
+          <Route path="collections"   element={<Suspense fallback={<LoadingSpinner />}><AdminCollections /></Suspense>} />
           <Route path="products"      element={<Suspense fallback={<LoadingSpinner />}><AdminProducts /></Suspense>} />
           <Route path="orders"        element={<Suspense fallback={<LoadingSpinner />}><AdminOrders /></Suspense>} />
           <Route path="discounts"     element={<Suspense fallback={<LoadingSpinner />}><AdminDiscounts /></Suspense>} />

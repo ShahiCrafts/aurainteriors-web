@@ -151,6 +151,7 @@ export default function SavedAddresses() {
         {!isEmpty && (
           <button
             onClick={handleAddNew}
+            aria-label="Add new address"
             className="flex items-center gap-1.5 px-3 py-3 bg-[#F27318] rounded-lg text-[14px] font-medium text-white transition-all"
           >
             <Plus size={16} />

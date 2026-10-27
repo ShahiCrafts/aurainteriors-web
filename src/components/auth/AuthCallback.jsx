@@ -1,6 +1,6 @@
 import { useEffect, useRef } from "react";
 import { useNavigate } from "react-router-dom";
-import useAuthStore from "../../store/authStore";
+import useAuthStore, { getAuthRevision } from "../../store/authStore";
 import { toast } from "react-toastify";
 import { getProfile } from "../../api/profileApi";
 import Skeleton from "../common/Skeleton";
@@ -18,6 +18,10 @@ export default function AuthCallback() {
         if (isProcessing.current) return;
         isProcessing.current = true;
 
+        // FE-18: not cancelled by unmount — if a sign-out intervened
+        // while the profile fetch was in flight, skip the sign-in
+        // rather than resurrecting the session.
+        const revisionAtStart = getAuthRevision();
         try {
           const response = await getProfile();
           const user = response.data?.data?.user;
@@ -26,16 +30,18 @@ export default function AuthCallback() {
             throw new Error("Failed to fetch user profile");
           }
 
-          signIn(user);
-          toast.success(
-            `Welcome${user.firstName ? `, ${user.firstName}` : ""}!`
-          );
-
-          if (user.role === "admin") {
-            navigate("/admin", { replace: true });
-          } else {
-            navigate("/", { replace: true });
+          if (getAuthRevision() === revisionAtStart) {
+            signIn(user);
+            toast.success(
+              `Welcome${user.firstName ? `, ${user.firstName}` : ""}!`
+            );
           }
+
+          // FE-16: admins previously navigated to the /admin path, a route that
+          // does not exist in the customer app (404 catch-all), and no
+          // admin-origin config exists in this codebase. Admins complete
+          // sign-in like other users and land on the storefront home.
+          navigate("/", { replace: true });
         } catch (error) {
           console.error("Auth callback error:", error);
           localStorage.removeItem("token");

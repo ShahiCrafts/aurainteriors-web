@@ -2,11 +2,12 @@ import { MapPin, Truck, Tag, Users, HelpCircle } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import { useDefaultAddress } from "../../hooks/profile/useAddressTan";
 import useAuthStore from "../../store/authStore";
+import { formatNPR } from "../../utils/formatCurrency";
 
 const G = "#F27318";
 
 const topOffers = [
-  { icon: <Truck size={12} />, text: "Free delivery on orders above ₹5,000" },
+  { icon: <Truck size={12} />, text: `Free delivery on orders above ${formatNPR(5000)}` },
   { icon: <Tag size={12} />, text: "Use DECOR15 — flat 15% off sitewide" },
 ];
 

@@ -5,7 +5,6 @@ import {
   Check,
   ChevronDown,
   ShoppingCart,
-  FileText,
   RotateCcw,
   Star,
   Clock,
@@ -15,6 +14,12 @@ import {
   XCircle,
 } from "lucide-react";
 import { getImageUrl as getImageUrlUtil } from "../../utils/imageUrl";
+import { toast } from "react-toastify";
+import useAuthStore from "../../store/authStore";
+import { useAddToCart } from "../../hooks/cart/useCartTan";
+import useGuestCartStore from "../../store/guestCartStore";
+import { useRequestReturn } from "../../hooks/order/useOrderTan";
+import { formatNPR } from "../../utils/formatCurrency";
 import OrderTrackingTimeline from "./OrderTrackingTimeline";
 
 const STATUS_STYLE = {
@@ -63,6 +68,88 @@ export default function OrderCard({ order, defaultExpanded = false }) {
     navigator.clipboard?.writeText(order.orderId);
     setCopied(true);
     setTimeout(() => setCopied(false), 1500);
+  };
+
+  // ── FE-38: the action row below used to render four controls with
+  // no wiring at all. Each is now dispositioned against its backing
+  // surface (see the actions JSX): Buy Again re-adds via the cart
+  // hooks, Write Review links to the product page's review form,
+  // Request Return uses useRequestReturn (delivered orders only —
+  // the server rejects returns for any other status), and Invoice
+  // was removed (no invoice endpoint exists in the client API).
+  const { isAuthenticated } = useAuthStore();
+  const { mutate: addToCart } = useAddToCart();
+  const { addItem: addToGuestCart } = useGuestCartStore();
+  const { mutate: requestReturnMutate, isPending: isRequestingReturn } =
+    useRequestReturn();
+  const [showReturnForm, setShowReturnForm] = useState(false);
+  const [returnReason, setReturnReason] = useState("");
+
+  const productIdOf = (item) =>
+    item?.product?._id ||
+    (typeof item?.product === "string" ? item.product : null) ||
+    item?.productId ||
+    null;
+  const readdableItems = items
+    .map((item) => ({ item, productId: productIdOf(item) }))
+    .filter(({ productId }) => !!productId);
+  const firstItem = items[0];
+  const reviewSegment =
+    firstItem?.product?.slug || firstItem?.slug || productIdOf(firstItem || {});
+  const canRequestReturn =
+    isDelivered &&
+    !!order._id &&
+    (!order.returnRequest?.status || order.returnRequest.status === "none");
+
+  const handleBuyAgain = () => {
+    if (!isAuthenticated) {
+      readdableItems.forEach(({ item, productId }) =>
+        addToGuestCart(
+          {
+            _id: productId,
+            name: item.name,
+            price: item.price || 0,
+            images: item.image ? [{ url: item.image }] : item.images || [],
+          },
+          item.quantity || 1,
+          item.variant || {}
+        )
+      );
+      toast.success("Added to cart");
+      return;
+    }
+    let remaining = readdableItems.length;
+    readdableItems.forEach(({ item, productId }) =>
+      addToCart(
+        {
+          productId,
+          quantity: item.quantity || 1,
+          variant: item.variant || {},
+        },
+        {
+          onSuccess: () => {
+            remaining -= 1;
+            if (remaining === 0) toast.success("Added to cart");
+          },
+        }
+      )
+    );
+  };
+
+  const handleRequestReturn = (e) => {
+    e.preventDefault();
+    const reason = returnReason.trim();
+    if (!reason || !order._id) return;
+    requestReturnMutate(
+      { id: order._id, data: { reason } },
+      {
+        onSuccess: () => {
+          toast.success("Return request submitted");
+          setShowReturnForm(false);
+          setReturnReason("");
+        },
+      }
+    );
   };
 
   // Thumbnail stack for the collapsed row
@@ -148,8 +235,7 @@ export default function OrderCard({ order, defaultExpanded = false }) {
         <div className="text-right shrink-0">
           <p className="text-[14px] font-medium text-neutral-400">Total</p>
           <p className="text-[20px] font-bold text-neutral-900 leading-tight mt-0.5 whitespace-nowrap">
-            <span className="text-[14px] text-[#F27318] font-semibold mr-1">NRs.</span>
-            {order.total?.toLocaleString()}
+            {formatNPR(order.total)}
           </p>
           <span
             className={`lg:hidden inline-flex items-center gap-1 mt-1 px-2 py-0.5 rounded-full text-[10px] font-bold ${status.bg} ${status.text}`}
@@ -202,7 +288,7 @@ export default function OrderCard({ order, defaultExpanded = false }) {
                       </div>
                     )}
                     <p className="text-[16px] font-bold text-[#F27318] mt-1.5">
-                      NRs. {item.price.toLocaleString()}
+                      {formatNPR(item.price || 0)}
                     </p>
                   </div>
                 </div>
@@ -210,29 +296,93 @@ export default function OrderCard({ order, defaultExpanded = false }) {
             </div>
           </div>
 
-          {/* Actions — right-aligned, consistent border + hover treatment */}
+          {/* Actions — FE-38 dispositions:
+              Buy Again: a real re-add through the cart surfaces when
+                any item carries a product id; otherwise the previous
+                /shop link (there is nothing identifiable to re-add).
+              Invoice: REMOVED — no invoice endpoint exists in the
+                client API surface (checked src/api/*) or the server
+                routes, so the button could only ever be dead.
+              Write Review: a link to the first item's product page,
+                where the (purchase-gated) review form lives.
+              Request Return: delivered orders only — the server
+                rejects returns for any other status — opening the
+                inline reason form below (a reason is required). */}
           <div className="px-6 py-4 bg-gray-50 border-t border-neutral-100 flex flex-wrap justify-end gap-3">
-            <Link to="/shop" className={ACTION_BTN_CLASS}>
-              <ShoppingCart size={14} />
-              Buy Again
-            </Link>
-            <button type="button" className={ACTION_BTN_CLASS}>
-              <FileText size={14} />
-              Invoice
-            </button>
-            {isDelivered && (
-              <button type="button" className={ACTION_BTN_CLASS}>
+            {readdableItems.length > 0 ? (
+              <button
+                type="button"
+                onClick={handleBuyAgain}
+                className={ACTION_BTN_CLASS}
+              >
+                <ShoppingCart size={14} />
+                Buy Again
+              </button>
+            ) : (
+              <Link to="/shop" className={ACTION_BTN_CLASS}>
+                <ShoppingCart size={14} />
+                Buy Again
+              </Link>
+            )}
+            {isDelivered && reviewSegment && (
+              <Link
+                to={`/product/${encodeURIComponent(reviewSegment)}`}
+                className={ACTION_BTN_CLASS}
+              >
                 <Star size={14} />
                 Write Review
-              </button>
+              </Link>
             )}
-            {["pending", "confirmed"].includes(order.orderStatus) && (
-              <button type="button" className={DESTRUCTIVE_ACTION_BTN_CLASS}>
+            {canRequestReturn && (
+              <button
+                type="button"
+                onClick={() => setShowReturnForm((v) => !v)}
+                aria-expanded={showReturnForm}
+                className={DESTRUCTIVE_ACTION_BTN_CLASS}
+              >
                 <RotateCcw size={14} />
                 Request Return
               </button>
             )}
           </div>
+
+          {showReturnForm && canRequestReturn && (
+            <form
+              onSubmit={handleRequestReturn}
+              className="px-6 py-4 bg-red-50/60 border-t border-neutral-100"
+            >
+              <label
+                htmlFor={`return-reason-${order.orderId}`}
+                className="block text-[13px] font-bold text-neutral-700 mb-2"
+              >
+                Reason for return
+              </label>
+              <textarea
+                id={`return-reason-${order.orderId}`}
+                value={returnReason}
+                onChange={(e) => setReturnReason(e.target.value)}
+                rows={2}
+                className="w-full rounded-lg border border-neutral-200 px-3 py-2 text-sm outline-none focus:border-red-300 focus:ring-1 focus:ring-red-300"
+                placeholder="Tell us why you are returning this order"
+              />
+              <div className="flex justify-end gap-3 mt-3">
+                <button
+                  type="button"
+                  onClick={() => setShowReturnForm(false)}
+                  className={ACTION_BTN_CLASS}
+                >
+                  Cancel
+                </button>
+                <button
+                  type="submit"
+                  disabled={!returnReason.trim() || isRequestingReturn}
+                  className={DESTRUCTIVE_ACTION_BTN_CLASS}
+                >
+                  Submit Return Request
+                </button>
+              </div>
+            </form>
+          )}
         </div>
       )}
     </div>

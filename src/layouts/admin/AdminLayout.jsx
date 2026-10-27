@@ -22,11 +22,18 @@ import {
   ChevronRight,
   ChevronDown,
   Search,
+  SlidersHorizontal,
+  Layers,
+  DoorOpen,
+  LayoutGrid,
 } from "lucide-react";
 import NotificationBell from "../../components/common/NotificationBell";
+import ErrorBoundary from "../../components/common/ErrorBoundary";
 import ConfirmationDialog from "../../components/modals/ConfirmationDialog";
+import Dialog from "../../components/common/Dialog";
 import useAuthStore from "../../store/authStore";
 import useAdminNotificationSocket from "../../hooks/admin/useAdminNotificationSocket";
+import { safeActionUrl } from "../../utils/safeUrl";
 
 export default function AdminLayout() {
   const location = useLocation();
@@ -156,6 +163,30 @@ export default function AdminLayout() {
           label: "Categories",
           icon: Tag,
           path: "/dashboard/categories",
+        },
+        {
+          id: "attributes",
+          label: "Attributes",
+          icon: SlidersHorizontal,
+          path: "/dashboard/attributes",
+        },
+        {
+          id: "product-types",
+          label: "Product Types",
+          icon: Layers,
+          path: "/dashboard/product-types",
+        },
+        {
+          id: "rooms",
+          label: "Rooms",
+          icon: DoorOpen,
+          path: "/dashboard/rooms",
+        },
+        {
+          id: "collections",
+          label: "Collections",
+          icon: LayoutGrid,
+          path: "/dashboard/collections",
         },
         {
           id: "orders",
@@ -450,7 +481,12 @@ export default function AdminLayout() {
           }`}
       >
         <main className="min-h-[calc(100vh-5rem)]">
-          <Outlet />
+          {/* Route-level boundary (FE-56/FE-17): wraps the Outlet so a
+              crashed admin page degrades in place while the admin shell
+              (sidebar/header) stays alive; reset on navigation. */}
+          <ErrorBoundary resetKey={location.pathname}>
+            <Outlet />
+          </ErrorBoundary>
         </main>
       </div>
 
@@ -484,12 +520,16 @@ export default function AdminLayout() {
               {toast.actionUrl && (
                 <button
                   onClick={() => {
-                    let targetUrl = toast.actionUrl.replace("/admin", "/dashboard");
-                    const orderId = toast.data?.orderId;
-                    if (orderId) {
-                      targetUrl += `?highlight=${orderId}`;
+                    // FE-04: same safeActionUrl validation as
+                    // NotificationBell — null means do not navigate
+                    // (the toast is still dismissed).
+                    const targetUrl = safeActionUrl(toast.actionUrl, {
+                      highlight: toast.data?.orderId,
+                      inAppOnly: true,
+                    });
+                    if (targetUrl) {
+                      navigate(targetUrl);
                     }
-                    navigate(targetUrl);
                     removeToast(toast.id);
                   }}
                   className="text-xs text-teal-600 font-medium mt-1 hover:text-teal-700"
@@ -512,9 +552,10 @@ export default function AdminLayout() {
       {/* Help Modal */}
       {helpModalOpen && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 p-4">
-          <div className="bg-white rounded-2xl border border-gray-100 shadow-xl max-w-md w-full p-6 relative">
+          <Dialog open={helpModalOpen} onClose={() => setHelpModalOpen(false)} labelledBy="admin-help-title" className="bg-white rounded-2xl border border-gray-100 shadow-xl max-w-md w-full p-6 relative">
             <button
               onClick={() => setHelpModalOpen(false)}
+              aria-label="Close dialog"
               className="absolute top-4 right-4 p-1.5 rounded-lg text-gray-400 hover:text-gray-700 hover:bg-gray-50"
             >
               <X size={16} />
@@ -523,7 +564,7 @@ export default function AdminLayout() {
               <div className="w-10 h-10 rounded-xl bg-teal-50 flex items-center justify-center text-teal-600">
                 <HelpCircle size={20} />
               </div>
-              <h3 className="text-lg font-bold text-gray-900">Help & Support</h3>
+              <h3 id="admin-help-title" className="text-lg font-bold text-gray-900">Help & Support</h3>
             </div>
             <div className="space-y-3 text-sm text-gray-600 leading-relaxed">
               <p>Welcome to Aura Interiors Admin Panel. Here you can manage products, coordinate orders, and interact with customer chats.</p>
@@ -535,16 +576,17 @@ export default function AdminLayout() {
             >
               Okay
             </button>
-          </div>
+          </Dialog>
         </div>
       )}
 
       {/* Privacy & Policy Terms Modal */}
       {policyModalOpen && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 p-4">
-          <div className="bg-white rounded-2xl border border-gray-100 shadow-xl max-w-lg w-full p-6 relative">
+          <Dialog open={policyModalOpen} onClose={() => setPolicyModalOpen(false)} labelledBy="admin-policy-title" className="bg-white rounded-2xl border border-gray-100 shadow-xl max-w-lg w-full p-6 relative">
             <button
               onClick={() => setPolicyModalOpen(false)}
+              aria-label="Close dialog"
               className="absolute top-4 right-4 p-1.5 rounded-lg text-gray-400 hover:text-gray-700 hover:bg-gray-50"
             >
               <X size={16} />
@@ -553,7 +595,7 @@ export default function AdminLayout() {
               <div className="w-10 h-10 rounded-xl bg-teal-50 flex items-center justify-center text-teal-600">
                 <ShieldCheck size={20} />
               </div>
-              <h3 className="text-lg font-bold text-gray-900">Privacy & Policies</h3>
+              <h3 id="admin-policy-title" className="text-lg font-bold text-gray-900">Privacy & Policies</h3>
             </div>
             <div className="space-y-4 text-xs text-gray-600 overflow-y-auto max-h-[300px] pr-2 leading-relaxed">
               <section>
@@ -575,7 +617,7 @@ export default function AdminLayout() {
             >
               Close Policies
             </button>
-          </div>
+          </Dialog>
         </div>
       )}
 

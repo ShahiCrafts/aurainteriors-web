@@ -1,4 +1,4 @@
-import { useEffect } from "react";
+import { useEffect, useRef, useState } from "react";
 import { createPortal } from "react-dom";
 import { motion, AnimatePresence } from "framer-motion";
 import { X, Home, Building2, Users, MapPin, Loader2, Check, Truck, Receipt } from "lucide-react";
@@ -12,6 +12,7 @@ import formatError from "../../utils/errorHandler";
 import { useForm } from "react-hook-form";
 import { yupResolver } from "@hookform/resolvers/yup";
 import { addressSchema } from "../../utils/validationSchemas";
+import Dialog from "../common/Dialog";
 
 const labelOptions = [
   { value: "home", label: "Home", icon: Home },
@@ -71,7 +72,15 @@ export default function AddEditAddressModal({
   const { mutate: createAddress, isPending: isCreating } = useCreateAddress();
   const { mutate: updateAddress, isPending: isUpdating } = useUpdateAddress();
 
-  const isPending = isPendingOverride ?? (isCreating || isUpdating);
+  // FE-37: the guest/override path previously had no pending guard at
+  // all — the modal fired onSubmitOverride without awaiting it and
+  // its sole override caller (ShippingStep) passed no
+  // isPendingOverride, so the submit stayed enabled during the async
+  // save. The modal now tracks the override call itself; any of the
+  // three pending sources disables the submit.
+  const [isOverridePending, setIsOverridePending] = useState(false);
+  const overridePendingRef = useRef(false);
+  const isPending = Boolean(isPendingOverride) || isOverridePending || isCreating || isUpdating;
   const currentLabel = watch("label");
   const currentType = watch("type");
   const currentIsDefault = watch("isDefault");
@@ -114,14 +123,28 @@ export default function AddEditAddressModal({
     }
   }, [isOpen, address, reset]);
 
-  const onSubmit = (data) => {
+  const onSubmit = async (data) => {
     const payload = { ...data };
     if (payload.label !== "other") {
       payload.customLabel = "";
     }
 
     if (onSubmitOverride) {
-      onSubmitOverride(payload);
+      // FE-37: exactly one override save in flight; the submit stays
+      // disabled until the override result settles, and re-enables
+      // on rejection (the override caller owns error reporting).
+      if (overridePendingRef.current) return;
+      overridePendingRef.current = true;
+      setIsOverridePending(true);
+      try {
+        await onSubmitOverride(payload);
+      } catch {
+        // Swallowed deliberately: the caller's save handler reports
+        // its own failures; the modal only guarantees re-enabling.
+      } finally {
+        overridePendingRef.current = false;
+        setIsOverridePending(false);
+      }
       return;
     }
 
@@ -160,12 +183,13 @@ export default function AddEditAddressModal({
             animate={{ opacity: 1, scale: 1, y: 0 }}
             exit={{ opacity: 0, scale: 0.97, y: 12 }}
             transition={{ duration: 0.18, ease: "easeOut" }}
-            className="bg-white w-full max-w-[840px] max-h-[88vh] rounded-[14px] overflow-hidden relative shadow-[0_24px_70px_rgba(15,23,42,0.35)] border border-[#EEF0F3] font-dm-sans flex flex-col"
+            className="w-full max-w-[840px]"
           >
+           <Dialog open={isOpen} onClose={onClose} labelledBy="address-modal-title" className="bg-white w-full max-h-[88vh] rounded-[14px] overflow-hidden relative shadow-[0_24px_70px_rgba(15,23,42,0.35)] border border-[#EEF0F3] font-dm-sans flex flex-col">
             {/* Header */}
             <div className="flex items-center justify-between px-7 py-5 border-b border-[#EEF0F3] shrink-0">
               <div>
-                <h3 className="text-[19px] font-bold text-[#14151A] tracking-tight">
+                <h3 id="address-modal-title" className="text-[19px] font-bold text-[#14151A] tracking-tight">
                   {isEditing ? "Update Address" : "Add New Address"}
                 </h3>
                 <p className="text-[#6B7280] text-[13px] mt-0.5">
@@ -194,7 +218,7 @@ export default function AddEditAddressModal({
                   <span className="text-[11px] font-bold uppercase tracking-wider text-[#9AA1AC]">
                     Label
                   </span>
-                  <div className="grid grid-cols-2 gap-2.5 mt-3">
+                  <div className="grid grid-cols-2 gap-2.5 mt-3" role="radiogroup" aria-label="Label">
                     {labelOptions.map((option) => {
                       const Icon = option.icon;
                       const isSelected = currentLabel === option.value;
@@ -202,6 +226,8 @@ export default function AddEditAddressModal({
                         <button
                           key={option.value}
                           type="button"
+                          role="radio"
+                          aria-checked={isSelected}
                           onClick={() => setValue("label", option.value)}
                           className={`h-11 px-4 rounded-lg border flex items-center gap-2.5 text-[13.5px] font-semibold transition-all cursor-pointer ${
                             isSelected
@@ -222,10 +248,10 @@ export default function AddEditAddressModal({
 
                 {currentLabel === "other" && (
                   <div className="mb-6 animate-in fade-in slide-in-from-top-2 duration-200">
-                    <label className="text-[11px] font-bold uppercase tracking-wider text-[#9AA1AC]">
+                    <label htmlFor="addr-customLabel" className="text-[11px] font-bold uppercase tracking-wider text-[#9AA1AC]">
                       Custom Label
                     </label>
-                    <input
+                    <input id="addr-customLabel"
                       type="text"
                       {...register("customLabel")}
                       placeholder="e.g. Vacation House"
@@ -243,7 +269,7 @@ export default function AddEditAddressModal({
                   <span className="text-[11px] font-bold uppercase tracking-wider text-[#9AA1AC]">
                     Address Type
                   </span>
-                  <div className="flex flex-col gap-2 mt-3">
+                  <div className="flex flex-col gap-2 mt-3" role="radiogroup" aria-label="Address type">
                     {typeOptions.map((option) => {
                       const Icon = option.icon;
                       const isSelected = currentType === option.value;
@@ -251,6 +277,8 @@ export default function AddEditAddressModal({
                         <button
                           key={option.value}
                           type="button"
+                          role="radio"
+                          aria-checked={isSelected}
                           onClick={() => setValue("type", option.value)}
                           className={`h-12 px-4 rounded-lg border flex items-center justify-between text-[13.5px] font-semibold transition-all cursor-pointer ${
                             isSelected
@@ -279,6 +307,8 @@ export default function AddEditAddressModal({
                 <div className="pt-2">
                   <button
                     type="button"
+                    role="checkbox"
+                    aria-checked={!!currentIsDefault}
                     onClick={() => setValue("isDefault", !currentIsDefault)}
                     className="flex items-center gap-3 text-left bg-transparent border-none cursor-pointer p-0 group"
                   >
@@ -303,10 +333,10 @@ export default function AddEditAddressModal({
                 <div className="flex-1 p-7 overflow-y-auto space-y-5">
                   <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                     <div>
-                      <label className="text-[11px] font-bold uppercase tracking-wider text-[#9AA1AC]">
+                      <label htmlFor="addr-fullName" className="text-[11px] font-bold uppercase tracking-wider text-[#9AA1AC]">
                         Full Name
                       </label>
-                      <input
+                      <input id="addr-fullName"
                         type="text"
                         {...register("fullName")}
                         placeholder="John Doe"
@@ -320,10 +350,10 @@ export default function AddEditAddressModal({
                     </div>
 
                     <div>
-                      <label className="text-[11px] font-bold uppercase tracking-wider text-[#9AA1AC]">
+                      <label htmlFor="addr-phone" className="text-[11px] font-bold uppercase tracking-wider text-[#9AA1AC]">
                         Phone Number
                       </label>
-                      <input
+                      <input id="addr-phone"
                         type="text"
                         {...register("phone")}
                         placeholder="98XXXXXXXX"
@@ -339,10 +369,10 @@ export default function AddEditAddressModal({
 
                   {isGuest && (
                     <div>
-                      <label className="text-[11px] font-bold uppercase tracking-wider text-[#9AA1AC]">
+                      <label htmlFor="addr-email" className="text-[11px] font-bold uppercase tracking-wider text-[#9AA1AC]">
                         Email Address
                       </label>
-                      <input
+                      <input id="addr-email"
                         type="email"
                         {...register("email")}
                         placeholder="guest@example.com"
@@ -357,10 +387,10 @@ export default function AddEditAddressModal({
                   )}
 
                   <div>
-                    <label className="text-[11px] font-bold uppercase tracking-wider text-[#9AA1AC]">
+                    <label htmlFor="addr-addressLine1" className="text-[11px] font-bold uppercase tracking-wider text-[#9AA1AC]">
                       Address Line 1
                     </label>
-                    <input
+                    <input id="addr-addressLine1"
                       type="text"
                       {...register("addressLine1")}
                       placeholder="Street address, P.O. box, company name"
@@ -374,10 +404,10 @@ export default function AddEditAddressModal({
                   </div>
 
                   <div>
-                    <label className="text-[11px] font-bold uppercase tracking-wider text-[#9AA1AC]">
+                    <label htmlFor="addr-addressLine2" className="text-[11px] font-bold uppercase tracking-wider text-[#9AA1AC]">
                       Address Line 2 (Optional)
                     </label>
-                    <input
+                    <input id="addr-addressLine2"
                       type="text"
                       {...register("addressLine2")}
                       placeholder="Apartment, suite, unit, building, floor, etc."
@@ -387,10 +417,10 @@ export default function AddEditAddressModal({
 
                   <div className="grid grid-cols-2 gap-4">
                     <div>
-                      <label className="text-[11px] font-bold uppercase tracking-wider text-[#9AA1AC]">
+                      <label htmlFor="addr-city" className="text-[11px] font-bold uppercase tracking-wider text-[#9AA1AC]">
                         City
                       </label>
-                      <input
+                      <input id="addr-city"
                         type="text"
                         {...register("city")}
                         placeholder="Kathmandu"
@@ -404,10 +434,10 @@ export default function AddEditAddressModal({
                     </div>
 
                     <div>
-                      <label className="text-[11px] font-bold uppercase tracking-wider text-[#9AA1AC]">
+                      <label htmlFor="addr-state" className="text-[11px] font-bold uppercase tracking-wider text-[#9AA1AC]">
                         State / Province
                       </label>
-                      <input
+                      <input id="addr-state"
                         type="text"
                         {...register("state")}
                         placeholder="Bagmati"
@@ -418,10 +448,10 @@ export default function AddEditAddressModal({
 
                   <div className="grid grid-cols-2 gap-4">
                     <div>
-                      <label className="text-[11px] font-bold uppercase tracking-wider text-[#9AA1AC]">
+                      <label htmlFor="addr-postalCode" className="text-[11px] font-bold uppercase tracking-wider text-[#9AA1AC]">
                         Postal / ZIP Code
                       </label>
-                      <input
+                      <input id="addr-postalCode"
                         type="text"
                         {...register("postalCode")}
                         placeholder="44600"
@@ -435,10 +465,10 @@ export default function AddEditAddressModal({
                     </div>
 
                     <div>
-                      <label className="text-[11px] font-bold uppercase tracking-wider text-[#9AA1AC]">
+                      <label htmlFor="addr-country" className="text-[11px] font-bold uppercase tracking-wider text-[#9AA1AC]">
                         Country
                       </label>
-                      <input
+                      <input id="addr-country"
                         type="text"
                         {...register("country")}
                         placeholder="Nepal"
@@ -478,6 +508,7 @@ export default function AddEditAddressModal({
                 </div>
               </div>
             </form>
+           </Dialog>
           </motion.div>
         </div>
       )}

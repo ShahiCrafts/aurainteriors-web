@@ -78,10 +78,11 @@ export default function ToastItem({
 
   const show = entered && !exiting;
 
+  const isError = type === "error";
   return (
     <div
-      role="alert"
-      aria-live="assertive"
+      role={isError ? "alert" : "status"}
+      aria-live={isError ? "assertive" : "polite"}
       className="pointer-events-auto w-[calc(100vw-2rem)] max-w-[300px] bg-white rounded-xl overflow-hidden font-dm-sans"
       style={{
         border: "1px solid rgba(0,0,0,0.08)",
