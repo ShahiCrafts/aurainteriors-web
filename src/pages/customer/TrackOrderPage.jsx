@@ -5,7 +5,6 @@ import {
   Search,
   Mail,
   ArrowLeft,
-  Loader2,
   AlertCircle,
   MapPin,
   Calendar,
@@ -207,17 +206,10 @@ export default function TrackOrderPage() {
                 disabled={trackOrderMutation.isPending}
                 className="w-full py-3 bg-teal-700 text-white font-medium rounded-xl hover:bg-teal-800 transition-colors disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2 font-dm-sans"
               >
-                {trackOrderMutation.isPending ? (
-                  <>
-                    <Loader2 size={20} className="animate-spin" />
-                    Tracking...
-                  </>
-                ) : (
-                  <>
-                    <Search size={20} />
-                    Track Order
-                  </>
-                )}
+                <>
+                  <Search size={20} />
+                  {trackOrderMutation.isPending ? "Tracking..." : "Track Order"}
+                </>
               </button>
             </form>
           </div>

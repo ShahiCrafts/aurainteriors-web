@@ -1,10 +1,10 @@
-// FE-56 / FE-17 — ErrorBoundary + LoadingSpinner.
+// FE-56 / FE-17 — ErrorBoundary + route loading fallback.
 // Pre-fix: no ErrorBoundary existed anywhere in src/ and the customer
 // LoadingSpinner returned null, so these imports/tests fail outright.
 import { describe, it, expect, vi, beforeEach, afterEach } from "vitest";
 import { render, screen } from "@testing-library/react";
 import ErrorBoundary from "../../../src/components/common/ErrorBoundary.jsx";
-import LoadingSpinner from "../../../src/components/common/LoadingSpinner.jsx";
+import { RouteSkeleton } from "../../../src/components/common/Skeleton.jsx";
 
 function Thrower() {
   throw new Error("SECRET_ERROR_TEXT_SHOULD_NOT_RENDER");
@@ -66,11 +66,12 @@ describe("ErrorBoundary (FE-56)", () => {
   });
 });
 
-describe("LoadingSpinner (FE-56)", () => {
-  it("renders a visible element with role=status and an accessible label (not null)", () => {
-    const { container } = render(<LoadingSpinner />);
+describe("RouteSkeleton (route loading fallback)", () => {
+  it("renders a visible shimmer fallback with role=status and an accessible label (not null, no spinner)", () => {
+    const { container } = render(<RouteSkeleton />);
     expect(container.firstChild).not.toBeNull();
     expect(screen.getByRole("status")).toBeInTheDocument();
     expect(screen.getByText(/Loading/)).toBeInTheDocument();
+    expect(container.innerHTML).not.toContain("animate-spin");
   });
 });

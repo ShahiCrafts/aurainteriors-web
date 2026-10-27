@@ -7,8 +7,7 @@ import {
   Bookmark,
   ChevronDown,
   ArrowRight,
-  Loader2,
-} from "lucide-react";
+  } from "lucide-react";
 import Navbar from "../../layouts/customer/Navbar";
 import Footer from "../../layouts/customer/Footer";
 import { useBlogs, useBlogCategories, usePopularBlogs, useToggleBlogLike } from "../../hooks/blog/useBlogTan";
@@ -246,11 +245,7 @@ export default function BlogsPage() {
                     disabled={isFetching}
                     className="flex items-center gap-2 px-6 py-3 rounded-full border border-neutral-300 text-neutral-700 font-medium hover:bg-neutral-50 transition-all duration-200 disabled:opacity-50"
                   >
-                    {isFetching ? (
-                      <Loader2 size={18} className="animate-spin" />
-                    ) : (
-                      <ChevronDown size={18} />
-                    )}
+                    <ChevronDown size={18} />
                     Load More Articles
                   </button>
                 </div>

@@ -1,16 +1,3 @@
-// Phase 7 (catalog) — the shared storefront listing engine,
-// extracted from ShopPage (which keeps its banner + chrome) so
-// the Shop, Room and Collection contexts render ONE listing
-// layout. The URL owns all filter state (the ShopPage
-// architecture); page now lives in the URL too, so links are
-// shareable and back/forward walks filters AND pages.
-//
-// Requests go through the Phase 5 contract (buildListingParams:
-// facets=1 + attr.* grammar verbatim) and the filter panel
-// renders from the returned facets payload. `pinned` carries a
-// route-pinned dimension ({ room } / { collection }) for the
-// context pages — it never appears in the URL, and clear/reset
-// never touches it.
 import { useEffect, useState } from "react";
 import { Link, useSearchParams } from "react-router-dom";
 import {
@@ -25,7 +12,7 @@ import {
 import ProductCard from "./ProductCard";
 import Pagination from "../common/Pagination";
 import Dialog from "../ui/Dialog";
-import { FilterSidebarSkeleton, ListingCardSkeleton } from "../common/Skeleton";
+import { FilterSidebarSkeleton, ListingGridSkeleton } from "../common/Skeleton";
 import FilterSidebar from "./FilterSidebar";
 import { FilterChips } from "./FacetFilters";
 
@@ -49,9 +36,6 @@ import {
 import { getCategoryImageUrl } from "../../utils/imageUrl";
 import { useProducts } from "../../hooks/product/useProductTan";
 
-// SORT OPTIONS — the two effective-price entries sort variant
-// products by their price floor (Phase 5 tokens), the legacy
-// entries keep sorting by the stored product price.
 const SORT_OPTIONS = [
   { value: "featured", label: "Featured" },
   { value: "newest", label: "Newest" },
@@ -93,8 +77,6 @@ export default function CatalogListing({
   const rooms = selectedRooms(searchParams);
   const inStockOnly = searchParams.get("inStock") === "true";
 
-  // Any filter change returns to page 1 (the patch carries no
-  // `page` key); pagination writes the page key explicitly.
   const updateFilters = (patch, replace = false) => {
     setSearchParams((previous) => {
       const next = new URLSearchParams(previous);
@@ -123,7 +105,6 @@ export default function CatalogListing({
   const handleInStockToggle = () =>
     updateFilters({ inStock: inStockOnly ? null : "true" });
 
-  // CATEGORY TREE
   const { data: categoryTreeData, isLoading: isCategoryTreeLoading } = useCategoryTree();
   const categories = categoryTreeData?.data?.categories || [];
   const currentCategory =
@@ -135,7 +116,6 @@ export default function CatalogListing({
       ? findCategoryChain(categories, selectedCategories[0])
       : [];
 
-  // PRODUCTS (Phase 5 contract)
   const params = buildListingParams({ searchParams, page, limit, pinned });
   const { data: productsData, isLoading: isProductsLoading } = useProducts(params);
   const products = productsData?.data?.products || [];
@@ -148,15 +128,11 @@ export default function CatalogListing({
   };
   const totalProducts = pagination.total;
 
-  // Price slider bounds come from the facet's effective-price
-  // range when the payload carries one; the legacy catalogue
-  // bounds are the fallback (FE-23 sentinel semantics preserved:
-  // max == bounds.max means "no max filter").
   const priceBounds = facets?.price
     ? {
-        min: facets.price.min ?? DEFAULT_PRICE_BOUNDS.min,
-        max: facets.price.max ?? DEFAULT_PRICE_BOUNDS.max,
-      }
+      min: facets.price.min ?? DEFAULT_PRICE_BOUNDS.min,
+      max: facets.price.max ?? DEFAULT_PRICE_BOUNDS.max,
+    }
     : DEFAULT_PRICE_BOUNDS;
   const setPriceRange = (value) =>
     updateFilters(
@@ -167,7 +143,6 @@ export default function CatalogListing({
       true
     );
 
-  // LOCK BODY SCROLL WHEN MOBILE FILTER DRAWER IS OPEN
   useEffect(() => {
     document.body.style.overflow = showMobileFilters ? "hidden" : "";
     return () => {
@@ -182,18 +157,11 @@ export default function CatalogListing({
     setShowSortDropdown(false);
   };
 
-  // RESET FILTERS (sidebar + empty state): every user-facing
-  // filter incl. the attr grammar; pinned dimensions are not in
-  // the URL and survive.
   const handleResetFilters = () =>
     updateFilters({ ...clearAllFiltersPatch(searchParams), sort: null, search: null });
 
-  // Clear-filters (chips row): filters only — search and sort are
-  // not filters.
   const handleClearFilters = () => updateFilters(clearAllFiltersPatch(searchParams));
 
-  // BREADCRUMBS — context prefix, then the category's full
-  // ancestor chain (Phase 7; previously one parent level).
   const breadcrumbs = [
     { name: "Home", path: "/" },
     ...crumbPrefix,
@@ -206,7 +174,6 @@ export default function CatalogListing({
   const pageTitle = title || currentCategory?.name || "All Products";
   const headingTitle = title || (currentCategory ? pageTitle : "Collection");
 
-  // FILTER CHIPS
   const chipLabels = {
     categories: new Map(
       (function flatten(list) {
@@ -232,8 +199,6 @@ export default function CatalogListing({
   const chips = buildFilterChips(searchParams, chipLabels);
   const activeFilterCount = chips.length;
 
-  // PAGE CHANGE — the page lives in the URL; replace keeps the
-  // history for filter changes (back walks filters, not pages).
   const handlePageChange = (newPage) => {
     updateFilters({ page: newPage > 1 ? newPage : null }, true);
     window.scrollTo({ top: 0, behavior: "smooth" });
@@ -275,11 +240,10 @@ export default function CatalogListing({
           {index > 0 && <span className="text-black/10">/</span>}
           <Link
             to={crumb.path}
-            className={`hover:text-[#F27318] transition-colors ${
-              index === breadcrumbs.length - 1
+            className={`hover:text-[#F27318] transition-colors ${index === breadcrumbs.length - 1
                 ? "text-black/60 font-semibold pointer-events-none"
                 : ""
-            }`}
+              }`}
           >
             {crumb.name}
           </Link>
@@ -298,7 +262,6 @@ export default function CatalogListing({
       {header}
       <div className="max-w-[1440px] mx-auto px-4 sm:px-5 md:px-6 lg:px-4">
         <div className="flex flex-col lg:flex-row gap-6 md:gap-8 lg:gap-12">
-          {/* LEFT PANEL - DESKTOP SIDEBAR */}
           <aside className="hidden lg:block lg:w-64 shrink-0">
             {breadcrumbNav(
               "flex items-center gap-2 text-[14px] font-medium text-black/40 mb-10 flex-wrap"
@@ -312,13 +275,11 @@ export default function CatalogListing({
             </div>
           </aside>
 
-          {/* RIGHT PANEL */}
           <div className="flex-1 min-w-0">
             {breadcrumbNav(
               "flex lg:hidden items-center gap-2 text-[13px] sm:text-[14px] font-medium text-black/40 mb-5 flex-wrap"
             )}
 
-            {/* TOP BAR */}
             <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 mb-5">
               <div className="flex items-center gap-4">
                 <h1 className="text-[20px] sm:text-[24px] md:text-[28px] font-semibold text-[#1A1714]">
@@ -326,8 +287,9 @@ export default function CatalogListing({
                   <span className="ml-3 sm:ml-5 text-[13px] sm:text-[15px] font-semibold text-black/40 tracking-normal lowercase">
                     {isLoading ? (
                       <span
-                        className="inline-block align-middle w-16 h-4 rounded bg-[#F0EFED] motion-safe:animate-pulse"
+                        role="status"
                         aria-label="Loading product count"
+                        className="inline-block align-middle h-[1lh] w-20 sm:w-24 rounded bg-[#F0EFED] motion-safe:animate-pulse"
                       />
                     ) : (
                       `(${totalProducts} items)`
@@ -337,7 +299,6 @@ export default function CatalogListing({
               </div>
 
               <div className="flex items-center gap-2 sm:gap-3 flex-wrap">
-                {/* MOBILE FILTER BUTTON */}
                 <button
                   onClick={() => setShowMobileFilters(true)}
                   className="lg:hidden relative flex items-center gap-2 px-4 py-2.5 rounded-md border border-black/[0.08] hover:border-[#F27318] bg-white text-[13px] sm:text-[14px] font-semibold text-[#1A1714] transition-all"
@@ -351,7 +312,6 @@ export default function CatalogListing({
                   )}
                 </button>
 
-                {/* SORT */}
                 <div className="relative">
                   <button
                     onClick={() => setShowSortDropdown(!showSortDropdown)}
@@ -365,9 +325,8 @@ export default function CatalogListing({
                     </span>
                     <ChevronDown
                       size={16}
-                      className={`text-black/20 transition-transform duration-300 shrink-0 ${
-                        showSortDropdown ? "rotate-180" : ""
-                      }`}
+                      className={`text-black/20 transition-transform duration-300 shrink-0 ${showSortDropdown ? "rotate-180" : ""
+                        }`}
                     />
                   </button>
 
@@ -384,11 +343,10 @@ export default function CatalogListing({
                           <button
                             key={option.value}
                             onClick={() => handleSortChange(option.value)}
-                            className={`w-full text-left px-5 py-3 text-[14px] font-medium transition-colors ${
-                              sortBy === option.value
+                            className={`w-full text-left px-5 py-3 text-[14px] font-medium transition-colors ${sortBy === option.value
                                 ? "text-[#F27318] bg-[#F27318]/5"
                                 : "text-[#1A1714] hover:bg-black/[0.02]"
-                            }`}
+                              }`}
                           >
                             {option.label}
                           </button>
@@ -398,27 +356,24 @@ export default function CatalogListing({
                   )}
                 </div>
 
-                {/* VIEW MODE */}
                 <div className="flex items-center border border-black/[0.08] rounded-md p-1 bg-white">
                   <button
                     onClick={() => setViewMode("grid")}
                     aria-label="Grid view"
-                    className={`p-2 rounded-[4px] transition-all ${
-                      viewMode === "grid"
+                    className={`p-2 rounded-[4px] transition-all ${viewMode === "grid"
                         ? "bg-[#F27318] text-white shadow-sm"
                         : "text-black/30 hover:text-black/60"
-                    }`}
+                      }`}
                   >
                     <Grid3X3 size={16} />
                   </button>
                   <button
                     onClick={() => setViewMode("list")}
                     aria-label="List view"
-                    className={`p-2 rounded-[4px] transition-all ${
-                      viewMode === "list"
+                    className={`p-2 rounded-[4px] transition-all ${viewMode === "list"
                         ? "bg-[#F27318] text-white shadow-sm"
                         : "text-black/30 hover:text-black/60"
-                    }`}
+                      }`}
                   >
                     <List size={16} />
                   </button>
@@ -442,9 +397,6 @@ export default function CatalogListing({
               </div>
             )}
 
-            {/* CATEGORY INTRO — the category record's own
-                description/image (Phase 7). No subcategory pills:
-                the filter sidebar already lists them. */}
             {showIntro && (
               <div className="mb-8">
                 {(currentCategory.image || currentCategory.description) && (
@@ -467,7 +419,6 @@ export default function CatalogListing({
               </div>
             )}
 
-            {/* ACTIVE FILTER CHIPS */}
             {chips.length > 0 && (
               <div className="mb-5">
                 <FilterChips
@@ -478,22 +429,8 @@ export default function CatalogListing({
               </div>
             )}
 
-            {/* PRODUCTS */}
             {isLoading ? (
-              <div
-                className={
-                  viewMode === "grid"
-                    ? "grid grid-cols-2 sm:grid-cols-2 md:grid-cols-3 xl:grid-cols-4 gap-x-4 gap-y-6 md:gap-x-5 md:gap-y-8"
-                    : "flex flex-col gap-4"
-                }
-              >
-                <span className="sr-only" role="status">
-                  Loading products
-                </span>
-                {Array.from({ length: limit }, (_, i) => (
-                  <ListingCardSkeleton key={i} viewMode={viewMode} />
-                ))}
-              </div>
+              <ListingGridSkeleton viewMode={viewMode} count={limit} />
             ) : products.length === 0 ? (
               <div className="text-center py-16 sm:py-24 bg-[#F9F8F6] rounded-2xl px-4">
                 <Search size={32} className="mx-auto text-black/10 mb-4" />
@@ -524,9 +461,6 @@ export default function CatalogListing({
                   ))}
                 </div>
 
-                {/* PAGINATION — the shared Pagination, customer
-                    theme (REUSE-002); the page lives in the URL and
-                    handlePageChange keeps the scroll-to-top. */}
                 {pagination.pages > 1 && (
                   <div className="flex flex-col sm:flex-row items-center justify-between gap-4 mt-12 sm:mt-16 pt-8 border-t border-black/[0.03]">
                     <span className="text-[11px] font-bold text-black/20 uppercase tracking-widest order-2 sm:order-1">
@@ -551,11 +485,6 @@ export default function CatalogListing({
         </div>
       </div>
 
-      {/* MOBILE FILTER DRAWER — same panel, same facets.
-          Phase 6: the panel is the shared Dialog (ui/Dialog) —
-          it gains role/aria-modal, focus trap, Escape-to-close and
-          the scroll lock; the backdrop button is the consumer
-          backdrop, calling the same close handler. */}
       {showMobileFilters && (
         <div className="fixed inset-0 z-50 lg:hidden">
           <button

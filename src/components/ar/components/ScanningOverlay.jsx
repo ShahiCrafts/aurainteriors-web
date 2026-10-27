@@ -10,15 +10,9 @@ const ScanningOverlay = ({ hasPlacedModel, surfaceDetected, isPlacing }) => {
         <div className="flex flex-col items-center gap-6">
           <div className="relative">
             <div className="w-32 h-32 rounded-full border-2 border-white/30" />
-            <div className="absolute inset-0 w-32 h-32 rounded-full border-2 border-transparent border-t-white animate-spin" />
+            <div className="absolute inset-0 w-32 h-32 rounded-full border-2 border-transparent border-t-white motion-safe:animate-pulse" />
             <div className="absolute inset-4 w-24 h-24 rounded-full border border-white/20" />
-            <div
-              className="absolute inset-4 w-24 h-24 rounded-full border border-transparent border-t-white/60 animate-spin"
-              style={{
-                animationDuration: "1.5s",
-                animationDirection: "reverse",
-              }}
-            />
+            <div className="absolute inset-4 w-24 h-24 rounded-full border border-transparent border-t-white/60 motion-safe:animate-pulse" />
             <div className="absolute inset-0 flex items-center justify-center">
               <MdOutlineViewInAr size={28} className="text-white/80" />
             </div>
@@ -58,7 +52,7 @@ const PlacingIndicator = ({ isPlacing }) => {
   return (
     <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 flex flex-col items-center gap-4 pointer-events-none">
       <div className="w-20 h-20 bg-white rounded-full shadow-xl flex items-center justify-center">
-        <div className="absolute w-16 h-16 border-2 border-gray-100 border-t-teal-600 rounded-full animate-spin" />
+        <div className="absolute w-16 h-16 border-2 border-gray-100 border-t-teal-600 rounded-full motion-safe:animate-pulse" />
         <HiOutlineCube size={24} className="text-teal-600" />
       </div>
     </div>

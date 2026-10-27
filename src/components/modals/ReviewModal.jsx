@@ -1,6 +1,6 @@
 import { useState, useEffect } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import { X, Star, Loader2 } from "lucide-react";
+import { X, Star } from "lucide-react";
 import { toast } from "../../lib/toast";
 import Dialog from "../common/Dialog";
 import { useCreateReview, useUpdateReview } from "../../hooks/review/useReviewTan";
@@ -207,13 +207,7 @@ export default function ReviewModal({ isOpen, onClose, productId, existingReview
                     disabled={isPending}
                     className="flex-1 h-11 bg-[#F27318] hover:bg-[#D9620E] text-white font-semibold text-[14px] rounded-lg transition-all disabled:opacity-50 disabled:cursor-not-allowed border-none cursor-pointer flex items-center justify-center gap-2"
                   >
-                    {isPending ? (
-                      <Loader2 size={18} className="animate-spin" />
-                    ) : isEditing ? (
-                      "Update Review"
-                    ) : (
-                      "Submit Review"
-                    )}
+                    {isEditing ? "Update Review" : "Submit Review"}
                   </button>
                 </div>
               </form>

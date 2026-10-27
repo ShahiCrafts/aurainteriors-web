@@ -37,7 +37,7 @@ describe("Button", () => {
     expect(screen.getByRole("button", { name: "Go" })).toHaveAttribute("type", "submit");
   });
 
-  it("disabled blocks clicks; loading shows a spinner and disables", () => {
+  it("disabled blocks clicks; loading shows a busy indicator and disables", () => {
     const onClick = vi.fn();
     const { rerender, container } = render(
       <Button disabled onClick={onClick}>
@@ -54,7 +54,8 @@ describe("Button", () => {
     );
     const loading = screen.getByRole("button", { name: /Saving/ });
     expect(loading).toBeDisabled();
-    expect(container.querySelector(".animate-spin")).not.toBeNull();
+    expect(container.innerHTML).not.toContain("animate-spin");
+    expect(container.innerHTML).toContain("animate-pulse");
   });
 
   it('renders an anchor with as="a"', () => {

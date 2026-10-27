@@ -134,7 +134,7 @@ const ChatMessage = ({ message, isOwnMessage, isAdminView = false, onRetry }) =>
                       {isOptimistic && (
                         <div className="absolute inset-0 rounded-xl bg-black/5 flex items-center justify-center pointer-events-none">
                           <div className="flex items-center gap-1 bg-white/90 px-2 py-1 rounded-full text-[10px] font-bold text-gray-600 shadow-sm backdrop-blur-sm">
-                            <div className="w-2.5 h-2.5 rounded-full border-2 border-[#F27318] border-t-transparent animate-spin" />
+                            <div className="w-2.5 h-2.5 rounded-full bg-[#F27318] motion-safe:animate-pulse" />
                             Uploading
                           </div>
                         </div>

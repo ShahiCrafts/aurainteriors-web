@@ -1,7 +1,7 @@
 import { useEffect, useRef, useState } from "react";
 import { createPortal } from "react-dom";
 import { motion, AnimatePresence } from "framer-motion";
-import { X, Home, Building2, Users, MapPin, Loader2, Check, Truck, Receipt } from "lucide-react";
+import { X, Home, Building2, Users, MapPin, Check, Truck, Receipt } from "lucide-react";
 import { toast } from "../../lib/toast";
 import {
   useCreateAddress,
@@ -455,13 +455,7 @@ export default function AddEditAddressModal({
                     disabled={isPending}
                     className="h-[42px] px-6 bg-[#F27318] hover:bg-[#D9620E] text-white font-semibold text-[13.5px] rounded-lg transition-all disabled:opacity-50 disabled:cursor-not-allowed border-none cursor-pointer flex items-center justify-center gap-2 min-w-[140px]"
                   >
-                    {isPending ? (
-                      <Loader2 size={16} className="animate-spin" />
-                    ) : isEditing ? (
-                      "Update Address"
-                    ) : (
-                      "Add Address"
-                    )}
+                    {isEditing ? "Update Address" : "Add Address"}
                   </button>
                 </div>
               </div>

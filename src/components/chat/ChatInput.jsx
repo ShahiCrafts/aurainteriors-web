@@ -300,7 +300,7 @@ const ChatInput = ({ chatId, onTyping, draftReply }) => {
             }`}
           >
             {isUploading ? (
-              <div className="h-4 w-4 animate-spin rounded-full border-2 border-gray-300 border-t-[#F27318]" />
+              <div className="h-4 w-4 rounded-full bg-[#F27318]/60 motion-safe:animate-pulse" />
             ) : (
               <LucideSendHorizontal className="h-6 w-6" />
             )}

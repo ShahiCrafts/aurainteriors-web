@@ -1,4 +1,3 @@
-import { Loader2 } from "lucide-react";
 
 /**
  * @typedef {Object} ButtonProps
@@ -49,7 +48,7 @@ export default function Button({
   const classes = `inline-flex items-center justify-center gap-2 font-semibold rounded-lg transition-colors cursor-pointer disabled:opacity-60 disabled:cursor-not-allowed ${VARIANT_CLASSES[variant] || VARIANT_CLASSES.primary} ${SIZE_CLASSES[size] || SIZE_CLASSES.md} ${className}`;
   const content = (
     <>
-      {loading && <Loader2 size={16} className="animate-spin" aria-hidden="true" />}
+      {loading && <span className="h-4 w-4 shrink-0 rounded-full bg-current opacity-60 motion-safe:animate-pulse" aria-hidden="true" />}
       {children}
     </>
   );

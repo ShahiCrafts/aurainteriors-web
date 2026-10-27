@@ -28,8 +28,7 @@ import {
   Tag,
   Check,
   ChevronRight,
-  Loader2,
-} from "lucide-react";
+  } from "lucide-react";
 import Skeleton from "../../components/common/Skeleton";
 import { getProductImageUrl } from "../../utils/imageUrl";
 import ImageWithFallback from "../../components/fallbacks/ImageWithFallback";
@@ -685,11 +684,7 @@ export default function CheckoutPage() {
                               disabled={applyDiscountMutation.isPending}
                               className="px-4 py-2.5 bg-[#F27318] hover:bg-[#cd5704] text-white rounded-md text-[13px] font-bold transition-all disabled:opacity-50 shrink-0"
                             >
-                              {applyDiscountMutation.isPending ? (
-                                <Loader2 size={14} className="animate-spin" />
-                              ) : (
-                                "Apply"
-                              )}
+                              {"Apply"}
                             </button>
                           </div>
                         )}
@@ -717,10 +712,7 @@ export default function CheckoutPage() {
                       className="flex-1 bg-[#F27318] hover:bg-[#cd5704] text-white h-12 rounded-xl font-medium text-[15px] transition-all flex items-center justify-center gap-2 disabled:opacity-50 group"
                     >
                       {isSubmitting ? (
-                        <div className="flex items-center gap-2">
-                          <Loader2 size={18} className="animate-spin" />
-                          <span>Processing...</span>
-                        </div>
+                        <span>Processing...</span>
                       ) : (
                         <>
                           {currentStep === 1 ? "Next: Payment" : "Place Order"}

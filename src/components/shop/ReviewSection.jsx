@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { Star, ChevronDown, Loader2, ThumbsUp, CheckCircle, MoreVertical, Edit2, Trash2 } from "lucide-react";
+import { Star, ChevronDown, ThumbsUp, CheckCircle, MoreVertical, Edit2, Trash2 } from "lucide-react";
 import { ReviewSkeleton } from "../common/Skeleton";
 import {
   useProductReviews,
@@ -166,7 +166,7 @@ export default function ReviewSection({ productId, productName, onEditReview }) 
                     disabled={isFetching}
                     className="inline-flex items-center justify-center gap-2 text-[13px] font-bold text-[#F27318] hover:underline underline-offset-4 transition-all disabled:opacity-50 cursor-pointer bg-transparent border-none p-0 font-dm-sans"
                   >
-                    {isFetching ? <Loader2 size={14} className="animate-spin" /> : "Show more reviews"}
+                    {isFetching ? "Loading..." : "Show more reviews"}
                   </button>
                 </div>
               )}
@@ -268,11 +268,7 @@ function ReviewCard({ review, productId, isOwner, onEdit, isLast }) {
             className={`inline-flex items-center gap-1.5 text-[14px] font-medium transition-colors bg-transparent border-none cursor-pointer p-0 font-dm-sans ${hasVoted ? "text-[#F27318]" : "text-black/25 hover:text-[#F27318]"
               }`}
           >
-            {isMarkingHelpful ? (
-              <Loader2 size={14} className="animate-spin" />
-            ) : (
-              <ThumbsUp size={14} className={hasVoted ? "fill-[#F27318]" : ""} />
-            )}
+            <ThumbsUp size={14} className={hasVoted ? "fill-[#F27318]" : ""} />
             Helpful
             ({review.helpfulCount || 0})
           </button>

@@ -186,14 +186,7 @@ export default function AuthModal() {
                         disabled={isSending}
                         className="w-full h-[46px] bg-[#F27318] hover:bg-[#D9620E] text-white font-semibold text-[14px] rounded-lg mt-1 transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed border-none cursor-pointer flex items-center justify-center gap-2 shadow-sm"
                       >
-                        {isSending ? (
-                          <>
-                            <div className="animate-spin rounded-full h-4 w-4 border-2 border-white border-t-transparent" />
-                            Sending Magic Link...
-                          </>
-                        ) : (
-                          "Send Magic Link"
-                        )}
+                        {isSending ? "Sending Magic Link..." : "Send Magic Link"}
                       </button>
 
                       <div className="relative flex items-center justify-center my-2">
@@ -317,14 +310,7 @@ export default function AuthModal() {
                         disabled={isUpdating || !fullName.trim()}
                         className="w-full h-[46px] bg-[#F27318] hover:bg-[#D9620E] text-white font-semibold text-[14px] rounded-lg mt-1 transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed border-none cursor-pointer flex items-center justify-center gap-2 shadow-sm"
                       >
-                        {isUpdating ? (
-                          <>
-                            <div className="animate-spin rounded-full h-4 w-4 border-2 border-white border-t-transparent" />
-                            Completing Setup...
-                          </>
-                        ) : (
-                          "Complete Setup"
-                        )}
+                        {isUpdating ? "Completing Setup..." : "Complete Setup"}
                       </button>
                     </form>
                   </motion.div>

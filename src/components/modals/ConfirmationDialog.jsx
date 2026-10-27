@@ -1,5 +1,5 @@
 import { useEffect, useId, useRef, useState } from "react";
-import { AlertTriangle, Trash2, LogOut, Info, X, Loader2, CheckCircle } from "lucide-react";
+import { AlertTriangle, Trash2, LogOut, Info, X, CheckCircle } from "lucide-react";
 import Dialog from "../common/Dialog";
 
 export default function ConfirmationDialog({
@@ -140,11 +140,7 @@ export default function ConfirmationDialog({
                         disabled={isBusy}
                         className={`flex-1 ${buttonBg} text-white px-4 py-2.5 rounded-xl text-sm font-semibold transition-all font-dm-sans flex items-center justify-center gap-2 disabled:opacity-70`}
                     >
-                        {isBusy ? (
-                            <Loader2 size={16} className="animate-spin" />
-                        ) : (
-                            confirmText
-                        )}
+                        {confirmText}
                     </button>
                 </div>
             </Dialog>

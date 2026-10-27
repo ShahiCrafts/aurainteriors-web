@@ -1,5 +1,5 @@
 import { useState, useRef, useEffect } from "react";
-import { Star, Loader2 } from "lucide-react";
+import { Star } from "lucide-react";
 import { toast } from "../../lib/toast";
 import { useCreateReview, useUpdateReview } from "../../hooks/review/useReviewTan";
 import { useForm } from "react-hook-form";
@@ -194,13 +194,7 @@ export default function ReviewForm({
             disabled={isPending}
             className="flex-1 bg-teal-700 text-white px-6 py-3 rounded-lg font-semibold hover:bg-teal-800 transition-colors font-dm-sans disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2"
           >
-            {isPending ? (
-              <Loader2 size={18} className="animate-spin" />
-            ) : isEditing ? (
-              "Update Review"
-            ) : (
-              "Submit Review"
-            )}
+            {isEditing ? "Update Review" : "Submit Review"}
           </button>
         </div>
       </form>

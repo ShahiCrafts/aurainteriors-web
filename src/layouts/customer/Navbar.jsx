@@ -7,14 +7,18 @@ import {
   Heart,
   Package,
   MapPin,
-  Settings,
   LogOut,
   Bell,
   Menu,
   X,
   ChevronDown,
 } from "lucide-react";
-import Skeleton from "../../components/common/Skeleton";
+import Skeleton, {
+  WishlistActionSkeleton,
+  CartActionSkeleton,
+  ProfileActionSkeleton,
+  ProfileMenuHeaderSkeleton,
+} from "../../components/common/Skeleton";
 import { useQueryClient } from "@tanstack/react-query";
 import useAuthStore from "../../store/authStore";
 import { useShallow } from "zustand/react/shallow";
@@ -27,21 +31,18 @@ import { getProductImageUrl } from "../../utils/imageUrl";
 import { UserAvatar } from "../../components/common/InitialsAvatar";
 import { formatNPR } from "../../utils/formatCurrency";
 
-// Lazy: CartSlider is 10KB + its own deps. Mount it only after the first time
-// the user opens the cart so it never appears in the initial HTML paint.
 const CartSlider = lazy(() => import("../../components/cart/CartSlider"));
 
 export default function Navbar() {
   const navigate = useNavigate();
   const [searchParams] = useSearchParams();
   const [isCartOpen, setIsCartOpen] = useState(false);
-  // Latch: once true, CartSlider stays in the DOM so close animation works.
   const [cartEverOpened, setCartEverOpened] = useState(false);
   const [isProfileOpen, setIsProfileOpen] = useState(false);
   const queryClient = useQueryClient();
   const { isAuthenticated, logout, openAuthModal, user } = useAuthStore(useShallow((state) => ({ isAuthenticated: state.isAuthenticated, logout: state.logout, openAuthModal: state.openAuthModal, user: state.user })));
-  const { data: cartData } = useCart({ enabled: isAuthenticated });
-  const { data: wishlistData } = useWishlist({ enabled: isAuthenticated });
+  const { data: cartData, isLoading: isCartLoading } = useCart({ enabled: isAuthenticated });
+  const { data: wishlistData, isLoading: isWishlistLoading } = useWishlist({ enabled: isAuthenticated });
   const { items: guestCartItems } = useGuestCartStore(useShallow((state) => ({ items: state.items })));
 
   const cartCount = isAuthenticated
@@ -50,20 +51,15 @@ export default function Navbar() {
 
   const wishlistCount = wishlistData?.data?.wishlist?.itemCount || 0;
 
-  // ── Search state ─────────────────────────────────────────────────────────
+  const showCartSkeleton = isAuthenticated && isCartLoading;
+  const showWishlistSkeleton = isAuthenticated && isWishlistLoading;
+  const showProfileSkeleton = isAuthenticated && !user;
+
   const [searchInput, setSearchInput] = useState("");
   const [isSearchFocused, setIsSearchFocused] = useState(false);
   const debouncedSearch = useDebounce(searchInput, 300);
   const searchRef = useRef(null);
 
-  /**
-   * BUG FIX: Previously `enabled` was passed inside the `params` object,
-   * causing it to be sent to the API as a URL query parameter (?enabled=true)
-   * on every keystroke — the search fired regardless of input length.
-   *
-   * Now `enabled` is correctly passed as the second argument (React Query
-   * options), so the network request only fires when >= 2 chars are typed.
-   */
   const { data: searchResultsData, isLoading: isSearchLoading } = useProducts(
     { search: debouncedSearch, limit: 5, status: "active" },
     { enabled: debouncedSearch.length >= 2 }
@@ -74,7 +70,6 @@ export default function Navbar() {
   const showDropdown =
     isSearchFocused && debouncedSearch.length >= 2 && !isSearchLoading;
 
-  // Close search dropdown on outside click
   useEffect(() => {
     const handleClickOutside = (event) => {
       if (searchRef.current && !searchRef.current.contains(event.target)) {
@@ -95,7 +90,6 @@ export default function Navbar() {
 
   const handleOpenCart = () => {
     setIsCartOpen(true);
-    // First open: latch true so CartSlider chunk is fetched and mounts
     if (!cartEverOpened) setCartEverOpened(true);
   };
 
@@ -119,10 +113,6 @@ export default function Navbar() {
 
   return (
     <>
-      {/* z-50, one layer above the CategoryBar (z-40): the profile and
-          search dropdowns live in this stacking context, and at z-40
-          the later-in-DOM CategoryBar painted its bar and mega-menu
-          popup over them. Drawers/modals sit higher still (60+). */}
       <nav className="sticky top-0 z-50 bg-white border-b border-[#F0EFED] font-dm-sans">
         <div className="px-4 md:px-6 lg:px-8 h-16 md:h-20 flex items-center justify-between gap-3 md:gap-6">
           <Link
@@ -136,7 +126,6 @@ export default function Navbar() {
             />
           </Link>
 
-          {/* Desktop Search */}
           <div
             ref={searchRef}
             className="hidden md:block flex-1 max-w-[560px] relative"
@@ -176,7 +165,6 @@ export default function Navbar() {
               </div>
             </form>
 
-            {/* Search Dropdown */}
             {showDropdown && (
               <div className="absolute top-full left-0 right-0 mt-2 bg-white border border-[#F0EFED] rounded-[12px] shadow-[0_10px_40px_rgba(0,0,0,0.12)] z-50 overflow-hidden animate-in fade-in slide-in-from-top-2 duration-200">
                 <div className="max-h-[420px] overflow-y-auto">
@@ -244,7 +232,6 @@ export default function Navbar() {
             )}
           </div>
 
-          {/* Mobile Action Icons */}
           <div className="flex md:hidden items-center gap-[18px] shrink-0 text-[#1A1714]">
             <button className="bg-transparent border-none p-0 flex items-center justify-center cursor-pointer text-[#1A1714] hover:text-[#F27318] transition-colors">
               <Bell size={22} />
@@ -257,64 +244,71 @@ export default function Navbar() {
             </button>
           </div>
 
-          {/* Desktop Action Icons */}
           <div className="hidden md:flex items-start gap-[6px] shrink-0">
-            <button
-              onClick={() =>
-                !isAuthenticated
-                  ? openAuthModal("login")
-                  : navigate("/profile", { state: { activeTab: "wishlist" } })
-              }
-              className="flex flex-col items-center gap-[4px] px-2 md:px-[14px] py-[6px] rounded-[10px] cursor-pointer transition-colors duration-[180ms] text-[#6A6058] hover:text-[#1A1714] border-none bg-transparent font-sans relative group"
-            >
-              <Heart className="w-5 h-5 md:w-[22px] md:h-[22px]" />
-              <span className="hidden md:block text-[12px] font-medium text-[#6A6058] group-hover:text-[#1A1714] whitespace-nowrap">
-                Wishlist ({wishlistCount})
-              </span>
-            </button>
-            <button
-              onClick={handleOpenCart}
-              className="flex flex-col items-center gap-[4px] px-2 md:px-[14px] py-[6px] rounded-[10px] cursor-pointer transition-colors duration-[180ms] text-[#6A6058] hover:text-[#1A1714] border-none bg-transparent font-sans relative group"
-            >
-              <ShoppingCart className="w-5 h-5 md:w-[22px] md:h-[22px]" />
-              <span className="hidden md:block text-[12px] font-medium text-[#6A6058] group-hover:text-[#1A1714] whitespace-nowrap">
-                Cart ({cartCount})
-              </span>
-              {cartCount > 0 && (
-                <span className="absolute -top-1 p-2 right-1 w-[15px] h-[15px] md:w-[17px] md:h-[17px] rounded-full bg-[#F27318] text-white text-[8px] md:text-[9px] font-bold flex items-center justify-center border-2 border-white">
-                  {cartCount}
-                </span>
-              )}
-            </button>
-
-            {/* Profile Dropdown */}
-            <div className="relative">
+            {showWishlistSkeleton ? (
+              <WishlistActionSkeleton />
+            ) : (
               <button
-                onClick={() => setIsProfileOpen(!isProfileOpen)}
+                onClick={() =>
+                  !isAuthenticated
+                    ? openAuthModal("login")
+                    : navigate("/profile", { state: { activeTab: "wishlist" } })
+                }
                 className="flex flex-col items-center gap-[4px] px-2 md:px-[14px] py-[6px] rounded-[10px] cursor-pointer transition-colors duration-[180ms] text-[#6A6058] hover:text-[#1A1714] border-none bg-transparent font-sans relative group"
               >
-                {isAuthenticated && user ? (
-                  <div className="flex items-center gap-1">
-                    {/* FE-06: real avatar img or local initials.
-                        (Pre-fix this branch pair was already local
-                        when avatar-less; UserAvatar unifies it and
-                        adds the img-error → initials path.) */}
-                    <UserAvatar
-                      user={user}
-                      alt="Profile"
-                      className="w-10 h-10 rounded-full text-[10px] font-dm-sans"
-                    />
-                    <ChevronDown size={12} className="text-[#6A6058] group-hover:text-[#1A1714] transition-colors" />
-                  </div>
-                ) : (
-                  <User className="w-5 h-5" />
-                )}
-                {!isAuthenticated && (
-                  <span className="hidden md:block text-[11px] font-medium text-[#6A6058] group-hover:text-[#1A1714] whitespace-nowrap">
-                    Profile
+                <Heart className="w-5 h-5 md:w-[22px] md:h-[22px]" />
+                <span className="hidden md:block text-[12px] font-medium text-[#6A6058] group-hover:text-[#1A1714] whitespace-nowrap">
+                  Wishlist ({wishlistCount})
+                </span>
+              </button>
+            )}
+
+            {showCartSkeleton ? (
+              <CartActionSkeleton />
+            ) : (
+              <button
+                onClick={handleOpenCart}
+                className="flex flex-col items-center gap-[4px] px-2 md:px-[14px] py-[6px] rounded-[10px] cursor-pointer transition-colors duration-[180ms] text-[#6A6058] hover:text-[#1A1714] border-none bg-transparent font-sans relative group"
+              >
+                <ShoppingCart className="w-5 h-5 md:w-[22px] md:h-[22px]" />
+                <span className="hidden md:block text-[12px] font-medium text-[#6A6058] group-hover:text-[#1A1714] whitespace-nowrap">
+                  Cart ({cartCount})
+                </span>
+                {cartCount > 0 && (
+                  <span className="absolute -top-1 p-2 right-1 w-[15px] h-[15px] md:w-[17px] md:h-[17px] rounded-full bg-[#F27318] text-white text-[8px] md:text-[9px] font-bold flex items-center justify-center border-2 border-white">
+                    {cartCount}
                   </span>
                 )}
               </button>
+            )}
+
+            <div className="relative">
+              {showProfileSkeleton ? (
+                <ProfileActionSkeleton />
+              ) : (
+                <button
+                  onClick={() => setIsProfileOpen(!isProfileOpen)}
+                  className="flex flex-col items-center gap-[4px] px-2 md:px-[14px] py-[6px] rounded-[10px] cursor-pointer transition-colors duration-[180ms] text-[#6A6058] hover:text-[#1A1714] border-none bg-transparent font-sans relative group"
+                >
+                  {isAuthenticated && user ? (
+                    <div className="flex items-center gap-1">
+                      <UserAvatar
+                        user={user}
+                        alt="Profile"
+                        className="w-10 h-10 rounded-full text-[10px] font-dm-sans"
+                      />
+                      <ChevronDown size={12} className="text-[#6A6058] group-hover:text-[#1A1714] transition-colors" />
+                    </div>
+                  ) : (
+                    <User className="w-5 h-5" />
+                  )}
+                  {!isAuthenticated && (
+                    <span className="hidden md:block text-[11px] font-medium text-[#6A6058] group-hover:text-[#1A1714] whitespace-nowrap">
+                      Profile
+                    </span>
+                  )}
+                </button>
+              )}
 
               {isProfileOpen && (
                 <>
@@ -323,27 +317,28 @@ export default function Navbar() {
                     onClick={() => setIsProfileOpen(false)}
                   />
                   <div className="absolute right-0 mt-2 w-64 bg-white border border-[#F0EFED] rounded-[12px] shadow-[0_10px_40px_rgba(0,0,0,0.08)] z-50 py-1 overflow-hidden animate-in fade-in zoom-in duration-200">
-                    {/* User Info Header if Logged In */}
-                    {isAuthenticated && user && (
-                      <div className="px-4 py-3 border-b border-[#F0EFED] bg-[#FAFAFA] flex items-center gap-3">
-                        {/* FE-06: real avatar img or local initials (UserAvatar). */}
-                        <UserAvatar
-                          user={user}
-                          alt="Profile"
-                          className="w-10 h-10 rounded-full text-xs font-dm-sans border border-neutral-100"
-                        />
-                        <div className="min-w-0">
-                          <p className="text-[14px] font-bold text-[#1A1714] truncate mb-0.5">
-                            {user.firstName} {user.lastName}
-                          </p>
-                          <p className="text-[12px] text-[#8C8782] truncate">
-                            {user.email}
-                          </p>
+                    {isAuthenticated && (
+                      user ? (
+                        <div className="px-4 py-3 border-b border-[#F0EFED] bg-[#FAFAFA] flex items-center gap-3">
+                          <UserAvatar
+                            user={user}
+                            alt="Profile"
+                            className="w-10 h-10 rounded-full text-xs font-dm-sans border border-neutral-100"
+                          />
+                          <div className="min-w-0">
+                            <p className="text-[14px] font-bold text-[#1A1714] truncate mb-0.5">
+                              {user.firstName} {user.lastName}
+                            </p>
+                            <p className="text-[12px] text-[#8C8782] truncate">
+                              {user.email}
+                            </p>
+                          </div>
                         </div>
-                      </div>
+                      ) : (
+                        <ProfileMenuHeaderSkeleton />
+                      )
                     )}
 
-                    {/* Auth Action if NOT Logged In */}
                     {!isAuthenticated && (
                       <div className="p-4 border-b border-[#F0EFED]">
                         <button
@@ -370,7 +365,6 @@ export default function Navbar() {
                       </div>
                     )}
 
-                    {/* Menu Items (Always visible) */}
                     <div className="py-1">
                       {profileMenuItems.map((item, idx) => (
                         <Link
@@ -396,7 +390,6 @@ export default function Navbar() {
                       ))}
                     </div>
 
-                    {/* Logout Action if Logged In */}
                     {isAuthenticated && (
                       <>
                         <div className="h-[1px] bg-[#F0EFED] my-1 mx-2" />
@@ -420,12 +413,6 @@ export default function Navbar() {
         </div>
       </nav>
 
-      {/*
-        CartSlider is lazy-loaded and only mounted after the first cart open.
-        This keeps 10KB of slider JS + its deps out of the initial page load.
-        Once the latch (cartEverOpened) is set, CartSlider stays mounted so
-        the close animation plays correctly.
-      */}
       {cartEverOpened && (
         <Suspense fallback={null}>
           <CartSlider isOpen={isCartOpen} onClose={() => setIsCartOpen(false)} />

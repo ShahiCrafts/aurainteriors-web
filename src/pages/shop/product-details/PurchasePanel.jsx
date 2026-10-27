@@ -1,7 +1,6 @@
 import { useState } from "react";
 import {
   Star,
-  Loader2,
   Heart,
   Share2,
   ShoppingCart,
@@ -244,7 +243,7 @@ export default function PurchasePanel({
           disabled={isAddingToCart || isOutOfStock}
           className="flex-2 bg-[#F27318] text-white h-[52px] rounded-lg font-bold text-[16px] hover:bg-[#D9620E] transition-all duration-300 flex items-center justify-center gap-2.5 disabled:bg-neutral-200"
         >
-          {isAddingToCart ? <Loader2 size={20} className="animate-spin" /> : <ShoppingCart size={18} />}
+          <ShoppingCart size={18} />
           {isOutOfStock ? "Out of Stock" : isAddingToCart ? "Adding..." : "Add to Cart"}
         </button>
 

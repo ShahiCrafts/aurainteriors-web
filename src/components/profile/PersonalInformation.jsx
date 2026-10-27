@@ -1,5 +1,5 @@
 import { useState, useRef, useEffect } from "react";
-import { Upload, Trash2, Lock, Check, Camera, Loader } from "lucide-react";
+import { Upload, Trash2, Lock, Check, Camera } from "lucide-react";
 import Skeleton from "../common/Skeleton";
 import { toast } from "../../lib/toast";
 import useAuthStore, { getAuthRevision } from "../../store/authStore";
@@ -297,14 +297,10 @@ export default function PersonalInformation() {
                 disabled={isUploadingAvatar}
                 className="flex items-center gap-2 px-4 py-2.5 bg-[#F27318] hover:bg-[#D96515] disabled:bg-[#F27318]/70 text-white text-sm font-semibold rounded-lg transition-all font-dm-sans"
               >
-                {isUploadingAvatar ? (
-                  <Loader className="animate-spin" size={16} />
-                ) : (
-                  <>
-                    <Upload size={16} />
-                    Upload Photo
-                  </>
-                )}
+                <>
+                  <Upload size={16} />
+                  Upload Photo
+                </>
               </button>
               {user?.avatar && (
                 <button
@@ -312,14 +308,10 @@ export default function PersonalInformation() {
                   disabled={isRemovingAvatar}
                   className="flex items-center gap-2 px-4 py-2.5 border border-neutral-200 hover:bg-neutral-50 text-neutral-600 text-sm font-medium rounded-lg transition-all font-dm-sans"
                 >
-                  {isRemovingAvatar ? (
-                    <Loader className="animate-spin" size={16} />
-                  ) : (
-                    <>
-                      <Trash2 size={16} />
-                      Remove
-                    </>
-                  )}
+                  <>
+                    <Trash2 size={16} />
+                    Remove
+                  </>
                 </button>
               )}
             </div>
@@ -487,14 +479,10 @@ export default function PersonalInformation() {
               disabled={isUpdating || !isDirty}
               className="w-full sm:w-auto flex items-center justify-center gap-2 px-6 py-3 sm:py-2.5 bg-[#F27318] hover:bg-[#D96515] disabled:bg-[#F27318]/70 disabled:cursor-not-allowed text-white font-semibold rounded-lg transition-all font-dm-sans"
             >
-              {isUpdating ? (
-                <Loader className="animate-spin" size={16} />
-              ) : (
-                <>
-                  <Check size={16} />
-                  Save Changes
-                </>
-              )}
+              <>
+                <Check size={16} />
+                Save Changes
+              </>
             </button>
           </div>
         </form>

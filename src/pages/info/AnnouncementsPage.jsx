@@ -11,8 +11,7 @@ import {
   AlertTriangle,
   CheckCircle,
   FileText,
-  Loader2,
-} from "lucide-react";
+  } from "lucide-react";
 import Navbar from "../../layouts/customer/Navbar";
 import Footer from "../../layouts/customer/Footer";
 import { usePublicAnnouncements, usePublicAnnouncement } from "../../hooks/admin/useAnnouncementTan";

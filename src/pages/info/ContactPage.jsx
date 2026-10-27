@@ -6,7 +6,6 @@ import {
   Phone,
   MapPin,
   Send,
-  Loader2,
   CheckCircle,
   MessageSquare,
   Headphones,
@@ -281,13 +280,7 @@ export default function ContactPage() {
                   disabled={isPending}
                   className="w-full py-3 sm:py-4 bg-teal-700 hover:bg-teal-800 disabled:bg-teal-700/70 disabled:cursor-not-allowed text-white font-semibold rounded-full transition-all duration-300 font-dm-sans flex items-center justify-center gap-2 mt-2 sm:mt-4 text-sm sm:text-base"
                 >
-                  {isPending ? (
-                    <Loader2 size={20} className="animate-spin" />
-                  ) : (
-                    <>
-                      Send Message
-                    </>
-                  )}
+                  Send Message
                 </button>
               </form>
             </div>

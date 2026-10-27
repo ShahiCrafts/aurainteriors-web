@@ -72,7 +72,7 @@ afterEach(() => {
 });
 
 describe("/auth/verify boundary + fallback (FE-56)", () => {
-  it("suspending verify page shows a non-empty LoadingSpinner fallback", async () => {
+  it("suspending verify page shows a non-empty skeleton fallback", async () => {
     hoisted.mode = "suspend";
     render(
       <MemoryRouter initialEntries={["/auth/verify"]}>

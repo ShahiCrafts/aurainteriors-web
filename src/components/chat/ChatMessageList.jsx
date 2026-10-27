@@ -1,5 +1,5 @@
 import { useRef, useEffect, useLayoutEffect, useState, memo } from 'react';
-import { Loader2, MessageCircle, Sparkles, ChevronDown, User, Bot } from 'lucide-react';
+import { MessageCircle, Sparkles, ChevronDown, User, Bot } from 'lucide-react';
 import { ChatMessageSkeleton } from '../common/Skeleton';
 import ChatMessage from './ChatMessage';
 import useAuthStore from '../../store/authStore';
@@ -133,7 +133,7 @@ const ChatMessageList = ({
       {isFetchingMore && (
         <div className="flex justify-center py-3">
           <div className="flex items-center gap-2 text-sm text-neutral-500 bg-white px-4 py-2 rounded-full shadow-sm border border-neutral-100">
-            <Loader2 className="w-4 h-4 animate-spin text-teal-600" />
+            <span className="h-2 w-2 shrink-0 rounded-full bg-teal-600 motion-safe:animate-pulse" aria-hidden="true" />
             <span>Loading earlier messages...</span>
           </div>
         </div>
