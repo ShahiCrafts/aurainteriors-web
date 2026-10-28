@@ -4,6 +4,7 @@ import useCheckoutStore from "../../store/checkoutStore";
 import { useShallow } from "zustand/react/shallow";
 import useAuthStore from "../../store/authStore";
 import useGuestCartStore from "../../store/guestCartStore";
+import useBuyNowStore from "../../store/buyNowStore";
 import { useDefaultAddress } from "../../hooks/profile/useAddressTan";
 import {
   useCart,
@@ -28,7 +29,7 @@ import {
   Tag,
   Check,
   ChevronRight,
-  } from "lucide-react";
+} from "lucide-react";
 import Skeleton from "../../components/common/Skeleton";
 import { getProductImageUrl } from "../../utils/imageUrl";
 import ImageWithFallback from "../../components/fallbacks/ImageWithFallback";
@@ -51,11 +52,10 @@ function SelectionCheckbox({ checked, indeterminate, onChange, ariaLabel }) {
       aria-checked={indeterminate ? "mixed" : checked}
       aria-label={ariaLabel}
       onClick={onChange}
-      className={`w-[18px] h-[18px] rounded-[5px] flex items-center justify-center border transition-colors shrink-0 ${
-        checked || indeterminate
+      className={`w-[18px] h-[18px] rounded-[5px] flex items-center justify-center border transition-colors shrink-0 ${checked || indeterminate
           ? "bg-[#F27318] border-[#F27318]"
           : "bg-white border-neutral-300 hover:border-neutral-400"
-      }`}
+        }`}
     >
       {indeterminate ? (
         <Minus size={12} strokeWidth={3} className="text-white" />
@@ -88,8 +88,14 @@ export default function CheckoutPage() {
     getAuthenticatedCheckoutData,
     reset, } = useCheckoutStore(useShallow((state) => ({ guestInfo: state.guestInfo, setGuestInfo: state.setGuestInfo, shippingAddress: state.shippingAddress, shippingAddressId: state.shippingAddressId, setShippingAddress: state.setShippingAddress, setShippingAddressId: state.setShippingAddressId, appliedDiscount: state.appliedDiscount, setAppliedDiscount: state.setAppliedDiscount, clearDiscount: state.clearDiscount, paymentMethod: state.paymentMethod, setPaymentMethod: state.setPaymentMethod, currentStep: state.currentStep, nextStep: state.nextStep, prevStep: state.prevStep, setStep: state.setStep, getGuestCheckoutData: state.getGuestCheckoutData, getAuthenticatedCheckoutData: state.getAuthenticatedCheckoutData, reset: state.reset })));
 
+  // Buy-now mode: a direct checkout for the buy-now line only. The
+  // cart is not even fetched in this mode — nothing in it is listed,
+  // ordered or removed by a buy-now checkout.
+  const { buyNowItem, updateBuyNowQuantity, clearBuyNowItem } = useBuyNowStore(useShallow((state) => ({ buyNowItem: state.item, updateBuyNowQuantity: state.updateQuantity, clearBuyNowItem: state.clearItem })));
+  const isBuyNow = !!buyNowItem;
+
   const { data: cartData, isLoading: isCartLoading } = useCart({
-    enabled: isAuthenticated,
+    enabled: isAuthenticated && !isBuyNow,
   });
 
   const { guestCartItems, updateGuestCartQuantity, removeGuestCartItem } = useGuestCartStore(useShallow((state) => ({ guestCartItems: state.items, updateGuestCartQuantity: state.updateItemQuantity, removeGuestCartItem: state.removeItem })));
@@ -138,7 +144,18 @@ export default function CheckoutPage() {
 
 
   const cart = cartData?.data?.cart;
-  const cartItems = isAuthenticated ? cart?.items || [] : guestCartItems;
+  // Memoized: the selection effect below keys off this array's
+  // identity — a fresh [buyNowItem] literal every render would
+  // re-run it (and its setState) forever.
+  const cartItems = useMemo(
+    () =>
+      isBuyNow
+        ? [buyNowItem]
+        : isAuthenticated
+          ? cart?.items || []
+          : guestCartItems,
+    [isBuyNow, buyNowItem, isAuthenticated, cart, guestCartItems],
+  );
 
   // ---- Item selection (checkbox) state ----
   // Everything starts checked by default. Once initialized, any item id
@@ -227,10 +244,15 @@ export default function CheckoutPage() {
     setValue,
   });
 
-  
+
+
+  // Set when the shopper removes the buy-now line: that exit goes
+  // back to the product, not through the empty-cart redirect below.
+  const buyNowExitRef = useRef(false);
 
   useEffect(() => {
     if (isSubmitting) return;
+    if (buyNowExitRef.current) return;
     if (!isCartLoading && cartItems.length === 0) {
       toast.error("Your cart is empty");
       navigate("/");
@@ -245,6 +267,10 @@ export default function CheckoutPage() {
 
   const handleUpdateQuantity = (itemId, newQuantity) => {
     if (newQuantity < 1) return;
+    if (isBuyNow) {
+      updateBuyNowQuantity(newQuantity);
+      return;
+    }
     if (!isAuthenticated) {
       updateGuestCartQuantity(itemId, newQuantity);
       return;
@@ -254,6 +280,16 @@ export default function CheckoutPage() {
   };
 
   const handleRemoveItem = (itemId) => {
+    if (isBuyNow) {
+      // Removing the only line ends the direct checkout — back to
+      // the product page. The cart (if any) is untouched.
+      buyNowExitRef.current = true;
+      const slug = buyNowItem.product?.slug;
+      clearBuyNowItem();
+      toast.success("Item removed");
+      navigate(slug ? `/product/${encodeURIComponent(slug)}` : "/shop");
+      return;
+    }
     if (!isAuthenticated) {
       removeGuestCartItem(itemId);
       toast.success("Item removed");
@@ -264,6 +300,22 @@ export default function CheckoutPage() {
       // FE-47: no per-call onError — the cart hook reports errors.
     });
   };
+
+  // The selected lines as a direct-items payload ({ productId,
+  // quantity, variant, variantId?, sku? }): what guest checkout has
+  // always sent, what buy-now checkout sends for signed-in users
+  // too, and what promo preview accepts when there is no cart line
+  // to reference. Variant lines name their exact variant so the
+  // server revalidates and prices that variant.
+  const directItemsPayload = () =>
+    selectedCartItems.map((item) => ({
+      productId: item.product._id,
+      quantity: item.quantity,
+      variant: item.variant || {},
+      ...(item.variantId
+        ? { variantId: item.variantId, sku: item.sku }
+        : {}),
+    }));
 
   const promoSelectionKey = JSON.stringify(selectedCartItems.map(item => [item._id, item.quantity, item.product?.price, item.variant]));
   const promoRequestRef = useRef(0);
@@ -286,9 +338,12 @@ export default function CheckoutPage() {
     if (!selectedCartItems.length) { toast.error("Select items before applying a promo"); return; }
     const selectionKey = promoSelectionKey;
     const requestId = ++promoRequestRef.current;
-    const preview = isAuthenticated
+    // Cart checkout (signed-in) previews by cart-line id; guest and
+    // buy-now checkouts preview by the items themselves — a buy-now
+    // line has no cart line to reference.
+    const preview = isAuthenticated && !isBuyNow
       ? { code: promoCode, selectedItemIds: selectedCartItems.map(item => item._id) }
-      : { code: promoCode, items: selectedCartItems.map(item => ({ productId: item.product._id, quantity: item.quantity, variant: item.variant || {} })) };
+      : { code: promoCode, items: directItemsPayload() };
     applyDiscountMutation.mutate(preview, {
       onSuccess: (data) => {
         if (promoRequestRef.current !== requestId || promoSelectionRef.current !== selectionKey) return;
@@ -347,23 +402,19 @@ export default function CheckoutPage() {
       let result;
       if (isAuthenticated) {
         result = await authenticatedCheckoutMutation.mutateAsync(
-          keyedCheckout(getAuthenticatedCheckoutData(
-            selectedCartItems.map((item) => item._id),
-          )),
+          keyedCheckout(
+            isBuyNow
+              ? // Buy Now: order this line directly from its items —
+              // the server cart is neither read nor cleared.
+              getAuthenticatedCheckoutData({ items: directItemsPayload() })
+              : getAuthenticatedCheckoutData(
+                selectedCartItems.map((item) => item._id),
+              ),
+          ),
         );
       } else {
-        const formattedItems = selectedCartItems.map((item) => ({
-          productId: item.product._id,
-          quantity: item.quantity,
-          variant: item.variant || {},
-          // Phase 7 (catalog): guest variant lines name the exact
-          // variant so checkout revalidates + prices it (Phase 4).
-          ...(item.variantId
-            ? { variantId: item.variantId, sku: item.sku }
-            : {}),
-        }));
         result = await guestCheckoutMutation.mutateAsync(
-          keyedCheckout(getGuestCheckoutData(formattedItems)),
+          keyedCheckout(getGuestCheckoutData(directItemsPayload())),
         );
       }
       const order = result.data?.order;
@@ -383,7 +434,14 @@ export default function CheckoutPage() {
         form.submit();
         return;
       }
-      if (!isAuthenticated) selectedCartItems.forEach(item => removeGuestCartItem(item._id));
+      if (isBuyNow) {
+        // The ordered line was never in a cart — just end the
+        // direct checkout. Any real cart items stay exactly as
+        // they were.
+        clearBuyNowItem();
+      } else if (!isAuthenticated) {
+        selectedCartItems.forEach(item => removeGuestCartItem(item._id));
+      }
       reset();
       navigate(
         `/order-confirmation/${encodeURIComponent(order.orderId)}?email=${encodeURIComponent(
@@ -397,7 +455,7 @@ export default function CheckoutPage() {
     }
   };
 
-  if (isAuthenticated && isCartLoading) {
+  if (isAuthenticated && !isBuyNow && isCartLoading) {
     return (
       <>
         <Navbar />
@@ -438,20 +496,18 @@ export default function CheckoutPage() {
                   <div key={n} className="flex items-center gap-3">
                     <div className="flex items-center gap-2">
                       <div
-                        className={`w-7 h-7 rounded-full flex items-center justify-center text-[14px] font-bold transition-all ${
-                          currentStep === n
+                        className={`w-7 h-7 rounded-full flex items-center justify-center text-[14px] font-bold transition-all ${currentStep === n
                             ? "bg-[#F27318] text-white"
                             : currentStep > n
-                            ? "bg-[#F27318]/20 text-[#F27318]"
-                            : "bg-gray-100 text-neutral-500"
-                        }`}
+                              ? "bg-[#F27318]/20 text-[#F27318]"
+                              : "bg-gray-100 text-neutral-500"
+                          }`}
                       >
                         {currentStep > n ? "✓" : n}
                       </div>
                       <span
-                        className={`text-[16px] font-semibold ${
-                          currentStep === n ? "text-[#1A1714]" : "text-neutral-500"
-                        }`}
+                        className={`text-[16px] font-semibold ${currentStep === n ? "text-[#1A1714]" : "text-neutral-500"
+                          }`}
                       >
                         {label}
                       </span>
@@ -467,9 +523,16 @@ export default function CheckoutPage() {
                 {/* Item Review Section */}
                 <div>
                   <div className="flex justify-between items-end mb-5">
-                    <h2 className="text-[20px] font-semibold text-[#1A1714] font-dm-sans">
-                      Review your items
-                    </h2>
+                    <div className="flex items-center gap-3">
+                      <h2 className="text-[20px] font-semibold text-[#1A1714] font-dm-sans">
+                        Review your items
+                      </h2>
+                      {isBuyNow && (
+                        <span className="bg-[#F27318]/[0.08] text-[#F27318] px-2.5 py-1 rounded text-[12px] font-bold uppercase tracking-wide">
+                          Buy Now · this item only
+                        </span>
+                      )}
+                    </div>
                     <span className="text-[15px] font-medium text-neutral-500">
                       {selectedCartItems.length} of {cartItems.length} selected
                     </span>
@@ -641,86 +704,86 @@ export default function CheckoutPage() {
             taxAmount={taxAmount}
             total={total}
           >
-                  {/* Promo code */}
-                  <div>
-                    {appliedPromo ? (
-                      <div className="flex items-center justify-between bg-emerald-50 border border-emerald-100 rounded-xl px-4 py-3">
-                        <div className="flex items-center gap-2">
-                          <Tag size={14} className="text-emerald-600" />
-                          <span className="text-[13px] font-bold text-emerald-700 uppercase tracking-wider">
-                            {appliedPromo.discount.code}
-                          </span>
-                        </div>
-                        <button
-                          onClick={handleRemovePromo}
-                          className="text-[12px] font-semibold text-emerald-600 hover:text-red-500 transition-colors"
-                        >
-                          Remove
-                        </button>
-                      </div>
-                    ) : (
-                      <div>
-                        {!showPromoInput ? (
-                          <button
-                            onClick={() => setShowPromoInput(true)}
-                            className="flex items-center gap-2 text-[15px] text-neutral-400 hover:text-[#F27318] transition-colors w-full py-2"
-                          >
-                            <Tag size={14} />
-                            Have a promo code?
-                          </button>
-                        ) : (
-                          <div className="flex gap-2">
-                            <input
-                              type="text"
-                              value={promoCode}
-                              onChange={(e) => setPromoCode(e.target.value)}
-                              onKeyDown={(e) => e.key === "Enter" && handleApplyPromo()}
-                              placeholder="Enter code"
-                              className="flex-1 px-4 py-2.5 bg-neutral-50 border border-neutral-200 rounded-md text-[14px] focus:outline-none focus:border-[#F27318] transition-all"
-                              autoFocus
-                            />
-                            <button
-                              onClick={handleApplyPromo}
-                              disabled={applyDiscountMutation.isPending}
-                              className="px-4 py-2.5 bg-[#F27318] hover:bg-[#cd5704] text-white rounded-md text-[13px] font-bold transition-all disabled:opacity-50 shrink-0"
-                            >
-                              {"Apply"}
-                            </button>
-                          </div>
-                        )}
-                      </div>
-                    )}
+            {/* Promo code */}
+            <div>
+              {appliedPromo ? (
+                <div className="flex items-center justify-between bg-emerald-50 border border-emerald-100 rounded-xl px-4 py-3">
+                  <div className="flex items-center gap-2">
+                    <Tag size={14} className="text-emerald-600" />
+                    <span className="text-[13px] font-bold text-emerald-700 uppercase tracking-wider">
+                      {appliedPromo.discount.code}
+                    </span>
                   </div>
-
-                  {/* Back button — hidden on ShippingStep (step 1), visible on PaymentStep (step 2) */}
-                  <div className="flex items-center gap-3">
-                    {currentStep === 2 && (
-                      <button
-                        type="button"
-                        onClick={prevStep}
-                        className="h-12 px-4 shrink-0 rounded-xl border border-neutral-200 text-[15px] font-medium text-neutral-600 hover:bg-neutral-50 hover:text-[#1A1714] transition-colors flex items-center gap-1.5"
-                      >
-                        <ChevronLeft size={16} />
-                        Back
-                      </button>
-                    )}
+                  <button
+                    onClick={handleRemovePromo}
+                    className="text-[12px] font-semibold text-emerald-600 hover:text-red-500 transition-colors"
+                  >
+                    Remove
+                  </button>
+                </div>
+              ) : (
+                <div>
+                  {!showPromoInput ? (
                     <button
-                      onClick={() => {
-                        currentStep === 1 ? handleGoToPayment() : handlePlaceOrder();
-                      }}
-                      disabled={isSubmitting || selectedCartItems.length === 0}
-                      className="flex-1 bg-[#F27318] hover:bg-[#cd5704] text-white h-12 rounded-xl font-medium text-[15px] transition-all flex items-center justify-center gap-2 disabled:opacity-50 group"
+                      onClick={() => setShowPromoInput(true)}
+                      className="flex items-center gap-2 text-[15px] text-neutral-400 hover:text-[#F27318] transition-colors w-full py-2"
                     >
-                      {isSubmitting ? (
-                        <span>Processing...</span>
-                      ) : (
-                        <>
-                          {currentStep === 1 ? "Next: Payment" : "Place Order"}
-                          <ChevronRight size={18} className="group-hover:translate-x-0.5 transition-transform" />
-                        </>
-                      )}
+                      <Tag size={14} />
+                      Have a promo code?
                     </button>
-                  </div>
+                  ) : (
+                    <div className="flex gap-2">
+                      <input
+                        type="text"
+                        value={promoCode}
+                        onChange={(e) => setPromoCode(e.target.value)}
+                        onKeyDown={(e) => e.key === "Enter" && handleApplyPromo()}
+                        placeholder="Enter code"
+                        className="flex-1 px-4 py-2.5 bg-neutral-50 border border-neutral-200 rounded-md text-[14px] focus:outline-none focus:border-[#F27318] transition-all"
+                        autoFocus
+                      />
+                      <button
+                        onClick={handleApplyPromo}
+                        disabled={applyDiscountMutation.isPending}
+                        className="px-4 py-2.5 bg-[#F27318] hover:bg-[#cd5704] text-white rounded-md text-[13px] font-bold transition-all disabled:opacity-50 shrink-0"
+                      >
+                        {"Apply"}
+                      </button>
+                    </div>
+                  )}
+                </div>
+              )}
+            </div>
+
+            {/* Back button — hidden on ShippingStep (step 1), visible on PaymentStep (step 2) */}
+            <div className="flex items-center gap-3">
+              {currentStep === 2 && (
+                <button
+                  type="button"
+                  onClick={prevStep}
+                  className="h-12 px-4 shrink-0 rounded-xl border border-neutral-200 text-[15px] font-medium text-neutral-600 hover:bg-neutral-50 hover:text-[#1A1714] transition-colors flex items-center gap-1.5"
+                >
+                  <ChevronLeft size={16} />
+                  Back
+                </button>
+              )}
+              <button
+                onClick={() => {
+                  currentStep === 1 ? handleGoToPayment() : handlePlaceOrder();
+                }}
+                disabled={isSubmitting || selectedCartItems.length === 0}
+                className="flex-1 bg-[#F27318] hover:bg-[#cd5704] text-white h-12 rounded-xl font-medium text-[15px] transition-all flex items-center justify-center gap-2 disabled:opacity-50 group"
+              >
+                {isSubmitting ? (
+                  <span>Processing...</span>
+                ) : (
+                  <>
+                    {currentStep === 1 ? "Next: Payment" : "Place Order"}
+                    <ChevronRight size={18} className="group-hover:translate-x-0.5 transition-transform" />
+                  </>
+                )}
+              </button>
+            </div>
           </OrderSummary>
         </div>
       </main>

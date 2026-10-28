@@ -1,5 +1,18 @@
 import { create } from "zustand";
 
+// One order line in the direct-items payload shape the checkout
+// APIs accept ({ productId, quantity, variant, variantId?, sku? }).
+// Accepts both a cart/buy-now line (product embedded) and an
+// already-formatted item (productId set). The variant identity
+// rides along whenever the line names a catalog variant — without
+// it the server can only resolve the product's default variant.
+const toDirectItem = (item) => ({
+  productId: item.product?._id || item.productId,
+  quantity: item.quantity,
+  variant: item.variant || {},
+  ...(item.variantId ? { variantId: item.variantId, sku: item.sku } : {}),
+});
+
 const initialState = {
   // Current step: 1 = shipping, 2 = payment, 3 = review
   currentStep: 1,
@@ -121,7 +134,9 @@ const useCheckoutStore = create((set, get) => ({
     // Construct full shipping address with name and phone from guestInfo
     const fullShippingAddress = {
       ...state.shippingAddress,
-      fullName: state.shippingAddress.fullName || `${state.guestInfo.firstName} ${state.guestInfo.lastName}`.trim(),
+      fullName:
+        state.shippingAddress.fullName ||
+        `${state.guestInfo.firstName} ${state.guestInfo.lastName}`.trim(),
       phone: state.shippingAddress.phone || state.guestInfo.phone,
     };
 
@@ -130,11 +145,7 @@ const useCheckoutStore = create((set, get) => ({
       firstName: state.guestInfo.firstName,
       lastName: state.guestInfo.lastName,
       phone: state.guestInfo.phone,
-      items: cartItems.map((item) => ({
-        productId: item.product?._id || item.productId,
-        quantity: item.quantity,
-        variant: item.variant || {},
-      })),
+      items: cartItems.map(toDirectItem),
       shippingAddress: fullShippingAddress,
       billingAddress: state.useSameAddress
         ? fullShippingAddress
@@ -146,15 +157,22 @@ const useCheckoutStore = create((set, get) => ({
     };
   },
 
-  getAuthenticatedCheckoutData: (selectedItemIds) => {
+  // Accepts either the cart flow's selectedItemIds (an array of
+  // server cart-line ids — the order is placed from the cart) or a
+  // direct checkout's { items } (Buy Now — the order is placed from
+  // the items themselves and the cart is never read or cleared).
+  getAuthenticatedCheckoutData: (selection) => {
     const state = get();
+    const directItems = Array.isArray(selection) ? null : selection?.items;
 
     // Construct full shipping address with name and phone from guestInfo
     const fullShippingAddress = state.shippingAddressId
       ? undefined
       : {
           ...state.shippingAddress,
-          fullName: state.shippingAddress.fullName || `${state.guestInfo.firstName} ${state.guestInfo.lastName}`.trim(),
+          fullName:
+            state.shippingAddress.fullName ||
+            `${state.guestInfo.firstName} ${state.guestInfo.lastName}`.trim(),
           phone: state.shippingAddress.phone || state.guestInfo.phone,
         };
 
@@ -163,16 +181,20 @@ const useCheckoutStore = create((set, get) => ({
       state.useSameAddress || state.billingAddressId
         ? undefined
         : state.billingAddress
-        ? {
-            ...state.billingAddress,
-            fullName: state.billingAddress.fullName || `${state.guestInfo.firstName} ${state.guestInfo.lastName}`.trim(),
-            phone: state.billingAddress.phone || state.guestInfo.phone,
-          }
-        : undefined;
+          ? {
+              ...state.billingAddress,
+              fullName:
+                state.billingAddress.fullName ||
+                `${state.guestInfo.firstName} ${state.guestInfo.lastName}`.trim(),
+              phone: state.billingAddress.phone || state.guestInfo.phone,
+            }
+          : undefined;
 
     // Build checkout data, only including fields that have values
     const checkoutData = {
-      selectedItemIds,
+      ...(directItems
+        ? { items: directItems.map(toDirectItem) }
+        : { selectedItemIds: selection }),
       useSameAddress: state.useSameAddress,
       paymentMethod: state.paymentMethod,
       customerNote: state.customerNote,
