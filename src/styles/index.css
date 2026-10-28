@@ -50,21 +50,6 @@ html::-webkit-scrollbar {
   display: none;
 }
 
-@keyframes marquee {
-  0% { transform: translateX(0); }
-  100% { transform: translateX(-50%); }
-}
-
-.animate-marquee {
-  display: flex;
-  width: max-content;
-  animation: marquee 40s linear infinite;
-}
-
-.animate-marquee:hover {
-  animation-play-state: paused;
-}
-
 /* ── Custom toast progress bar ───────────────────────────────────────────────
    Used by ToastItem.jsx. scaleX is GPU-composited (no layout/paint cost).
    transform-origin: left center on the element lets it shrink left→right.     */
@@ -98,12 +83,6 @@ html::-webkit-scrollbar {
   .shimmer-element::after {
     animation: none !important;
     display: none !important;
-  }
-  /* FE-66: the brand marquee loops forever; stop it for users who
-     prefer reduced motion (the duplicated logos are aria-hidden, so
-     a static row loses nothing). */
-  .animate-marquee {
-    animation: none !important;
   }
 }
 

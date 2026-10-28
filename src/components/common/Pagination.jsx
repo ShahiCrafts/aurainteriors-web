@@ -1,40 +1,12 @@
 import { ChevronLeft, ChevronRight } from 'lucide-react';
 
-// Shared pagination (FE-34 guards below). Three renderings, one
-// set of semantics — page is clamped into [1, totalPages], prev /
-// next step from the clamped page, and totalPages <= 1 (or
-// non-finite inputs while a query loads) renders nothing:
-//
-//  - variant="numbered", theme="admin" (default): the original
-//    admin table footer — "Showing X to Y of Z", a five-page
-//    window, icon prev/next. Used by the admin list pages.
-//  - variant="numbered", theme="customer": the profile-section
-//    pager (Wave A unification of the Wishlist / OrdersSection
-//    copies) — labelled prev/next, numbered buttons with
-//    first/last + ellipsis windowing, orange active page, no
-//    summary line (callers keep their own count footers).
-//  - variant="simple": centred labelled prev/next with a
-//    "Page X of Y" indicator (Wave A unification of the
-//    KnowledgeBase / Announcements / Notifications copies).
-//    `disabled` additionally blocks both buttons (e.g. while
-//    the next page is loading).
 export default function Pagination({ page, totalPages, pageSize = 10, totalItems, onPageChange, variant = "numbered", theme = "admin", disabled = false }) {
-    // FE-34: call sites pass query-derived values (pagination = {}
-    // while a query loads, or a page that outlives its last item after
-    // a delete). Without guards the component rendered
-    // "Showing NaN to NaN of NaN" and prev/next fired page changes
-    // relative to an out-of-range page. Structural inputs that are
-    // not finite numbers mean "no pagination data yet" — render
-    // nothing, matching the totalPages<=1 empty pattern call sites
-    // already rely on.
+
     if (!Number.isFinite(page) || !Number.isFinite(totalPages)) return null;
 
     const safeTotalPages = Math.floor(totalPages);
     if (safeTotalPages <= 1) return null;
 
-    // Everything below derives from the CLAMPED page: the displayed
-    // range, the numbered buttons, aria-current and the prev/next
-    // disabled states can never disagree with each other.
     const clampedPage = Math.min(Math.max(Math.trunc(page), 1), safeTotalPages);
     const safeTotalItems = Number.isFinite(totalItems) ? Math.max(0, Math.trunc(totalItems)) : 0;
     const safePageSize = Number.isFinite(pageSize) && pageSize > 0 ? Math.trunc(pageSize) : 10;
@@ -75,9 +47,6 @@ export default function Pagination({ page, totalPages, pageSize = 10, totalItems
     }
 
     if (theme === "customer") {
-        // Ellipsis windowing: page 1, the last page and the current
-        // page's neighbours, with "…" for each gap — the algorithm
-        // the Wishlist and OrdersSection copies each hand-rolled.
         const visible = [...new Set([1, safeTotalPages, clampedPage - 1, clampedPage, clampedPage + 1])]
             .filter((n) => n >= 1 && n <= safeTotalPages)
             .sort((a, b) => a - b);
@@ -97,7 +66,7 @@ export default function Pagination({ page, totalPages, pageSize = 10, totalItems
                     aria-current={n === clampedPage ? "page" : undefined}
                     onClick={() => onPageChange(n)}
                     className={`w-9 h-9 rounded-lg text-xs font-bold transition-all ${n === clampedPage
-                        ? 'bg-[#F27318] text-white'
+                        ? 'bg-brand text-white'
                         : 'border border-neutral-200 text-neutral-500 hover:bg-neutral-50 bg-white'
                         }`}
                 >

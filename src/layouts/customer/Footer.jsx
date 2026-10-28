@@ -134,16 +134,16 @@ const AppStoreBadge = () => (
 function NewsletterBanner() {
   return (
     <section className="px-4 md:px-6 lg:px-8 pt-16 pb-6 bg-white font-dm-sans">
-      <div className="relative overflow-hidden rounded-md bg-gradient-to-r from-[#f7e7dc] via-[#f4e4d8] to-[#efd9c8] min-h-[343px] flex items-center">
+      <div className="relative overflow-hidden rounded-md bg-gradient-to-r from-[#f6f6f6] via-[#f6f6f6] to-[#f6f6f6] min-h-[343px] flex items-center">
         {/* photo, right ~52% */}
         <div
           className="hidden md:block absolute inset-y-0 right-0 w-[52%] bg-cover bg-center"
-          style={{ backgroundImage: "url(https://images.unsplash.com/photo-1625585598750-3535fe40efb3?auto=format&fit=crop&w=1400&q=80)" }}
+          style={{ backgroundImage: "url(https://plus.unsplash.com/premium_photo-1686090449194-04ac2af9f758?q=80&w=2070&auto=format&fit=crop&ixlib=rb-4.1.0&ixid=NHwxMjA3fDA%3D)" }}
           aria-hidden="true"
         />
         {/* fade photo into the beige */}
         <div
-          className="hidden md:block absolute inset-y-0 right-[30%] w-[22%] bg-gradient-to-r from-[#f4e4d8] to-transparent"
+          className="hidden md:block absolute inset-y-0 right-[30%] w-[22%] bg-gradient-to-r from-[#f6f6f6] to-transparent"
           aria-hidden="true"
         />
 
