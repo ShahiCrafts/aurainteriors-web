@@ -18,48 +18,28 @@ import { useShallow } from "zustand/react/shallow";
 import { toast } from "../../lib/toast";
 import ARViewModal from "../../components/modals/ARViewModal";
 import ReviewModal from "../../components/modals/ReviewModal";
+import ReviewSection from "../../components/shop/ReviewSection";
 import { getImageUrl as getImageUrlUtil, buildImageSrcSet } from "../../utils/imageUrl";
 import formatError from "../../utils/errorHandler";
 import CategoryBar from "../../components/navigation/CategoryBar";
 import { useCanReview, useUserReview } from "../../hooks/review/useReviewTan";
 import Gallery, { GalleryLightbox } from "./product-details/Gallery";
 import PurchasePanel from "./product-details/PurchasePanel";
-import ProductTabs from "./product-details/ProductTabs";
-import RelatedProducts from "./product-details/RelatedProducts";
+import FeatureHighlights from "./product-details/FeatureHighlights";
+import ProductDescription from "./product-details/ProductDescription";
+import KeySpecifications from "./product-details/KeySpecifications";
 import useVariantPurchase from "./product-details/hooks/useVariantPurchase";
 
-// Phase 7 split — this page is now composition + data fetching +
-// layout: the gallery, purchase panel, tabs and related rail live
-// in ./product-details/, and the purchase state machine in
-// ./product-details/hooks/useVariantPurchase.js.
 export default function ProductDetailsPage() {
   const { productSlug } = useParams();
   const { isAuthenticated } = useAuthStore(useShallow((state) => ({ isAuthenticated: state.isAuthenticated })));
 
   const [selectedImage, setSelectedImage] = useState(0);
   const [isARModalOpen, setIsARModalOpen] = useState(false);
+  const [isLightboxOpen, setIsLightboxOpen] = useState(false);
   const [isReviewModalOpen, setIsReviewModalOpen] = useState(false);
   const [editingReview, setEditingReview] = useState(null);
-  const [scrolledPastAction, setScrolledPastAction] = useState(false);
-  const [isLightboxOpen, setIsLightboxOpen] = useState(false);
 
-  useEffect(() => {
-    const handleScroll = () => {
-      const mainBtn = document.getElementById("main-add-to-cart");
-      if (mainBtn) {
-        const rect = mainBtn.getBoundingClientRect();
-        setScrolledPastAction(rect.bottom < 0);
-      } else {
-        setScrolledPastAction(window.scrollY > 800);
-      }
-    };
-    window.addEventListener("scroll", handleScroll);
-    return () => window.removeEventListener("scroll", handleScroll);
-  }, []);
-
-  // FE-64: scroll lock + Escape now come from the shared Dialog
-  // primitive (the lightbox panel below). This effect keeps only the
-  // lightbox-specific ArrowLeft/ArrowRight image navigation.
   useEffect(() => {
     if (!isLightboxOpen) return;
 
@@ -72,7 +52,6 @@ export default function ProductDetailsPage() {
     return () => {
       window.removeEventListener("keydown", handleKeyDown);
     };
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [isLightboxOpen]);
 
   const { data: productData, isLoading, error, refetch } = useProduct(productSlug);
@@ -85,6 +64,7 @@ export default function ProductDetailsPage() {
   const isInWishlist = wishlistCheck?.data?.inWishlist || false;
   const isWishlistLoading = isAddingToWishlist || isRemovingFromWishlist;
 
+  // Review state: can the user review, and have they already?
   const { data: canReviewData } = useCanReview(product?._id, { enabled: isAuthenticated && !!product?._id });
   const { data: userReviewData } = useUserReview(product?._id);
   const hasReviewed = canReviewData?.data?.hasReviewed;
@@ -99,15 +79,9 @@ export default function ProductDetailsPage() {
     setEditingReview(null);
   };
 
-  // Phase 7 split: the purchase state machine (variant/colour/
-  // quantity selection, selected-variant + stock/price derivation,
-  // add-to-cart and buy-now handlers for guest + authenticated
-  // paths) lives in the useVariantPurchase hook.
   const purchase = useVariantPurchase(product);
   const { isVariantProduct, selectedVariant } = purchase;
 
-  // Phase 7 (catalog): the catalog schema supplies the option-group
-  // + specification labels used by the purchase panel and tabs.
   const { data: schemaData } = useCatalogSchema();
   const definitions = schemaData?.data?.definitions || {};
 
@@ -149,26 +123,15 @@ export default function ProductDetailsPage() {
     }
   };
 
-  // FE-22: navigating to another product reuses this component with a
-  // new route param — reset the gallery image so the previous
-  // product's image can never leak into the next product. Keyed on
-  // the product id, not the product object, so refetches of the SAME
-  // product do not wipe a selection. (The purchase selections reset
-  // inside useVariantPurchase, keyed on the same product id.)
   useEffect(() => {
     if (!product?._id) return;
     setSelectedImage(0);
   }, [product?._id]);
 
-  // Phase 7: switching variants restarts the gallery at the
-  // variant's first image.
   useEffect(() => {
     setSelectedImage(0);
   }, [selectedVariant?._id]);
 
-  // Phase 7: breadcrumbs walk the category's full ancestors chain
-  // from the tree (the product payload populates only one parent
-  // level; the legacy parent crumb remains the fallback).
   const { data: categoryTreeData } = useCategoryTree();
   const buildBreadcrumbs = () => {
     const crumbs = [{ name: "Home", path: "/" }];
@@ -199,21 +162,12 @@ export default function ProductDetailsPage() {
     }
     return product.images;
   };
-  // Phase 7: the selected variant's images take precedence over
-  // the product gallery when the variant carries its own.
   const images = variantGalleryImages(selectedVariant) || getImages();
   const getImageUrl = (image) => {
-    // FE-03: no verbatim passthrough for absolute URLs — the central
-    // helper validates them against the media allowlist (Cloudinary
-    // URLs keep working) and joins relative paths to the uploads base.
     return getImageUrlUtil(image?.url, "products");
   };
-  // FE-54: responsive variants for gallery images (undefined when the
-  // image's host has no transform scheme — the plain src is used).
   const getImageSrcSet = (image, widths) =>
     buildImageSrcSet(image?.url, widths, { type: "products" });
-
-
 
   if (isLoading) {
     return (
@@ -235,7 +189,7 @@ export default function ProductDetailsPage() {
           <div className="max-w-7xl mx-auto px-6 py-16 text-center" role="alert">
             <h1 className="text-2xl font-playfair text-neutral-900 mb-4">Unable to load product</h1>
             <p className="text-neutral-500 mb-6">We couldn’t load this product right now. Please try again.</p>
-            <button type="button" onClick={() => refetch()} className="rounded-lg bg-[#F27318] px-6 py-3 font-semibold text-white hover:bg-[#D9620E]">Try again</button>
+            <button type="button" onClick={() => refetch()} className="rounded-lg bg-brand px-6 py-3 font-semibold text-white hover:bg-brand-hover">Try again</button>
           </div>
         </main>
         <Footer />
@@ -254,7 +208,7 @@ export default function ProductDetailsPage() {
             <p className="text-neutral-500 font-dm-sans mb-6">The product you're looking for doesn't exist or has been removed.</p>
             <Link
               to="/shop"
-              className="inline-block bg-[#F27318] text-white px-6 py-3 rounded-lg font-semibold hover:bg-[#D9620E] transition-colors font-dm-sans"
+              className="inline-block bg-brand text-white px-6 py-3 rounded-lg font-semibold hover:bg-brand-hover transition-colors font-dm-sans"
             >
               Browse Products
             </Link>
@@ -264,6 +218,9 @@ export default function ProductDetailsPage() {
       </>
     );
   }
+
+  const descriptionImage = images[1] || images[0];
+  const resolvedModelUrl = effectiveModelUrl(product, selectedVariant);
 
   return (
     <>
@@ -279,7 +236,7 @@ export default function ProductDetailsPage() {
                 {index === breadcrumbs.length - 1 ? (
                   <span className="text-neutral-500 truncate max-w-[150px] sm:max-w-[300px]">{crumb.name}</span>
                 ) : (
-                  <Link to={crumb.path} className="text-neutral-500 hover:text-[#F27318] transition-colors whitespace-nowrap">
+                  <Link to={crumb.path} className="text-neutral-500 hover:text-brand transition-colors whitespace-nowrap">
                     {crumb.name}
                   </Link>
                 )}
@@ -288,7 +245,8 @@ export default function ProductDetailsPage() {
           </nav>
 
           {/* Product Section */}
-          <div className="flex gap-10 mb-14">            {/* Image Gallery */}
+          <div className="flex gap-10 mb-8">
+            {/* Image Gallery */}
             <Gallery
               product={product}
               images={images}
@@ -312,38 +270,78 @@ export default function ProductDetailsPage() {
             />
           </div>
 
-          <ProductTabs
+          {/* Designed for Growing Spaces */}
+          <FeatureHighlights productName={product.name} />
+
+          {/* Product Description */}
+          <ProductDescription
             product={product}
-            definitions={definitions}
-            isAuthenticated={isAuthenticated}
-            hasReviewed={hasReviewed}
-            userReview={userReview}
-            handleOpenReviewModal={handleOpenReviewModal}
-            images={images}
-            selectedImage={selectedImage}
+            image={descriptionImage}
             getImageUrl={getImageUrl}
             getImageSrcSet={getImageSrcSet}
+            canViewInAR={!!resolvedModelUrl}
+            onViewInAR={() => setIsARModalOpen(true)}
           />
 
-          <RelatedProducts productId={product?._id} />
+          {/* Key Specifications */}
+          <KeySpecifications product={product} selectedVariant={selectedVariant} />
+
+          {/* Reviews */}
+          <section id="reviews" aria-labelledby="reviews-heading" className="scroll-mt-28">
+            <div className="mb-6 flex items-center justify-between">
+              <h2
+                id="reviews-heading"
+                className="font-dm-sans text-3xl font-bold tracking-tight text-neutral-900"
+              >
+                Customer Reviews
+              </h2>
+
+              {/* Placeholder write-review button — swap in the original
+                  markup from ProductTabs if you want it pixel-identical. */}
+              {isAuthenticated && !hasReviewed && (
+                <button
+                  type="button"
+                  onClick={() => handleOpenReviewModal()}
+                  className="rounded-lg bg-brand px-5 py-2.5 font-dm-sans text-sm font-semibold text-white transition-colors hover:bg-brand-hover"
+                >
+                  Write a review
+                </button>
+              )}
+              {isAuthenticated && hasReviewed && userReview && (
+                <button
+                  type="button"
+                  onClick={() => handleOpenReviewModal(userReview)}
+                  className="rounded-lg border border-neutral-300 px-5 py-2.5 font-dm-sans text-sm font-semibold text-neutral-900 transition-colors hover:border-brand hover:text-brand"
+                >
+                  Edit your review
+                </button>
+              )}
+            </div>
+
+            <ReviewSection
+              productId={product._id}
+              productName={product.name}
+              onEditReview={handleOpenReviewModal}
+            />
+          </section>
         </div>
       </main>
       <Footer />
 
-      {/* Phase 7: the selected variant's modelUrl overrides the
-          product model for AR when the variant carries one. */}
+      {/* The selected variant's modelUrl overrides the product model
+          for AR when the variant carries one. */}
       <ARViewModal
         isOpen={isARModalOpen}
         onClose={() => setIsARModalOpen(false)}
         product={
           isVariantProduct
-            ? { ...product, modelUrl: effectiveModelUrl(product, selectedVariant) }
+            ? { ...product, modelUrl: resolvedModelUrl }
             : product
         }
       />
 
       <ReviewModal
-        key={editingReview?._id ?? 'new'}
+        key={editingReview?._id ?? "new"}
         isOpen={isReviewModalOpen}
         onClose={handleCloseReviewModal}
         productId={product?._id}
@@ -362,7 +360,6 @@ export default function ProductDetailsPage() {
         getImageSrcSet={getImageSrcSet}
       />
 
-      {/* Floating Sticky Add to Cart Bar — desktop + mobile */}
       <style>{`
         .no-scrollbar::-webkit-scrollbar { display: none; }
         .no-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }

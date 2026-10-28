@@ -9,11 +9,6 @@ import VariantSelector from "../../../components/shop/VariantSelector";
 import QuantitySelector from "../../../components/ui/QuantitySelector";
 import { formatNPR } from "../../../utils/formatCurrency";
 
-// Phase 7 split (from ProductDetailsPage.jsx) — the purchase panel:
-// price/rating/stock, description preview, variant/colour selection,
-// quantity + add-to-cart/buy-now CTAs, wishlist/share. All purchase
-// state comes from hooks/useVariantPurchase in the page (spread as
-// props); markup moved verbatim.
 export default function PurchasePanel({
   product,
   definitions,
@@ -44,7 +39,7 @@ export default function PurchasePanel({
   return (
     <div className="flex-1">              {/* Bestseller badge */}
       {product.isFeatured && (
-        <div className="bg-[#F27318] text-white text-[11px] font-bold px-3 py-1 rounded uppercase tracking-widest mb-5 w-fit">
+        <div className="bg-brand text-white text-[11px] font-bold px-3 py-1 rounded uppercase tracking-widest mb-5 w-fit">
           Bestseller
         </div>
       )}
@@ -60,17 +55,14 @@ export default function PurchasePanel({
               key={i}
               size={15}
               className={
-                i < Math.round(product?.rating?.average || 0) ? "fill-[#F27318] text-[#F27318]" : "fill-black/10 text-transparent"
+                i < Math.round(product?.rating?.average || 0) ? "fill-brand text-brand" : "fill-black/10 text-transparent"
               }
             />
           ))}
         </div>
         <span className="font-bold text-[#1A1714]">{(product?.rating?.average || 0).toFixed(1)}</span>
         <span className="text-black/40 font-medium">({product?.rating?.count || 0} reviews)</span>
-        {/* FE-14: the product API provides no soldCount field (the
-            server product model has none), so render this element
-            only when a real numeric count is actually supplied —
-            never the fabricated "200+" fallback. */}
+
         {typeof product.soldCount === "number" && (
           <>
             <span className="w-1 h-1 rounded-full bg-black/20"></span>
@@ -79,15 +71,12 @@ export default function PurchasePanel({
         )}
       </div>
 
-      {/* Price - inline (Phase 7: the selected variant's
-          price + compareAt drive this block for variant
-          products) */}
       <div className="flex items-baseline gap-2.5 mb-1.5">
         <span className="text-[30px] font-bold text-[#1A1714]">{formatNPR(displayPrice ?? 0)}</span>
         {displayCompareAt && displayCompareAt > displayPrice && (
           <>
             <span className="text-[16px] text-black/35 line-through font-medium">{formatNPR(displayCompareAt)}</span>
-            <span className="bg-[#F27318]/[0.08] text-[#F27318] px-2.5 py-1 rounded text-[13px] font-bold">{discount}% OFF</span>
+            <span className="bg-brand/8 text-brand px-2.5 py-1 rounded text-[13px] font-bold">{discount}% OFF</span>
           </>
         )}
       </div>
@@ -119,7 +108,7 @@ export default function PurchasePanel({
               {product.description.length > 150 && (
                 <button
                   onClick={() => setIsDescriptionExpanded(true)}
-                  className="text-[#F27318] font-semibold hover:underline text-[14px] inline"
+                  className="text-brand font-semibold hover:underline text-[14px] inline"
                 >
                   View More
                 </button>
@@ -130,7 +119,7 @@ export default function PurchasePanel({
               {product.description}
               <button
                 onClick={() => setIsDescriptionExpanded(false)}
-                className="text-[#F27318] font-semibold hover:underline text-[14px] inline ml-1"
+                className="text-brand font-semibold hover:underline text-[14px] inline ml-1"
               >
                 View Less
               </button>
@@ -139,44 +128,6 @@ export default function PurchasePanel({
         </div>
       )}
 
-      {/* Trust Icons - with card background */}
-      {/* <div className="bg-[#F27318]/5 rounded-lg px-4 py-6 mb-8 mt-8">
-        <div className="grid grid-cols-4 gap-5">
-          <div className="flex items-start gap-3">
-            <Truck size={18} className="text-[#F27318] shrink-0 mt-0.5" />
-            <div>
-              <h4 className="text-[14px] font-bold text-[#1A1714] leading-tight">Free Delivery</h4>
-              <p className="text-[13px] text-black/50 leading-tight mt-0.5">above NPR 5,000</p>
-            </div>
-          </div>
-          <div className="flex items-start gap-2">
-            <Hammer size={18} className="text-[#F27318] shrink-0 mt-0.5" />
-            <div>
-              <h4 className="text-[14px] font-bold text-[#1A1714] leading-tight">Free Installation</h4>
-              <p className="text-[13px] text-black/50 leading-tight mt-0.5">on all orders</p>
-            </div>
-          </div>
-          <div className="flex items-start gap-2">
-            <ShieldCheck size={18} className="text-[#F27318] shrink-0 mt-0.5" />
-            <div>
-              <h4 className="text-[14px] font-bold text-[#1A1714] leading-tight">10 Year Warranty</h4>
-              <p className="text-[13px] text-black/50 leading-tight mt-0.5">on frame</p>
-            </div>
-          </div>
-          <div className="flex items-start gap-2">
-            <RotateCcw size={18} className="text-[#F27318] shrink-0 mt-0.5" />
-            <div>
-              <h4 className="text-[14px] font-bold text-[#1A1714] leading-tight">Easy Returns</h4>
-              <p className="text-[13px] text-black/50 leading-tight mt-0.5">within 7 days</p>
-            </div>
-          </div>
-        </div>
-      </div> */}
-
-      {/* Phase 7: variant selector — for variant products
-          the variant axes ARE the option surface, so the
-          legacy color selector below is suppressed (its
-          value could never reach a variant cart line). */}
       {isVariantProduct && (
         <VariantSelector
           product={product}
@@ -203,7 +154,7 @@ export default function PurchasePanel({
                 <button
                   key={index}
                   onClick={() => setSelectedColor(color)}
-                  className={`w-10 h-10 rounded-full border-2 transition-all duration-200 flex items-center justify-center overflow-hidden ${isSelected ? "border-[#F27318]" : "border-transparent hover:border-black/10"
+                  className={`w-10 h-10 rounded-full border-2 transition-all duration-200 flex items-center justify-center overflow-hidden ${isSelected ? "border-brand" : "border-transparent hover:border-black/10"
                     }`}
                   title={typeof color === "object" ? color.name : color}
                 >
@@ -220,13 +171,6 @@ export default function PurchasePanel({
 
       {/* Quantity + Add to Cart + Buy Now — same row */}
       <div className="flex flex-col sm:flex-row items-stretch gap-3 mb-5">
-        {/* Phase 6 (REUSE-010): shared QuantitySelector.
-            FE-22 clamp preserved via max: the cap is the
-            real stock (displayStock — the selected variant's
-            available count for variant products, the product
-            stock otherwise; nullish-checked upstream so a
-            stock of 0 caps at 0 and disables the stepper via
-            isOutOfStock, exactly as handleQuantityChange did). */}
         <div className="flex items-center h-[52px] shrink-0 justify-center sm:justify-start">
           <QuantitySelector
             value={quantity}
@@ -234,6 +178,7 @@ export default function PurchasePanel({
             min={1}
             max={displayStock}
             disabled={isOutOfStock}
+            size="lg"
           />
         </div>
 
@@ -241,7 +186,7 @@ export default function PurchasePanel({
           id="main-add-to-cart"
           onClick={handleAddToCart}
           disabled={isAddingToCart || isOutOfStock}
-          className="flex-2 bg-[#F27318] text-white h-[52px] rounded-lg font-bold text-[16px] hover:bg-[#D9620E] transition-all duration-300 flex items-center justify-center gap-2.5 disabled:bg-neutral-200"
+          className="flex-2 bg-brand text-white h-[52px] rounded-lg font-bold text-[16px] hover:bg-brand-hover transition-all duration-300 flex items-center justify-center gap-2.5 disabled:bg-neutral-200"
         >
           <ShoppingCart size={18} />
           {isOutOfStock ? "Out of Stock" : isAddingToCart ? "Adding..." : "Add to Cart"}
@@ -261,14 +206,14 @@ export default function PurchasePanel({
         <button
           onClick={handleWishlistToggle}
           disabled={isWishlistLoading}
-          className="flex items-center gap-1.5 text-[14px] font-semibold text-black/60 hover:text-[#F27318] transition-all disabled:opacity-50"
+          className="flex items-center gap-1.5 text-[14px] font-semibold text-black/60 hover:text-brand transition-all disabled:opacity-50"
         >
           <Heart size={16} className={isInWishlist ? "fill-red-500 text-red-500" : ""} />
           Add to Wishlist
         </button>
         <button
           onClick={handleShare}
-          className="flex items-center gap-1.5 text-[14px] font-semibold text-black/60 hover:text-[#F27318] transition-all"
+          className="flex items-center gap-1.5 text-[14px] font-semibold text-black/60 hover:text-brand transition-all"
         >
           <Share2 size={16} />
           Share
