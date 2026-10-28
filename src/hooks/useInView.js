@@ -55,13 +55,13 @@ export default function useInView(options = {}, once = true) {
           rootMargin: "0px 0px 200px 0px",
           threshold: 0,
           ...optionsRef.current,
-        }
+        },
       );
 
       observerRef.current = observer;
       observer.observe(node);
     },
-    [once]
+    [once],
   );
 
   // Disconnect on unmount (the callback ref also fires with null then,
@@ -71,7 +71,7 @@ export default function useInView(options = {}, once = true) {
       observerRef.current?.disconnect();
       observerRef.current = null;
     },
-    []
+    [],
   );
 
   return [setRef, isInView];

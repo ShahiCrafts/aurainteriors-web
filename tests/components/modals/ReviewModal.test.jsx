@@ -17,12 +17,25 @@ vi.mock("../../../src/hooks/review/useReviewTan", () => ({
 
 import ReviewModal from "../../../src/components/modals/ReviewModal.jsx";
 
-const reviewA = { _id: "rev-a", rating: 2, title: "Title A", comment: "Comment A is here" };
-const reviewB = { _id: "rev-b", rating: 5, title: "Title B", comment: "Comment B is here" };
+const reviewA = {
+  _id: "rev-a",
+  rating: 2,
+  title: "Title A",
+  comment: "Comment A is here",
+};
+const reviewB = {
+  _id: "rev-b",
+  rating: 5,
+  title: "Title B",
+  comment: "Comment B is here",
+};
 
-const titleInput = () => screen.getByPlaceholderText("Summarize your experience");
+const titleInput = () =>
+  screen.getByPlaceholderText("Summarize your experience");
 const commentInput = () =>
-  screen.getByPlaceholderText("Share your experience with this piece. What did you love?");
+  screen.getByPlaceholderText(
+    "Share your experience with this piece. What did you love?",
+  );
 
 beforeEach(() => {
   hoisted.createReview.mockClear();
@@ -32,14 +45,35 @@ beforeEach(() => {
 describe("ReviewModal (FE-15)", () => {
   it("open A -> edit -> close -> open B shows B's pristine values, never A's", () => {
     const { rerender } = render(
-      <ReviewModal isOpen onClose={vi.fn()} productId="prod-1" existingReview={reviewA} />
+      <ReviewModal
+        isOpen
+        onClose={vi.fn()}
+        productId="prod-1"
+        existingReview={reviewA}
+      />,
     );
     expect(titleInput()).toHaveValue("Title A");
     fireEvent.change(titleInput(), { target: { value: "Edited A text" } });
-    fireEvent.change(commentInput(), { target: { value: "Edited A comment body" } });
+    fireEvent.change(commentInput(), {
+      target: { value: "Edited A comment body" },
+    });
 
-    rerender(<ReviewModal isOpen={false} onClose={vi.fn()} productId="prod-1" existingReview={reviewA} />);
-    rerender(<ReviewModal isOpen onClose={vi.fn()} productId="prod-1" existingReview={reviewB} />);
+    rerender(
+      <ReviewModal
+        isOpen={false}
+        onClose={vi.fn()}
+        productId="prod-1"
+        existingReview={reviewA}
+      />,
+    );
+    rerender(
+      <ReviewModal
+        isOpen
+        onClose={vi.fn()}
+        productId="prod-1"
+        existingReview={reviewB}
+      />,
+    );
 
     expect(titleInput()).toHaveValue("Title B");
     expect(commentInput()).toHaveValue("Comment B is here");
@@ -50,17 +84,40 @@ describe("ReviewModal (FE-15)", () => {
 
   it("submit after the A->B swap calls updateReview with B's id AND B's values", async () => {
     const { rerender } = render(
-      <ReviewModal isOpen onClose={vi.fn()} productId="prod-1" existingReview={reviewA} />
+      <ReviewModal
+        isOpen
+        onClose={vi.fn()}
+        productId="prod-1"
+        existingReview={reviewA}
+      />,
     );
-    rerender(<ReviewModal isOpen={false} onClose={vi.fn()} productId="prod-1" existingReview={reviewA} />);
-    rerender(<ReviewModal isOpen onClose={vi.fn()} productId="prod-1" existingReview={reviewB} />);
+    rerender(
+      <ReviewModal
+        isOpen={false}
+        onClose={vi.fn()}
+        productId="prod-1"
+        existingReview={reviewA}
+      />,
+    );
+    rerender(
+      <ReviewModal
+        isOpen
+        onClose={vi.fn()}
+        productId="prod-1"
+        existingReview={reviewB}
+      />,
+    );
 
     fireEvent.click(screen.getByRole("button", { name: "Update Review" }));
 
     await waitFor(() => expect(hoisted.updateReview).toHaveBeenCalledTimes(1));
     const arg = hoisted.updateReview.mock.calls[0][0];
     expect(arg.reviewId).toBe("rev-b");
-    expect(arg.data).toEqual({ rating: 5, title: "Title B", comment: "Comment B is here" });
+    expect(arg.data).toEqual({
+      rating: 5,
+      title: "Title B",
+      comment: "Comment B is here",
+    });
     expect(JSON.stringify(arg)).not.toContain("Title A");
     expect(JSON.stringify(arg)).not.toContain("Comment A");
     expect(hoisted.createReview).not.toHaveBeenCalled();
@@ -68,10 +125,29 @@ describe("ReviewModal (FE-15)", () => {
 
   it("close then open with existingReview=null shows a blank form", () => {
     const { rerender } = render(
-      <ReviewModal isOpen onClose={vi.fn()} productId="prod-1" existingReview={reviewA} />
+      <ReviewModal
+        isOpen
+        onClose={vi.fn()}
+        productId="prod-1"
+        existingReview={reviewA}
+      />,
     );
-    rerender(<ReviewModal isOpen={false} onClose={vi.fn()} productId="prod-1" existingReview={reviewA} />);
-    rerender(<ReviewModal isOpen onClose={vi.fn()} productId="prod-1" existingReview={null} />);
+    rerender(
+      <ReviewModal
+        isOpen={false}
+        onClose={vi.fn()}
+        productId="prod-1"
+        existingReview={reviewA}
+      />,
+    );
+    rerender(
+      <ReviewModal
+        isOpen
+        onClose={vi.fn()}
+        productId="prod-1"
+        existingReview={null}
+      />,
+    );
 
     expect(titleInput()).toHaveValue("");
     expect(commentInput()).toHaveValue("");

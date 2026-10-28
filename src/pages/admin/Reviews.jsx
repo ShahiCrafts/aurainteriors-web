@@ -68,7 +68,7 @@ export default function Reviews() {
     try {
       await toggleApprovalMutation.mutateAsync(review._id);
       toast.success(
-        `Review ${review.isApproved ? "hidden" : "approved"} successfully`
+        `Review ${review.isApproved ? "hidden" : "approved"} successfully`,
       );
     } catch (err) {
       toast.error(formatError(err, "Failed to update review status"));
@@ -130,7 +130,9 @@ export default function Reviews() {
   if (error)
     return (
       <div className="p-10 text-center text-red-500 bg-white rounded-xl border border-red-50 shadow-sm">
-        <h2 className="text-lg font-bold mb-2 text-red-600">Error Loading Reviews</h2>
+        <h2 className="text-lg font-bold mb-2 text-red-600">
+          Error Loading Reviews
+        </h2>
         <p className="text-sm opacity-80">{formatError(error)}</p>
       </div>
     );
@@ -212,17 +214,17 @@ export default function Reviews() {
             {(searchQuery ||
               filterRating !== "all" ||
               filterStatus !== "all") && (
-                <button
-                  onClick={() => {
-                    setSearchQuery("");
-                    setFilterRating("all");
-                    setFilterStatus("all");
-                  }}
-                  className="mt-6 text-sm font-medium text-teal-600 hover:text-teal-700"
-                >
-                  Clear all filters
-                </button>
-              )}
+              <button
+                onClick={() => {
+                  setSearchQuery("");
+                  setFilterRating("all");
+                  setFilterStatus("all");
+                }}
+                className="mt-6 text-sm font-medium text-teal-600 hover:text-teal-700"
+              >
+                Clear all filters
+              </button>
+            )}
           </div>
         ) : (
           <div className="overflow-x-auto">
@@ -283,8 +285,8 @@ export default function Reviews() {
                           <img
                             src={getImageUrl(
                               review.product.images[0].url ||
-                              review.product.images[0],
-                              "products"
+                                review.product.images[0],
+                              "products",
                             )}
                             className="w-8 h-8 rounded bg-gray-50 object-cover"
                             alt=""
@@ -314,14 +316,16 @@ export default function Reviews() {
                     <td className="px-6 py-4">
                       <div className="flex flex-col gap-1">
                         <span
-                          className={`inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-[10px] font-bold uppercase tracking-wider w-fit ${review.isApproved
-                            ? "bg-teal-50 text-teal-700"
-                            : "bg-amber-50 text-amber-700"
-                            }`}
+                          className={`inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-[10px] font-bold uppercase tracking-wider w-fit ${
+                            review.isApproved
+                              ? "bg-teal-50 text-teal-700"
+                              : "bg-amber-50 text-amber-700"
+                          }`}
                         >
                           <span
-                            className={`w-1 h-1 rounded-full ${review.isApproved ? "bg-teal-500" : "bg-amber-500"
-                              }`}
+                            className={`w-1 h-1 rounded-full ${
+                              review.isApproved ? "bg-teal-500" : "bg-amber-500"
+                            }`}
                           ></span>
                           {review.isApproved ? "Approved" : "Pending"}
                         </span>
@@ -347,7 +351,7 @@ export default function Reviews() {
                           onClick={() => {
                             setSelectedReview(review);
                             setResponseText(
-                              review.adminResponse?.comment || ""
+                              review.adminResponse?.comment || "",
                             );
                             setShowResponseModal(true);
                           }}
@@ -357,10 +361,11 @@ export default function Reviews() {
                         </button>
                         <button
                           onClick={() => handleToggleApproval(review)}
-                          className={`p-2 rounded-lg transition-colors ${review.isApproved
-                            ? "text-gray-500 hover:bg-amber-50 hover:text-amber-600"
-                            : "text-teal-600 hover:bg-teal-50"
-                            }`}
+                          className={`p-2 rounded-lg transition-colors ${
+                            review.isApproved
+                              ? "text-gray-500 hover:bg-amber-50 hover:text-amber-600"
+                              : "text-teal-600 hover:bg-teal-50"
+                          }`}
                         >
                           {review.isApproved ? (
                             <XCircle size={16} />
@@ -407,8 +412,8 @@ export default function Reviews() {
                 <img
                   src={getImageUrl(
                     selectedReview.product?.images?.[0]?.url ||
-                    selectedReview.product?.images?.[0],
-                    "products"
+                      selectedReview.product?.images?.[0],
+                    "products",
                   )}
                   className="w-12 h-12 rounded-lg object-cover shadow-sm"
                   alt=""
@@ -432,8 +437,7 @@ export default function Reviews() {
               </div>
               <div className="flex flex-wrap gap-4 py-3 border-y border-gray-100">
                 <div className="flex items-center gap-1.5 text-xs text-gray-500">
-                  <Calendar size={14} />{" "}
-                  {formatDate(selectedReview.createdAt)}
+                  <Calendar size={14} /> {formatDate(selectedReview.createdAt)}
                 </div>
                 <div className="flex items-center gap-1.5 text-xs text-gray-500">
                   <ThumbsUp size={14} /> {selectedReview.helpfulCount || 0}{" "}
@@ -556,19 +560,24 @@ function Modal({ title, children, onClose }) {
         onClick={(e) => e.stopPropagation()}
         className="w-full max-w-md"
       >
-       <Dialog open onClose={onClose} label={title} className="bg-white rounded-xl max-w-md w-full p-6 border border-gray-100 shadow-xl">
-        <div className="flex items-center justify-between mb-5">
-          <h3 className="text-lg font-bold text-gray-900">{title}</h3>
-          <button
-            onClick={onClose}
-            aria-label="Close dialog"
-            className="p-2 hover:bg-gray-100 rounded-lg transition-colors"
-          >
-            <X className="w-5 h-5 text-gray-400" />
-          </button>
-        </div>
-        {children}
-       </Dialog>
+        <Dialog
+          open
+          onClose={onClose}
+          label={title}
+          className="bg-white rounded-xl max-w-md w-full p-6 border border-gray-100 shadow-xl"
+        >
+          <div className="flex items-center justify-between mb-5">
+            <h3 className="text-lg font-bold text-gray-900">{title}</h3>
+            <button
+              onClick={onClose}
+              aria-label="Close dialog"
+              className="p-2 hover:bg-gray-100 rounded-lg transition-colors"
+            >
+              <X className="w-5 h-5 text-gray-400" />
+            </button>
+          </div>
+          {children}
+        </Dialog>
       </motion.div>
     </motion.div>
   );

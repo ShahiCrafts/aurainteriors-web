@@ -32,7 +32,11 @@ const T0 = new Date("2026-01-01T00:00:00Z").getTime();
 function err429({ body = {}, headers = {} } = {}) {
   return {
     message: "Request failed with status code 429",
-    response: { status: 429, data: { message: "Too many requests. Please try again later.", ...body }, headers },
+    response: {
+      status: 429,
+      data: { message: "Too many requests. Please try again later.", ...body },
+      headers,
+    },
   };
 }
 
@@ -51,8 +55,12 @@ describe("shared axios 429 handling (FE-20)", () => {
     const err = err429({ body: { retryAfter: 90 } });
     await expect(handleResponseError(err)).rejects.toBe(err);
     expect(toast.error).toHaveBeenCalledTimes(1);
-    expect(toast.error).toHaveBeenCalledWith("Too many requests. Please try again later.");
-    expect(err.displayMessage).toBe("Too many requests. Please try again later.");
+    expect(toast.error).toHaveBeenCalledWith(
+      "Too many requests. Please try again later.",
+    );
+    expect(err.displayMessage).toBe(
+      "Too many requests. Please try again later.",
+    );
     expect(err.retryAfter).toBe(90);
   });
 
@@ -64,7 +72,10 @@ describe("shared axios 429 handling (FE-20)", () => {
   });
 
   it("the Retry-After header wins over the body retryAfter and is exposed for countdowns", async () => {
-    const err = err429({ body: { retryAfter: 900 }, headers: { "retry-after": "45" } });
+    const err = err429({
+      body: { retryAfter: 900 },
+      headers: { "retry-after": "45" },
+    });
     await expect(handleResponseError(err)).rejects.toBe(err);
     expect(err.retryAfter).toBe(45);
     expect(getRateLimitRetryAfterSeconds()).toBe(45);
@@ -78,7 +89,9 @@ describe("shared axios 429 handling (FE-20)", () => {
     expect(parseRetryAfterSeconds({ "retry-after": "30" }, {}, T0)).toBe(30);
     expect(parseRetryAfterSeconds({}, { retryAfter: 75 }, T0)).toBe(75);
     expect(parseRetryAfterSeconds({}, {}, T0)).toBeNull();
-    expect(parseRetryAfterSeconds({ "retry-after": "garbage" }, {}, T0)).toBeNull();
+    expect(
+      parseRetryAfterSeconds({ "retry-after": "garbage" }, {}, T0),
+    ).toBeNull();
   });
 
   it("dispatches a rate-limit event carrying retryAfter + message for UI countdowns", async () => {
@@ -86,16 +99,24 @@ describe("shared axios 429 handling (FE-20)", () => {
     const listener = (e) => seen.push(e.detail);
     window.addEventListener(RATE_LIMIT_EVENT, listener);
     try {
-      await expect(handleResponseError(err429({ body: { retryAfter: 33 } }))).rejects.toBeTruthy();
+      await expect(
+        handleResponseError(err429({ body: { retryAfter: 33 } })),
+      ).rejects.toBeTruthy();
     } finally {
       window.removeEventListener(RATE_LIMIT_EVENT, listener);
     }
     expect(seen).toHaveLength(1);
-    expect(seen[0]).toMatchObject({ retryAfter: 33, message: "Too many requests. Please try again later." });
+    expect(seen[0]).toMatchObject({
+      retryAfter: 33,
+      message: "Too many requests. Please try again later.",
+    });
   });
 
   it("a non-429 error passes through untouched by this path (no toast, no retryAfter)", async () => {
-    const err = { message: "Request failed with status code 500", response: { status: 500, data: { message: "Server boom" }, headers: {} } };
+    const err = {
+      message: "Request failed with status code 500",
+      response: { status: 500, data: { message: "Server boom" }, headers: {} },
+    };
     await expect(handleResponseError(err)).rejects.toBe(err);
     expect(toast.error).not.toHaveBeenCalled();
     expect(err.retryAfter).toBeUndefined();
@@ -117,7 +138,9 @@ describe("shared axios 429 handling (FE-20)", () => {
   });
 
   it("a deduped 429 still updates the exposed retryAfter (pen-test: suppression must not hide a longer limit)", async () => {
-    await expect(handleResponseError(err429({ body: { retryAfter: 10 } }))).rejects.toBeTruthy();
+    await expect(
+      handleResponseError(err429({ body: { retryAfter: 10 } })),
+    ).rejects.toBeTruthy();
     const second = err429({ body: { retryAfter: 600 } });
     await expect(handleResponseError(second)).rejects.toBe(second);
     expect(toast.error).toHaveBeenCalledTimes(1);

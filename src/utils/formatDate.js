@@ -34,7 +34,9 @@ function toValidDate(value) {
  */
 export function formatDate(value, options) {
   const date = toValidDate(value);
-  return date === null ? "" : new Intl.DateTimeFormat(LOCALE, options).format(date);
+  return date === null
+    ? ""
+    : new Intl.DateTimeFormat(LOCALE, options).format(date);
 }
 
 const DEFAULT_DATETIME_OPTIONS = {
@@ -46,9 +48,14 @@ const DEFAULT_DATETIME_OPTIONS = {
 };
 
 /** Time only. `options` are Intl.DateTimeFormat options, passed through. */
-export function formatTime(value, options = { hour: "2-digit", minute: "2-digit" }) {
+export function formatTime(
+  value,
+  options = { hour: "2-digit", minute: "2-digit" },
+) {
   const date = toValidDate(value);
-  return date === null ? "" : new Intl.DateTimeFormat(LOCALE, options).format(date);
+  return date === null
+    ? ""
+    : new Intl.DateTimeFormat(LOCALE, options).format(date);
 }
 
 /** Date + time. `options` override / extend the defaults. */
@@ -56,7 +63,10 @@ export function formatDateTime(value, options) {
   const date = toValidDate(value);
   return date === null
     ? ""
-    : new Intl.DateTimeFormat(LOCALE, { ...DEFAULT_DATETIME_OPTIONS, ...options }).format(date);
+    : new Intl.DateTimeFormat(LOCALE, {
+        ...DEFAULT_DATETIME_OPTIONS,
+        ...options,
+      }).format(date);
 }
 
 /**

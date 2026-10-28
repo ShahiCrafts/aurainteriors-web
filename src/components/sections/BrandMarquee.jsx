@@ -83,7 +83,7 @@ export default function BrandMarquee() {
           >
             {brand.name}
           </span>
-        )
+        ),
       )}
     </div>
   );

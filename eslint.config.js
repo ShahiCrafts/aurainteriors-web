@@ -1,14 +1,14 @@
-import js from '@eslint/js'
-import globals from 'globals'
-import reactHooks from 'eslint-plugin-react-hooks'
-import reactRefresh from 'eslint-plugin-react-refresh'
-import jsxA11y from 'eslint-plugin-jsx-a11y'
-import { defineConfig, globalIgnores } from 'eslint/config'
+import js from "@eslint/js";
+import globals from "globals";
+import reactHooks from "eslint-plugin-react-hooks";
+import reactRefresh from "eslint-plugin-react-refresh";
+import jsxA11y from "eslint-plugin-jsx-a11y";
+import { defineConfig, globalIgnores } from "eslint/config";
 
 export default defineConfig([
-  globalIgnores(['dist']),
+  globalIgnores(["dist"]),
   {
-    files: ['**/*.{js,jsx}'],
+    files: ["**/*.{js,jsx}"],
     extends: [
       js.configs.recommended,
       reactHooks.configs.flat.recommended,
@@ -18,13 +18,13 @@ export default defineConfig([
       ecmaVersion: 2020,
       globals: globals.browser,
       parserOptions: {
-        ecmaVersion: 'latest',
+        ecmaVersion: "latest",
         ecmaFeatures: { jsx: true },
-        sourceType: 'module',
+        sourceType: "module",
       },
     },
     rules: {
-      'no-unused-vars': ['error', { varsIgnorePattern: '^[A-Z_]' }],
+      "no-unused-vars": ["error", { varsIgnorePattern: "^[A-Z_]" }],
     },
   },
   // ── FE remediation Phase 0 promotions ──────────────────────────────────
@@ -36,12 +36,12 @@ export default defineConfig([
   // be red at Phase 0 exit (FE-13's rules-of-hooks errors are a Phase 1
   // fix); see audit/fe/remediation/BASELINE.md for the counts.
   {
-    files: ['**/*.{js,jsx}'],
-    plugins: { 'jsx-a11y': jsxA11y },
+    files: ["**/*.{js,jsx}"],
+    plugins: { "jsx-a11y": jsxA11y },
     rules: {
       ...jsxA11y.flatConfigs.recommended.rules,
-      'react-hooks/rules-of-hooks': 'error',
-      'no-undef': 'error',
+      "react-hooks/rules-of-hooks": "error",
+      "no-undef": "error",
     },
   },
   // ── FE-60: model the environments the repo actually runs in ─────────
@@ -55,7 +55,7 @@ export default defineConfig([
   // Node globals. The 'clients' service-worker false positives are gone
   // with FE-57 (the worker file was deleted, not given an env).
   {
-    files: ['**/*.config.{js,jsx}'],
+    files: ["**/*.config.{js,jsx}"],
     languageOptions: {
       globals: globals.node,
     },
@@ -65,7 +65,7 @@ export default defineConfig([
   // Node (node:fs/node:path imports, import.meta). Give the tests tree
   // the union so no-undef stays a trustworthy error there too.
   {
-    files: ['tests/**/*.{js,jsx}'],
+    files: ["tests/**/*.{js,jsx}"],
     languageOptions: {
       globals: { ...globals.browser, ...globals.node, ...globals.vitest },
     },
@@ -79,53 +79,53 @@ export default defineConfig([
   // surfaces migrate onto the primitives. Warning level on purpose — it
   // guides new code, it does not gate the build.
   {
-    files: ['src/components/ui/**/*.{js,jsx}'],
+    files: ["src/components/ui/**/*.{js,jsx}"],
     plugins: {
       local: {
         rules: {
-          'no-raw-hex-class': {
+          "no-raw-hex-class": {
             meta: {
-              type: 'suggestion',
+              type: "suggestion",
               docs: {
                 description:
-                  'disallow raw hex colours inside className strings; use theme tokens',
+                  "disallow raw hex colours inside className strings; use theme tokens",
               },
             },
             create(context) {
-              const HEX = /#[0-9a-fA-F]{3,8}\b/
+              const HEX = /#[0-9a-fA-F]{3,8}\b/;
               const check = (node, raw) => {
-                if (typeof raw !== 'string' || !HEX.test(raw)) return
+                if (typeof raw !== "string" || !HEX.test(raw)) return;
                 const inClassName = context.sourceCode
                   .getAncestors(node)
                   .some(
                     (ancestor) =>
-                      ancestor.type === 'JSXAttribute' &&
+                      ancestor.type === "JSXAttribute" &&
                       ancestor.name &&
-                      ancestor.name.name === 'className',
-                  )
+                      ancestor.name.name === "className",
+                  );
                 if (inClassName) {
                   context.report({
                     node,
                     message:
-                      'Raw hex colour in a className string — use a theme token (e.g. bg-brand, text-brand) instead.',
-                  })
+                      "Raw hex colour in a className string — use a theme token (e.g. bg-brand, text-brand) instead.",
+                  });
                 }
-              }
+              };
               return {
                 Literal(node) {
-                  if (typeof node.value === 'string') check(node, node.value)
+                  if (typeof node.value === "string") check(node, node.value);
                 },
                 TemplateElement(node) {
-                  check(node, node.value && node.value.cooked)
+                  check(node, node.value && node.value.cooked);
                 },
-              }
+              };
             },
           },
         },
       },
     },
     rules: {
-      'local/no-raw-hex-class': 'warn',
+      "local/no-raw-hex-class": "warn",
     },
   },
-])
+]);

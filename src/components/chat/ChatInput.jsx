@@ -1,4 +1,8 @@
-import { validateChatFiles, validateChatFilesSniffed, ATTACHMENT_MIME_TYPES } from "../../utils/chatAttachmentPolicy";
+import {
+  validateChatFiles,
+  validateChatFilesSniffed,
+  ATTACHMENT_MIME_TYPES,
+} from "../../utils/chatAttachmentPolicy";
 import { useState, useRef, useEffect } from "react";
 import { LucideSendHorizontal, Paperclip, X } from "lucide-react";
 import { AnimatePresence } from "framer-motion";
@@ -36,20 +40,20 @@ const ChatInput = ({ chatId, onTyping, draftReply }) => {
   // widget, which never passes the prop.
   const lastDraftNonceRef = useRef(null);
   useEffect(() => {
-    if (
-      draftReply?.text &&
-      draftReply.nonce !== lastDraftNonceRef.current
-    ) {
+    if (draftReply?.text && draftReply.nonce !== lastDraftNonceRef.current) {
       lastDraftNonceRef.current = draftReply.nonce;
       setMessage(draftReply.text);
       textareaRef.current?.focus();
     }
   }, [draftReply]);
 
-  useEffect(() => () => {
-    if (typingTimeoutRef.current) clearTimeout(typingTimeoutRef.current);
-    uploadAbortRef.current?.abort();
-  }, []);
+  useEffect(
+    () => () => {
+      if (typingTimeoutRef.current) clearTimeout(typingTimeoutRef.current);
+      uploadAbortRef.current?.abort();
+    },
+    [],
+  );
 
   // FE-20: the shared axios interceptor broadcasts every 429 with the
   // server's effective retryAfter (Retry-After header first). Feed it
@@ -112,7 +116,10 @@ const ChatInput = ({ chatId, onTyping, draftReply }) => {
     // in chatApi re-validates the original and the post-compression
     // substitute as well.
     const validationError = await validateChatFilesSniffed(files);
-    if (validationError) { toast.error(validationError); return; }
+    if (validationError) {
+      toast.error(validationError);
+      return;
+    }
     sendingRef.current = true;
     setIsSending(true);
     if (typingTimeoutRef.current) clearTimeout(typingTimeoutRef.current);
@@ -132,31 +139,50 @@ const ChatInput = ({ chatId, onTyping, draftReply }) => {
       if (files.length > 0) {
         setIsUploading(true);
         setUploadProgress(Object.fromEntries(files.map((_, i) => [i, 0])));
-        const uploaded = await Promise.all(files.map(async (file, index) => {
-          let cached = uploadCacheRef.current.get(file);
-          if (!cached || cached.chatId !== chatId || new Date(cached.expiresAt) <= new Date()) {
-            cached = {
-              ...await uploadChatAttachment(chatId, file, {
-                signal: abortController.signal,
-                onProgress: (pct) => setUploadProgress((prev) => ({ ...prev, [index]: pct })),
-              }),
-              chatId,
-            };
-            uploadCacheRef.current.set(file, cached);
-          } else {
-            setUploadProgress((prev) => ({ ...prev, [index]: 100 }));
-          }
-          return cached.attachment;
-        }));
+        const uploaded = await Promise.all(
+          files.map(async (file, index) => {
+            let cached = uploadCacheRef.current.get(file);
+            if (
+              !cached ||
+              cached.chatId !== chatId ||
+              new Date(cached.expiresAt) <= new Date()
+            ) {
+              cached = {
+                ...(await uploadChatAttachment(chatId, file, {
+                  signal: abortController.signal,
+                  onProgress: (pct) =>
+                    setUploadProgress((prev) => ({ ...prev, [index]: pct })),
+                })),
+                chatId,
+              };
+              uploadCacheRef.current.set(file, cached);
+            } else {
+              setUploadProgress((prev) => ({ ...prev, [index]: 100 }));
+            }
+            return cached.attachment;
+          }),
+        );
         attachments = uploaded;
       }
       setIsUploading(false);
       setUploadProgress({});
-      const fingerprint = JSON.stringify({ chatId, content: text, attachments });
+      const fingerprint = JSON.stringify({
+        chatId,
+        content: text,
+        attachments,
+      });
       if (sendAttemptRef.current?.fingerprint !== fingerprint) {
-        sendAttemptRef.current = { fingerprint, clientMessageId: crypto.randomUUID() };
+        sendAttemptRef.current = {
+          fingerprint,
+          clientMessageId: crypto.randomUUID(),
+        };
       }
-      await sendMessageMutation.mutateAsync({ chatId, content: text, attachments, clientMessageId: sendAttemptRef.current.clientMessageId });
+      await sendMessageMutation.mutateAsync({
+        chatId,
+        content: text,
+        attachments,
+        clientMessageId: sendAttemptRef.current.clientMessageId,
+      });
       sendAttemptRef.current = null;
       setMessage("");
       setSelectedFiles([]);
@@ -165,7 +191,12 @@ const ChatInput = ({ chatId, onTyping, draftReply }) => {
     } catch (error) {
       // FE-31: a user-cancelled upload is not an error — nothing was
       // sent, and the draft + files stay put for a retry.
-      if (abortController.signal.aborted || error?.code === "ERR_CANCELED" || error?.name === "AbortError" || error?.name === "CanceledError") {
+      if (
+        abortController.signal.aborted ||
+        error?.code === "ERR_CANCELED" ||
+        error?.name === "AbortError" ||
+        error?.name === "CanceledError"
+      ) {
         toast.info("Upload cancelled. Your message and files are still here.");
         return;
       }
@@ -178,25 +209,31 @@ const ChatInput = ({ chatId, onTyping, draftReply }) => {
       const response = error.response?.data;
       const status = error.response?.status;
       if (response?.code === "AUTH_REQUIRED" || status === 401) {
-        setAuthError({ message: response?.message, suggestion: response?.suggestion });
+        setAuthError({
+          message: response?.message,
+          suggestion: response?.suggestion,
+        });
         setShowAuthModal(true);
       } else if (response?.code === "RATE_LIMIT_EXCEEDED" || status === 429) {
         const retry = Number(error.retryAfter ?? response?.retryAfter);
         setRateLimitRetry(Number.isFinite(retry) && retry > 0 ? retry : 900);
         setShowRateLimitModal(true);
-      } else toast.error(error.displayMessage || "Could not send. Your message and files are ready to retry.");
+      } else
+        toast.error(
+          error.displayMessage ||
+            "Could not send. Your message and files are ready to retry.",
+        );
     } finally {
       sendingRef.current = false;
       setIsSending(false);
       setIsUploading(false);
       setUploadProgress({});
-      if (uploadAbortRef.current === abortController) uploadAbortRef.current = null;
+      if (uploadAbortRef.current === abortController)
+        uploadAbortRef.current = null;
     }
   };
 
-  const canSend =
-    (message.trim() || selectedFiles.length > 0) &&
-    !isSending;
+  const canSend = (message.trim() || selectedFiles.length > 0) && !isSending;
 
   return (
     <>
@@ -212,13 +249,17 @@ const ChatInput = ({ chatId, onTyping, draftReply }) => {
                   {file.name}
                   {/* FE-31: per-file upload progress while sending. */}
                   {isUploading && uploadProgress[index] != null && (
-                    <span className="ml-2 font-bold text-[#F27318]">{uploadProgress[index]}%</span>
+                    <span className="ml-2 font-bold text-[#F27318]">
+                      {uploadProgress[index]}%
+                    </span>
                   )}
                   <button
                     disabled={isSending}
                     onClick={() => {
                       uploadCacheRef.current.delete(file);
-                      setSelectedFiles(prev => prev.filter((_, i) => i !== index));
+                      setSelectedFiles((prev) =>
+                        prev.filter((_, i) => i !== index),
+                      );
                     }}
                     className="absolute right-1 top-1.5 p-0.5 text-gray-400 hover:text-red-500"
                   >

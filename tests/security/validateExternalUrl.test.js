@@ -19,8 +19,14 @@ describe("FE-04 validateExternalUrl — attack battery", () => {
   const ATTACKS = [
     ["javascript:", "javascript:alert(1)"],
     ["mixed-case javascript:", "JaVaScRiPt:alert(1)"],
-    ["data: html", "data:text/html;base64,PHNjcmlwdD5hbGVydCgxKTwvc2NyaXB0Pg=="],
-    ["data: image with script payload", "data:image/svg+xml;base64,PHN2Zz48c2NyaXB0PmFsZXJ0KDEpPC9zY3JpcHQ+PC9zdmc+"],
+    [
+      "data: html",
+      "data:text/html;base64,PHNjcmlwdD5hbGVydCgxKTwvc2NyaXB0Pg==",
+    ],
+    [
+      "data: image with script payload",
+      "data:image/svg+xml;base64,PHN2Zz48c2NyaXB0PmFsZXJ0KDEpPC9zY3JpcHQ+PC9zdmc+",
+    ],
     ["vbscript:", "vbscript:msgbox(1)"],
     ["control-char-embedded scheme (tab)", "java\tscript:alert(1)"],
     ["control-char-embedded scheme (newline)", "jav\nascript:alert(1)"],
@@ -53,29 +59,29 @@ describe("FE-04 validateExternalUrl — attack battery", () => {
 
 describe("FE-04 validateExternalUrl — positive controls", () => {
   it("accepts a legit https publisher article URL, returned normalised", () => {
-    expect(validateExternalUrl("https://www.example-publisher.com/story/123")).toBe(
-      "https://www.example-publisher.com/story/123"
-    );
+    expect(
+      validateExternalUrl("https://www.example-publisher.com/story/123"),
+    ).toBe("https://www.example-publisher.com/story/123");
   });
 
   it("accepts a legit https publisher logo URL with a query string", () => {
-    expect(validateExternalUrl("https://cdn.publisher.example/logo.svg?v=2")).toBe(
-      "https://cdn.publisher.example/logo.svg?v=2"
-    );
+    expect(
+      validateExternalUrl("https://cdn.publisher.example/logo.svg?v=2"),
+    ).toBe("https://cdn.publisher.example/logo.svg?v=2");
   });
 
   it("normalises scheme/host casing and surrounding whitespace", () => {
     expect(validateExternalUrl("  HTTPS://Publisher.Example/Article  ")).toBe(
-      "https://publisher.example/Article"
+      "https://publisher.example/Article",
     );
   });
 
   it("accepts any https host (attribution is the feature — no host allowlist)", () => {
     expect(validateExternalUrl("https://ekantipur.com/news/story")).toBe(
-      "https://ekantipur.com/news/story"
+      "https://ekantipur.com/news/story",
     );
-    expect(validateExternalUrl("https://some-brand-new-outlet.example/x.png")).toBe(
-      "https://some-brand-new-outlet.example/x.png"
-    );
+    expect(
+      validateExternalUrl("https://some-brand-new-outlet.example/x.png"),
+    ).toBe("https://some-brand-new-outlet.example/x.png");
   });
 });

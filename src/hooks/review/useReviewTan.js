@@ -1,13 +1,18 @@
 import useAuthStore from "../../store/authStore";
-import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
+import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import reviewApi from "../../api/reviewApi";
 
 const REVIEW_KEYS = {
-  all: ['reviews'],
-  productReviews: (productId, params) => [...REVIEW_KEYS.all, 'product', productId, params],
-  userReview: (productId) => [...REVIEW_KEYS.all, 'user', productId],
-  canReview: (productId) => [...REVIEW_KEYS.all, 'canReview', productId],
-  adminList: (params) => [...REVIEW_KEYS.all, 'admin', params],
+  all: ["reviews"],
+  productReviews: (productId, params) => [
+    ...REVIEW_KEYS.all,
+    "product",
+    productId,
+    params,
+  ],
+  userReview: (productId) => [...REVIEW_KEYS.all, "user", productId],
+  canReview: (productId) => [...REVIEW_KEYS.all, "canReview", productId],
+  adminList: (params) => [...REVIEW_KEYS.all, "admin", params],
 };
 
 // Get reviews for a product
@@ -21,7 +26,7 @@ export const useProductReviews = (productId, params = {}) => {
 
 // Get user's review for a product
 export const useUserReview = (productId) => {
-  const userId = useAuthStore(state => state.user?._id);
+  const userId = useAuthStore((state) => state.user?._id);
   return useQuery({
     queryKey: [...REVIEW_KEYS.userReview(productId), userId || "guest"],
     queryFn: () => reviewApi.getUserReview(productId),
@@ -31,7 +36,7 @@ export const useUserReview = (productId) => {
 
 // Check if user can review
 export const useCanReview = (productId, options = {}) => {
-  const userId = useAuthStore(state => state.user?._id);
+  const userId = useAuthStore((state) => state.user?._id);
   return useQuery({
     queryKey: [...REVIEW_KEYS.canReview(productId), userId || "guest"],
     queryFn: () => reviewApi.canReview(productId),
@@ -48,11 +53,17 @@ export const useCreateReview = () => {
     mutationFn: ({ productId, data }) => reviewApi.create(productId, data),
     onSuccess: (_, { productId }) => {
       // Invalidate all review-related queries for this product
-      queryClient.invalidateQueries({ queryKey: [...REVIEW_KEYS.all, 'product', productId] });
-      queryClient.invalidateQueries({ queryKey: REVIEW_KEYS.userReview(productId) });
-      queryClient.invalidateQueries({ queryKey: REVIEW_KEYS.canReview(productId) });
+      queryClient.invalidateQueries({
+        queryKey: [...REVIEW_KEYS.all, "product", productId],
+      });
+      queryClient.invalidateQueries({
+        queryKey: REVIEW_KEYS.userReview(productId),
+      });
+      queryClient.invalidateQueries({
+        queryKey: REVIEW_KEYS.canReview(productId),
+      });
       // Also invalidate the product query to update rating
-      queryClient.invalidateQueries({ queryKey: ['products'] });
+      queryClient.invalidateQueries({ queryKey: ["products"] });
     },
   });
 };
@@ -65,9 +76,13 @@ export const useUpdateReview = () => {
     mutationFn: ({ productId, reviewId, data }) =>
       reviewApi.update(productId, reviewId, data),
     onSuccess: (_, { productId }) => {
-      queryClient.invalidateQueries({ queryKey: [...REVIEW_KEYS.all, 'product', productId] });
-      queryClient.invalidateQueries({ queryKey: REVIEW_KEYS.userReview(productId) });
-      queryClient.invalidateQueries({ queryKey: ['products'] });
+      queryClient.invalidateQueries({
+        queryKey: [...REVIEW_KEYS.all, "product", productId],
+      });
+      queryClient.invalidateQueries({
+        queryKey: REVIEW_KEYS.userReview(productId),
+      });
+      queryClient.invalidateQueries({ queryKey: ["products"] });
     },
   });
 };
@@ -77,12 +92,19 @@ export const useDeleteReview = () => {
   const queryClient = useQueryClient();
 
   return useMutation({
-    mutationFn: ({ productId, reviewId }) => reviewApi.delete(productId, reviewId),
+    mutationFn: ({ productId, reviewId }) =>
+      reviewApi.delete(productId, reviewId),
     onSuccess: (_, { productId }) => {
-      queryClient.invalidateQueries({ queryKey: [...REVIEW_KEYS.all, 'product', productId] });
-      queryClient.invalidateQueries({ queryKey: REVIEW_KEYS.userReview(productId) });
-      queryClient.invalidateQueries({ queryKey: REVIEW_KEYS.canReview(productId) });
-      queryClient.invalidateQueries({ queryKey: ['products'] });
+      queryClient.invalidateQueries({
+        queryKey: [...REVIEW_KEYS.all, "product", productId],
+      });
+      queryClient.invalidateQueries({
+        queryKey: REVIEW_KEYS.userReview(productId),
+      });
+      queryClient.invalidateQueries({
+        queryKey: REVIEW_KEYS.canReview(productId),
+      });
+      queryClient.invalidateQueries({ queryKey: ["products"] });
     },
   });
 };
@@ -92,9 +114,12 @@ export const useMarkHelpful = () => {
   const queryClient = useQueryClient();
 
   return useMutation({
-    mutationFn: ({ productId, reviewId }) => reviewApi.markHelpful(productId, reviewId),
+    mutationFn: ({ productId, reviewId }) =>
+      reviewApi.markHelpful(productId, reviewId),
     onSuccess: (_, { productId }) => {
-      queryClient.invalidateQueries({ queryKey: [...REVIEW_KEYS.all, 'product', productId] });
+      queryClient.invalidateQueries({
+        queryKey: [...REVIEW_KEYS.all, "product", productId],
+      });
     },
   });
 };
@@ -112,7 +137,8 @@ export const useAddAdminResponse = () => {
   const queryClient = useQueryClient();
 
   return useMutation({
-    mutationFn: ({ reviewId, comment }) => reviewApi.addAdminResponse(reviewId, comment),
+    mutationFn: ({ reviewId, comment }) =>
+      reviewApi.addAdminResponse(reviewId, comment),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: REVIEW_KEYS.all });
     },

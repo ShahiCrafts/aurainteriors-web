@@ -1,12 +1,6 @@
 import { useParams, Link, useSearchParams } from "react-router-dom";
 import { useEffect, useState, useRef } from "react";
-import {
-  Check,
-  Package,
-  MessageSquare,
-  HelpCircle,
-  Mail,
-} from "lucide-react";
+import { Check, Package, MessageSquare, HelpCircle, Mail } from "lucide-react";
 import Navbar from "../../layouts/customer/Navbar";
 import Footer from "../../layouts/customer/Footer";
 import { useTrackOrder } from "../../hooks/order/useOrderTan";
@@ -57,7 +51,11 @@ export default function OrderConfirmationPage() {
   // Format date helper
   const formatDate = (dateString) => {
     if (!dateString) return "N/A";
-    return formatDateShared(dateString, { year: "numeric", month: "short", day: "numeric" });
+    return formatDateShared(dateString, {
+      year: "numeric",
+      month: "short",
+      day: "numeric",
+    });
   };
 
   // Calculate estimated delivery (10 days from the order date). The
@@ -68,7 +66,11 @@ export default function OrderConfirmationPage() {
     if (!order?.createdAt) return "N/A";
     const deliveryDate = new Date(order.createdAt);
     deliveryDate.setDate(deliveryDate.getDate() + 10);
-    return formatDateShared(deliveryDate, { year: "numeric", month: "short", day: "numeric" });
+    return formatDateShared(deliveryDate, {
+      year: "numeric",
+      month: "short",
+      day: "numeric",
+    });
   };
 
   const orderDate = formatDate(order?.createdAt);
@@ -78,7 +80,9 @@ export default function OrderConfirmationPage() {
   // customer tracked with (query param), and no name at all.
   const customerEmail = email || "your email address";
   const customerName = "Guest Customer";
-  const invoiceNo = orderId ? `INV-${String(orderId).slice(-8).toUpperCase()}` : "N/A";
+  const invoiceNo = orderId
+    ? `INV-${String(orderId).slice(-8).toUpperCase()}`
+    : "N/A";
 
   return (
     <>
@@ -127,7 +131,8 @@ export default function OrderConfirmationPage() {
                           className="h-6 w-auto object-contain self-start"
                         />
                         <p className="text-[15px] text-neutral-700 leading-relaxed max-w-[220px]">
-                          Aura Interiors Pvt. Ltd.<br />
+                          Aura Interiors Pvt. Ltd.
+                          <br />
                           Lalitpur 44600, Nepal
                         </p>
                       </div>
@@ -192,13 +197,17 @@ export default function OrderConfirmationPage() {
                         <p className="text-[12px] text-neutral-500 uppercase tracking-wider font-semibold mb-1">
                           Date Issued
                         </p>
-                        <p className="font-bold text-[#1A1714] text-[15px] leading-snug">{orderDate}</p>
+                        <p className="font-bold text-[#1A1714] text-[15px] leading-snug">
+                          {orderDate}
+                        </p>
                       </div>
                       <div>
                         <p className="text-[12px] text-neutral-500 uppercase tracking-wider font-semibold mb-1">
                           Est. Delivery
                         </p>
-                        <p className="font-bold text-[#1A1714] text-[15px] leading-snug">{estimatedDelivery}</p>
+                        <p className="font-bold text-[#1A1714] text-[15px] leading-snug">
+                          {estimatedDelivery}
+                        </p>
                       </div>
                     </div>
                   </div>
@@ -292,7 +301,6 @@ export default function OrderConfirmationPage() {
                       </span>
                     </div>
                   </div>
-
                 </div>
               )}
 

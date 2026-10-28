@@ -24,7 +24,6 @@ export const DISCOUNT_KEYS = {
 // as applied with stale terms.
 const discountListKey = () => [...DISCOUNT_KEYS.all(), "list"];
 
-
 export const useDiscounts = (params = {}) => {
   return useQuery({
     queryKey: DISCOUNT_KEYS.list(params),
@@ -119,4 +118,5 @@ export const useClearAppliedDiscount = () => {
   };
 };
 
-export const usePreviewDiscount = () => useMutation({ mutationFn: discountApi.preview });
+export const usePreviewDiscount = () =>
+  useMutation({ mutationFn: discountApi.preview });

@@ -27,7 +27,12 @@ vi.mock("../../../src/hooks/product/useProductTan", () => ({
         data: {
           data: {
             products: [],
-            pagination: { total: TOTALS[params.status] ?? 0, pages: 1, page: 1, limit: 1 },
+            pagination: {
+              total: TOTALS[params.status] ?? 0,
+              pages: 1,
+              page: 1,
+              limit: 1,
+            },
           },
         },
         isLoading: false,
@@ -108,15 +113,14 @@ describe("Admin Products server-side pagination (FE-51)", () => {
   it("sends the search text to the server and returns to page 1", async () => {
     render(<Products />);
 
-    fireEvent.change(
-      screen.getByPlaceholderText(/search products by name/i),
-      { target: { value: "Sofa" } }
-    );
+    fireEvent.change(screen.getByPlaceholderText(/search products by name/i), {
+      target: { value: "Sofa" },
+    });
 
     await waitFor(() =>
-      expect(
-        mainCalls().some((c) => c.search === "Sofa" && c.page === 1)
-      ).toBe(true)
+      expect(mainCalls().some((c) => c.search === "Sofa" && c.page === 1)).toBe(
+        true,
+      ),
     );
   });
 
@@ -127,14 +131,16 @@ describe("Admin Products server-side pagination (FE-51)", () => {
     // Toolbar order: category, stock, model, status.
     fireEvent.change(selects[0], { target: { value: "cat-1" } });
     await waitFor(() =>
-      expect(mainCalls().some((c) => c.category === "cat-1")).toBe(true)
+      expect(mainCalls().some((c) => c.category === "cat-1")).toBe(true),
     );
 
     fireEvent.change(selects[3], { target: { value: "active" } });
     await waitFor(() =>
       expect(
-        mainCalls().some((c) => c.category === "cat-1" && c.status === "active")
-      ).toBe(true)
+        mainCalls().some(
+          (c) => c.category === "cat-1" && c.status === "active",
+        ),
+      ).toBe(true),
     );
   });
 
@@ -149,7 +155,7 @@ describe("Admin Products server-side pagination (FE-51)", () => {
 
     fireEvent.click(screen.getByRole("button", { name: "2" }));
     await waitFor(() =>
-      expect(mainCalls().some((c) => c.page === 2)).toBe(true)
+      expect(mainCalls().some((c) => c.page === 2)).toBe(true),
     );
   });
 
@@ -157,10 +163,10 @@ describe("Admin Products server-side pagination (FE-51)", () => {
     render(<Products />);
 
     expect(
-      screen.getByRole("option", { name: /in stock \(this page\)/i })
+      screen.getByRole("option", { name: /in stock \(this page\)/i }),
     ).toBeInTheDocument();
     expect(
-      screen.getByRole("option", { name: /has 3d model \(this page\)/i })
+      screen.getByRole("option", { name: /has 3d model \(this page\)/i }),
     ).toBeInTheDocument();
   });
 });

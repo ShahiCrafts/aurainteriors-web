@@ -3,12 +3,21 @@ import { motion, AnimatePresence } from "framer-motion";
 import { X, Star } from "lucide-react";
 import { toast } from "../../lib/toast";
 import Dialog from "../common/Dialog";
-import { useCreateReview, useUpdateReview } from "../../hooks/review/useReviewTan";
+import {
+  useCreateReview,
+  useUpdateReview,
+} from "../../hooks/review/useReviewTan";
 import { useForm } from "react-hook-form";
 import { yupResolver } from "@hookform/resolvers/yup";
 import { reviewSchema } from "../../utils/validationSchemas";
 
-export default function ReviewModal({ isOpen, onClose, productId, existingReview, productName }) {
+export default function ReviewModal({
+  isOpen,
+  onClose,
+  productId,
+  existingReview,
+  productName,
+}) {
   const [hoveredRating, setHoveredRating] = useState(0);
 
   const {
@@ -66,7 +75,11 @@ export default function ReviewModal({ isOpen, onClose, productId, existingReview
 
     const options = {
       onSuccess: () => {
-        toast.success(isEditing ? "Review updated successfully" : "Review submitted successfully");
+        toast.success(
+          isEditing
+            ? "Review updated successfully"
+            : "Review submitted successfully",
+        );
         onClose();
       },
       onError: (err) => {
@@ -75,7 +88,10 @@ export default function ReviewModal({ isOpen, onClose, productId, existingReview
     };
 
     if (isEditing) {
-      updateReview({ productId, reviewId: existingReview._id, data: payload }, options);
+      updateReview(
+        { productId, reviewId: existingReview._id, data: payload },
+        options,
+      );
     } else {
       createReview({ productId, data: payload }, options);
     }
@@ -94,126 +110,174 @@ export default function ReviewModal({ isOpen, onClose, productId, existingReview
           exit={{ opacity: 0, scale: 0.95, y: 20 }}
           className="w-full max-w-[480px]"
         >
-         <Dialog open={isOpen} onClose={onClose} labelledBy="review-modal-title" className="bg-white w-full rounded-xl overflow-hidden relative shadow-[0_20px_60px_rgba(0,0,0,0.3)] font-dm-sans">
-          {/* Close Button */}
-          <button
-            onClick={onClose}
-            aria-label="Close dialog"
-            className="absolute top-4 right-4 z-20 w-8 h-8 flex items-center justify-center bg-gray-100 text-gray-600 hover:bg-black hover:text-white transition-all rounded-lg border-none cursor-pointer"
+          <Dialog
+            open={isOpen}
+            onClose={onClose}
+            labelledBy="review-modal-title"
+            className="bg-white w-full rounded-xl overflow-hidden relative shadow-[0_20px_60px_rgba(0,0,0,0.3)] font-dm-sans"
           >
-            <X size={18} />
-          </button>
+            {/* Close Button */}
+            <button
+              onClick={onClose}
+              aria-label="Close dialog"
+              className="absolute top-4 right-4 z-20 w-8 h-8 flex items-center justify-center bg-gray-100 text-gray-600 hover:bg-black hover:text-white transition-all rounded-lg border-none cursor-pointer"
+            >
+              <X size={18} />
+            </button>
 
-          {/* Form Content */}
-          <div className="w-full p-8 md:p-10 flex flex-col justify-center bg-white overflow-y-auto max-h-[90vh]">
-            <div className="w-full">
-              <div className="mb-6">
-                <h3 id="review-modal-title" className="text-[24px] font-bold text-[#1A1714] mb-1">
-                  {isEditing ? "Update Your Review" : "Write a Review"}
-                </h3>
-                <p className="text-[#64748B] text-[14px]">
-                  {productName ? `Reviewing: ${productName}` : "Share your honest experience with this piece."}
-                </p>
-              </div>
+            {/* Form Content */}
+            <div className="w-full p-8 md:p-10 flex flex-col justify-center bg-white overflow-y-auto max-h-[90vh]">
+              <div className="w-full">
+                <div className="mb-6">
+                  <h3
+                    id="review-modal-title"
+                    className="text-[24px] font-bold text-[#1A1714] mb-1"
+                  >
+                    {isEditing ? "Update Your Review" : "Write a Review"}
+                  </h3>
+                  <p className="text-[#64748B] text-[14px]">
+                    {productName
+                      ? `Reviewing: ${productName}`
+                      : "Share your honest experience with this piece."}
+                  </p>
+                </div>
 
-              <form onSubmit={handleSubmit(onSubmit)} className="flex flex-col gap-5">
-                {/* Star Rating */}
-                <div>
-                  <span className="text-[14px] font-medium text-[#1A1714] mb-2 block">Rating</span>
-                  <div className="flex items-center gap-1.5" role="radiogroup" aria-label="Rating">
-                    {[1, 2, 3, 4, 5].map((star) => (
-                      <button
-                        key={star}
-                        type="button"
-                        role="radio"
-                        aria-checked={rating === star}
-                        aria-label={`${star} star${star > 1 ? "s" : ""}`}
-                        tabIndex={star === (rating || 1) ? 0 : -1}
-                        onMouseEnter={() => setHoveredRating(star)}
-                        onMouseLeave={() => setHoveredRating(0)}
-                        onClick={() => handleStarClick(star)}
-                        onKeyDown={(e) => {
-                          if (e.key === "ArrowRight" || e.key === "ArrowUp") { e.preventDefault(); handleStarClick(Math.min(5, star + 1)); }
-                          if (e.key === "ArrowLeft" || e.key === "ArrowDown") { e.preventDefault(); handleStarClick(Math.max(1, star - 1)); }
-                        }}
-                        className="focus:outline-none focus-visible:ring-2 focus-visible:ring-[#F27318] rounded-full transition-transform hover:scale-110 bg-transparent border-none cursor-pointer p-0"
-                      >
-                        <Star
-                          size={28}
-                          className={`${
-                            star <= (hoveredRating || rating)
-                              ? "fill-[#F27318] text-[#F27318]"
-                              : "fill-black/10 text-transparent"
-                          } transition-colors`}
-                        />
-                      </button>
-                    ))}
-                    {(hoveredRating || rating) > 0 && (
-                      <span className="text-[13px] font-bold text-[#F27318] ml-2">
-                        {ratingLabels[hoveredRating || rating]}
-                      </span>
+                <form
+                  onSubmit={handleSubmit(onSubmit)}
+                  className="flex flex-col gap-5"
+                >
+                  {/* Star Rating */}
+                  <div>
+                    <span className="text-[14px] font-medium text-[#1A1714] mb-2 block">
+                      Rating
+                    </span>
+                    <div
+                      className="flex items-center gap-1.5"
+                      role="radiogroup"
+                      aria-label="Rating"
+                    >
+                      {[1, 2, 3, 4, 5].map((star) => (
+                        <button
+                          key={star}
+                          type="button"
+                          role="radio"
+                          aria-checked={rating === star}
+                          aria-label={`${star} star${star > 1 ? "s" : ""}`}
+                          tabIndex={star === (rating || 1) ? 0 : -1}
+                          onMouseEnter={() => setHoveredRating(star)}
+                          onMouseLeave={() => setHoveredRating(0)}
+                          onClick={() => handleStarClick(star)}
+                          onKeyDown={(e) => {
+                            if (e.key === "ArrowRight" || e.key === "ArrowUp") {
+                              e.preventDefault();
+                              handleStarClick(Math.min(5, star + 1));
+                            }
+                            if (
+                              e.key === "ArrowLeft" ||
+                              e.key === "ArrowDown"
+                            ) {
+                              e.preventDefault();
+                              handleStarClick(Math.max(1, star - 1));
+                            }
+                          }}
+                          className="focus:outline-none focus-visible:ring-2 focus-visible:ring-[#F27318] rounded-full transition-transform hover:scale-110 bg-transparent border-none cursor-pointer p-0"
+                        >
+                          <Star
+                            size={28}
+                            className={`${
+                              star <= (hoveredRating || rating)
+                                ? "fill-[#F27318] text-[#F27318]"
+                                : "fill-black/10 text-transparent"
+                            } transition-colors`}
+                          />
+                        </button>
+                      ))}
+                      {(hoveredRating || rating) > 0 && (
+                        <span className="text-[13px] font-bold text-[#F27318] ml-2">
+                          {ratingLabels[hoveredRating || rating]}
+                        </span>
+                      )}
+                    </div>
+                    {errors.rating && (
+                      <p className="mt-1 text-[12px] text-red-500 font-medium">
+                        {errors.rating.message}
+                      </p>
                     )}
                   </div>
-                  {errors.rating && (
-                    <p className="mt-1 text-[12px] text-red-500 font-medium">{errors.rating.message}</p>
-                  )}
-                </div>
 
-                {/* Title */}
-                <div className="flex flex-col gap-1.5">
-                  <label htmlFor="review-modal-title-input" className="text-[14px] font-medium text-[#1A1714]">Review Title (Optional)</label>
-                  <input
-                    id="review-modal-title-input"
-                    type="text"
-                    {...register("title")}
-                    placeholder="Summarize your experience"
-                    maxLength={100}
-                    className="w-full h-11 px-4 border border-[#E2E8F0] rounded-lg focus:border-[#F27318] focus:ring-1 focus:ring-[#F27318] outline-none transition-all text-[15px] font-dm-sans"
-                  />
-                  {errors.title && (
-                    <p className="text-[12px] text-red-500 font-medium">{errors.title.message}</p>
-                  )}
-                  <p className="text-[11px] text-black/30 text-right font-medium">{(title?.length || 0)}/100</p>
-                </div>
+                  {/* Title */}
+                  <div className="flex flex-col gap-1.5">
+                    <label
+                      htmlFor="review-modal-title-input"
+                      className="text-[14px] font-medium text-[#1A1714]"
+                    >
+                      Review Title (Optional)
+                    </label>
+                    <input
+                      id="review-modal-title-input"
+                      type="text"
+                      {...register("title")}
+                      placeholder="Summarize your experience"
+                      maxLength={100}
+                      className="w-full h-11 px-4 border border-[#E2E8F0] rounded-lg focus:border-[#F27318] focus:ring-1 focus:ring-[#F27318] outline-none transition-all text-[15px] font-dm-sans"
+                    />
+                    {errors.title && (
+                      <p className="text-[12px] text-red-500 font-medium">
+                        {errors.title.message}
+                      </p>
+                    )}
+                    <p className="text-[11px] text-black/30 text-right font-medium">
+                      {title?.length || 0}/100
+                    </p>
+                  </div>
 
-                {/* Comment */}
-                <div className="flex flex-col gap-1.5">
-                  <label htmlFor="review-modal-comment" className="text-[14px] font-medium text-[#1A1714]">Your Review *</label>
-                  <textarea
-                    id="review-modal-comment"
-                    {...register("comment")}
-                    placeholder="Share your experience with this piece. What did you love?"
-                    rows={4}
-                    maxLength={1000}
-                    className="w-full px-4 py-3 border border-[#E2E8F0] rounded-lg focus:border-[#F27318] focus:ring-1 focus:ring-[#F27318] outline-none transition-all text-[15px] resize-none font-dm-sans"
-                  />
-                  {errors.comment && (
-                    <p className="text-[12px] text-red-500 font-medium">{errors.comment.message}</p>
-                  )}
-                  <p className="text-[11px] text-black/30 text-right font-medium">{(comment?.length || 0)}/1000</p>
-                </div>
+                  {/* Comment */}
+                  <div className="flex flex-col gap-1.5">
+                    <label
+                      htmlFor="review-modal-comment"
+                      className="text-[14px] font-medium text-[#1A1714]"
+                    >
+                      Your Review *
+                    </label>
+                    <textarea
+                      id="review-modal-comment"
+                      {...register("comment")}
+                      placeholder="Share your experience with this piece. What did you love?"
+                      rows={4}
+                      maxLength={1000}
+                      className="w-full px-4 py-3 border border-[#E2E8F0] rounded-lg focus:border-[#F27318] focus:ring-1 focus:ring-[#F27318] outline-none transition-all text-[15px] resize-none font-dm-sans"
+                    />
+                    {errors.comment && (
+                      <p className="text-[12px] text-red-500 font-medium">
+                        {errors.comment.message}
+                      </p>
+                    )}
+                    <p className="text-[11px] text-black/30 text-right font-medium">
+                      {comment?.length || 0}/1000
+                    </p>
+                  </div>
 
-                {/* Actions */}
-                <div className="flex gap-3 pt-2">
-                  <button
-                    type="button"
-                    onClick={onClose}
-                    className="flex-1 h-11 border border-[#E2E8F0] rounded-lg text-[#64748B] font-semibold text-[14px] hover:bg-gray-50 transition-all cursor-pointer bg-transparent"
-                  >
-                    Cancel
-                  </button>
-                  <button
-                    type="submit"
-                    disabled={isPending}
-                    className="flex-1 h-11 bg-[#F27318] hover:bg-[#D9620E] text-white font-semibold text-[14px] rounded-lg transition-all disabled:opacity-50 disabled:cursor-not-allowed border-none cursor-pointer flex items-center justify-center gap-2"
-                  >
-                    {isEditing ? "Update Review" : "Submit Review"}
-                  </button>
-                </div>
-              </form>
+                  {/* Actions */}
+                  <div className="flex gap-3 pt-2">
+                    <button
+                      type="button"
+                      onClick={onClose}
+                      className="flex-1 h-11 border border-[#E2E8F0] rounded-lg text-[#64748B] font-semibold text-[14px] hover:bg-gray-50 transition-all cursor-pointer bg-transparent"
+                    >
+                      Cancel
+                    </button>
+                    <button
+                      type="submit"
+                      disabled={isPending}
+                      className="flex-1 h-11 bg-[#F27318] hover:bg-[#D9620E] text-white font-semibold text-[14px] rounded-lg transition-all disabled:opacity-50 disabled:cursor-not-allowed border-none cursor-pointer flex items-center justify-center gap-2"
+                    >
+                      {isEditing ? "Update Review" : "Submit Review"}
+                    </button>
+                  </div>
+                </form>
+              </div>
             </div>
-          </div>
-         </Dialog>
+          </Dialog>
         </motion.div>
       </div>
     </AnimatePresence>

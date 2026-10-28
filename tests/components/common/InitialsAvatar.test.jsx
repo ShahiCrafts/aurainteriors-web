@@ -61,7 +61,7 @@ describe("FE-06 getInitials", () => {
 describe("FE-06 getDisplayName", () => {
   it("prefers firstName + lastName, then name, then the fallback", () => {
     expect(getDisplayName({ firstName: "Aisha", lastName: "Sharma" })).toBe(
-      "Aisha Sharma"
+      "Aisha Sharma",
     );
     expect(getDisplayName({ name: "Editorial Team" })).toBe("Editorial Team");
     expect(getDisplayName(null, "Author")).toBe("Author");
@@ -100,7 +100,11 @@ describe("FE-06 InitialsAvatar rendering", () => {
 describe("FE-06 getAvatarUrl — never builds a URL from a name", () => {
   it("returns the real validated avatar URL for a user WITH an avatar", () => {
     expect(
-      getAvatarUrl({ firstName: "Aisha", lastName: "Sharma", avatar: REAL_AVATAR })
+      getAvatarUrl({
+        firstName: "Aisha",
+        lastName: "Sharma",
+        avatar: REAL_AVATAR,
+      }),
     ).toBe(REAL_AVATAR);
   });
 
@@ -131,7 +135,7 @@ describe("FE-06 UserAvatar", () => {
       <UserAvatar
         user={{ firstName: "Aisha", lastName: "Sharma", avatar: REAL_AVATAR }}
         alt="Aisha Sharma"
-      />
+      />,
     );
     const img = container.querySelector("img");
     expect(img).not.toBeNull();
@@ -140,7 +144,7 @@ describe("FE-06 UserAvatar", () => {
 
   it("user WITHOUT an avatar → initials, and NO <img> at all", () => {
     const { container } = render(
-      <UserAvatar user={{ firstName: "Aisha", lastName: "Sharma" }} />
+      <UserAvatar user={{ firstName: "Aisha", lastName: "Sharma" }} />,
     );
     expect(screen.getByText("AS")).toBeInTheDocument();
     expect(container.querySelector("img")).toBeNull();
@@ -162,7 +166,7 @@ describe("FE-06 UserAvatar", () => {
     const { container } = render(
       <UserAvatar
         user={{ firstName: "Aisha", lastName: "Sharma", avatar: REAL_AVATAR }}
-      />
+      />,
     );
     const img = container.querySelector("img");
     expect(img).not.toBeNull();
@@ -173,7 +177,7 @@ describe("FE-06 UserAvatar", () => {
 
   it("author-shaped user ({ name, avatar }) works for blog bylines", () => {
     const { container } = render(
-      <UserAvatar user={{ name: "Editorial Team", avatar: REAL_AVATAR }} />
+      <UserAvatar user={{ name: "Editorial Team", avatar: REAL_AVATAR }} />,
     );
     expect(container.querySelector("img")).toHaveAttribute("src", REAL_AVATAR);
   });

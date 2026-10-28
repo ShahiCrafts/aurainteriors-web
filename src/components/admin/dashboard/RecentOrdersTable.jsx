@@ -51,8 +51,8 @@ export default function RecentOrdersTable({ orders = [] }) {
                 order.orderStatus === "delivered"
                   ? "bg-emerald-50 text-emerald-700"
                   : order.orderStatus === "cancelled"
-                  ? "bg-red-50 text-red-600"
-                  : "bg-amber-50 text-amber-700";
+                    ? "bg-red-50 text-red-600"
+                    : "bg-amber-50 text-amber-700";
 
               return (
                 <tr
@@ -62,7 +62,7 @@ export default function RecentOrdersTable({ orders = [] }) {
                   {/* Order ID */}
                   <td className="px-6 py-4">
                     <span className="inline-block font-mono text-xs text-gray-600 bg-gray-100 px-2 py-1 rounded-md">
-                      #{(order.orderId || '').slice(-6)}
+                      #{(order.orderId || "").slice(-6)}
                     </span>
                   </td>
 

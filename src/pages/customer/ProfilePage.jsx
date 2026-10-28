@@ -23,7 +23,9 @@ import { UserAvatar } from "../../components/common/InitialsAvatar";
 
 export default function ProfilePage() {
   const queryClient = useQueryClient();
-  const { user, logout } = useAuthStore(useShallow((state) => ({ user: state.user, logout: state.logout })));
+  const { user, logout } = useAuthStore(
+    useShallow((state) => ({ user: state.user, logout: state.logout })),
+  );
   const location = useLocation();
   const [activeTab, setActiveTab] = useState(
     location.state?.activeTab || "personal-information",
@@ -57,7 +59,6 @@ export default function ProfilePage() {
       <main className="h-[calc(100vh-138px)] bg-neutral-100 font-dm-sans overflow-hidden">
         <div className="w-full h-full">
           <div className="flex flex-col lg:flex-row items-stretch gap-6 h-full">
-
             {/* Left Column: Sidebar Card — truly pinned, no sticky, no scroll */}
             <aside className="w-full lg:w-[320px] xl:w-[380px] shrink-0 bg-white h-full overflow-hidden flex flex-col p-6 lg:p-8 space-y-8">
               {/* Account Summary */}
@@ -171,7 +172,6 @@ export default function ProfilePage() {
                 </motion.div>
               </AnimatePresence>
             </div>
-
           </div>
         </div>
       </main>

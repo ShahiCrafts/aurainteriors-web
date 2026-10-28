@@ -78,7 +78,7 @@ export default function Promotions() {
     isOpen: false,
     title: "",
     message: "",
-    onConfirm: () => { },
+    onConfirm: () => {},
     type: "danger",
     isLoading: false,
   });
@@ -208,7 +208,7 @@ export default function Promotions() {
           onError: (err) => {
             toast.error(formatError(err, "Something went wrong"));
           },
-        }
+        },
       );
     } else {
       createMutation.mutate(formData, {
@@ -238,7 +238,11 @@ export default function Promotions() {
             // and reports the real sent/failed counts (or the failure).
             // Inline 200 bodies keep showing the server message.
             void reportSendOutcome(result, { kind: "promotion", toast });
-            setConfirmModal({ ...confirmModal, isOpen: false, isLoading: false });
+            setConfirmModal({
+              ...confirmModal,
+              isOpen: false,
+              isLoading: false,
+            });
           },
           onError: (err) => {
             toast.error(formatError(err, "Failed to send promotion"));
@@ -260,7 +264,11 @@ export default function Promotions() {
         cancelMutation.mutate(id, {
           onSuccess: () => {
             toast.success("Promotion cancelled");
-            setConfirmModal({ ...confirmModal, isOpen: false, isLoading: false });
+            setConfirmModal({
+              ...confirmModal,
+              isOpen: false,
+              isLoading: false,
+            });
           },
           onError: (err) => {
             toast.error(formatError(err, "Failed to cancel promotion"));
@@ -282,7 +290,11 @@ export default function Promotions() {
         deleteMutation.mutate(id, {
           onSuccess: () => {
             toast.success("Promotion deleted successfully");
-            setConfirmModal({ ...confirmModal, isOpen: false, isLoading: false });
+            setConfirmModal({
+              ...confirmModal,
+              isOpen: false,
+              isLoading: false,
+            });
           },
           onError: (err) => {
             toast.error(formatError(err, "Failed to delete promotion"));
@@ -359,7 +371,7 @@ export default function Promotions() {
   };
 
   const filteredPromotions = promotions.filter((p) =>
-    (p.title || '').toLowerCase().includes(searchQuery.toLowerCase())
+    (p.title || "").toLowerCase().includes(searchQuery.toLowerCase()),
   );
 
   return (
@@ -562,23 +574,23 @@ export default function Promotions() {
                         )}
                         {(promotion.status === "draft" ||
                           promotion.status === "scheduled") && (
-                            <>
-                              <button
-                                onClick={() => handleSendPromotion(promotion._id)}
-                                className="p-2 text-teal-600 hover:bg-teal-50 rounded-lg transition-colors"
-                                title="Send Now"
-                              >
-                                <Send className="w-4 h-4" />
-                              </button>
-                              <button
-                                onClick={() => handleOpenModal(promotion)}
-                                className="p-2 text-gray-500 hover:bg-gray-100 rounded-lg transition-colors"
-                                title="Edit"
-                              >
-                                <Edit className="w-4 h-4" />
-                              </button>
-                            </>
-                          )}
+                          <>
+                            <button
+                              onClick={() => handleSendPromotion(promotion._id)}
+                              className="p-2 text-teal-600 hover:bg-teal-50 rounded-lg transition-colors"
+                              title="Send Now"
+                            >
+                              <Send className="w-4 h-4" />
+                            </button>
+                            <button
+                              onClick={() => handleOpenModal(promotion)}
+                              className="p-2 text-gray-500 hover:bg-gray-100 rounded-lg transition-colors"
+                              title="Edit"
+                            >
+                              <Edit className="w-4 h-4" />
+                            </button>
+                          </>
+                        )}
                         {promotion.status !== "sending" && (
                           <button
                             onClick={() => handleDeletePromotion(promotion._id)}
@@ -704,14 +716,14 @@ export default function Promotions() {
                         <input
                           type="checkbox"
                           checked={promotionForm.targetCategories.includes(
-                            cat.value
+                            cat.value,
                           )}
                           onChange={(e) => {
                             const updated = e.target.checked
                               ? [...promotionForm.targetCategories, cat.value]
                               : promotionForm.targetCategories.filter(
-                                (c) => c !== cat.value
-                              );
+                                  (c) => c !== cat.value,
+                                );
                             setPromotionForm({
                               ...promotionForm,
                               targetCategories: updated,
@@ -827,19 +839,24 @@ function Modal({ title, children, onClose }) {
         onClick={(e) => e.stopPropagation()}
         className="w-full max-w-lg"
       >
-       <Dialog open onClose={onClose} label={title} className="bg-white rounded-xl max-w-lg w-full p-6 border border-gray-100 shadow-2xl">
-        <div className="flex items-center justify-between mb-6">
-          <h3 className="text-lg font-bold text-gray-900">{title}</h3>
-          <button
-            onClick={onClose}
-            aria-label="Close dialog"
-            className="p-2 hover:bg-gray-100 rounded-lg transition-colors"
-          >
-            <X className="w-5 h-5 text-gray-400" />
-          </button>
-        </div>
-        {children}
-       </Dialog>
+        <Dialog
+          open
+          onClose={onClose}
+          label={title}
+          className="bg-white rounded-xl max-w-lg w-full p-6 border border-gray-100 shadow-2xl"
+        >
+          <div className="flex items-center justify-between mb-6">
+            <h3 className="text-lg font-bold text-gray-900">{title}</h3>
+            <button
+              onClick={onClose}
+              aria-label="Close dialog"
+              className="p-2 hover:bg-gray-100 rounded-lg transition-colors"
+            >
+              <X className="w-5 h-5 text-gray-400" />
+            </button>
+          </div>
+          {children}
+        </Dialog>
       </motion.div>
     </motion.div>
   );
@@ -853,7 +870,9 @@ function AnalyticsModal({ promotionId, onClose }) {
     <Modal title="Campaign Insights" onClose={onClose}>
       {isLoading ? (
         <div className="space-y-8" aria-busy="true">
-          <span role="status" className="sr-only">Loading insights…</span>
+          <span role="status" className="sr-only">
+            Loading insights…
+          </span>
           <div className="grid grid-cols-2 gap-4" aria-hidden="true">
             <Skeleton className="h-24 w-full rounded-xl" />
             <Skeleton className="h-24 w-full rounded-xl" />

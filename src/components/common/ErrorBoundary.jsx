@@ -34,10 +34,14 @@ export default class ErrorBoundary extends Component {
   render() {
     if (this.state.hasError) {
       return (
-        <div role="alert" className="flex min-h-[200px] flex-col items-center justify-center gap-4 p-8 text-center">
+        <div
+          role="alert"
+          className="flex min-h-[200px] flex-col items-center justify-center gap-4 p-8 text-center"
+        >
           <h2 className="text-lg font-semibold">Something went wrong</h2>
           <p className="text-sm text-gray-500">
-            This part of the page could not be displayed. Reloading usually fixes it.
+            This part of the page could not be displayed. Reloading usually
+            fixes it.
           </p>
           <div className="flex items-center gap-3">
             <button
@@ -47,7 +51,10 @@ export default class ErrorBoundary extends Component {
             >
               Reload
             </button>
-            <a href="/" className="rounded-lg border border-gray-300 px-4 py-2 text-sm font-semibold">
+            <a
+              href="/"
+              className="rounded-lg border border-gray-300 px-4 py-2 text-sm font-semibold"
+            >
               Go to Home
             </a>
           </div>

@@ -1,5 +1,12 @@
 import { describe, it, expect, vi, beforeEach } from "vitest";
-import { render, screen, fireEvent, waitFor, within, act } from "@testing-library/react";
+import {
+  render,
+  screen,
+  fireEvent,
+  waitFor,
+  within,
+  act,
+} from "@testing-library/react";
 
 // FE-37(c): the admin delete controls in Contacts, Reviews and
 // KnowledgeBase had NO pending/disable guard at all — a double-click
@@ -49,7 +56,11 @@ vi.mock("../../../src/hooks/review/useReviewTan", () => ({
         reviews: [
           {
             _id: "review-1",
-            user: { firstName: "Jane", lastName: "Buyer", email: "jane@example.com" },
+            user: {
+              firstName: "Jane",
+              lastName: "Buyer",
+              email: "jane@example.com",
+            },
             product: { name: "Cloud Sofa" },
             rating: 5,
             title: "Great",
@@ -66,7 +77,10 @@ vi.mock("../../../src/hooks/review/useReviewTan", () => ({
   }),
   useAddAdminResponse: () => ({ mutateAsync: vi.fn(), isPending: false }),
   useToggleApproval: () => ({ mutateAsync: vi.fn(), isPending: false }),
-  useAdminDeleteReview: () => ({ mutateAsync: h.deleteReview, isPending: false }),
+  useAdminDeleteReview: () => ({
+    mutateAsync: h.deleteReview,
+    isPending: false,
+  }),
 }));
 
 vi.mock("../../../src/api/documentApi.js", () => ({
@@ -83,7 +97,10 @@ import { listDocuments, deleteDocument } from "../../../src/api/documentApi.js";
 
 function deferred() {
   let resolve, reject;
-  const promise = new Promise((res, rej) => { resolve = res; reject = rej; });
+  const promise = new Promise((res, rej) => {
+    resolve = res;
+    reject = rej;
+  });
   return { promise, resolve, reject };
 }
 
@@ -113,7 +130,9 @@ describe("admin delete double-submit protection (FE-37)", () => {
     expect(h.deleteContact).toHaveBeenCalledTimes(1);
     expect(deleteBtn).toBeDisabled();
 
-    await act(async () => { d.resolve(); });
+    await act(async () => {
+      d.resolve();
+    });
   });
 
   it("Reviews: double-clicking 'Delete Permanently' fires exactly one delete mutation and disables while pending", async () => {
@@ -123,14 +142,18 @@ describe("admin delete double-submit protection (FE-37)", () => {
     await screen.findByText("Cloud Sofa");
 
     clickRowTrash("Cloud Sofa");
-    const deleteBtn = await screen.findByRole("button", { name: "Delete Permanently" });
+    const deleteBtn = await screen.findByRole("button", {
+      name: "Delete Permanently",
+    });
     fireEvent.click(deleteBtn);
     fireEvent.click(deleteBtn);
 
     expect(h.deleteReview).toHaveBeenCalledTimes(1);
     expect(deleteBtn).toBeDisabled();
 
-    await act(async () => { d.resolve(); });
+    await act(async () => {
+      d.resolve();
+    });
   });
 
   it("KnowledgeBase: double-clicking a document's delete fires exactly one deleteDocument call and disables while pending", async () => {
@@ -161,7 +184,9 @@ describe("admin delete double-submit protection (FE-37)", () => {
     expect(deleteDocument).toHaveBeenCalledTimes(1);
     expect(deleteBtn).toBeDisabled();
 
-    await act(async () => { d.resolve({ status: "success" }); });
+    await act(async () => {
+      d.resolve({ status: "success" });
+    });
     await waitFor(() => expect(deleteBtn).not.toBeDisabled());
   });
 });

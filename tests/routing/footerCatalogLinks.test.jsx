@@ -19,16 +19,19 @@ vi.mock("../../src/components/sections/BrandMarquee.jsx", () => ({
 
 import Footer from "../../src/layouts/customer/Footer";
 
-const hrefOf = (name) => screen.getByRole("link", { name }).getAttribute("href");
+const hrefOf = (name) =>
+  screen.getByRole("link", { name }).getAttribute("href");
 
 describe("Phase 8 — footer category links point at canonical seed categories", () => {
   it("maps the merchandising labels onto real seed category slugs", () => {
     render(
       <MemoryRouter>
         <Footer />
-      </MemoryRouter>
+      </MemoryRouter>,
     );
-    expect(hrefOf("Sofas & Couches")).toBe("/shop?categories=upholstered-sofas");
+    expect(hrefOf("Sofas & Couches")).toBe(
+      "/shop?categories=upholstered-sofas",
+    );
     expect(hrefOf("King Size Beds")).toBe("/shop?categories=bed-frames");
     expect(hrefOf("Dining Table Sets")).toBe("/shop?categories=dining");
     expect(hrefOf("Wardrobes")).toBe("/shop?categories=bedroom-storage");
@@ -38,10 +41,17 @@ describe("Phase 8 — footer category links point at canonical seed categories",
     const { container } = render(
       <MemoryRouter>
         <Footer />
-      </MemoryRouter>
+      </MemoryRouter>,
     );
-    const hrefs = [...container.querySelectorAll("a")].map((a) => a.getAttribute("href"));
-    for (const dead of ["/shop?categories=sofas", "/shop?categories=beds", "/shop?categories=wardrobes", "/shop?categories=tv-units"]) {
+    const hrefs = [...container.querySelectorAll("a")].map((a) =>
+      a.getAttribute("href"),
+    );
+    for (const dead of [
+      "/shop?categories=sofas",
+      "/shop?categories=beds",
+      "/shop?categories=wardrobes",
+      "/shop?categories=tv-units",
+    ]) {
       expect(hrefs).not.toContain(dead);
     }
     expect(screen.queryByRole("link", { name: "TV Units" })).toBeNull();

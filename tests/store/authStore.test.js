@@ -21,7 +21,12 @@ vi.mock("../../src/api/index.js", () => ({
   },
 }));
 
-const user = { _id: "user-1", firstName: "Asha", lastName: "Rai", email: "a@example.com" };
+const user = {
+  _id: "user-1",
+  firstName: "Asha",
+  lastName: "Rai",
+  email: "a@example.com",
+};
 
 // Imports the (mocked) api module, lets the scenario configure it, then
 // imports a fresh authStore whose import-time initialize() sees that
@@ -33,8 +38,10 @@ async function importFreshStores(configureApi) {
   const api = (await import("../../src/api/index.js")).default;
   configureApi(api);
   const authStore = (await import("../../src/store/authStore.js")).default;
-  const guestCartStore = (await import("../../src/store/guestCartStore.js")).default;
-  const checkoutStore = (await import("../../src/store/checkoutStore.js")).default;
+  const guestCartStore = (await import("../../src/store/guestCartStore.js"))
+    .default;
+  const checkoutStore = (await import("../../src/store/checkoutStore.js"))
+    .default;
   return { api, authStore, guestCartStore, checkoutStore };
 }
 
@@ -108,12 +115,15 @@ describe("signIn", () => {
 
 describe("logout", () => {
   it("success: POSTs /auth/logout, clears auth state, legacy keys and the guest cart", async () => {
-    const { api, authStore, guestCartStore } = await importFreshStores(noSession);
+    const { api, authStore, guestCartStore } =
+      await importFreshStores(noSession);
     await vi.waitFor(() => expect(authStore.getState().loading).toBe(false));
 
     // Establish an authenticated session and a polluted guest state.
     authStore.getState().signIn(user);
-    guestCartStore.getState().addItem({ _id: "prod-1", name: "Sofa", price: 100 }, 1);
+    guestCartStore
+      .getState()
+      .addItem({ _id: "prod-1", name: "Sofa", price: 100 }, 1);
     expect(guestCartStore.getState().items).toHaveLength(1);
     localStorage.setItem("token", "legacy-token");
     localStorage.setItem("user", JSON.stringify(user));
@@ -148,7 +158,9 @@ describe("logout", () => {
     await vi.waitFor(() => expect(authStore.getState().loading).toBe(false));
 
     authStore.getState().signIn(user, "real-token");
-    guestCartStore.getState().addItem({ _id: "prod-1", name: "Sofa", price: 100 }, 1);
+    guestCartStore
+      .getState()
+      .addItem({ _id: "prod-1", name: "Sofa", price: 100 }, 1);
     checkoutStore.getState().setDiscountCode("SAVE10");
     localStorage.setItem("token", "legacy-token");
     localStorage.setItem("user", JSON.stringify(user));
@@ -177,7 +189,9 @@ describe("logout", () => {
     await vi.waitFor(() => expect(authStore.getState().loading).toBe(false));
 
     authStore.getState().signIn(user, "real-token");
-    guestCartStore.getState().addItem({ _id: "prod-1", name: "Sofa", price: 100 }, 1);
+    guestCartStore
+      .getState()
+      .addItem({ _id: "prod-1", name: "Sofa", price: 100 }, 1);
     localStorage.setItem("token", "legacy-token");
 
     const started = Date.now();

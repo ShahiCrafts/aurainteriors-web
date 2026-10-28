@@ -10,7 +10,11 @@ vi.mock("../../../../src/hooks/chat/useChatTan.js", () => ({
   useResolveChat: vi.fn(),
 }));
 vi.mock("../../../../src/hooks/chat/useChatSocket.js", () => ({
-  default: () => ({ typingStatus: {}, sendTypingIndicator: vi.fn(), broadcastRead: vi.fn() }),
+  default: () => ({
+    typingStatus: {},
+    sendTypingIndicator: vi.fn(),
+    broadcastRead: vi.fn(),
+  }),
 }));
 vi.mock("../../../../src/hooks/notification/useNotificationSocket.js", () => ({
   default: () => ({ socket: null }),
@@ -18,11 +22,21 @@ vi.mock("../../../../src/hooks/notification/useNotificationSocket.js", () => ({
 vi.mock("../../../../src/store/authStore.js", () => ({
   default: () => ({ user: { _id: "admin-1" }, token: "test-token" }),
 }));
-vi.mock("../../../../src/components/chat/ChatMessageList.jsx", () => ({ default: () => null }));
-vi.mock("../../../../src/components/chat/ChatInput.jsx", () => ({ default: () => null }));
-vi.mock("../../../../src/components/chat/TypingIndicator.jsx", () => ({ default: () => null }));
+vi.mock("../../../../src/components/chat/ChatMessageList.jsx", () => ({
+  default: () => null,
+}));
+vi.mock("../../../../src/components/chat/ChatInput.jsx", () => ({
+  default: () => null,
+}));
+vi.mock("../../../../src/components/chat/TypingIndicator.jsx", () => ({
+  default: () => null,
+}));
 
-import { useChatMessages, useMarkMessagesRead, useResolveChat } from "../../../../src/hooks/chat/useChatTan.js";
+import {
+  useChatMessages,
+  useMarkMessagesRead,
+  useResolveChat,
+} from "../../../../src/hooks/chat/useChatTan.js";
 import ChatList from "../../../../src/components/admin/chat/ChatList.jsx";
 import ChatConversation from "../../../../src/components/admin/chat/ChatConversation.jsx";
 
@@ -51,7 +65,7 @@ describe("FE-17 chat guards", () => {
         onStatusFilterChange={vi.fn()}
         onPageChange={vi.fn()}
         currentPage={1}
-      />
+      />,
     );
     expect(screen.getByText("No conversations")).toBeInTheDocument();
   });

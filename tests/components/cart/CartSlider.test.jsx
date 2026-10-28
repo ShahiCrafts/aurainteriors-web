@@ -67,7 +67,7 @@ function renderSlider() {
   return render(
     <MemoryRouter>
       <CartSlider isOpen onClose={vi.fn()} />
-    </MemoryRouter>
+    </MemoryRouter>,
   );
 }
 

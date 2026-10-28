@@ -32,18 +32,20 @@ import ChatMessage from "../../src/components/chat/ChatMessage.jsx";
 
 // Cases transcribed verbatim from audit/fe/poc/markdown-url-test.mjs.
 const CASES = {
-  "js-link":        "[click](javascript:alert(1))",
-  "js-link-case":   "[click](JaVaScRiPt:alert(1))",
+  "js-link": "[click](javascript:alert(1))",
+  "js-link-case": "[click](JaVaScRiPt:alert(1))",
   "js-link-entity": "[click](&#106;avascript:alert(1))",
-  "data-html-link": "[click](data:text/html;base64,PHNjcmlwdD5hbGVydCgxKTwvc2NyaXB0Pg==)",
-  "vbscript-link":  "[click](vbscript:msgbox(1))",
-  "https-link":     "[ok](https://example.com/page)",
-  "product-link":   "[p](https://aurainteriors.live/product/abc-123)",
-  "raw-html-img":   'hello <img src=x onerror=alert(1)> world',
-  "raw-html-a":     'x <a href="javascript:alert(1)">raw</a> y',
-  "img-data-svg":   "![i](data:image/svg+xml;base64,PHN2ZyBvbmxvYWQ9YWxlcnQoMSk+)",
-  "img-js":         "![i](javascript:alert(1))",
-  "autolink-js":    "<javascript:alert(1)>",
+  "data-html-link":
+    "[click](data:text/html;base64,PHNjcmlwdD5hbGVydCgxKTwvc2NyaXB0Pg==)",
+  "vbscript-link": "[click](vbscript:msgbox(1))",
+  "https-link": "[ok](https://example.com/page)",
+  "product-link": "[p](https://aurainteriors.live/product/abc-123)",
+  "raw-html-img": "hello <img src=x onerror=alert(1)> world",
+  "raw-html-a": 'x <a href="javascript:alert(1)">raw</a> y',
+  "img-data-svg":
+    "![i](data:image/svg+xml;base64,PHN2ZyBvbmxvYWQ9YWxlcnQoMSk+)",
+  "img-js": "![i](javascript:alert(1))",
+  "autolink-js": "<javascript:alert(1)>",
 };
 
 const DANGEROUS_HREF_PREFIXES = ["javascript:", "vbscript:", "data:text"];
@@ -57,11 +59,13 @@ async function renderBotMessage(markdown) {
         createdAt: new Date().toISOString(),
       }}
       isOwnMessage={false}
-    />
+    />,
   );
   // FE-49: await the lazy BotMarkdown chunk — rendered markdown wraps
   // content in the config's <p>, the plain-text fallback does not.
-  await waitFor(() => expect(utils.container.querySelector("p")).not.toBeNull());
+  await waitFor(() =>
+    expect(utils.container.querySelector("p")).not.toBeNull(),
+  );
   return utils;
 }
 

@@ -2,7 +2,9 @@ import useAuthStore from "../../store/authStore";
 import { useShallow } from "zustand/react/shallow";
 
 export default function CustomerRoute({ children }) {
-  const { loading } = useAuthStore(useShallow((state) => ({ loading: state.loading })));
+  const { loading } = useAuthStore(
+    useShallow((state) => ({ loading: state.loading })),
+  );
   if (loading) return null;
 
   // FE-16: admins are no longer bounced to the /admin path — that route does not

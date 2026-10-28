@@ -10,8 +10,12 @@ import Hero from "../components/sections/Hero";
 
 // Below-the-fold — lazy loaded; each in its own Suspense with a height-matched skeleton
 const TrustBanner = lazy(() => import("../components/sections/TrustBanner"));
-const ShopByCategory = lazy(() => import("../components/sections/ShopByCategory"));
-const FeaturedPieces = lazy(() => import("../components/sections/FeaturedPieces"));
+const ShopByCategory = lazy(
+  () => import("../components/sections/ShopByCategory"),
+);
+const FeaturedPieces = lazy(
+  () => import("../components/sections/FeaturedPieces"),
+);
 const Testimonials = lazy(() => import("../components/sections/Testimonials"));
 const Footer = lazy(() => import("../layouts/customer/Footer"));
 

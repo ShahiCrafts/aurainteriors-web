@@ -22,14 +22,24 @@ const DEFAULT_STRING_MAX = 500;
 
 // Types the server allows as variant option axes (scalar only —
 // multi-enum/measurement/dimensions have no canonical string form).
-export const VARIANT_OPTION_TYPES = ["string", "enum", "boolean", "integer", "decimal", "money", "color"];
+export const VARIANT_OPTION_TYPES = [
+  "string",
+  "enum",
+  "boolean",
+  "integer",
+  "decimal",
+  "money",
+  "color",
+];
 
-export const isVariantOptionType = (type) => VARIANT_OPTION_TYPES.includes(type);
+export const isVariantOptionType = (type) =>
+  VARIANT_OPTION_TYPES.includes(type);
 
 const fail = (error) => ({ ok: false, error });
 const pass = (value) => ({ ok: true, value });
 
-const isBlank = (value) => value === undefined || value === null || value === "";
+const isBlank = (value) =>
+  value === undefined || value === null || value === "";
 
 export function isEmptyAttributeValue(definition, value) {
   if (value === undefined || value === null) return true;
@@ -50,7 +60,9 @@ export function isEmptyAttributeValue(definition, value) {
       return typeof value !== "object" || isBlank(value.value);
     case "dimensions": {
       if (typeof value !== "object") return true;
-      return isBlank(value.length) && isBlank(value.width) && isBlank(value.height);
+      return (
+        isBlank(value.length) && isBlank(value.width) && isBlank(value.height)
+      );
     }
     default:
       return isBlank(value);
@@ -58,10 +70,18 @@ export function isEmptyAttributeValue(definition, value) {
 }
 
 function checkBounds(definition, value) {
-  if (definition.min !== undefined && definition.min !== null && value < definition.min) {
+  if (
+    definition.min !== undefined &&
+    definition.min !== null &&
+    value < definition.min
+  ) {
     return `must be at least ${definition.min}`;
   }
-  if (definition.max !== undefined && definition.max !== null && value > definition.max) {
+  if (
+    definition.max !== undefined &&
+    definition.max !== null &&
+    value > definition.max
+  ) {
     return `must be at most ${definition.max}`;
   }
   if (definition.step) {
@@ -87,13 +107,15 @@ function membershipError(definition, value) {
 // the messages are user-facing. Numeric strings are coerced first
 // (form inputs produce them); the server receives real numbers.
 export function validateAttributeValue(definition, rawValue) {
-  if (!definition || !definition.type) return fail("Unknown attribute definition");
+  if (!definition || !definition.type)
+    return fail("Unknown attribute definition");
   switch (definition.type) {
     case "string": {
       if (typeof rawValue !== "string") return fail("must be a string");
       const trimmed = rawValue.trim();
       const cap = definition.maxLength || DEFAULT_STRING_MAX;
-      if (trimmed.length > cap) return fail(`must be at most ${cap} characters`);
+      if (trimmed.length > cap)
+        return fail(`must be at most ${cap} characters`);
       return pass(trimmed);
     }
     case "enum": {
@@ -107,11 +129,13 @@ export function validateAttributeValue(definition, rawValue) {
     case "multi-enum": {
       if (!Array.isArray(rawValue)) return fail("must be an array of strings");
       if (rawValue.length === 0) return fail("must contain at least one value");
-      if (rawValue.length > MAX_MULTI_VALUES) return fail(`must contain at most ${MAX_MULTI_VALUES} values`);
+      if (rawValue.length > MAX_MULTI_VALUES)
+        return fail(`must contain at most ${MAX_MULTI_VALUES} values`);
       const seen = new Set();
       const out = [];
       for (const item of rawValue) {
-        if (typeof item !== "string") return fail("must be an array of strings");
+        if (typeof item !== "string")
+          return fail("must be an array of strings");
         const trimmed = item.trim();
         if (!trimmed) return fail("must not contain empty values");
         const membership = membershipError(definition, trimmed);
@@ -128,41 +152,68 @@ export function validateAttributeValue(definition, rawValue) {
       return pass(rawValue);
     }
     case "integer": {
-      const value = typeof rawValue === "string" && rawValue.trim() !== "" ? Number(rawValue) : rawValue;
-      if (typeof value !== "number" || !Number.isFinite(value)) return fail("must be a number");
+      const value =
+        typeof rawValue === "string" && rawValue.trim() !== ""
+          ? Number(rawValue)
+          : rawValue;
+      if (typeof value !== "number" || !Number.isFinite(value))
+        return fail("must be a number");
       if (!Number.isInteger(value)) return fail("must be a whole number");
       const bounds = checkBounds(definition, value);
       if (bounds) return fail(bounds);
       return pass(value);
     }
     case "decimal": {
-      const value = typeof rawValue === "string" && rawValue.trim() !== "" ? Number(rawValue) : rawValue;
-      if (typeof value !== "number" || !Number.isFinite(value)) return fail("must be a number");
+      const value =
+        typeof rawValue === "string" && rawValue.trim() !== ""
+          ? Number(rawValue)
+          : rawValue;
+      if (typeof value !== "number" || !Number.isFinite(value))
+        return fail("must be a number");
       const bounds = checkBounds(definition, value);
       if (bounds) return fail(bounds);
       return pass(value);
     }
     case "money": {
-      const value = typeof rawValue === "string" && rawValue.trim() !== "" ? Number(rawValue) : rawValue;
-      if (typeof value !== "number" || !Number.isFinite(value)) return fail("must be a number");
+      const value =
+        typeof rawValue === "string" && rawValue.trim() !== ""
+          ? Number(rawValue)
+          : rawValue;
+      if (typeof value !== "number" || !Number.isFinite(value))
+        return fail("must be a number");
       const floor = Math.max(0, definition.min ?? 0);
       if (value < floor) return fail(`must be at least ${floor}`);
-      if (definition.max !== undefined && definition.max !== null && value > definition.max) {
+      if (
+        definition.max !== undefined &&
+        definition.max !== null &&
+        value > definition.max
+      ) {
         return fail(`must be at most ${definition.max}`);
       }
       return pass(value);
     }
     case "measurement": {
-      if (typeof rawValue !== "object" || rawValue === null || Array.isArray(rawValue)) {
+      if (
+        typeof rawValue !== "object" ||
+        rawValue === null ||
+        Array.isArray(rawValue)
+      ) {
         return fail("must be an object { value, unit }");
       }
-      const numeric = typeof rawValue.value === "string" && rawValue.value.trim() !== "" ? Number(rawValue.value) : rawValue.value;
+      const numeric =
+        typeof rawValue.value === "string" && rawValue.value.trim() !== ""
+          ? Number(rawValue.value)
+          : rawValue.value;
       if (typeof numeric !== "number" || !Number.isFinite(numeric)) {
         return fail("measurement value must be a number");
       }
       const floor = definition.min ?? null;
       if (floor !== null ? numeric < floor : numeric <= 0) {
-        return fail(floor !== null ? `measurement value must be at least ${floor}` : "measurement value must be positive");
+        return fail(
+          floor !== null
+            ? `measurement value must be at least ${floor}`
+            : "measurement value must be positive",
+        );
       }
       if (typeof rawValue.unit !== "string" || !rawValue.unit.trim()) {
         return fail("measurement unit is required");
@@ -182,7 +233,9 @@ export function validateAttributeValue(definition, rawValue) {
       const trimmed = rawValue.trim();
       const allowed = definition.allowedValues || [];
       if (allowed.length > 0) {
-        const match = allowed.find((name) => name.toLowerCase() === trimmed.toLowerCase());
+        const match = allowed.find(
+          (name) => name.toLowerCase() === trimmed.toLowerCase(),
+        );
         if (!match) return fail(`must be one of: ${allowed.join(", ")}`);
         return pass(match);
       }
@@ -190,28 +243,47 @@ export function validateAttributeValue(definition, rawValue) {
         return fail("must be a hex color (#RGB or #RRGGBB)");
       }
       let digits = trimmed.slice(1).toLowerCase();
-      if (digits.length === 3) digits = digits.split("").map((c) => c + c).join("");
+      if (digits.length === 3)
+        digits = digits
+          .split("")
+          .map((c) => c + c)
+          .join("");
       return pass(`#${digits}`);
     }
     case "dimensions": {
-      if (typeof rawValue !== "object" || rawValue === null || Array.isArray(rawValue)) {
+      if (
+        typeof rawValue !== "object" ||
+        rawValue === null ||
+        Array.isArray(rawValue)
+      ) {
         return fail("must be an object { length, width, height, unit }");
       }
       const out = {};
       for (const part of ["length", "width", "height"]) {
         const partRaw = rawValue[part];
-        const partValue = typeof partRaw === "string" && partRaw.trim() !== "" ? Number(partRaw) : partRaw;
-        if (typeof partValue !== "number" || !Number.isFinite(partValue) || partValue <= 0) {
+        const partValue =
+          typeof partRaw === "string" && partRaw.trim() !== ""
+            ? Number(partRaw)
+            : partRaw;
+        if (
+          typeof partValue !== "number" ||
+          !Number.isFinite(partValue) ||
+          partValue <= 0
+        ) {
           return fail(`${part} must be a positive number`);
         }
         out[part] = partValue;
       }
-      const accepted = definition.acceptedUnits && definition.acceptedUnits.length > 0
-        ? definition.acceptedUnits
-        : definition.unit
-          ? [definition.unit]
-          : LENGTH_UNITS;
-      const unit = rawValue.unit === undefined || rawValue.unit === "" ? definition.unit || "cm" : rawValue.unit;
+      const accepted =
+        definition.acceptedUnits && definition.acceptedUnits.length > 0
+          ? definition.acceptedUnits
+          : definition.unit
+            ? [definition.unit]
+            : LENGTH_UNITS;
+      const unit =
+        rawValue.unit === undefined || rawValue.unit === ""
+          ? definition.unit || "cm"
+          : rawValue.unit;
       if (typeof unit !== "string" || !accepted.includes(unit)) {
         return fail(`unit must be one of: ${accepted.join(", ")}`);
       }
@@ -231,11 +303,16 @@ export function validateAttributeValue(definition, rawValue) {
 // attribute deactivated for this category after the product was
 // created) so a save never silently drops them — a provided map
 // REPLACES the stored map on the server.
-export function buildAttributesPayload(resolvedAttributes = [], values = {}, passthrough = {}) {
+export function buildAttributesPayload(
+  resolvedAttributes = [],
+  values = {},
+  passthrough = {},
+) {
   const payload = { ...passthrough };
   const errors = {};
   for (const entry of resolvedAttributes) {
-    if ((entry.storage || "catalogAttributes") !== "catalogAttributes") continue;
+    if ((entry.storage || "catalogAttributes") !== "catalogAttributes")
+      continue;
     const raw = values[entry.key];
     if (isEmptyAttributeValue(entry, raw)) continue;
     const result = validateAttributeValue(entry, raw);
@@ -251,12 +328,15 @@ export function buildAttributesPayload(resolvedAttributes = [], values = {}, pas
 // Resolved entries that are required, live in catalogAttributes,
 // and currently hold an empty value — the product form blocks the
 // submit on these (the server enforces the same set on create).
-export function missingRequiredAttributes(resolvedAttributes = [], values = {}) {
+export function missingRequiredAttributes(
+  resolvedAttributes = [],
+  values = {},
+) {
   return resolvedAttributes.filter(
     (entry) =>
       entry.required &&
       (entry.storage || "catalogAttributes") === "catalogAttributes" &&
-      isEmptyAttributeValue(entry, values[entry.key])
+      isEmptyAttributeValue(entry, values[entry.key]),
   );
 }
 
@@ -268,7 +348,9 @@ export function missingRequiredAttributes(resolvedAttributes = [], values = {}) 
 // type's claims; category-level claims always stay on top.
 export function mergeResolutions(categoryAttributes, typeAttributes) {
   if (!typeAttributes) return categoryAttributes;
-  const kept = (categoryAttributes || []).filter((entry) => entry.source !== "type");
+  const kept = (categoryAttributes || []).filter(
+    (entry) => entry.source !== "type",
+  );
   const byKey = new Map(kept.map((entry) => [entry.key, entry]));
   for (const typeEntry of typeAttributes) {
     const existing = byKey.get(typeEntry.key);
@@ -280,7 +362,9 @@ export function mergeResolutions(categoryAttributes, typeAttributes) {
     // source === "category" stays untouched: category beats type.
   }
   return [...byKey.values()].sort(
-    (a, b) => (a.sortOrder || 0) - (b.sortOrder || 0) || (a.key < b.key ? -1 : a.key > b.key ? 1 : 0)
+    (a, b) =>
+      (a.sortOrder || 0) - (b.sortOrder || 0) ||
+      (a.key < b.key ? -1 : a.key > b.key ? 1 : 0),
   );
 }
 

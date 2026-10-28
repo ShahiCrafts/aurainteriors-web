@@ -54,7 +54,9 @@ vi.mock("../../src/api/notificationApi.js", () => ({
 vi.mock("../../src/hooks/notification/useNotificationSocket.js", () => ({
   default: () => ({ socket: null }),
 }));
-vi.mock("../../src/layouts/customer/Navbar.jsx", () => ({ default: () => null }));
+vi.mock("../../src/layouts/customer/Navbar.jsx", () => ({
+  default: () => null,
+}));
 
 import notificationApi from "../../src/api/notificationApi.js";
 import useAuthStore from "../../src/store/authStore.js";
@@ -102,7 +104,8 @@ describe("open-redirect battery — safeActionUrl(inAppOnly) rejects every exter
     for (const hostile of HOSTILE) {
       const out = validateExternalUrl(hostile);
       expect(out === null || out.startsWith("https://")).toBe(true);
-      if (out !== null) expect(out).not.toMatch(/^(javascript|data|vbscript):/i);
+      if (out !== null)
+        expect(out).not.toMatch(/^(javascript|data|vbscript):/i);
     }
     expect(validateExternalUrl("javascript:alert(1)")).toBeNull();
     expect(validateExternalUrl("//evil.com")).toBeNull();
@@ -119,14 +122,22 @@ describe("open-redirect battery — safeActionUrl(inAppOnly) rejects every exter
     const out = safeActionUrl("/%2fevil.com", { inAppOnly: true });
     expect(out).not.toBeNull();
     expect(out.startsWith("//")).toBe(false);
-    expect(new URL(out, window.location.origin).origin).toBe(window.location.origin);
+    expect(new URL(out, window.location.origin).origin).toBe(
+      window.location.origin,
+    );
   });
 
   it("positive controls: internal targets survive, own-origin absolutes are reduced to paths", () => {
-    expect(safeActionUrl("/orders/123", { inAppOnly: true })).toBe("/orders/123");
-    expect(safeActionUrl("/admin/orders", { inAppOnly: true })).toBe("/dashboard/orders");
+    expect(safeActionUrl("/orders/123", { inAppOnly: true })).toBe(
+      "/orders/123",
+    );
+    expect(safeActionUrl("/admin/orders", { inAppOnly: true })).toBe(
+      "/dashboard/orders",
+    );
     // Configured API origin (vitest env placeholder http://localhost:3001).
-    expect(safeActionUrl("http://localhost:3001/orders/9", { inAppOnly: true })).toBe("/orders/9");
+    expect(
+      safeActionUrl("http://localhost:3001/orders/9", { inAppOnly: true }),
+    ).toBe("/orders/9");
   });
 });
 
@@ -152,8 +163,14 @@ async function renderNotificationsPage(notifications) {
   notificationApi.getNotifications.mockResolvedValue({
     data: { notifications, totalPages: 1, page: 1 },
   });
-  notificationApi.getUnreadCount.mockResolvedValue({ data: { unreadCount: 0 } });
-  useAuthStore.setState({ user: { _id: "user-1" }, token: "cookie", loading: false });
+  notificationApi.getUnreadCount.mockResolvedValue({
+    data: { unreadCount: 0 },
+  });
+  useAuthStore.setState({
+    user: { _id: "user-1" },
+    token: "cookie",
+    loading: false,
+  });
   // REUSE-016 (Phase 3): NotificationsPage reads its data through
   // React Query now, so — like main.jsx — the harness provides a
   // QueryClient. The security assertions below are unchanged.
@@ -165,12 +182,14 @@ async function renderNotificationsPage(notifications) {
       <MemoryRouter>
         <NotificationsPage />
       </MemoryRouter>
-    </QueryClientProvider>
+    </QueryClientProvider>,
   );
   // Wait for the notifications themselves to render (a hostile-only
   // fixture correctly renders NO "View details" link, so the link
   // cannot be the readiness signal).
-  await waitFor(() => expect(screen.getAllByText("Order update").length).toBeGreaterThan(0));
+  await waitFor(() =>
+    expect(screen.getAllByText("Order update").length).toBeGreaterThan(0),
+  );
   return utils;
 }
 
@@ -182,31 +201,44 @@ describe("NotificationsPage actionUrl — hostile stored values never become lin
     ]);
     // Only the benign internal one may render a link.
     const links = [...container.querySelectorAll("a")];
-    expect(links.some((a) => (a.getAttribute("href") || "").includes("evil.com"))).toBe(false);
+    expect(
+      links.some((a) => (a.getAttribute("href") || "").includes("evil.com")),
+    ).toBe(false);
     const viewDetails = screen.getAllByText("View details");
     expect(viewDetails).toHaveLength(1);
     expect(viewDetails[0].closest("a").getAttribute("href")).toBe("/profile");
   });
 
-  it.each(["//evil.com", "javascript:alert(1)", "/\\evil.com", "////evil.com", "%2f%2fevil.com"])(
-    "hostile actionUrl %s renders no link",
-    async (actionUrl) => {
-      const { container } = await renderNotificationsPage([notification({ _id: "nx", actionUrl })]);
-      expect(container.querySelectorAll("a")).toHaveLength(0);
-      expect(screen.queryByText("View details")).toBeNull();
-    }
-  );
+  it.each([
+    "//evil.com",
+    "javascript:alert(1)",
+    "/\\evil.com",
+    "////evil.com",
+    "%2f%2fevil.com",
+  ])("hostile actionUrl %s renders no link", async (actionUrl) => {
+    const { container } = await renderNotificationsPage([
+      notification({ _id: "nx", actionUrl }),
+    ]);
+    expect(container.querySelectorAll("a")).toHaveLength(0);
+    expect(screen.queryByText("View details")).toBeNull();
+  });
 
   it("hostile actionUrl WITH an orderId falls back to the internal /profile orders tab", async () => {
     await renderNotificationsPage([
-      notification({ _id: "n3", actionUrl: "https://evil.com", data: { orderId: "ord-1" } }),
+      notification({
+        _id: "n3",
+        actionUrl: "https://evil.com",
+        data: { orderId: "ord-1" },
+      }),
     ]);
     const link = screen.getByText("View details").closest("a");
     expect(link.getAttribute("href")).toBe("/profile");
   });
 
   it("benign site-relative actionUrl still renders as an internal link", async () => {
-    await renderNotificationsPage([notification({ _id: "n4", actionUrl: "/announcements" })]);
+    await renderNotificationsPage([
+      notification({ _id: "n4", actionUrl: "/announcements" }),
+    ]);
     const link = screen.getByText("View details").closest("a");
     expect(link.getAttribute("href")).toBe("/announcements");
   });
@@ -216,7 +248,10 @@ describe("NotificationsPage actionUrl — hostile stored values never become lin
 // C. Structural pins — no return-to surface, and every dynamic
 //    navigation sink stays behind the helper.
 // ------------------------------------------------------------------
-const ROOT = path.resolve(path.dirname(fileURLToPath(import.meta.url)), "../..");
+const ROOT = path.resolve(
+  path.dirname(fileURLToPath(import.meta.url)),
+  "../..",
+);
 const SRC = path.join(ROOT, "src");
 function collect(dir, out = []) {
   for (const entry of readdirSync(dir)) {
@@ -234,10 +269,13 @@ describe("structural — no return-to / open-redirect surface can reappear ungua
   it("no src file reads a redirect-ish query param (returnTo/redirect/next/from/url/target/continue)", () => {
     const hits = [];
     for (const file of SRC_FILES) {
-      for (const m of srcText(file).matchAll(/\.get\(\s*["'](returnTo|redirect|next|from|url|target|continue)["']\s*\)/g)) {
+      for (const m of srcText(file).matchAll(
+        /\.get\(\s*["'](returnTo|redirect|next|from|url|target|continue)["']\s*\)/g,
+      )) {
         hits.push(`${rel(file)}: .get("${m[1]}")`);
       }
-      if (/state\?\.from\b|location\.state\?\.from\b/.test(srcText(file))) hits.push(`${rel(file)}: router-state from`);
+      if (/state\?\.from\b|location\.state\?\.from\b/.test(srcText(file)))
+        hits.push(`${rel(file)}: router-state from`);
     }
     expect(hits).toEqual([]);
   });
@@ -245,7 +283,8 @@ describe("structural — no return-to / open-redirect surface can reappear ungua
   it("navigate(variable) occurs only at the two safeActionUrl-guarded sites", () => {
     const sites = [];
     for (const file of SRC_FILES) {
-      if (/navigate\(\s*targetUrl\s*\)/.test(srcText(file))) sites.push(rel(file));
+      if (/navigate\(\s*targetUrl\s*\)/.test(srcText(file)))
+        sites.push(rel(file));
     }
     expect(sites.sort()).toEqual([
       "src/components/common/NotificationBell.jsx",
@@ -261,11 +300,16 @@ describe("structural — no return-to / open-redirect surface can reappear ungua
   it("no <Link to> / navigate receives a raw .actionUrl value (the Phase 5 finding pattern)", () => {
     const hits = [];
     for (const file of SRC_FILES) {
-      srcText(file).split("\n").forEach((line, i) => {
-        if (/to=\{[^}]*\.actionUrl/.test(line) || /navigate\([^)]*\.actionUrl/.test(line)) {
-          hits.push(`${rel(file)}:${i + 1}`);
-        }
-      });
+      srcText(file)
+        .split("\n")
+        .forEach((line, i) => {
+          if (
+            /to=\{[^}]*\.actionUrl/.test(line) ||
+            /navigate\([^)]*\.actionUrl/.test(line)
+          ) {
+            hits.push(`${rel(file)}:${i + 1}`);
+          }
+        });
     }
     expect(hits).toEqual([]);
   });
@@ -273,7 +317,8 @@ describe("structural — no return-to / open-redirect surface can reappear ungua
   it("window.location.href is assigned only at the three censused sites", () => {
     const sites = [];
     for (const file of SRC_FILES) {
-      if (/window\.location\.href\s*=/.test(srcText(file))) sites.push(rel(file));
+      if (/window\.location\.href\s*=/.test(srcText(file)))
+        sites.push(rel(file));
     }
     expect(sites.sort()).toEqual([
       "src/components/modals/ARViewModal.jsx", // config-origin base + encodeURIComponent slug

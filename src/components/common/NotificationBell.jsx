@@ -62,13 +62,15 @@ const NotificationBell = ({ user, token }) => {
 
   const fetchedList = useMemo(
     () =>
-      listQuery.data?.data?.notifications || listQuery.data?.notifications || [],
-    [listQuery.data]
+      listQuery.data?.data?.notifications ||
+      listQuery.data?.notifications ||
+      [],
+    [listQuery.data],
   );
   // Socket items not yet in the REST page stay at the front (FE-24).
   const notifications = useMemo(
     () => mergeNotificationsById(fetchedList, adminNotifications),
-    [fetchedList, adminNotifications]
+    [fetchedList, adminNotifications],
   );
   const loading = showDropdown && listQuery.isFetching;
   const fetchError = showDropdown && listQuery.isError;
@@ -84,8 +86,7 @@ const NotificationBell = ({ user, token }) => {
       document.addEventListener("mousedown", handleClickOutside);
     }
 
-    return () =>
-      document.removeEventListener("mousedown", handleClickOutside);
+    return () => document.removeEventListener("mousedown", handleClickOutside);
   }, [showDropdown]);
 
   // FE-24: 'Mark all read' collects the ids of ALL unread
@@ -98,7 +99,7 @@ const NotificationBell = ({ user, token }) => {
         await markMultipleReadMutation.mutateAsync(ids);
       }
       setAdminNotifications((prev) =>
-        prev.map((n) => ({ ...n, isRead: true }))
+        prev.map((n) => ({ ...n, isRead: true })),
       );
       setUnreadAdminCount(0);
     } catch (error) {
@@ -111,10 +112,8 @@ const NotificationBell = ({ user, token }) => {
       await markAsReadMutation.mutateAsync(id);
       setAdminNotifications((prev) =>
         prev.map((n) =>
-          n._id === id || n.id === id
-            ? { ...n, isRead: true }
-            : n
-        )
+          n._id === id || n.id === id ? { ...n, isRead: true } : n,
+        ),
       );
       setUnreadAdminCount((prev) => Math.max(0, prev - 1));
     } catch (error) {
@@ -129,7 +128,11 @@ const NotificationBell = ({ user, token }) => {
           if (!showDropdown) setOpenCycle((c) => c + 1);
           setShowDropdown((prev) => !prev);
         }}
-        aria-label={unreadAdminCount > 0 ? `Notifications, ${unreadAdminCount} unread` : "Notifications"}
+        aria-label={
+          unreadAdminCount > 0
+            ? `Notifications, ${unreadAdminCount} unread`
+            : "Notifications"
+        }
         aria-expanded={showDropdown}
         aria-haspopup="true"
         className={`relative flex items-center justify-center w-10 h-10 rounded-xl transition-colors duration-200 ${showDropdown}
@@ -138,10 +141,9 @@ const NotificationBell = ({ user, token }) => {
           }`}
       >
         <Bell
-          className={`w-5 h-5 ${unreadAdminCount > 0
-              ? "text-gray-700"
-              : "text-gray-500"
-            }`}
+          className={`w-5 h-5 ${
+            unreadAdminCount > 0 ? "text-gray-700" : "text-gray-500"
+          }`}
         />
 
         {unreadAdminCount > 0 && (

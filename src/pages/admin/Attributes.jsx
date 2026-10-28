@@ -114,7 +114,9 @@ function TagEditor({ label, values, onChange, placeholder }) {
             </button>
           </span>
         ))}
-        {values.length === 0 && <span className="text-xs text-gray-400 py-1.5">None yet</span>}
+        {values.length === 0 && (
+          <span className="text-xs text-gray-400 py-1.5">None yet</span>
+        )}
       </div>
       <input
         type="text"
@@ -147,7 +149,7 @@ export default function Attributes() {
   const { data, isLoading, error } = useAttributeDefinitions();
   const definitions = useMemo(
     () => data?.data?.attributeDefinitions || [],
-    [data]
+    [data],
   );
   const createMutation = useCreateAttributeDefinition();
   const updateMutation = useUpdateAttributeDefinition();
@@ -168,7 +170,7 @@ export default function Attributes() {
       (d) =>
         d.key.toLowerCase().includes(q) ||
         (d.label || "").toLowerCase().includes(q) ||
-        d.type.includes(q)
+        d.type.includes(q),
     );
   }, [definitions, searchQuery]);
 
@@ -213,7 +215,8 @@ export default function Attributes() {
     if (form.max !== "") payload.max = Number(form.max);
     if (form.step !== "") payload.step = Number(form.step);
     if (form.maxLength !== "") payload.maxLength = Number(form.maxLength);
-    if (form.displayGroup.trim()) payload.displayGroup = form.displayGroup.trim();
+    if (form.displayGroup.trim())
+      payload.displayGroup = form.displayGroup.trim();
     if (form.sortOrder !== "") payload.sortOrder = Number(form.sortOrder);
     return payload;
   };
@@ -222,7 +225,11 @@ export default function Attributes() {
     e.preventDefault();
     // Mirror the server's cross-field guard so the admin sees it
     // before the round-trip; the server's own 400 still surfaces.
-    if (form.min !== "" && form.max !== "" && Number(form.min) > Number(form.max)) {
+    if (
+      form.min !== "" &&
+      form.max !== "" &&
+      Number(form.min) > Number(form.max)
+    ) {
       setFormError("Attribute min cannot exceed max");
       return;
     }
@@ -233,7 +240,10 @@ export default function Attributes() {
     setFormError("");
     try {
       if (editing) {
-        await updateMutation.mutateAsync({ key: editing.key, data: buildPayload() });
+        await updateMutation.mutateAsync({
+          key: editing.key,
+          data: buildPayload(),
+        });
         toast.success("Attribute updated");
       } else {
         await createMutation.mutateAsync(buildPayload());
@@ -250,7 +260,9 @@ export default function Attributes() {
     setDeleteError("");
     try {
       await deleteMutation.mutateAsync({ key: deleteTarget.key, hard });
-      toast.success(hard ? "Attribute deleted permanently" : "Attribute deactivated");
+      toast.success(
+        hard ? "Attribute deleted permanently" : "Attribute deactivated",
+      );
       setDeleteTarget(null);
     } catch (err) {
       setDeleteError(formatError(err, "Failed to delete attribute"));
@@ -269,7 +281,9 @@ export default function Attributes() {
   if (error) {
     return (
       <div className="text-center py-12 bg-white rounded-2xl border border-gray-100">
-        <h2 className="text-xl font-semibold text-red-600 mb-2">Error Loading Attributes</h2>
+        <h2 className="text-xl font-semibold text-red-600 mb-2">
+          Error Loading Attributes
+        </h2>
         <p className="text-gray-500">{formatError(error)}</p>
       </div>
     );
@@ -278,7 +292,9 @@ export default function Attributes() {
   const showAllowedValues = ["enum", "multi-enum", "color"].includes(form.type);
   const showUnits = ["measurement", "money", "dimensions"].includes(form.type);
   const showAcceptedUnits = ["measurement", "dimensions"].includes(form.type);
-  const showBounds = ["integer", "decimal", "money", "measurement"].includes(form.type);
+  const showBounds = ["integer", "decimal", "money", "measurement"].includes(
+    form.type,
+  );
 
   return (
     <div className="p-6 space-y-6">
@@ -286,7 +302,8 @@ export default function Attributes() {
         <div>
           <h1 className="text-2xl font-bold text-gray-900">Attributes</h1>
           <p className="text-gray-500 mt-0.5 text-sm">
-            The attribute registry behind product forms, filters and variant options.
+            The attribute registry behind product forms, filters and variant
+            options.
           </p>
         </div>
         <button
@@ -321,8 +338,12 @@ export default function Attributes() {
             >
               <div className="flex-1 min-w-0">
                 <div className="flex items-center gap-2 flex-wrap">
-                  <span className="font-semibold text-gray-900 text-sm">{definition.label}</span>
-                  <span className="font-mono text-xs text-gray-400">{definition.key}</span>
+                  <span className="font-semibold text-gray-900 text-sm">
+                    {definition.label}
+                  </span>
+                  <span className="font-mono text-xs text-gray-400">
+                    {definition.key}
+                  </span>
                   <span className="px-2 py-0.5 rounded-full text-[10px] font-bold uppercase tracking-wider bg-slate-100 text-slate-600">
                     {definition.type}
                   </span>
@@ -331,11 +352,17 @@ export default function Attributes() {
                       Field: {definition.fieldPath}
                     </span>
                   ) : null}
-                  {definition.appliesTo === "all" ? <FlagChip>Global</FlagChip> : null}
+                  {definition.appliesTo === "all" ? (
+                    <FlagChip>Global</FlagChip>
+                  ) : null}
                   {definition.required ? <FlagChip>Required</FlagChip> : null}
-                  {definition.filterable ? <FlagChip>Filterable</FlagChip> : null}
+                  {definition.filterable ? (
+                    <FlagChip>Filterable</FlagChip>
+                  ) : null}
                   {definition.sortable ? <FlagChip>Sortable</FlagChip> : null}
-                  {definition.comparable ? <FlagChip>Comparable</FlagChip> : null}
+                  {definition.comparable ? (
+                    <FlagChip>Comparable</FlagChip>
+                  ) : null}
                 </div>
                 <p className="text-xs text-gray-500 mt-0.5">
                   {definition.displayGroup || "Specifications"}
@@ -377,7 +404,9 @@ export default function Attributes() {
           ))}
           {visible.length === 0 && (
             <p className="text-center text-sm text-gray-500 py-10">
-              {searchQuery ? "No attributes match your search." : "No attribute definitions yet."}
+              {searchQuery
+                ? "No attributes match your search."
+                : "No attribute definitions yet."}
             </p>
           )}
         </div>
@@ -403,7 +432,9 @@ export default function Attributes() {
               <Dialog
                 open
                 onClose={() => setShowModal(false)}
-                label={editing ? `Edit attribute ${editing.key}` : "Add attribute"}
+                label={
+                  editing ? `Edit attribute ${editing.key}` : "Add attribute"
+                }
                 className="bg-white rounded-2xl w-full max-h-[90vh] overflow-y-auto relative"
               >
                 <div className="flex items-center justify-between p-5 border-b border-gray-100">
@@ -475,8 +506,9 @@ export default function Attributes() {
                       </select>
                       {editing && (
                         <p className="text-xs text-gray-400 mt-1">
-                          The server rejects a type or storage change while products carry
-                          values for this attribute — its message will appear here.
+                          The server rejects a type or storage change while
+                          products carry values for this attribute — its message
+                          will appear here.
                         </p>
                       )}
                     </div>
@@ -490,7 +522,9 @@ export default function Attributes() {
                         onChange={(e) => set({ storage: e.target.value })}
                         className={inputClass}
                       >
-                        <option value="catalogAttributes">Product values (catalogAttributes)</option>
+                        <option value="catalogAttributes">
+                          Product values (catalogAttributes)
+                        </option>
                         <option value="field">First-class product field</option>
                       </select>
                     </div>
@@ -523,7 +557,9 @@ export default function Attributes() {
                         onChange={(e) => set({ appliesTo: e.target.value })}
                         className={inputClass}
                       >
-                        <option value="assigned">Assigned types & categories only</option>
+                        <option value="assigned">
+                          Assigned types & categories only
+                        </option>
                         <option value="all">All products (global)</option>
                       </select>
                     </div>
@@ -555,7 +591,9 @@ export default function Attributes() {
                     <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                       <div>
                         <label htmlFor="attrdef-unit" className={labelClass}>
-                          {form.type === "money" ? "Unit / currency" : "Primary unit"}
+                          {form.type === "money"
+                            ? "Unit / currency"
+                            : "Primary unit"}
                         </label>
                         <input
                           id="attrdef-unit"
@@ -655,7 +693,10 @@ export default function Attributes() {
                         ["comparable", "Comparable"],
                         ["active", "Active"],
                       ].map(([field, text]) => (
-                        <label key={field} className="flex items-center gap-2 cursor-pointer text-sm text-gray-700">
+                        <label
+                          key={field}
+                          className="flex items-center gap-2 cursor-pointer text-sm text-gray-700"
+                        >
                           <input
                             type="checkbox"
                             checked={form[field]}
@@ -684,7 +725,9 @@ export default function Attributes() {
                     </button>
                     <button
                       type="submit"
-                      disabled={createMutation.isPending || updateMutation.isPending}
+                      disabled={
+                        createMutation.isPending || updateMutation.isPending
+                      }
                       className="flex-1 px-4 py-2 bg-teal-600 text-white rounded-lg font-medium hover:bg-teal-700 transition-colors disabled:opacity-50 text-sm"
                     >
                       {editing ? "Save Changes" : "Create Attribute"}
@@ -725,10 +768,12 @@ export default function Attributes() {
                     Delete “{deleteTarget.label}”?
                   </h2>
                   <p className="text-sm text-gray-600">
-                    Deactivating stops the attribute from resolving and accepting new values;
-                    existing product values keep their meaning and it can be reactivated.
-                    Permanent deletion is only possible while no product carries a value and
-                    no category or product type references it — the server refuses otherwise.
+                    Deactivating stops the attribute from resolving and
+                    accepting new values; existing product values keep their
+                    meaning and it can be reactivated. Permanent deletion is
+                    only possible while no product carries a value and no
+                    category or product type references it — the server refuses
+                    otherwise.
                   </p>
                   {deleteError && (
                     <p className="text-sm text-red-600 bg-red-50 border border-red-100 rounded-lg px-3 py-2">

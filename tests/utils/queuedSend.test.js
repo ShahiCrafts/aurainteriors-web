@@ -24,14 +24,21 @@
 // reportSendOutcome(body, { kind, toast, pollJob }) is the single place all
 // three flows report through, so every scenario is exercised per kind.
 import { describe, it, expect, vi } from "vitest";
-import { reportSendOutcome, isQueuedResponse } from "../../src/utils/queuedSend.js";
+import {
+  reportSendOutcome,
+  isQueuedResponse,
+} from "../../src/utils/queuedSend.js";
 
 function makeToast() {
   return { success: vi.fn(), error: vi.fn(), info: vi.fn(), warning: vi.fn() };
 }
 
 function allToastText(toast) {
-  return [...toast.success.mock.calls, ...toast.error.mock.calls, ...toast.info.mock.calls]
+  return [
+    ...toast.success.mock.calls,
+    ...toast.error.mock.calls,
+    ...toast.info.mock.calls,
+  ]
     .flat()
     .join("\n");
 }
@@ -42,7 +49,11 @@ function expectNoBogusNumbers(toast) {
   expect(text).not.toMatch(/NaN/);
 }
 
-const completedJob = (progress) => ({ id: "job-1", status: "completed", progress });
+const completedJob = (progress) => ({
+  id: "job-1",
+  status: "completed",
+  progress,
+});
 
 describe("isQueuedResponse", () => {
   it("detects the queued flag in data", () => {
@@ -61,8 +72,12 @@ describe("newsletter flow", () => {
     const toast = makeToast();
     const pollJob = vi.fn();
     await reportSendOutcome(
-      { success: true, message: "Trend emails sent successfully", data: { successful: 42, failed: 1 } },
-      { kind, toast, pollJob }
+      {
+        success: true,
+        message: "Trend emails sent successfully",
+        data: { successful: 42, failed: 1 },
+      },
+      { kind, toast, pollJob },
     );
     expect(toast.success).toHaveBeenCalledTimes(1);
     expect(toast.success.mock.calls[0][0]).toContain("42");
@@ -76,10 +91,12 @@ describe("newsletter flow", () => {
     const toast = makeToast();
     await reportSendOutcome(
       { success: true, message: "Trend emails sent successfully", data: {} },
-      { kind, toast, pollJob: vi.fn() }
+      { kind, toast, pollJob: vi.fn() },
     );
     expect(toast.success).toHaveBeenCalledTimes(1);
-    expect(toast.success.mock.calls[0][0]).toBe("Trend emails sent successfully");
+    expect(toast.success.mock.calls[0][0]).toBe(
+      "Trend emails sent successfully",
+    );
     expectNoBogusNumbers(toast);
   });
 
@@ -89,8 +106,12 @@ describe("newsletter flow", () => {
       .fn()
       .mockResolvedValue(completedJob({ sent: 37, failed: 2, total: 39 }));
     const outcome = await reportSendOutcome(
-      { success: true, message: "Trend emails queued", data: { jobId: "job-1", queued: true } },
-      { kind, toast, pollJob }
+      {
+        success: true,
+        message: "Trend emails queued",
+        data: { jobId: "job-1", queued: true },
+      },
+      { kind, toast, pollJob },
     );
     expect(pollJob).toHaveBeenCalledWith("job-1", expect.anything());
     expect(toast.info).toHaveBeenCalledTimes(1);
@@ -106,11 +127,19 @@ describe("newsletter flow", () => {
   it("(d) 202 → job 'dead' with lastError → error surfaced, NO success toast", async () => {
     const toast = makeToast();
     const dead = new Error("Background job failed: SMTP connection refused");
-    dead.job = { id: "job-1", status: "dead", lastError: "SMTP connection refused" };
+    dead.job = {
+      id: "job-1",
+      status: "dead",
+      lastError: "SMTP connection refused",
+    };
     const pollJob = vi.fn().mockRejectedValue(dead);
     await reportSendOutcome(
-      { success: true, message: "Trend emails queued", data: { jobId: "job-1", queued: true } },
-      { kind, toast, pollJob }
+      {
+        success: true,
+        message: "Trend emails queued",
+        data: { jobId: "job-1", queued: true },
+      },
+      { kind, toast, pollJob },
     );
     expect(toast.success).not.toHaveBeenCalled();
     expect(toast.error).toHaveBeenCalledTimes(1);
@@ -122,8 +151,12 @@ describe("newsletter flow", () => {
     const toast = makeToast();
     const pollJob = vi.fn().mockRejectedValue(new Error("Job not found"));
     await reportSendOutcome(
-      { success: true, message: "Trend emails queued", data: { jobId: "job-1", queued: true } },
-      { kind, toast, pollJob }
+      {
+        success: true,
+        message: "Trend emails queued",
+        data: { jobId: "job-1", queued: true },
+      },
+      { kind, toast, pollJob },
     );
     expect(toast.success).not.toHaveBeenCalled();
     expect(toast.error).toHaveBeenCalledTimes(1);
@@ -136,7 +169,7 @@ describe("newsletter flow", () => {
     const pollJob = vi.fn();
     const outcome = await reportSendOutcome(
       { success: true, message: "Trend emails queued", data: { queued: true } },
-      { kind, toast, pollJob }
+      { kind, toast, pollJob },
     );
     expect(pollJob).not.toHaveBeenCalled();
     expect(toast.success).not.toHaveBeenCalled();
@@ -149,10 +182,16 @@ describe("newsletter flow", () => {
     const toast = makeToast();
     const pollJob = vi
       .fn()
-      .mockRejectedValue(new Error("Timed out waiting for the background job to finish"));
+      .mockRejectedValue(
+        new Error("Timed out waiting for the background job to finish"),
+      );
     await reportSendOutcome(
-      { success: true, message: "Trend emails queued", data: { jobId: "job-1", queued: true } },
-      { kind, toast, pollJob }
+      {
+        success: true,
+        message: "Trend emails queued",
+        data: { jobId: "job-1", queued: true },
+      },
+      { kind, toast, pollJob },
     );
     expect(toast.success).not.toHaveBeenCalled();
     expect(toast.error).toHaveBeenCalledTimes(1);
@@ -161,10 +200,18 @@ describe("newsletter flow", () => {
 
   it("completed job with null counts falls back to a count-free success (no 'null'/'undefined')", async () => {
     const toast = makeToast();
-    const pollJob = vi.fn().mockResolvedValue(completedJob({ sent: null, failed: null, total: null }));
+    const pollJob = vi
+      .fn()
+      .mockResolvedValue(
+        completedJob({ sent: null, failed: null, total: null }),
+      );
     await reportSendOutcome(
-      { success: true, message: "Trend emails queued", data: { jobId: "job-1", queued: true } },
-      { kind, toast, pollJob }
+      {
+        success: true,
+        message: "Trend emails queued",
+        data: { jobId: "job-1", queued: true },
+      },
+      { kind, toast, pollJob },
     );
     expect(toast.success).toHaveBeenCalledTimes(1);
     expect(toast.success.mock.calls[0][0]).not.toMatch(/\d/);
@@ -179,8 +226,12 @@ describe("promotion flow", () => {
   it("(a) inline 200 keeps today's behaviour: the server message is shown", async () => {
     const toast = makeToast();
     await reportSendOutcome(
-      { status: "success", message: "Promotion sent to 12 users", data: { metrics: { sentCount: 12 } } },
-      { kind, toast, pollJob: vi.fn() }
+      {
+        status: "success",
+        message: "Promotion sent to 12 users",
+        data: { metrics: { sentCount: 12 } },
+      },
+      { kind, toast, pollJob: vi.fn() },
     );
     expect(toast.success).toHaveBeenCalledWith("Promotion sent to 12 users");
     expect(toast.error).not.toHaveBeenCalled();
@@ -190,7 +241,7 @@ describe("promotion flow", () => {
     const toast = makeToast();
     await reportSendOutcome(
       { status: "success", data: { metrics: {} } },
-      { kind, toast, pollJob: vi.fn() }
+      { kind, toast, pollJob: vi.fn() },
     );
     expect(toast.success).toHaveBeenCalledTimes(1);
     expectNoBogusNumbers(toast);
@@ -202,8 +253,12 @@ describe("promotion flow", () => {
       .fn()
       .mockResolvedValue(completedJob({ stage: "done", sent: 120, failed: 3 }));
     await reportSendOutcome(
-      { status: "success", message: "Promotion queued", data: { jobId: "job-9", queued: true } },
-      { kind, toast, pollJob }
+      {
+        status: "success",
+        message: "Promotion queued",
+        data: { jobId: "job-9", queued: true },
+      },
+      { kind, toast, pollJob },
     );
     expect(toast.info.mock.calls[0][0]).toMatch(/queued/i);
     expect(toast.success).toHaveBeenCalledTimes(1);
@@ -219,8 +274,12 @@ describe("promotion flow", () => {
       .fn()
       .mockResolvedValue(completedJob({ stage: "done", alreadySent: true }));
     await reportSendOutcome(
-      { status: "success", message: "Promotion queued", data: { jobId: "job-9", queued: true } },
-      { kind, toast, pollJob }
+      {
+        status: "success",
+        message: "Promotion queued",
+        data: { jobId: "job-9", queued: true },
+      },
+      { kind, toast, pollJob },
     );
     expect(toast.success).toHaveBeenCalledTimes(1);
     expect(toast.success.mock.calls[0][0]).toMatch(/already sent/i);
@@ -231,10 +290,16 @@ describe("promotion flow", () => {
     const toast = makeToast();
     const pollJob = vi
       .fn()
-      .mockResolvedValue(completedJob({ stage: "done", sent: null, failed: null }));
+      .mockResolvedValue(
+        completedJob({ stage: "done", sent: null, failed: null }),
+      );
     await reportSendOutcome(
-      { status: "success", message: "Promotion queued", data: { jobId: "job-9", queued: true } },
-      { kind, toast, pollJob }
+      {
+        status: "success",
+        message: "Promotion queued",
+        data: { jobId: "job-9", queued: true },
+      },
+      { kind, toast, pollJob },
     );
     expect(toast.success).toHaveBeenCalledTimes(1);
     expect(toast.success.mock.calls[0][0]).not.toMatch(/\d/);
@@ -246,8 +311,12 @@ describe("promotion flow", () => {
     const dead = new Error("Background job failed: template render exploded");
     const pollJob = vi.fn().mockRejectedValue(dead);
     await reportSendOutcome(
-      { status: "success", message: "Promotion queued", data: { jobId: "job-9", queued: true } },
-      { kind, toast, pollJob }
+      {
+        status: "success",
+        message: "Promotion queued",
+        data: { jobId: "job-9", queued: true },
+      },
+      { kind, toast, pollJob },
     );
     expect(toast.success).not.toHaveBeenCalled();
     expect(toast.error.mock.calls[0][0]).toContain("template render exploded");
@@ -261,9 +330,11 @@ describe("announcement flow", () => {
     const toast = makeToast();
     await reportSendOutcome(
       { status: "success", data: { announcement: { _id: "a1" } } },
-      { kind, toast, pollJob: vi.fn() }
+      { kind, toast, pollJob: vi.fn() },
     );
-    expect(toast.success).toHaveBeenCalledWith("Announcement published successfully");
+    expect(toast.success).toHaveBeenCalledWith(
+      "Announcement published successfully",
+    );
     expect(toast.error).not.toHaveBeenCalled();
   });
 
@@ -276,7 +347,7 @@ describe("announcement flow", () => {
         message: "Announcement published; notifications queued",
         data: { announcement: { _id: "a1" }, jobId: "job-7", queued: true },
       },
-      { kind, toast, pollJob }
+      { kind, toast, pollJob },
     );
     expect(toast.info).toHaveBeenCalledTimes(1);
     const queuedMsg = toast.info.mock.calls[0][0];
@@ -302,7 +373,7 @@ describe("announcement flow", () => {
         message: "Announcement published; notifications queued",
         data: { announcement: { _id: "a1" }, jobId: "job-7", queued: true },
       },
-      { kind, toast, pollJob }
+      { kind, toast, pollJob },
     );
     expect(toast.success).not.toHaveBeenCalled();
     expect(toast.error.mock.calls[0][0]).toContain("push gateway down");

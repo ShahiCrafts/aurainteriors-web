@@ -100,7 +100,7 @@ function isOwnOrigin(url) {
   return OWN_ORIGINS.some(
     (own) =>
       url.host === own.host &&
-      (url.protocol === own.protocol || url.protocol === "https:")
+      (url.protocol === own.protocol || url.protocol === "https:"),
   );
 }
 
@@ -182,7 +182,9 @@ export function validateMediaUrl(raw, options = {}) {
   if (cleaned.startsWith("//")) {
     try {
       const url = new URL(`https:${cleaned}`);
-      return isAllowlistedAbsolute(url, fixedHosts, allowS3Pattern) ? url.href : fallback;
+      return isAllowlistedAbsolute(url, fixedHosts, allowS3Pattern)
+        ? url.href
+        : fallback;
     } catch {
       return fallback;
     }
@@ -200,7 +202,9 @@ export function validateMediaUrl(raw, options = {}) {
     }
     try {
       const url = new URL(cleaned);
-      return isAllowlistedAbsolute(url, fixedHosts, allowS3Pattern) ? url.href : fallback;
+      return isAllowlistedAbsolute(url, fixedHosts, allowS3Pattern)
+        ? url.href
+        : fallback;
     } catch {
       return fallback;
     }
@@ -261,13 +265,19 @@ export function safeActionUrl(raw, options = {}) {
     // Split off the fragment first so query handling cannot touch it.
     const hashIdx = pathAndQueryAndHash.indexOf("#");
     const hash = hashIdx >= 0 ? pathAndQueryAndHash.slice(hashIdx) : "";
-    const beforeHash = hashIdx >= 0 ? pathAndQueryAndHash.slice(0, hashIdx) : pathAndQueryAndHash;
+    const beforeHash =
+      hashIdx >= 0
+        ? pathAndQueryAndHash.slice(0, hashIdx)
+        : pathAndQueryAndHash;
     const qIdx = beforeHash.indexOf("?");
     let pathname = qIdx >= 0 ? beforeHash.slice(0, qIdx) : beforeHash;
-    const params = new URLSearchParams(qIdx >= 0 ? beforeHash.slice(qIdx + 1) : "");
+    const params = new URLSearchParams(
+      qIdx >= 0 ? beforeHash.slice(qIdx + 1) : "",
+    );
     // Rewrite a LEADING "/admin" segment only.
     if (pathname === "/admin") pathname = "/dashboard";
-    else if (pathname.startsWith("/admin/")) pathname = `/dashboard${pathname.slice("/admin".length)}`;
+    else if (pathname.startsWith("/admin/"))
+      pathname = `/dashboard${pathname.slice("/admin".length)}`;
     if (highlight !== null && highlight !== undefined && highlight !== "") {
       params.set("highlight", String(highlight));
     }
@@ -298,7 +308,10 @@ export function safeActionUrl(raw, options = {}) {
     return finishInApp(`${url.pathname}${url.search}${url.hash}`);
   }
   if (url.protocol !== "https:") return null;
-  if (!FIXED_HTTPS_HOSTS.has(url.hostname) && !S3_BUCKET_HOST.test(url.hostname)) {
+  if (
+    !FIXED_HTTPS_HOSTS.has(url.hostname) &&
+    !S3_BUCKET_HOST.test(url.hostname)
+  ) {
     return null;
   }
   return inAppOnly ? null : url.href;

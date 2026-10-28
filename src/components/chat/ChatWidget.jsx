@@ -1,18 +1,27 @@
-import { useState, useMemo, useEffect } from 'react';
-import { MessageSquare, X } from 'lucide-react';
-import { motion, AnimatePresence } from 'framer-motion';
-import { useMyChats, useStartChat, useSendMessage, useChatDetails } from '../../hooks/chat/useChatTan';
-import useAuthStore from '../../store/authStore';
+import { useState, useMemo, useEffect } from "react";
+import { MessageSquare, X } from "lucide-react";
+import { motion, AnimatePresence } from "framer-motion";
+import {
+  useMyChats,
+  useStartChat,
+  useSendMessage,
+  useChatDetails,
+} from "../../hooks/chat/useChatTan";
+import useAuthStore from "../../store/authStore";
 import { useShallow } from "zustand/react/shallow";
-import { getGuestSessionId, setGuestSessionId, clearGuestSession } from '../../utils/guestSessionStorage';
-import ChatWindow from './ChatWindow';
+import {
+  getGuestSessionId,
+  setGuestSessionId,
+  clearGuestSession,
+} from "../../utils/guestSessionStorage";
+import ChatWindow from "./ChatWindow";
 import { toast } from "../../lib/toast";
 
 const ChatWidget = () => {
   const [isOpen, setIsOpen] = useState(false);
   const [showGreeting, setShowGreeting] = useState(() => {
     // Only show if not seen before
-    return !localStorage.getItem('aura_chat_greeted');
+    return !localStorage.getItem("aura_chat_greeted");
   });
   const [activeChatId, setActiveChatId] = useState(null);
   const [activeChatData, setActiveChatData] = useState(null); // Store guest chat data directly
@@ -37,7 +46,7 @@ const ChatWidget = () => {
 
   const handleCloseGreeting = () => {
     setShowGreeting(false);
-    localStorage.setItem('aura_chat_greeted', 'true');
+    localStorage.setItem("aura_chat_greeted", "true");
   };
 
   // CHAT-FIXES-9: Removed 5000ms polling on useMyChats.
@@ -46,7 +55,7 @@ const ChatWidget = () => {
   // Guests don't have persistent lists, so this query is disabled for them
   const { data: chatsData } = useMyChats(
     { page: 1, limit: 10 },
-    { enabled: !!user && user.role !== 'admin' }
+    { enabled: !!user && user.role !== "admin" },
   );
 
   const startChatMutation = useStartChat();
@@ -59,9 +68,11 @@ const ChatWidget = () => {
   // the welcome screen.
   const chatsList = chatsData?.data?.chats || [];
   const guestChat =
-    activeChatData && activeChatData._id === activeChatId ? activeChatData : null;
+    activeChatData && activeChatData._id === activeChatId
+      ? activeChatData
+      : null;
   const listedChat = activeChatId
-    ? chatsList.find(chat => chat._id === activeChatId) || null
+    ? chatsList.find((chat) => chat._id === activeChatId) || null
     : null;
   const needsDetailsFetch = !!activeChatId && !guestChat && !listedChat;
   const { data: activeChatDetailsData } = useChatDetails(activeChatId, {
@@ -80,7 +91,7 @@ const ChatWidget = () => {
   // list — unread replies in a non-active conversation badge too.
   const totalUnread = chatsList.reduce(
     (sum, chat) => sum + (Number(chat.unreadCountCustomer) || 0),
-    0
+    0,
   );
 
   const handleToggle = () => {
@@ -88,10 +99,12 @@ const ChatWidget = () => {
       setIsOpen(true);
       if (showGreeting) {
         setShowGreeting(false);
-        localStorage.setItem('aura_chat_greeted', 'true');
+        localStorage.setItem("aura_chat_greeted", "true");
       }
       if (chatsData?.data?.chats?.length > 0) {
-        const recentChat = chatsData.data.chats.find(c => ['ai_handling', 'escalated', 'agent_handling'].includes(c.status));
+        const recentChat = chatsData.data.chats.find((c) =>
+          ["ai_handling", "escalated", "agent_handling"].includes(c.status),
+        );
         if (recentChat) setActiveChatId(recentChat._id);
         else setActiveChatId(null);
       } else {
@@ -111,20 +124,23 @@ const ChatWidget = () => {
   const handleStartNewChat = (initialMessage = null) => {
     if (startChatMutation.isPending) return;
     startChatMutation.mutate(
-      { subject: initialMessage || 'Support Request', metadata: { userAgent: navigator.userAgent } },
+      {
+        subject: initialMessage || "Support Request",
+        metadata: { userAgent: navigator.userAgent },
+      },
       {
         onSuccess: (res) => {
           const newChatId = res.data.chat._id;
           const guestSessionId = res.data.guestSessionId;
-          
+
           // Store chat data for lookup
           setActiveChatData(res.data.chat);
-          
+
           // If guest, store the new session ID
           if (guestSessionId) {
             setGuestSessionId(guestSessionId);
           }
-          
+
           setActiveChatId(newChatId);
           if (initialMessage) {
             sendMessage({ chatId: newChatId, content: initialMessage });
@@ -141,20 +157,28 @@ const ChatWidget = () => {
           const retryAfter = Number(error.retryAfter ?? response?.retryAfter);
           if (response?.code === "RATE_LIMIT_EXCEEDED" || status === 429) {
             if (Number.isFinite(retryAfter) && retryAfter > 0) {
-              toast.error(`Too many chat sessions started. Please try again in ${Math.ceil(retryAfter / 60)} minute${Math.ceil(retryAfter / 60) === 1 ? "" : "s"}.`);
+              toast.error(
+                `Too many chat sessions started. Please try again in ${Math.ceil(retryAfter / 60)} minute${Math.ceil(retryAfter / 60) === 1 ? "" : "s"}.`,
+              );
             } else {
-              toast.error("Too many chat sessions started. Please wait a moment and try again.");
+              toast.error(
+                "Too many chat sessions started. Please wait a moment and try again.",
+              );
             }
             return;
           }
-          toast.error(error.displayMessage || response?.message || "Could not start a new chat. Please try again.");
-        }
-      }
+          toast.error(
+            error.displayMessage ||
+              response?.message ||
+              "Could not start a new chat. Please try again.",
+          );
+        },
+      },
     );
   };
 
   // Admin users don't see the chat widget
-  if (user && user.role === 'admin') return null;
+  if (user && user.role === "admin") return null;
 
   return (
     <div className="fixed bottom-6 right-6 z-60 flex flex-col items-end gap-4 pointer-events-none">
@@ -180,16 +204,21 @@ const ChatWidget = () => {
                   A
                 </div>
                 <div>
-                  <h4 className="font-bold text-gray-800 text-sm leading-tight">Aura Support</h4>
+                  <h4 className="font-bold text-gray-800 text-sm leading-tight">
+                    Aura Support
+                  </h4>
                   <div className="flex items-center gap-1.5">
                     <span className="w-2 h-2 rounded-full bg-emerald-500" />
-                    <span className="text-[11px] font-bold text-emerald-600 uppercase tracking-tighter">Online</span>
+                    <span className="text-[11px] font-bold text-emerald-600 uppercase tracking-tighter">
+                      Online
+                    </span>
                   </div>
                 </div>
               </div>
 
               <p className="text-[13px] text-gray-600 font-medium leading-relaxed">
-                Hi there! 👋 Need help finding the perfect furniture? We're here to assist you!
+                Hi there! 👋 Need help finding the perfect furniture? We're here
+                to assist you!
               </p>
 
               {/* Tooltip Arrow - Flat */}
@@ -205,7 +234,8 @@ const ChatWidget = () => {
             initial={{ opacity: 0, scale: 0.95, y: 20 }}
             animate={{ opacity: 1, scale: 1, y: 0 }}
             exit={{ opacity: 0, scale: 0.95, y: 20 }}
-className="fixed inset-4 sm:fixed sm:inset-auto sm:bottom-24 sm:right-6 sm:w-[430px] sm:h-[650px] sm:max-h-[82vh] bg-white rounded-2xl border border-stone-200/60 overflow-hidden pointer-events-auto"          >
+            className="fixed inset-4 sm:fixed sm:inset-auto sm:bottom-24 sm:right-6 sm:w-[430px] sm:h-[650px] sm:max-h-[82vh] bg-white rounded-2xl border border-stone-200/60 overflow-hidden pointer-events-auto"
+          >
             <ChatWindow
               chat={activeChat}
               onClose={() => setIsOpen(false)}
@@ -219,10 +249,11 @@ className="fixed inset-4 sm:fixed sm:inset-auto sm:bottom-24 sm:right-6 sm:w-[43
 
       <button
         onClick={handleToggle}
-        className={`w-14 h-14 rounded-full items-center justify-center transition-all duration-300 hover:scale-105 pointer-events-auto relative z-10 border ${isOpen
-          ? 'hidden sm:flex bg-white text-[#1A1714] border-stone-200'
-          : 'flex bg-[#1A1714] text-white border-black/30'
-          }`}
+        className={`w-14 h-14 rounded-full items-center justify-center transition-all duration-300 hover:scale-105 pointer-events-auto relative z-10 border ${
+          isOpen
+            ? "hidden sm:flex bg-white text-[#1A1714] border-stone-200"
+            : "flex bg-[#1A1714] text-white border-black/30"
+        }`}
       >
         {isOpen ? (
           <X className="w-7 h-7" strokeWidth={2.5} />
@@ -231,13 +262,13 @@ className="fixed inset-4 sm:fixed sm:inset-auto sm:bottom-24 sm:right-6 sm:w-[43
             <MessageSquare className="w-7 h-7 p-0.5" strokeWidth={2.5} />
             {totalUnread > 0 && (
               <span className="absolute -top-1 -right-1 bg-[#E13A3E] text-white text-[11px] font-black rounded-full w-6 h-6 flex items-center justify-center ring-2 ring-white z-20">
-                {totalUnread > 9 ? '9+' : totalUnread}
+                {totalUnread > 9 ? "9+" : totalUnread}
               </span>
             )}
           </>
         )}
       </button>
-    </div >
+    </div>
   );
 };
 

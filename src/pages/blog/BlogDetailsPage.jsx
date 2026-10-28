@@ -47,7 +47,7 @@ export default function BlogDetailsPage() {
       : "");
   const { html: articleHtml, sections } = useMemo(
     () => buildBlogContent(rawContent),
-    [rawContent]
+    [rawContent],
   );
 
   // Track scroll position for TOC highlighting
@@ -56,7 +56,7 @@ export default function BlogDetailsPage() {
 
     const handleScroll = () => {
       const sectionElements = sections.map((s) =>
-        document.getElementById(s.id)
+        document.getElementById(s.id),
       );
       const scrollPosition = window.scrollY + 150;
 
@@ -439,4 +439,3 @@ export default function BlogDetailsPage() {
     </>
   );
 }
-

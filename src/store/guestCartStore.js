@@ -1,9 +1,10 @@
 import { create } from "zustand";
 
 const GUEST_CART_KEY = "guest_cart";
-const variantKey = (variant = {}) => JSON.stringify(
-  Object.entries(variant || {}).sort(([a], [b]) => a.localeCompare(b))
-);
+const variantKey = (variant = {}) =>
+  JSON.stringify(
+    Object.entries(variant || {}).sort(([a], [b]) => a.localeCompare(b)),
+  );
 
 // Helper to load cart from localStorage
 const loadGuestCart = () => {
@@ -12,13 +13,24 @@ const loadGuestCart = () => {
     if (stored) {
       const parsed = JSON.parse(stored);
       if (!Array.isArray(parsed)) return [];
-      return parsed.filter(item => item && typeof item._id === "string" &&
-        item.product && typeof item.product._id === "string" &&
-        Number.isFinite(item.product.price) && item.product.price >= 0 &&
-        Number.isSafeInteger(item.quantity) && item.quantity > 0);
+      return parsed.filter(
+        (item) =>
+          item &&
+          typeof item._id === "string" &&
+          item.product &&
+          typeof item.product._id === "string" &&
+          Number.isFinite(item.product.price) &&
+          item.product.price >= 0 &&
+          Number.isSafeInteger(item.quantity) &&
+          item.quantity > 0,
+      );
     }
   } catch {
-    try { localStorage.removeItem(GUEST_CART_KEY); } catch { /* Storage may be unavailable. */ }
+    try {
+      localStorage.removeItem(GUEST_CART_KEY);
+    } catch {
+      /* Storage may be unavailable. */
+    }
   }
   return [];
 };
@@ -41,7 +53,8 @@ const useGuestCartStore = create((set, get) => ({
   // Line identity then includes the variantId — two variants of
   // one product are two lines; the same variant merges.
   addItem: (product, quantity = 1, variant = {}, meta = null) => {
-    if (!product?._id || !Number.isSafeInteger(quantity) || quantity <= 0) return;
+    if (!product?._id || !Number.isSafeInteger(quantity) || quantity <= 0)
+      return;
     const { items } = get();
 
     // Check if item already exists with same variant
@@ -49,17 +62,18 @@ const useGuestCartStore = create((set, get) => ({
       (item) =>
         item.product._id === product._id &&
         (item.variantId || null) === (meta?.variantId || null) &&
-        variantKey(item.variant) === variantKey(variant)
+        variantKey(item.variant) === variantKey(variant),
     );
 
     let newItems;
     if (existingIndex >= 0) {
-      if (!Number.isSafeInteger(items[existingIndex].quantity + quantity)) return;
+      if (!Number.isSafeInteger(items[existingIndex].quantity + quantity))
+        return;
       // Update quantity if item exists
       newItems = items.map((item, index) =>
         index === existingIndex
           ? { ...item, quantity: item.quantity + quantity }
-          : item
+          : item,
       );
     } else {
       // Add new item
@@ -105,7 +119,7 @@ const useGuestCartStore = create((set, get) => ({
     }
 
     const newItems = items.map((item) =>
-      item._id === itemId ? { ...item, quantity } : item
+      item._id === itemId ? { ...item, quantity } : item,
     );
     saveGuestCart(newItems);
     set({ items: newItems });
@@ -121,7 +135,11 @@ const useGuestCartStore = create((set, get) => ({
 
   // Clear entire cart
   clearCart: () => {
-    try { localStorage.removeItem(GUEST_CART_KEY); } catch { /* Storage may be unavailable. */ }
+    try {
+      localStorage.removeItem(GUEST_CART_KEY);
+    } catch {
+      /* Storage may be unavailable. */
+    }
     set({ items: [] });
   },
 
@@ -130,8 +148,9 @@ const useGuestCartStore = create((set, get) => ({
     const { items } = get();
     const itemCount = items.reduce((sum, item) => sum + item.quantity, 0);
     const subtotal = items.reduce(
-      (sum, item) => sum + (item.unitPrice ?? item.product.price) * item.quantity,
-      0
+      (sum, item) =>
+        sum + (item.unitPrice ?? item.product.price) * item.quantity,
+      0,
     );
     return { itemCount, subtotal };
   },

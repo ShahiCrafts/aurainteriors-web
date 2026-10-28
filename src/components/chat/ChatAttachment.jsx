@@ -1,12 +1,18 @@
-import { FileText, Download, Image as ImageIcon, ExternalLink, AlertCircle } from 'lucide-react';
-import { API_BASE_URL } from '../../config/constants';
-import { validateMediaUrl, isAbsoluteUrlCandidate } from '../../utils/safeUrl';
+import {
+  FileText,
+  Download,
+  Image as ImageIcon,
+  ExternalLink,
+  AlertCircle,
+} from "lucide-react";
+import { API_BASE_URL } from "../../config/constants";
+import { validateMediaUrl, isAbsoluteUrlCandidate } from "../../utils/safeUrl";
 
 // FE-03: a server-supplied chat attachment URL may only point at the
 // app's own API/uploads origin or Cloudinary. blob: is accepted ONLY
 // for the local optimistic preview (isOptimistic) — a blob: URL can
 // only be minted by this page, never by a server payload.
-const CHAT_ATTACHMENT_HOSTS = ['res.cloudinary.com'];
+const CHAT_ATTACHMENT_HOSTS = ["res.cloudinary.com"];
 
 const ChatAttachment = ({ attachment, isOwnMessage, isOptimistic = false }) => {
   // Handle missing or invalid attachment
@@ -22,15 +28,16 @@ const ChatAttachment = ({ attachment, isOwnMessage, isOptimistic = false }) => {
   // relative values keep the API base-joining behaviour. A rejected
   // absolute value yields null and renders an inert placeholder below
   // — the raw value never reaches an <img src> or an <a href>.
-  const validated = isAbsoluteUrlCandidate(fileUrl) || /^blob:/i.test(fileUrl.trim())
-    ? validateMediaUrl(fileUrl, {
-        fallback: null,
-        allowBlob: isOptimistic,
-        allowedHosts: CHAT_ATTACHMENT_HOSTS,
-      })
-    : fileUrl.startsWith('/')
-      ? `${API_BASE_URL}${fileUrl}`
-      : null;
+  const validated =
+    isAbsoluteUrlCandidate(fileUrl) || /^blob:/i.test(fileUrl.trim())
+      ? validateMediaUrl(fileUrl, {
+          fallback: null,
+          allowBlob: isOptimistic,
+          allowedHosts: CHAT_ATTACHMENT_HOSTS,
+        })
+      : fileUrl.startsWith("/")
+        ? `${API_BASE_URL}${fileUrl}`
+        : null;
   const fullUrl = validated;
 
   if (!fullUrl) {
@@ -58,14 +65,14 @@ const ChatAttachment = ({ attachment, isOwnMessage, isOptimistic = false }) => {
   };
 
   // Render image attachment
-  if (fileType === 'image') {
+  if (fileType === "image") {
     return (
       <a
         href={fullUrl}
         target="_blank"
         rel="noopener noreferrer"
         className={`block rounded-xl overflow-hidden transition-opacity group relative ${
-          isOptimistic ? 'opacity-75 pointer-events-none' : 'hover:opacity-95'
+          isOptimistic ? "opacity-75 pointer-events-none" : "hover:opacity-95"
         }`}
       >
         <img
@@ -74,7 +81,10 @@ const ChatAttachment = ({ attachment, isOwnMessage, isOptimistic = false }) => {
           className="max-w-full h-auto max-h-64 object-cover rounded-xl"
           loading="lazy"
           onError={(e) => {
-            console.error(`❌ Failed to load image: ${fileName}`, { url: fullUrl, error: e });
+            console.error(`❌ Failed to load image: ${fileName}`, {
+              url: fullUrl,
+              error: e,
+            });
           }}
           onLoad={() => {
             if (!isOptimistic) {
@@ -102,39 +112,51 @@ const ChatAttachment = ({ attachment, isOwnMessage, isOptimistic = false }) => {
       download={fileName}
       className={`flex items-center gap-3 p-3 rounded-xl transition-all duration-200 group ${
         isOwnMessage
-          ? isOptimistic 
-            ? 'bg-teal-800/30 border border-teal-500/20 opacity-75'
-            : 'bg-teal-800/50 hover:bg-teal-800/70 border border-teal-500/30'
+          ? isOptimistic
+            ? "bg-teal-800/30 border border-teal-500/20 opacity-75"
+            : "bg-teal-800/50 hover:bg-teal-800/70 border border-teal-500/30"
           : isOptimistic
-            ? 'bg-neutral-50 border border-neutral-200 opacity-75'
-            : 'bg-neutral-50 hover:bg-neutral-100 border border-neutral-200'
+            ? "bg-neutral-50 border border-neutral-200 opacity-75"
+            : "bg-neutral-50 hover:bg-neutral-100 border border-neutral-200"
       }`}
     >
-      <div className={`w-10 h-10 rounded-lg flex items-center justify-center shrink-0 ${
-        isOwnMessage 
-          ? isOptimistic
-            ? 'bg-teal-600/30'
-            : 'bg-teal-600/50'
-          : 'bg-teal-100'
-      }`}>
-        <FileText className={`w-5 h-5 ${isOwnMessage ? 'text-white' : 'text-teal-600'}`} />
+      <div
+        className={`w-10 h-10 rounded-lg flex items-center justify-center shrink-0 ${
+          isOwnMessage
+            ? isOptimistic
+              ? "bg-teal-600/30"
+              : "bg-teal-600/50"
+            : "bg-teal-100"
+        }`}
+      >
+        <FileText
+          className={`w-5 h-5 ${isOwnMessage ? "text-white" : "text-teal-600"}`}
+        />
       </div>
       <div className="flex-1 min-w-0">
-        <p className={`text-sm font-medium truncate ${isOwnMessage ? 'text-white' : 'text-neutral-700'}`}>
+        <p
+          className={`text-sm font-medium truncate ${isOwnMessage ? "text-white" : "text-neutral-700"}`}
+        >
           {fileName}
         </p>
-        <p className={`text-xs ${isOwnMessage ? 'text-teal-200' : 'text-neutral-500'}`}>
+        <p
+          className={`text-xs ${isOwnMessage ? "text-teal-200" : "text-neutral-500"}`}
+        >
           {formatFileSize(fileSize)}
         </p>
       </div>
       {/* Disable download button for optimistic attachments */}
       {!isOptimistic && (
-        <div className={`w-8 h-8 rounded-lg flex items-center justify-center shrink-0 transition-colors ${
-          isOwnMessage
-            ? 'bg-teal-600/30 group-hover:bg-teal-600/50'
-            : 'bg-neutral-200 group-hover:bg-neutral-300'
-        }`}>
-          <Download className={`w-4 h-4 ${isOwnMessage ? 'text-white' : 'text-neutral-600'}`} />
+        <div
+          className={`w-8 h-8 rounded-lg flex items-center justify-center shrink-0 transition-colors ${
+            isOwnMessage
+              ? "bg-teal-600/30 group-hover:bg-teal-600/50"
+              : "bg-neutral-200 group-hover:bg-neutral-300"
+          }`}
+        >
+          <Download
+            className={`w-4 h-4 ${isOwnMessage ? "text-white" : "text-neutral-600"}`}
+          />
         </div>
       )}
     </a>

@@ -32,7 +32,7 @@ function renderCard(props = {}) {
         image={image}
         {...props}
       />
-    </MemoryRouter>
+    </MemoryRouter>,
   );
 }
 
@@ -49,7 +49,7 @@ describe("PromoCard", () => {
     const text = screen.getByText("Tables That Anchor the Room");
     const img = screen.getByAltText(image.alt);
     expect(
-      text.compareDocumentPosition(img) & Node.DOCUMENT_POSITION_FOLLOWING
+      text.compareDocumentPosition(img) & Node.DOCUMENT_POSITION_FOLLOWING,
     ).toBeTruthy();
   });
 
@@ -60,7 +60,7 @@ describe("PromoCard", () => {
     const text = screen.getByText("Tables That Anchor the Room");
     const img = screen.getByAltText(image.alt);
     expect(
-      text.compareDocumentPosition(img) & Node.DOCUMENT_POSITION_FOLLOWING
+      text.compareDocumentPosition(img) & Node.DOCUMENT_POSITION_FOLLOWING,
     ).toBeTruthy();
   });
 

@@ -3,7 +3,10 @@ import { describe, it, expect } from "vitest";
 import { render, screen } from "@testing-library/react";
 
 import Badge from "../../../src/components/ui/Badge.jsx";
-import { toneForStatus, TONE_CLASSES } from "../../../src/components/ui/statusTone.js";
+import {
+  toneForStatus,
+  TONE_CLASSES,
+} from "../../../src/components/ui/statusTone.js";
 
 describe("toneForStatus", () => {
   it("maps order statuses", () => {
@@ -51,6 +54,8 @@ describe("Badge", () => {
         Featured
       </Badge>,
     );
-    expect(screen.getByText("Featured").className).toContain(TONE_CLASSES.brand);
+    expect(screen.getByText("Featured").className).toContain(
+      TONE_CLASSES.brand,
+    );
   });
 });

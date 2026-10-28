@@ -28,7 +28,10 @@ describe("chronologicalMessages — FE-35", () => {
         { clientMessageId: "c-2", createdAt: t(4), content: "local two" },
       ),
       // pages[1] — older page: carries the STALE pre-edit copy of m1.
-      page({ _id: "m1", createdAt: t(2), content: "stale original" }, { _id: "m0", createdAt: t(1), content: "older" }),
+      page(
+        { _id: "m1", createdAt: t(2), content: "stale original" },
+        { _id: "m0", createdAt: t(1), content: "older" },
+      ),
     ];
 
     const result = chronologicalMessages(pages);
@@ -86,7 +89,12 @@ describe("chronologicalMessages — FE-35", () => {
     // Both dateless messages sort as 0, ahead of every real timestamp,
     // and the ordering is identical on every run.
     expect(first.map((m) => m._id)).toEqual(second.map((m) => m._id));
-    expect(first.slice(0, 2).map((m) => m._id).sort()).toEqual(["bad", "missing"]);
+    expect(
+      first
+        .slice(0, 2)
+        .map((m) => m._id)
+        .sort(),
+    ).toEqual(["bad", "missing"]);
     expect(first.slice(2).map((m) => m._id)).toEqual(["a", "b"]);
   });
 
@@ -101,7 +109,9 @@ describe("chronologicalMessages — FE-35", () => {
     const result = chronologicalMessages(pages);
 
     expect(result).toHaveLength(2);
-    expect(result.find((m) => m._id === "__proto__").content).toBe("pollution attempt");
+    expect(result.find((m) => m._id === "__proto__").content).toBe(
+      "pollution attempt",
+    );
     expect({}.polluted).toBeUndefined();
     expect(Object.prototype.polluted).toBeUndefined();
     expect({}.content).toBeUndefined();

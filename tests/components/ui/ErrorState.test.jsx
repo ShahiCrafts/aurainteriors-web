@@ -9,7 +9,9 @@ describe("ErrorState", () => {
     render(<ErrorState message="The catalog could not be loaded." />);
     expect(screen.getByRole("alert")).toBeInTheDocument();
     expect(screen.getByText("Something went wrong")).toBeInTheDocument();
-    expect(screen.getByText("The catalog could not be loaded.")).toBeInTheDocument();
+    expect(
+      screen.getByText("The catalog could not be loaded."),
+    ).toBeInTheDocument();
   });
 
   it("calls onRetry when the retry button is clicked", () => {

@@ -16,7 +16,12 @@ import notificationApi from "../../api/notificationApi";
 export const NOTIFICATION_KEYS = {
   all: ["notifications"],
   lists: () => [...NOTIFICATION_KEYS.all, "list"],
-  list: (page, limit, filters) => [...NOTIFICATION_KEYS.lists(), page, limit, filters],
+  list: (page, limit, filters) => [
+    ...NOTIFICATION_KEYS.lists(),
+    page,
+    limit,
+    filters,
+  ],
   unread: () => [...NOTIFICATION_KEYS.all, "unreadCount"],
 };
 
@@ -29,7 +34,7 @@ const notifId = (n) => n?._id ?? n?.id;
  */
 export const mergeNotificationsById = (fetchedList, existingList) => {
   const fetchedIds = new Set(
-    (fetchedList || []).map(notifId).filter((id) => id != null)
+    (fetchedList || []).map(notifId).filter((id) => id != null),
   );
   const socketOnly = (existingList || []).filter((n) => {
     const id = notifId(n);
@@ -38,7 +43,13 @@ export const mergeNotificationsById = (fetchedList, existingList) => {
   return [...socketOnly, ...(fetchedList || [])];
 };
 
-export const useNotifications = ({ page = 1, limit = 20, filters = {}, enabled = true, keyExtra } = {}) =>
+export const useNotifications = ({
+  page = 1,
+  limit = 20,
+  filters = {},
+  enabled = true,
+  keyExtra,
+} = {}) =>
   useQuery({
     queryKey:
       keyExtra === undefined
@@ -69,7 +80,7 @@ const markIdsReadInCache = (queryClient, ids) => {
       data: {
         ...old.data,
         notifications: old.data.notifications.map((n) =>
-          idSet.has(notifId(n)) ? { ...n, isRead: true } : n
+          idSet.has(notifId(n)) ? { ...n, isRead: true } : n,
         ),
       },
     };
@@ -81,7 +92,10 @@ const decrementUnreadInCache = (queryClient, by) => {
   queryClient.setQueryData(NOTIFICATION_KEYS.unread(), (old) => {
     const count = old?.data?.unreadCount;
     if (!Number.isFinite(count)) return old;
-    return { ...old, data: { ...old.data, unreadCount: Math.max(0, count - by) } };
+    return {
+      ...old,
+      data: { ...old.data, unreadCount: Math.max(0, count - by) },
+    };
   });
 };
 
@@ -141,7 +155,9 @@ export const collectUnreadNotificationIds = async () => {
   let page = 1;
   let totalPages = 1;
   do {
-    const response = await notificationApi.getNotifications(page, 50, { isRead: false });
+    const response = await notificationApi.getNotifications(page, 50, {
+      isRead: false,
+    });
     const list = response?.data?.notifications || response?.notifications || [];
     for (const n of list) {
       const id = notifId(n);

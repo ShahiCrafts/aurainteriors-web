@@ -1,5 +1,5 @@
-import { useEffect, useRef, useCallback, useState } from 'react';
-import { useQueryClient } from '@tanstack/react-query';
+import { useEffect, useRef, useCallback, useState } from "react";
+import { useQueryClient } from "@tanstack/react-query";
 
 /**
  * useChatSocket
@@ -16,7 +16,10 @@ const useChatSocket = (socket, chatId) => {
   const queryClient = useQueryClient();
 
   // Human or AI typing indicator state
-  const [typingStatus, setTypingStatus] = useState({ isTyping: false, userRole: null });
+  const [typingStatus, setTypingStatus] = useState({
+    isTyping: false,
+    userRole: null,
+  });
 
   // Refs for cleanup
   const humanTypingTimeoutRef = useRef(null); // fallback timer for human typing only
@@ -27,15 +30,18 @@ const useChatSocket = (socket, chatId) => {
 
     const roomChatId = chatId.toString();
     const joinAndReconcile = () => {
-      socket.emit('chat:join', { chatId: roomChatId });
-      queryClient.refetchQueries({ queryKey: ['chats', chatId, 'messages'], type: 'active' });
+      socket.emit("chat:join", { chatId: roomChatId });
+      queryClient.refetchQueries({
+        queryKey: ["chats", chatId, "messages"],
+        type: "active",
+      });
     };
     joinAndReconcile();
-    socket.on('connect', joinAndReconcile);
+    socket.on("connect", joinAndReconcile);
 
     return () => {
-      socket.off('connect', joinAndReconcile);
-      if (socket.connected) socket.emit('chat:leave', { chatId: roomChatId });
+      socket.off("connect", joinAndReconcile);
+      if (socket.connected) socket.emit("chat:leave", { chatId: roomChatId });
     };
   }, [socket, chatId, queryClient]);
 
@@ -47,14 +53,25 @@ const useChatSocket = (socket, chatId) => {
     // ----- Standard message events -----
 
     const handleNewMessage = (data) => {
-      if (data?.chatId?.toString() !== chatId?.toString() || !data?.message) return;
+      if (data?.chatId?.toString() !== chatId?.toString() || !data?.message)
+        return;
 
       // Socket payload is already the canonical populated DB message. Merge it into
       // React Query instead of downloading the entire conversation again.
-      queryClient.setQueryData(['chats', chatId, 'messages'], (old) => {
+      queryClient.setQueryData(["chats", chatId, "messages"], (old) => {
         const incoming = data.message;
         if (!old?.pages?.length) {
-          return { pages: [{ data: { messages: [incoming], pagination: { page: 1, totalPages: 1 } } }], pageParams: [1] };
+          return {
+            pages: [
+              {
+                data: {
+                  messages: [incoming],
+                  pagination: { page: 1, totalPages: 1 },
+                },
+              },
+            ],
+            pageParams: [1],
+          };
         }
         let found = false;
         const pages = old.pages.map((page) => ({
@@ -62,7 +79,10 @@ const useChatSocket = (socket, chatId) => {
           data: {
             ...page.data,
             messages: (page.data?.messages || []).map((m) => {
-              if (m._id === incoming._id) { found = true; return incoming; }
+              if (m._id === incoming._id) {
+                found = true;
+                return incoming;
+              }
               return m;
             }),
           },
@@ -73,37 +93,66 @@ const useChatSocket = (socket, chatId) => {
           // permanently "pending" in production.
           let optimisticPage = -1;
           let optimisticIndex = -1;
-          if (incoming.senderRole === 'customer') {
+          if (incoming.senderRole === "customer") {
             for (let i = 0; i < pages.length && optimisticIndex < 0; i += 1) {
               const list = pages[i].data?.messages || [];
-              const idx = list.findIndex((m) => incoming.clientMessageId ? m.clientMessageId === incoming.clientMessageId : (!m.clientMessageId && String(m._id).startsWith('optimistic-') && m.content === incoming.content));
-              if (idx >= 0) { optimisticPage = i; optimisticIndex = idx; }
+              const idx = list.findIndex((m) =>
+                incoming.clientMessageId
+                  ? m.clientMessageId === incoming.clientMessageId
+                  : !m.clientMessageId &&
+                    String(m._id).startsWith("optimistic-") &&
+                    m.content === incoming.content,
+              );
+              if (idx >= 0) {
+                optimisticPage = i;
+                optimisticIndex = idx;
+              }
             }
           }
           if (optimisticIndex >= 0) {
             const list = [...(pages[optimisticPage].data?.messages || [])];
             list[optimisticIndex] = { ...incoming, isPending: false };
-            pages[optimisticPage] = { ...pages[optimisticPage], data: { ...pages[optimisticPage].data, messages: list } };
+            pages[optimisticPage] = {
+              ...pages[optimisticPage],
+              data: { ...pages[optimisticPage].data, messages: list },
+            };
           } else {
             const target = 0;
-            pages[target] = { ...pages[target], data: { ...pages[target].data, messages: [...(pages[target].data?.messages || []), incoming] } };
+            pages[target] = {
+              ...pages[target],
+              data: {
+                ...pages[target].data,
+                messages: [...(pages[target].data?.messages || []), incoming],
+              },
+            };
           }
         }
         return { ...old, pages };
       });
 
       // Lists are secondary UI; mark stale without forcing the open conversation to refetch.
-      queryClient.invalidateQueries({ queryKey: ['chats', 'my'], refetchType: 'none' });
-      queryClient.invalidateQueries({ queryKey: ['chats', 'admin', 'all'], refetchType: 'none' });
+      queryClient.invalidateQueries({
+        queryKey: ["chats", "my"],
+        refetchType: "none",
+      });
+      queryClient.invalidateQueries({
+        queryKey: ["chats", "admin", "all"],
+        refetchType: "none",
+      });
     };
 
     const handleMessagesRead = (data) => {
       if (data.chatId?.toString() !== chatId?.toString()) return;
       // A read receipt is metadata, not a reason to redownload the conversation.
-      queryClient.setQueryData(['chats', chatId, 'messages'], (old) => {
+      queryClient.setQueryData(["chats", chatId, "messages"], (old) => {
         if (!old?.pages) return old;
         const readerRole = data.userRole || data.readerRole;
-        const rolesRead = readerRole === 'admin' ? ['customer'] : readerRole === 'customer' ? ['admin', 'bot'] : [];
+        const rolesRead =
+          readerRole === "admin"
+            ? ["customer"]
+            : readerRole === "customer"
+              ? ["admin", "bot"]
+              : [];
         if (!rolesRead.length) return old;
         return {
           ...old,
@@ -112,29 +161,44 @@ const useChatSocket = (socket, chatId) => {
             data: {
               ...page.data,
               messages: (page.data?.messages || []).map((m) =>
-                rolesRead.includes(m.senderRole) && !m.isPending ? { ...m, isRead: true, readAt: m.readAt || data.readAt || new Date().toISOString() } : m
+                rolesRead.includes(m.senderRole) && !m.isPending
+                  ? {
+                      ...m,
+                      isRead: true,
+                      readAt:
+                        m.readAt || data.readAt || new Date().toISOString(),
+                    }
+                  : m,
               ),
             },
           })),
         };
       });
-      queryClient.invalidateQueries({ queryKey: ['chats', chatId], refetchType: 'none' });
-      queryClient.invalidateQueries({ queryKey: ['chats', 'my'], refetchType: 'none' });
+      queryClient.invalidateQueries({
+        queryKey: ["chats", chatId],
+        refetchType: "none",
+      });
+      queryClient.invalidateQueries({
+        queryKey: ["chats", "my"],
+        refetchType: "none",
+      });
     };
 
     const handleChatClosed = (data) => {
-      if (data.chatId === chatId) queryClient.invalidateQueries({ queryKey: ['chats'] });
+      if (data.chatId === chatId)
+        queryClient.invalidateQueries({ queryKey: ["chats"] });
     };
 
     const handleChatResolved = (data) => {
-      if (data.chatId === chatId) queryClient.invalidateQueries({ queryKey: ['chats'] });
+      if (data.chatId === chatId)
+        queryClient.invalidateQueries({ queryKey: ["chats"] });
     };
 
     const handleStatusChanged = (data) => {
       if (data.chatId === chatId) {
-        queryClient.invalidateQueries({ queryKey: ['chats'] });
-        queryClient.invalidateQueries({ queryKey: ['chats', 'my'] });
-        queryClient.invalidateQueries({ queryKey: ['chats', 'admin', 'all'] });
+        queryClient.invalidateQueries({ queryKey: ["chats"] });
+        queryClient.invalidateQueries({ queryKey: ["chats", "my"] });
+        queryClient.invalidateQueries({ queryKey: ["chats", "admin", "all"] });
       }
     };
 
@@ -144,18 +208,20 @@ const useChatSocket = (socket, chatId) => {
       if (data.chatId?.toString() !== chatId?.toString()) return;
 
       // Only handle human typing here — AI typing is managed by ai:thinking_start/stop
-      if (data.userRole === 'ai') return;
+      if (data.userRole === "ai") return;
 
       setTypingStatus({ isTyping: data.isTyping, userRole: data.userRole });
 
       if (data.isTyping) {
-        if (humanTypingTimeoutRef.current) clearTimeout(humanTypingTimeoutRef.current);
+        if (humanTypingTimeoutRef.current)
+          clearTimeout(humanTypingTimeoutRef.current);
         // Short fallback: if the human typing stop event is somehow missed, clear after 5s
         humanTypingTimeoutRef.current = setTimeout(() => {
           setTypingStatus({ isTyping: false, userRole: null });
         }, 1000);
       } else {
-        if (humanTypingTimeoutRef.current) clearTimeout(humanTypingTimeoutRef.current);
+        if (humanTypingTimeoutRef.current)
+          clearTimeout(humanTypingTimeoutRef.current);
       }
     };
 
@@ -167,7 +233,7 @@ const useChatSocket = (socket, chatId) => {
         clearTimeout(humanTypingTimeoutRef.current);
         humanTypingTimeoutRef.current = null;
       }
-      setTypingStatus({ isTyping: true, userRole: 'ai' });
+      setTypingStatus({ isTyping: true, userRole: "ai" });
     };
 
     const handleAiThinkingStop = (data) => {
@@ -187,28 +253,29 @@ const useChatSocket = (socket, chatId) => {
     // The single source of truth is the persisted chat:message:new event above.
 
     // Register all listeners
-    socket.on('chat:message:new', handleNewMessage);
-    socket.on('chat:typing:status', handleTypingStatus);
-    socket.on('chat:messages:read', handleMessagesRead);
-    socket.on('chat:closed', handleChatClosed);
-    socket.on('chat:resolved', handleChatResolved);
-    socket.on('chat:status:changed', handleStatusChanged);
-    socket.on('ai:thinking_start', handleAiThinkingStart);
-    socket.on('ai:thinking_stop', handleAiThinkingStop);
-    socket.on('ai:error', handleAiError);
+    socket.on("chat:message:new", handleNewMessage);
+    socket.on("chat:typing:status", handleTypingStatus);
+    socket.on("chat:messages:read", handleMessagesRead);
+    socket.on("chat:closed", handleChatClosed);
+    socket.on("chat:resolved", handleChatResolved);
+    socket.on("chat:status:changed", handleStatusChanged);
+    socket.on("ai:thinking_start", handleAiThinkingStart);
+    socket.on("ai:thinking_stop", handleAiThinkingStop);
+    socket.on("ai:error", handleAiError);
 
     return () => {
-      socket.off('chat:message:new', handleNewMessage);
-      socket.off('chat:typing:status', handleTypingStatus);
-      socket.off('chat:messages:read', handleMessagesRead);
-      socket.off('chat:closed', handleChatClosed);
-      socket.off('chat:resolved', handleChatResolved);
-      socket.off('chat:status:changed', handleStatusChanged);
-      socket.off('ai:thinking_start', handleAiThinkingStart);
-      socket.off('ai:thinking_stop', handleAiThinkingStop);
-      socket.off('ai:error', handleAiError);
+      socket.off("chat:message:new", handleNewMessage);
+      socket.off("chat:typing:status", handleTypingStatus);
+      socket.off("chat:messages:read", handleMessagesRead);
+      socket.off("chat:closed", handleChatClosed);
+      socket.off("chat:resolved", handleChatResolved);
+      socket.off("chat:status:changed", handleStatusChanged);
+      socket.off("ai:thinking_start", handleAiThinkingStart);
+      socket.off("ai:thinking_stop", handleAiThinkingStop);
+      socket.off("ai:error", handleAiError);
 
-      if (humanTypingTimeoutRef.current) clearTimeout(humanTypingTimeoutRef.current);
+      if (humanTypingTimeoutRef.current)
+        clearTimeout(humanTypingTimeoutRef.current);
     };
   }, [socket, chatId, queryClient]);
 
@@ -216,24 +283,24 @@ const useChatSocket = (socket, chatId) => {
 
   const broadcastMessage = useCallback(
     (message) => {
-      if (socket && chatId) socket.emit('chat:message', { chatId, message });
+      if (socket && chatId) socket.emit("chat:message", { chatId, message });
     },
-    [socket, chatId]
+    [socket, chatId],
   );
 
   const sendTypingIndicator = useCallback(
     (isTyping) => {
-      if (socket && chatId) socket.emit('chat:typing', { chatId, isTyping });
+      if (socket && chatId) socket.emit("chat:typing", { chatId, isTyping });
     },
-    [socket, chatId]
+    [socket, chatId],
   );
 
   const broadcastRead = useCallback(() => {
-    if (socket && chatId) socket.emit('chat:read', { chatId });
+    if (socket && chatId) socket.emit("chat:read", { chatId });
   }, [socket, chatId]);
 
   const broadcastChatClose = useCallback(() => {
-    if (socket && chatId) socket.emit('chat:close', { chatId });
+    if (socket && chatId) socket.emit("chat:close", { chatId });
   }, [socket, chatId]);
 
   return {

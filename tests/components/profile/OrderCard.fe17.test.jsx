@@ -37,7 +37,7 @@ describe("OrderCard FE-17 guard", () => {
     render(
       <MemoryRouter>
         <OrderCard order={order} defaultExpanded />
-      </MemoryRouter>
+      </MemoryRouter>,
     );
     expect(screen.getAllByText("Chair").length).toBeGreaterThan(0);
     // Missing price renders as the guarded 0 instead of throwing.

@@ -28,17 +28,35 @@ vi.mock("../../../src/components/admin/dashboard/RevenueChart.jsx", () => ({
   default: ({ period, onPeriodChange }) => (
     <div>
       <span data-testid="period">{period}</span>
-      <button onClick={() => onPeriodChange("this-year")}>pick this year</button>
-      <button onClick={() => onPeriodChange("last-3-months")}>pick 3 months</button>
+      <button onClick={() => onPeriodChange("this-year")}>
+        pick this year
+      </button>
+      <button onClick={() => onPeriodChange("last-3-months")}>
+        pick 3 months
+      </button>
     </div>
   ),
 }));
-vi.mock("../../../src/components/admin/dashboard/CategorySalesChart.jsx", () => ({ default: () => null }));
-vi.mock("../../../src/components/admin/dashboard/RecentOrdersTable.jsx", () => ({ default: () => null }));
-vi.mock("../../../src/components/admin/dashboard/QuickActions.jsx", () => ({ default: () => null }));
-vi.mock("../../../src/components/admin/dashboard/SupportOverview.jsx", () => ({ default: () => null }));
-vi.mock("../../../src/components/admin/dashboard/AIInsights.jsx", () => ({ default: () => null }));
-vi.mock("../../../src/components/admin/dashboard/StatCard.jsx", () => ({ default: () => null }));
+vi.mock(
+  "../../../src/components/admin/dashboard/CategorySalesChart.jsx",
+  () => ({ default: () => null }),
+);
+vi.mock(
+  "../../../src/components/admin/dashboard/RecentOrdersTable.jsx",
+  () => ({ default: () => null }),
+);
+vi.mock("../../../src/components/admin/dashboard/QuickActions.jsx", () => ({
+  default: () => null,
+}));
+vi.mock("../../../src/components/admin/dashboard/SupportOverview.jsx", () => ({
+  default: () => null,
+}));
+vi.mock("../../../src/components/admin/dashboard/AIInsights.jsx", () => ({
+  default: () => null,
+}));
+vi.mock("../../../src/components/admin/dashboard/StatCard.jsx", () => ({
+  default: () => null,
+}));
 
 import {
   useDashboardStats,
@@ -53,7 +71,16 @@ const loaded = (value) => ({ data: value, isLoading: false });
 
 beforeEach(() => {
   vi.clearAllMocks();
-  useDashboardStats.mockReturnValue(loaded({ data: { totalRevenue: 1, totalOrders: 1, totalProducts: 1, totalUsers: 1 } }));
+  useDashboardStats.mockReturnValue(
+    loaded({
+      data: {
+        totalRevenue: 1,
+        totalOrders: 1,
+        totalProducts: 1,
+        totalUsers: 1,
+      },
+    }),
+  );
   useRevenueAnalytics.mockReturnValue(loaded({ data: { chartData: [] } }));
   useCategorySales.mockReturnValue(loaded({ data: { salesByCategory: [] } }));
   useTopProducts.mockReturnValue(loaded({ data: { topProducts: [] } }));
@@ -65,7 +92,7 @@ describe("Dashboard revenue period wiring (FE-38)", () => {
     render(
       <MemoryRouter>
         <Dashboard />
-      </MemoryRouter>
+      </MemoryRouter>,
     );
     expect(screen.getByTestId("period")).toHaveTextContent("last-30");
     expect(useRevenueAnalytics).toHaveBeenCalledWith(30);
@@ -75,7 +102,7 @@ describe("Dashboard revenue period wiring (FE-38)", () => {
     render(
       <MemoryRouter>
         <Dashboard />
-      </MemoryRouter>
+      </MemoryRouter>,
     );
     fireEvent.click(screen.getByRole("button", { name: /pick 3 months/i }));
     expect(screen.getByTestId("period")).toHaveTextContent("last-3-months");

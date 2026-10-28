@@ -43,7 +43,7 @@ export const useTrackOrder = () => {
 
 // Get my orders
 export const useMyOrders = (params = {}, options = {}) => {
-  const userId = useAuthStore(state => state.user?._id);
+  const userId = useAuthStore((state) => state.user?._id);
   return useQuery({
     queryKey: [...ORDER_KEYS.myOrders(params), userId || "guest"],
     queryFn: () => orderApi.getMyOrders(params),
@@ -54,7 +54,7 @@ export const useMyOrders = (params = {}, options = {}) => {
 
 // Get single order
 export const useOrder = (id, options = {}) => {
-  const userId = useAuthStore(state => state.user?._id);
+  const userId = useAuthStore((state) => state.user?._id);
   return useQuery({
     queryKey: [...ORDER_KEYS.detail(id), userId || "guest"],
     queryFn: () => orderApi.getOrder(id),
@@ -66,7 +66,7 @@ export const useOrder = (id, options = {}) => {
 // ========== ADMIN HOOKS ==========
 
 export const useAllOrders = (params = {}, options = {}) => {
-  const userId = useAuthStore(state => state.user?._id);
+  const userId = useAuthStore((state) => state.user?._id);
   return useQuery({
     queryKey: [...ORDER_KEYS.admin(params), userId || "guest"],
     queryFn: () => orderApi.getAllOrders(params),
@@ -76,7 +76,7 @@ export const useAllOrders = (params = {}, options = {}) => {
 };
 
 export const useOrderAdmin = (id, options = {}) => {
-  const userId = useAuthStore(state => state.user?._id);
+  const userId = useAuthStore((state) => state.user?._id);
   return useQuery({
     queryKey: [...ORDER_KEYS.all, "admin-detail", id, userId || "guest"],
     queryFn: () => orderApi.getOrderAdmin(id),

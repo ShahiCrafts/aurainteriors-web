@@ -1,22 +1,30 @@
 import { formatDate } from "../../utils/formatDate";
-import { useState } from 'react';
-import { Download, DollarSign, ShoppingBag, Box, Users } from 'lucide-react';
-import { DashboardSkeleton } from '../../components/common/Skeleton';
-import { useDashboardStats, useRevenueAnalytics, useCategorySales, useTopProducts } from '../../hooks/admin/useAnalyticsTan';
-import { useAllOrders } from '../../hooks/order/useOrderTan';
-import useAuthStore from '../../store/authStore';
+import { useState } from "react";
+import { Download, DollarSign, ShoppingBag, Box, Users } from "lucide-react";
+import { DashboardSkeleton } from "../../components/common/Skeleton";
+import {
+  useDashboardStats,
+  useRevenueAnalytics,
+  useCategorySales,
+  useTopProducts,
+} from "../../hooks/admin/useAnalyticsTan";
+import { useAllOrders } from "../../hooks/order/useOrderTan";
+import useAuthStore from "../../store/authStore";
 import { useShallow } from "zustand/react/shallow";
-import { formatNPR } from '../../utils/formatCurrency';
+import { formatNPR } from "../../utils/formatCurrency";
 
 // Extracted Components
-import StatCard from '../../components/admin/dashboard/StatCard';
-import RevenueChart from '../../components/admin/dashboard/RevenueChart';
-import { revenuePeriodDays, DEFAULT_REVENUE_PERIOD } from '../../utils/revenuePeriod';
-import CategorySalesChart from '../../components/admin/dashboard/CategorySalesChart';
-import SupportOverview from '../../components/admin/dashboard/SupportOverview';
-import RecentOrdersTable from '../../components/admin/dashboard/RecentOrdersTable';
-import AIInsights from '../../components/admin/dashboard/AIInsights';
-import QuickActions from '../../components/admin/dashboard/QuickActions';
+import StatCard from "../../components/admin/dashboard/StatCard";
+import RevenueChart from "../../components/admin/dashboard/RevenueChart";
+import {
+  revenuePeriodDays,
+  DEFAULT_REVENUE_PERIOD,
+} from "../../utils/revenuePeriod";
+import CategorySalesChart from "../../components/admin/dashboard/CategorySalesChart";
+import SupportOverview from "../../components/admin/dashboard/SupportOverview";
+import RecentOrdersTable from "../../components/admin/dashboard/RecentOrdersTable";
+import AIInsights from "../../components/admin/dashboard/AIInsights";
+import QuickActions from "../../components/admin/dashboard/QuickActions";
 
 export default function Dashboard() {
   const { user } = useAuthStore(useShallow((state) => ({ user: state.user })));
@@ -25,16 +33,21 @@ export default function Dashboard() {
   // picking a period re-queries the revenue endpoint with that
   // window's day count (the server honours ?days=, clamped 1..365).
   const [revenuePeriod, setRevenuePeriod] = useState(DEFAULT_REVENUE_PERIOD);
-  const { data: revenueData, isLoading: revenueLoading } = useRevenueAnalytics(revenuePeriodDays(revenuePeriod));
+  const { data: revenueData, isLoading: revenueLoading } = useRevenueAnalytics(
+    revenuePeriodDays(revenuePeriod),
+  );
   const { data: categoryData, isLoading: categoryLoading } = useCategorySales();
-  const { data: topProductsData, isLoading: productsLoading } = useTopProducts();
-  const { data: recentOrdersData, isLoading: ordersLoading } = useAllOrders({ limit: 6 });
+  const { data: topProductsData, isLoading: productsLoading } =
+    useTopProducts();
+  const { data: recentOrdersData, isLoading: ordersLoading } = useAllOrders({
+    limit: 6,
+  });
 
   const stats = statsData?.data || {
     totalRevenue: 0,
     totalOrders: 0,
     totalProducts: 0,
-    totalUsers: 0
+    totalUsers: 0,
   };
 
   const chartData = revenueData?.data?.chartData || [];
@@ -43,9 +56,9 @@ export default function Dashboard() {
 
   const getGreeting = () => {
     const hour = new Date().getHours();
-    if (hour < 12) return 'Good morning';
-    if (hour < 17) return 'Good afternoon';
-    return 'Good evening';
+    if (hour < 12) return "Good morning";
+    if (hour < 17) return "Good afternoon";
+    return "Good evening";
   };
 
   const handleDownloadReport = async () => {
@@ -53,24 +66,24 @@ export default function Dashboard() {
       // PERF-F-002: xlsx is loaded on demand — a static import pulled
       // the vendor-xlsx chunk into the admin index route graph even
       // when the report was never exported.
-      const XLSX = await import('xlsx');
+      const XLSX = await import("xlsx");
       const overviewData = [
-        { Metric: 'Net Revenue', Value: stats.totalRevenue },
-        { Metric: 'Total Orders', Value: stats.totalOrders },
-        { Metric: 'Total Products', Value: stats.totalProducts },
-        { Metric: 'Total Customers', Value: stats.totalUsers },
+        { Metric: "Net Revenue", Value: stats.totalRevenue },
+        { Metric: "Total Orders", Value: stats.totalOrders },
+        { Metric: "Total Products", Value: stats.totalProducts },
+        { Metric: "Total Customers", Value: stats.totalUsers },
       ];
 
       const topProducts = topProductsData?.data?.topProducts || [];
-      const productsData = topProducts.map(p => ({
+      const productsData = topProducts.map((p) => ({
         Name: p.name,
         Deals: p.sales,
-        'Total Value': p.revenue,
+        "Total Value": p.revenue,
       }));
 
-      const ordersData = recentOrders.map(o => ({
-        'Order ID': o.orderId,
-        Customer: o.user?.fullName || o.guestInfo?.firstName || 'Guest',
+      const ordersData = recentOrders.map((o) => ({
+        "Order ID": o.orderId,
+        Customer: o.user?.fullName || o.guestInfo?.firstName || "Guest",
         Status: o.orderStatus,
         Total: o.total,
         Date: formatDate(o.createdAt),
@@ -81,15 +94,15 @@ export default function Dashboard() {
       const wsProducts = XLSX.utils.json_to_sheet(productsData);
       const wsOrders = XLSX.utils.json_to_sheet(ordersData);
 
-      XLSX.utils.book_append_sheet(wb, wsOverview, 'Overview');
-      XLSX.utils.book_append_sheet(wb, wsProducts, 'Top Products');
-      XLSX.utils.book_append_sheet(wb, wsOrders, 'Recent Orders');
+      XLSX.utils.book_append_sheet(wb, wsOverview, "Overview");
+      XLSX.utils.book_append_sheet(wb, wsProducts, "Top Products");
+      XLSX.utils.book_append_sheet(wb, wsOrders, "Recent Orders");
 
-      const fileName = `Aura_Interiors_Report_${new Date().toISOString().split('T')[0]}.xlsx`;
+      const fileName = `Aura_Interiors_Report_${new Date().toISOString().split("T")[0]}.xlsx`;
       XLSX.writeFile(wb, fileName);
     } catch (error) {
-      console.error('Error generating report:', error);
-      alert('Failed to generate report. Please try again.');
+      console.error("Error generating report:", error);
+      alert("Failed to generate report. Please try again.");
     }
   };
 
@@ -109,32 +122,38 @@ export default function Dashboard() {
   // trend indicator or sparkline rather than invented ones.
   const statCards = [
     {
-      label: 'Net Revenue',
+      label: "Net Revenue",
       value: formatRevenue(stats.totalRevenue),
       icon: DollarSign,
-      color: 'emerald',
+      color: "emerald",
     },
     {
-      label: 'Total Orders',
+      label: "Total Orders",
       value: stats.totalOrders.toLocaleString(),
       icon: ShoppingBag,
-      color: 'blue',
+      color: "blue",
     },
     {
-      label: 'Products',
+      label: "Products",
       value: stats.totalProducts,
       icon: Box,
-      color: 'orange',
+      color: "orange",
     },
     {
-      label: 'Customers',
+      label: "Customers",
       value: stats.totalUsers.toLocaleString(),
       icon: Users,
-      color: 'purple',
+      color: "purple",
     },
   ];
 
-  if (statsLoading || revenueLoading || categoryLoading || productsLoading || ordersLoading) {
+  if (
+    statsLoading ||
+    revenueLoading ||
+    categoryLoading ||
+    productsLoading ||
+    ordersLoading
+  ) {
     return (
       <div className="p-6 space-y-5">
         <DashboardSkeleton />
@@ -162,10 +181,14 @@ export default function Dashboard() {
       <div className="flex items-center justify-between">
         <div>
           <h1 className="text-2xl font-bold text-gray-900 flex items-center gap-2">
-            {getGreeting()}, {user?.firstName || 'Admin'}
-            <span role="img" aria-label="wave">👋</span>
+            {getGreeting()}, {user?.firstName || "Admin"}
+            <span role="img" aria-label="wave">
+              👋
+            </span>
           </h1>
-          <p className="text-gray-500 mt-0.5 text-sm">Here's what's happening with your store today.</p>
+          <p className="text-gray-500 mt-0.5 text-sm">
+            Here's what's happening with your store today.
+          </p>
         </div>
         <button
           onClick={handleDownloadReport}
@@ -186,12 +209,14 @@ export default function Dashboard() {
       {/* Main Charts Section - Sales Overview, Sales by Category, Support Overview */}
       {/* Main Charts Section - Sales Overview, Sales by Category, Support Overview */}
       <div className="grid grid-cols-1 lg:grid-cols-[1.4fr_1fr_1fr] gap-5">
-        <RevenueChart data={chartData} period={revenuePeriod} onPeriodChange={setRevenuePeriod} />
+        <RevenueChart
+          data={chartData}
+          period={revenuePeriod}
+          onPeriodChange={setRevenuePeriod}
+        />
         <CategorySalesChart data={pieData} />
         <SupportOverview />
       </div>
-      
-      
 
       {/* Bottom Section: Recent Orders (2 cols) + AI Insights / Quick Actions (1 col) */}
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-5">

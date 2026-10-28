@@ -13,7 +13,12 @@ export default function VerifyMagicLinkPage() {
   const [searchParams] = useSearchParams();
   const token = searchParams.get("token");
   const navigate = useNavigate();
-  const { signIn, openAuthModal } = useAuthStore(useShallow((state) => ({ signIn: state.signIn, openAuthModal: state.openAuthModal })));
+  const { signIn, openAuthModal } = useAuthStore(
+    useShallow((state) => ({
+      signIn: state.signIn,
+      openAuthModal: state.openAuthModal,
+    })),
+  );
   useEffect(() => {
     if (!token) {
       toast.error("Invalid or missing magic link token.");
@@ -38,7 +43,7 @@ export default function VerifyMagicLinkPage() {
           return;
         }
         signIn(user, data.token);
-        
+
         if (user && user.email) {
           localStorage.setItem("lastUsedEmail", user.email);
         }
@@ -46,7 +51,9 @@ export default function VerifyMagicLinkPage() {
         const isProfileIncomplete = !user.firstName && !user.lastName;
         if (isProfileIncomplete) {
           openAuthModal("onboarding");
-          toast.success("Signed in successfully! Let's complete your profile setup.");
+          toast.success(
+            "Signed in successfully! Let's complete your profile setup.",
+          );
         } else {
           toast.success(`Welcome back, ${user.firstName || "User"}!`);
         }
@@ -66,8 +73,12 @@ export default function VerifyMagicLinkPage() {
         <Skeleton className="w-12 h-12 rounded-full mx-auto" />
         <Skeleton className="w-3/4 h-6 rounded mx-auto" />
         <Skeleton className="w-1/2 h-4 rounded mx-auto" />
-        <h2 className="text-[18px] font-bold text-[#1A1714] pt-2">Verifying your sign-in link...</h2>
-        <p className="text-[#64748B] text-[13px]">Please wait while we authenticate you.</p>
+        <h2 className="text-[18px] font-bold text-[#1A1714] pt-2">
+          Verifying your sign-in link...
+        </h2>
+        <p className="text-[#64748B] text-[13px]">
+          Please wait while we authenticate you.
+        </p>
       </div>
     </div>
   );

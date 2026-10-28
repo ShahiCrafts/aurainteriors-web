@@ -33,7 +33,10 @@ const product = {
 
 beforeEach(() => {
   hoisted.qrValue = null;
-  vi.stubGlobal("fetch", vi.fn(() => Promise.reject(new Error("no network in tests"))));
+  vi.stubGlobal(
+    "fetch",
+    vi.fn(() => Promise.reject(new Error("no network in tests"))),
+  );
 });
 
 afterEach(() => {
@@ -70,7 +73,7 @@ describe("ARViewModal (FE-46)", () => {
         isOpen
         onClose={vi.fn()}
         product={{ _id: "prod-9", modelUrl: "https://example.com/x.glb" }}
-      />
+      />,
     );
     expect(hoisted.qrValue).toBe(`${window.location.origin}/ar/prod-9`);
   });
@@ -86,9 +89,11 @@ describe("ARViewModal (FE-46)", () => {
           modelUrl: "https://example.com/x.glb",
           modelFiles: [{ format: "glb", url: "https://example.com/x.glb" }],
         }}
-      />
+      />,
     );
-    expect(hoisted.qrValue).toBe(`${window.location.origin}/ar/a%2Fb%3Fx%3D1%23y`);
+    expect(hoisted.qrValue).toBe(
+      `${window.location.origin}/ar/a%2Fb%3Fx%3D1%23y`,
+    );
     expect(hoisted.qrValue).not.toContain("#");
     expect(hoisted.qrValue).not.toContain("?x=1");
   });

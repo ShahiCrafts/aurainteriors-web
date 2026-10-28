@@ -12,25 +12,54 @@ const deleteMutate = vi.hoisted(() => vi.fn().mockResolvedValue({}));
 
 const DEFINITIONS = [
   {
-    key: "frameMaterial", label: "Frame Material", type: "enum",
-    allowedValues: ["Oak", "Pine"], acceptedUnits: [],
-    filterable: true, sortable: false, comparable: true, required: false,
-    active: true, storage: "catalogAttributes", appliesTo: "assigned",
-    displayGroup: "Construction", sortOrder: 1,
+    key: "frameMaterial",
+    label: "Frame Material",
+    type: "enum",
+    allowedValues: ["Oak", "Pine"],
+    acceptedUnits: [],
+    filterable: true,
+    sortable: false,
+    comparable: true,
+    required: false,
+    active: true,
+    storage: "catalogAttributes",
+    appliesTo: "assigned",
+    displayGroup: "Construction",
+    sortOrder: 1,
   },
   {
-    key: "weight", label: "Weight", type: "measurement", unit: "kg",
-    allowedValues: [], acceptedUnits: ["kg", "lb"],
-    filterable: false, sortable: true, comparable: false, required: false,
-    active: true, storage: "field", fieldPath: "weight",
-    appliesTo: "all", displayGroup: "Specifications", sortOrder: 2,
+    key: "weight",
+    label: "Weight",
+    type: "measurement",
+    unit: "kg",
+    allowedValues: [],
+    acceptedUnits: ["kg", "lb"],
+    filterable: false,
+    sortable: true,
+    comparable: false,
+    required: false,
+    active: true,
+    storage: "field",
+    fieldPath: "weight",
+    appliesTo: "all",
+    displayGroup: "Specifications",
+    sortOrder: 2,
   },
   {
-    key: "legacyCode", label: "Legacy Code", type: "string",
-    allowedValues: [], acceptedUnits: [],
-    filterable: false, sortable: false, comparable: false, required: false,
-    active: false, storage: "catalogAttributes", appliesTo: "all",
-    displayGroup: "", sortOrder: 3,
+    key: "legacyCode",
+    label: "Legacy Code",
+    type: "string",
+    allowedValues: [],
+    acceptedUnits: [],
+    filterable: false,
+    sortable: false,
+    comparable: false,
+    required: false,
+    active: false,
+    storage: "catalogAttributes",
+    appliesTo: "all",
+    displayGroup: "",
+    sortOrder: 3,
   },
 ];
 
@@ -40,9 +69,18 @@ vi.mock("../../../src/hooks/catalog/useCatalogTan", () => ({
     isLoading: false,
     error: null,
   }),
-  useCreateAttributeDefinition: () => ({ mutateAsync: createMutate, isPending: false }),
-  useUpdateAttributeDefinition: () => ({ mutateAsync: updateMutate, isPending: false }),
-  useDeleteAttributeDefinition: () => ({ mutateAsync: deleteMutate, isPending: false }),
+  useCreateAttributeDefinition: () => ({
+    mutateAsync: createMutate,
+    isPending: false,
+  }),
+  useUpdateAttributeDefinition: () => ({
+    mutateAsync: updateMutate,
+    isPending: false,
+  }),
+  useDeleteAttributeDefinition: () => ({
+    mutateAsync: deleteMutate,
+    isPending: false,
+  }),
 }));
 
 vi.mock("../../../src/lib/toast.js", () => ({
@@ -103,11 +141,15 @@ describe("Attributes admin (Phase 6)", () => {
 
     const row = screen.getByTestId("attribute-row-frameMaterial");
     fireEvent.click(within(row).getByTitle("Edit"));
-    fireEvent.change(screen.getByLabelText(/^Type/), { target: { value: "string" } });
+    fireEvent.change(screen.getByLabelText(/^Type/), {
+      target: { value: "string" },
+    });
     fireEvent.click(screen.getByRole("button", { name: "Save Changes" }));
 
     expect(
-      await screen.findByText(/Cannot change the type or storage of attribute "frameMaterial"/)
+      await screen.findByText(
+        /Cannot change the type or storage of attribute "frameMaterial"/,
+      ),
     ).toBeInTheDocument();
     expect(updateMutate).toHaveBeenCalledWith({
       key: "frameMaterial",
@@ -119,14 +161,24 @@ describe("Attributes admin (Phase 6)", () => {
     render(<Attributes />);
 
     fireEvent.click(screen.getByRole("button", { name: "Add Attribute" }));
-    fireEvent.change(screen.getByLabelText(/^Key/), { target: { value: "seatDepth" } });
-    fireEvent.change(screen.getByLabelText(/^Label/), { target: { value: "Seat Depth" } });
-    fireEvent.change(screen.getByLabelText(/^Type/), { target: { value: "decimal" } });
+    fireEvent.change(screen.getByLabelText(/^Key/), {
+      target: { value: "seatDepth" },
+    });
+    fireEvent.change(screen.getByLabelText(/^Label/), {
+      target: { value: "Seat Depth" },
+    });
+    fireEvent.change(screen.getByLabelText(/^Type/), {
+      target: { value: "decimal" },
+    });
     fireEvent.click(screen.getByRole("button", { name: "Create Attribute" }));
 
     expect(createMutate).toHaveBeenCalledTimes(1);
     expect(createMutate.mock.calls[0][0]).toEqual(
-      expect.objectContaining({ key: "seatDepth", label: "Seat Depth", type: "decimal" })
+      expect.objectContaining({
+        key: "seatDepth",
+        label: "Seat Depth",
+        type: "decimal",
+      }),
     );
   });
 
@@ -135,8 +187,13 @@ describe("Attributes admin (Phase 6)", () => {
 
     const row = screen.getByTestId("attribute-row-legacyCode");
     fireEvent.click(within(row).getByTitle("Delete"));
-    fireEvent.click(await screen.findByRole("button", { name: "Delete permanently" }));
+    fireEvent.click(
+      await screen.findByRole("button", { name: "Delete permanently" }),
+    );
 
-    expect(deleteMutate).toHaveBeenCalledWith({ key: "legacyCode", hard: true });
+    expect(deleteMutate).toHaveBeenCalledWith({
+      key: "legacyCode",
+      hard: true,
+    });
   });
 });

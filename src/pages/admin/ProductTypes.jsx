@@ -136,7 +136,9 @@ export default function ProductTypes() {
   if (error) {
     return (
       <div className="text-center py-12 bg-white rounded-2xl border border-gray-100">
-        <h2 className="text-xl font-semibold text-red-600 mb-2">Error Loading Product Types</h2>
+        <h2 className="text-xl font-semibold text-red-600 mb-2">
+          Error Loading Product Types
+        </h2>
         <p className="text-gray-500">{formatError(error)}</p>
       </div>
     );
@@ -170,8 +172,12 @@ export default function ProductTypes() {
             >
               <div className="flex-1 min-w-0">
                 <div className="flex items-center gap-2 flex-wrap">
-                  <span className="font-semibold text-gray-900 text-sm">{type.label}</span>
-                  <span className="font-mono text-xs text-gray-400">{type.key}</span>
+                  <span className="font-semibold text-gray-900 text-sm">
+                    {type.label}
+                  </span>
+                  <span className="font-mono text-xs text-gray-400">
+                    {type.key}
+                  </span>
                   {type.categoryKey && (
                     <span className="px-2 py-0.5 rounded-full text-[10px] font-bold uppercase tracking-wider bg-slate-100 text-slate-600">
                       {type.categoryKey}
@@ -205,7 +211,9 @@ export default function ProductTypes() {
             </div>
           ))}
           {productTypes.length === 0 && (
-            <p className="text-center text-sm text-gray-500 py-10">No product types defined yet.</p>
+            <p className="text-center text-sm text-gray-500 py-10">
+              No product types defined yet.
+            </p>
           )}
         </div>
       </div>
@@ -229,7 +237,11 @@ export default function ProductTypes() {
               <Dialog
                 open
                 onClose={() => setShowModal(false)}
-                label={editing ? `Edit product type ${editing.label}` : "Add product type"}
+                label={
+                  editing
+                    ? `Edit product type ${editing.label}`
+                    : "Add product type"
+                }
                 className="bg-white rounded-2xl w-full max-h-[90vh] overflow-y-auto relative"
               >
                 <div className="flex items-center justify-between p-5 border-b border-gray-100">
@@ -262,7 +274,9 @@ export default function ProductTypes() {
                         required={!editing}
                       />
                       {editing && (
-                        <p className="text-xs text-gray-400 mt-1">Keys are immutable.</p>
+                        <p className="text-xs text-gray-400 mt-1">
+                          Keys are immutable.
+                        </p>
                       )}
                     </div>
                     <div>
@@ -322,8 +336,8 @@ export default function ProductTypes() {
                   <div>
                     <span className={labelClass}>Attributes</span>
                     <p className="text-xs text-gray-400 mb-2">
-                      These attributes apply to products of this type. Sent to the server
-                      exactly as defined — keys are case-sensitive.
+                      These attributes apply to products of this type. Sent to
+                      the server exactly as defined — keys are case-sensitive.
                     </p>
                     <div className="grid grid-cols-2 gap-x-4 gap-y-2 max-h-48 overflow-y-auto pr-1">
                       {definitions.map((definition) => (
@@ -333,16 +347,27 @@ export default function ProductTypes() {
                         >
                           <input
                             type="checkbox"
-                            checked={form.attributeKeys.includes(definition.key)}
-                            onChange={(e) => toggleAttributeKey(definition.key, e.target.checked)}
+                            checked={form.attributeKeys.includes(
+                              definition.key,
+                            )}
+                            onChange={(e) =>
+                              toggleAttributeKey(
+                                definition.key,
+                                e.target.checked,
+                              )
+                            }
                             className="w-4 h-4 rounded border-gray-300 text-[#025E5D] focus:ring-[#025E5D]"
                           />
                           {definition.label}
-                          <span className="font-mono text-[11px] text-gray-400">{definition.key}</span>
+                          <span className="font-mono text-[11px] text-gray-400">
+                            {definition.key}
+                          </span>
                         </label>
                       ))}
                       {definitions.length === 0 && (
-                        <p className="text-xs text-gray-400">No attribute definitions exist yet.</p>
+                        <p className="text-xs text-gray-400">
+                          No attribute definitions exist yet.
+                        </p>
                       )}
                     </div>
                   </div>
@@ -358,10 +383,10 @@ export default function ProductTypes() {
                   </label>
                   {editing && !form.active && (
                     <p className="text-xs text-amber-600 bg-amber-50 border border-amber-100 rounded-lg px-3 py-2">
-                      Heads up: this list reads the public active-only endpoint, so a
-                      deactivated type disappears from this page until an admin list endpoint
-                      ships (recorded as a server request). It can be reactivated through the
-                      API.
+                      Heads up: this list reads the public active-only endpoint,
+                      so a deactivated type disappears from this page until an
+                      admin list endpoint ships (recorded as a server request).
+                      It can be reactivated through the API.
                     </p>
                   )}
                   {formError && (
@@ -379,7 +404,9 @@ export default function ProductTypes() {
                     </button>
                     <button
                       type="submit"
-                      disabled={createMutation.isPending || updateMutation.isPending}
+                      disabled={
+                        createMutation.isPending || updateMutation.isPending
+                      }
                       className="flex-1 px-4 py-2 bg-teal-600 text-white rounded-lg font-medium hover:bg-teal-700 transition-colors disabled:opacity-50 text-sm"
                     >
                       {editing ? "Save Changes" : "Create Product Type"}

@@ -25,7 +25,13 @@
 //
 // capacitor-arcore is mocked exactly as in the FE-21 lifecycle tests.
 import { describe, it, expect, vi, beforeEach } from "vitest";
-import { render, screen, fireEvent, waitFor, act } from "@testing-library/react";
+import {
+  render,
+  screen,
+  fireEvent,
+  waitFor,
+  act,
+} from "@testing-library/react";
 
 const hoisted = vi.hoisted(() => ({ view: null, gestureOptions: null }));
 
@@ -41,11 +47,46 @@ import { getModelUrl } from "../../../src/utils/imageUrl.js";
 // are stated in resolved URLs, exactly as the AR view receives them.
 const urlOf = (product) => getModelUrl(product);
 
-const productA = { _id: "prod-a", slug: "chair-a", name: "Chair A", price: 10000, modelUrl: "/models/chair-a.glb", images: [] };
-const productB = { _id: "prod-b", slug: "table-b", name: "Table B", price: 20000, modelUrl: "/models/table-b.glb", images: [] };
-const productC = { _id: "prod-c", slug: "lamp-c", name: "Lamp C", price: 5000, modelUrl: "/models/lamp-c.glb", images: [] };
-const productD = { _id: "prod-d", slug: "sofa-d", name: "Sofa D", price: 30000, modelUrl: "/models/sofa-d.glb", images: [] };
-const productE = { _id: "prod-e", slug: "desk-e", name: "Desk E", price: 15000, modelUrl: "/models/desk-e.glb", images: [] };
+const productA = {
+  _id: "prod-a",
+  slug: "chair-a",
+  name: "Chair A",
+  price: 10000,
+  modelUrl: "/models/chair-a.glb",
+  images: [],
+};
+const productB = {
+  _id: "prod-b",
+  slug: "table-b",
+  name: "Table B",
+  price: 20000,
+  modelUrl: "/models/table-b.glb",
+  images: [],
+};
+const productC = {
+  _id: "prod-c",
+  slug: "lamp-c",
+  name: "Lamp C",
+  price: 5000,
+  modelUrl: "/models/lamp-c.glb",
+  images: [],
+};
+const productD = {
+  _id: "prod-d",
+  slug: "sofa-d",
+  name: "Sofa D",
+  price: 30000,
+  modelUrl: "/models/sofa-d.glb",
+  images: [],
+};
+const productE = {
+  _id: "prod-e",
+  slug: "desk-e",
+  name: "Desk E",
+  price: 15000,
+  modelUrl: "/models/desk-e.glb",
+  images: [],
+};
 const ALL = [productA, productB, productC, productD, productE];
 
 function makeView(overrides = {}) {
@@ -62,8 +103,12 @@ function makeView(overrides = {}) {
       hoisted.gestureOptions = options;
       return vi.fn();
     }),
-    placeModel: vi.fn().mockResolvedValue({ success: true, modelId: "anchor-1" }),
-    switchModel: vi.fn().mockResolvedValue({ success: true, modelId: "anchor-1" }),
+    placeModel: vi
+      .fn()
+      .mockResolvedValue({ success: true, modelId: "anchor-1" }),
+    switchModel: vi
+      .fn()
+      .mockResolvedValue({ success: true, modelId: "anchor-1" }),
     removeModel: vi.fn().mockResolvedValue(undefined),
     setColor: vi.fn().mockResolvedValue(undefined),
     takeScreenshot: vi.fn(),
@@ -84,12 +129,14 @@ function renderView(props = {}) {
       onClose={vi.fn()}
       onAddToCart={vi.fn()}
       {...props}
-    />
+    />,
   );
 }
 
 async function startAR() {
-  const button = await screen.findByRole("button", { name: "Allow Camera Access" });
+  const button = await screen.findByRole("button", {
+    name: "Allow Camera Access",
+  });
   fireEvent.click(button);
 }
 
@@ -112,7 +159,9 @@ describe("FE-53 AR start loads only the selected model", () => {
   it("start calls preloadModels with ONLY the selected product's URL, never the whole catalog at once", async () => {
     renderView();
     await startAR();
-    await waitFor(() => expect(screen.getByText("Collection")).toBeInTheDocument());
+    await waitFor(() =>
+      expect(screen.getByText("Collection")).toBeInTheDocument(),
+    );
     await flush();
 
     const calls = preloadedUrls();
@@ -126,13 +175,16 @@ describe("FE-53 AR start loads only the selected model", () => {
 
   it("session becomes usable while background prefetch is still in flight (start does not await it)", async () => {
     let releaseBackground;
-    const backgroundGate = new Promise((resolve) => { releaseBackground = resolve; });
+    const backgroundGate = new Promise((resolve) => {
+      releaseBackground = resolve;
+    });
     const preload = vi.fn((urls) => {
       // Only a single-URL load of the SELECTED model resolves; any
       // other call (a catalog-wide batch, or a background model)
       // hangs. Pre-fix the one batch call therefore never settled
       // and the session never became usable.
-      if (urls.length === 1 && urls[0] === urlOf(productA)) return Promise.resolve();
+      if (urls.length === 1 && urls[0] === urlOf(productA))
+        return Promise.resolve();
       return backgroundGate;
     });
     hoisted.view = makeView({ preloadModels: preload });
@@ -140,7 +192,9 @@ describe("FE-53 AR start loads only the selected model", () => {
     await startAR();
 
     // The live session UI is up even though background loads pend.
-    await waitFor(() => expect(screen.getByText("Collection")).toBeInTheDocument());
+    await waitFor(() =>
+      expect(screen.getByText("Collection")).toBeInTheDocument(),
+    );
     expect(hoisted.view.destroy).not.toHaveBeenCalled();
     releaseBackground();
     await flush();
@@ -149,7 +203,9 @@ describe("FE-53 AR start loads only the selected model", () => {
   it("background prefetch eventually requests every other catalog model exactly once", async () => {
     renderView();
     await startAR();
-    await waitFor(() => expect(screen.getByText("Collection")).toBeInTheDocument());
+    await waitFor(() =>
+      expect(screen.getByText("Collection")).toBeInTheDocument(),
+    );
     await flush();
     await flush();
 
@@ -169,9 +225,14 @@ describe("FE-53 AR start loads only the selected model", () => {
     hoisted.view = makeView({ preloadModels: preload });
     renderView();
     await startAR();
-    await waitFor(() => expect(screen.getByText("Collection")).toBeInTheDocument());
+    await waitFor(() =>
+      expect(screen.getByText("Collection")).toBeInTheDocument(),
+    );
     // Let the prefetch chain run to completion (4 background models).
-    await waitFor(() => expect(hoisted.view.preloadModels).toHaveBeenCalledTimes(5), { timeout: 3000 });
+    await waitFor(
+      () => expect(hoisted.view.preloadModels).toHaveBeenCalledTimes(5),
+      { timeout: 3000 },
+    );
     await flush();
     // 1 gating load + a cap of at most 3 concurrent background loads.
     expect(maxInFlight).toBeLessThanOrEqual(3);
@@ -182,14 +243,17 @@ describe("FE-53 AR start loads only the selected model", () => {
 describe("FE-53 background failure isolation", () => {
   it("pen: a failing background model does not abort the session, show an error, or block switching to a good model", async () => {
     const preload = vi.fn((urls) => {
-      if (urls.includes(urlOf(productC))) return Promise.reject(new Error("lamp 404"));
+      if (urls.includes(urlOf(productC)))
+        return Promise.reject(new Error("lamp 404"));
       return Promise.resolve();
     });
     hoisted.view = makeView({ preloadModels: preload });
     const onProductSelect = vi.fn();
     renderView({ onProductSelect });
     await startAR();
-    await waitFor(() => expect(screen.getByText("Collection")).toBeInTheDocument());
+    await waitFor(() =>
+      expect(screen.getByText("Collection")).toBeInTheDocument(),
+    );
     await flush();
     await flush();
 
@@ -202,16 +266,24 @@ describe("FE-53 background failure isolation", () => {
     // Place the selected model, then switch to a GOOD model — the
     // earlier background failure must not poison the switch.
     hoisted.view.activeModelId = "anchor-1";
-    act(() => { hoisted.gestureOptions.onTap(); });
+    act(() => {
+      hoisted.gestureOptions.onTap();
+    });
     fireEvent.click(screen.getByRole("button", { name: /Table B/ }));
-    await waitFor(() => expect(hoisted.view.switchModel).toHaveBeenCalledTimes(1));
-    expect(hoisted.view.switchModel).toHaveBeenCalledWith(urlOf(productB), expect.anything());
+    await waitFor(() =>
+      expect(hoisted.view.switchModel).toHaveBeenCalledTimes(1),
+    );
+    expect(hoisted.view.switchModel).toHaveBeenCalledWith(
+      urlOf(productB),
+      expect.anything(),
+    );
     expect(onProductSelect.mock.calls.map((c) => c[0]._id)).toEqual(["prod-b"]);
   });
 
   it("a failing SELECTED model still fails the start, with FE-21 teardown", async () => {
     const preload = vi.fn((urls) => {
-      if (urls.includes(urlOf(productA))) return Promise.reject(new Error("selected 404"));
+      if (urls.includes(urlOf(productA)))
+        return Promise.reject(new Error("selected 404"));
       return Promise.resolve();
     });
     hoisted.view = makeView({ preloadModels: preload });
@@ -219,15 +291,23 @@ describe("FE-53 background failure isolation", () => {
     await startAR();
 
     await waitFor(() => expect(hoisted.view.destroy).toHaveBeenCalledTimes(1));
-    expect(await screen.findByRole("button", { name: "Allow Camera Access" })).toBeInTheDocument();
+    expect(
+      await screen.findByRole("button", { name: "Allow Camera Access" }),
+    ).toBeInTheDocument();
     expect(screen.getByText("selected 404")).toBeInTheDocument();
   });
 
   it("pen: duplicate model URLs in the catalog are only requested once", async () => {
-    const dupe = { ...productE, _id: "prod-e2", modelUrl: "/models/table-b.glb" };
+    const dupe = {
+      ...productE,
+      _id: "prod-e2",
+      modelUrl: "/models/table-b.glb",
+    };
     renderView({ products: [productA, productB, dupe] });
     await startAR();
-    await waitFor(() => expect(screen.getByText("Collection")).toBeInTheDocument());
+    await waitFor(() =>
+      expect(screen.getByText("Collection")).toBeInTheDocument(),
+    );
     await flush();
     await flush();
     const requested = preloadedUrls().flat();
@@ -238,7 +318,9 @@ describe("FE-53 background failure isolation", () => {
   it("a catalog with only the selected product performs no background prefetch", async () => {
     renderView({ products: [productA] });
     await startAR();
-    await waitFor(() => expect(screen.getByText("Collection")).toBeInTheDocument());
+    await waitFor(() =>
+      expect(screen.getByText("Collection")).toBeInTheDocument(),
+    );
     await flush();
     expect(preloadedUrls()).toEqual([[urlOf(productA)]]);
   });

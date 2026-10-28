@@ -13,15 +13,20 @@ vi.mock("../../src/hooks/chat/useChatTan.js", () => ({
 vi.mock("../../src/api/chatApi.js", () => ({ uploadChatAttachment: vi.fn() }));
 vi.mock("../../src/store/authStore.js", () => {
   const state = { openAuthModal: vi.fn(), user: null };
-  const store = (selector) => (typeof selector === "function" ? selector(state) : state);
+  const store = (selector) =>
+    typeof selector === "function" ? selector(state) : state;
   store.getState = () => state;
   return { default: store };
 });
 
 import ChatInput from "../../src/components/chat/ChatInput.jsx";
 
-beforeEach(() => { vi.useFakeTimers(); });
-afterEach(() => { vi.useRealTimers(); });
+beforeEach(() => {
+  vi.useFakeTimers();
+});
+afterEach(() => {
+  vi.useRealTimers();
+});
 
 describe("ChatInput typing throttle (FE-31)", () => {
   it("50 rapid keystrokes emit typing=true once, not 50 times (pen-test: flood)", () => {
@@ -30,7 +35,9 @@ describe("ChatInput typing throttle (FE-31)", () => {
     const textarea = screen.getByPlaceholderText(/type your message/i);
     for (let i = 0; i < 50; i += 1) {
       fireEvent.change(textarea, { target: { value: `x`.repeat(i + 1) } });
-      act(() => { vi.advanceTimersByTime(50); }); // 50ms apart: continuous typing, off never fires
+      act(() => {
+        vi.advanceTimersByTime(50);
+      }); // 50ms apart: continuous typing, off never fires
     }
     const trueCalls = onTyping.mock.calls.filter(([v]) => v === true);
     expect(trueCalls.length).toBe(1);
@@ -42,7 +49,9 @@ describe("ChatInput typing throttle (FE-31)", () => {
     render(<ChatInput chatId="c1" onTyping={onTyping} />);
     const textarea = screen.getByPlaceholderText(/type your message/i);
     fireEvent.change(textarea, { target: { value: "hi" } });
-    act(() => { vi.advanceTimersByTime(1_000); });
+    act(() => {
+      vi.advanceTimersByTime(1_000);
+    });
     expect(onTyping).toHaveBeenCalledWith(false);
   });
 
@@ -51,7 +60,9 @@ describe("ChatInput typing throttle (FE-31)", () => {
     render(<ChatInput chatId="c1" onTyping={onTyping} />);
     const textarea = screen.getByPlaceholderText(/type your message/i);
     fireEvent.change(textarea, { target: { value: "a" } });
-    act(() => { vi.advanceTimersByTime(1_000); }); // off fires
+    act(() => {
+      vi.advanceTimersByTime(1_000);
+    }); // off fires
     fireEvent.change(textarea, { target: { value: "ab" } });
     const trueCalls = onTyping.mock.calls.filter(([v]) => v === true);
     expect(trueCalls.length).toBe(2);

@@ -12,14 +12,21 @@ import {
   variantGalleryImages,
   effectiveModelUrl,
 } from "../../utils/variantSelection";
-import { useAddToWishlist, useRemoveFromWishlist, useCheckWishlist } from "../../hooks/cart/useWishlistTan";
+import {
+  useAddToWishlist,
+  useRemoveFromWishlist,
+  useCheckWishlist,
+} from "../../hooks/cart/useWishlistTan";
 import useAuthStore from "../../store/authStore";
 import { useShallow } from "zustand/react/shallow";
 import { toast } from "../../lib/toast";
 import ARViewModal from "../../components/modals/ARViewModal";
 import ReviewModal from "../../components/modals/ReviewModal";
 import ReviewSection from "../../components/shop/ReviewSection";
-import { getImageUrl as getImageUrlUtil, buildImageSrcSet } from "../../utils/imageUrl";
+import {
+  getImageUrl as getImageUrlUtil,
+  buildImageSrcSet,
+} from "../../utils/imageUrl";
 import formatError from "../../utils/errorHandler";
 import CategoryBar from "../../components/navigation/CategoryBar";
 import { useCanReview, useUserReview } from "../../hooks/review/useReviewTan";
@@ -32,7 +39,9 @@ import useVariantPurchase from "./product-details/hooks/useVariantPurchase";
 
 export default function ProductDetailsPage() {
   const { productSlug } = useParams();
-  const { isAuthenticated } = useAuthStore(useShallow((state) => ({ isAuthenticated: state.isAuthenticated })));
+  const { isAuthenticated } = useAuthStore(
+    useShallow((state) => ({ isAuthenticated: state.isAuthenticated })),
+  );
 
   const [selectedImage, setSelectedImage] = useState(0);
   const [isARModalOpen, setIsARModalOpen] = useState(false);
@@ -44,8 +53,10 @@ export default function ProductDetailsPage() {
     if (!isLightboxOpen) return;
 
     const handleKeyDown = (e) => {
-      if (e.key === "ArrowLeft") setSelectedImage((prev) => (prev === 0 ? images.length - 1 : prev - 1));
-      if (e.key === "ArrowRight") setSelectedImage((prev) => (prev === images.length - 1 ? 0 : prev + 1));
+      if (e.key === "ArrowLeft")
+        setSelectedImage((prev) => (prev === 0 ? images.length - 1 : prev - 1));
+      if (e.key === "ArrowRight")
+        setSelectedImage((prev) => (prev === images.length - 1 ? 0 : prev + 1));
     };
     window.addEventListener("keydown", handleKeyDown);
 
@@ -54,18 +65,29 @@ export default function ProductDetailsPage() {
     };
   }, [isLightboxOpen]);
 
-  const { data: productData, isLoading, error, refetch } = useProduct(productSlug);
+  const {
+    data: productData,
+    isLoading,
+    error,
+    refetch,
+  } = useProduct(productSlug);
   const product = productData?.data?.product;
 
-  const { data: wishlistCheck } = useCheckWishlist(product?._id, { enabled: isAuthenticated && !!product?._id });
-  const { mutate: addToWishlist, isPending: isAddingToWishlist } = useAddToWishlist();
-  const { mutate: removeFromWishlist, isPending: isRemovingFromWishlist } = useRemoveFromWishlist();
+  const { data: wishlistCheck } = useCheckWishlist(product?._id, {
+    enabled: isAuthenticated && !!product?._id,
+  });
+  const { mutate: addToWishlist, isPending: isAddingToWishlist } =
+    useAddToWishlist();
+  const { mutate: removeFromWishlist, isPending: isRemovingFromWishlist } =
+    useRemoveFromWishlist();
 
   const isInWishlist = wishlistCheck?.data?.inWishlist || false;
   const isWishlistLoading = isAddingToWishlist || isRemovingFromWishlist;
 
   // Review state: can the user review, and have they already?
-  const { data: canReviewData } = useCanReview(product?._id, { enabled: isAuthenticated && !!product?._id });
+  const { data: canReviewData } = useCanReview(product?._id, {
+    enabled: isAuthenticated && !!product?._id,
+  });
   const { data: userReviewData } = useUserReview(product?._id);
   const hasReviewed = canReviewData?.data?.hasReviewed;
   const userReview = userReviewData?.data?.review;
@@ -93,12 +115,14 @@ export default function ProductDetailsPage() {
     if (isInWishlist) {
       removeFromWishlist(product._id, {
         onSuccess: () => toast.success("Removed from wishlist"),
-        onError: (err) => toast.error(formatError(err, "Failed to remove from wishlist")),
+        onError: (err) =>
+          toast.error(formatError(err, "Failed to remove from wishlist")),
       });
     } else {
       addToWishlist(product._id, {
         onSuccess: () => toast.success("Added to wishlist"),
-        onError: (err) => toast.error(formatError(err, "Failed to add to wishlist")),
+        onError: (err) =>
+          toast.error(formatError(err, "Failed to add to wishlist")),
       });
     }
   };
@@ -138,17 +162,26 @@ export default function ProductDetailsPage() {
     if (product?.category) {
       const chain = findCategoryChain(
         categoryTreeData?.data?.categories || [],
-        product.category.slug
+        product.category.slug,
       );
       if (chain.length > 0) {
         for (const ancestor of chain) {
-          crumbs.push({ name: ancestor.name, path: shopCategoryUrl(ancestor.slug) });
+          crumbs.push({
+            name: ancestor.name,
+            path: shopCategoryUrl(ancestor.slug),
+          });
         }
       } else {
         if (product.category.parent) {
-          crumbs.push({ name: product.category.parent.name, path: shopCategoryUrl(product.category.parent.slug) });
+          crumbs.push({
+            name: product.category.parent.name,
+            path: shopCategoryUrl(product.category.parent.slug),
+          });
         }
-        crumbs.push({ name: product.category.name, path: shopCategoryUrl(product.category.slug) });
+        crumbs.push({
+          name: product.category.name,
+          path: shopCategoryUrl(product.category.slug),
+        });
       }
     }
     if (product) crumbs.push({ name: product.name, path: "#" });
@@ -158,7 +191,11 @@ export default function ProductDetailsPage() {
 
   const getImages = () => {
     if (!product?.images?.length) {
-      return [{ url: "https://images.unsplash.com/photo-1555041469-a586c61ea9bc?w=800&auto=format&fit=crop" }];
+      return [
+        {
+          url: "https://images.unsplash.com/photo-1555041469-a586c61ea9bc?w=800&auto=format&fit=crop",
+        },
+      ];
     }
     return product.images;
   };
@@ -186,10 +223,23 @@ export default function ProductDetailsPage() {
         <Navbar />
         <CategoryBar />
         <main className="min-h-screen bg-white pt-20 font-dm-sans">
-          <div className="max-w-7xl mx-auto px-6 py-16 text-center" role="alert">
-            <h1 className="text-2xl font-playfair text-neutral-900 mb-4">Unable to load product</h1>
-            <p className="text-neutral-500 mb-6">We couldn’t load this product right now. Please try again.</p>
-            <button type="button" onClick={() => refetch()} className="rounded-lg bg-brand px-6 py-3 font-semibold text-white hover:bg-brand-hover">Try again</button>
+          <div
+            className="max-w-7xl mx-auto px-6 py-16 text-center"
+            role="alert"
+          >
+            <h1 className="text-2xl font-playfair text-neutral-900 mb-4">
+              Unable to load product
+            </h1>
+            <p className="text-neutral-500 mb-6">
+              We couldn’t load this product right now. Please try again.
+            </p>
+            <button
+              type="button"
+              onClick={() => refetch()}
+              className="rounded-lg bg-brand px-6 py-3 font-semibold text-white hover:bg-brand-hover"
+            >
+              Try again
+            </button>
           </div>
         </main>
         <Footer />
@@ -204,8 +254,12 @@ export default function ProductDetailsPage() {
         <CategoryBar />
         <main className="min-h-screen bg-white pt-20 font-dm-sans">
           <div className="max-w-7xl mx-auto px-4 py-16 text-center">
-            <h1 className="text-2xl font-playfair text-neutral-900 mb-4">Product Not Found</h1>
-            <p className="text-neutral-500 font-dm-sans mb-6">The product you're looking for doesn't exist or has been removed.</p>
+            <h1 className="text-2xl font-playfair text-neutral-900 mb-4">
+              Product Not Found
+            </h1>
+            <p className="text-neutral-500 font-dm-sans mb-6">
+              The product you're looking for doesn't exist or has been removed.
+            </p>
             <Link
               to="/shop"
               className="inline-block bg-brand text-white px-6 py-3 rounded-lg font-semibold hover:bg-brand-hover transition-colors font-dm-sans"
@@ -232,11 +286,21 @@ export default function ProductDetailsPage() {
           <nav className="flex flex-wrap items-center gap-y-1 gap-x-2 text-[14px] font-medium mb-5">
             {breadcrumbs.map((crumb, index) => (
               <div key={index} className="flex items-center gap-2">
-                {index > 0 && <ChevronRight size={14} className="text-neutral-400 shrink-0" />}
+                {index > 0 && (
+                  <ChevronRight
+                    size={14}
+                    className="text-neutral-400 shrink-0"
+                  />
+                )}
                 {index === breadcrumbs.length - 1 ? (
-                  <span className="text-neutral-500 truncate max-w-[150px] sm:max-w-[300px]">{crumb.name}</span>
+                  <span className="text-neutral-500 truncate max-w-[150px] sm:max-w-[300px]">
+                    {crumb.name}
+                  </span>
                 ) : (
-                  <Link to={crumb.path} className="text-neutral-500 hover:text-brand transition-colors whitespace-nowrap">
+                  <Link
+                    to={crumb.path}
+                    className="text-neutral-500 hover:text-brand transition-colors whitespace-nowrap"
+                  >
                     {crumb.name}
                   </Link>
                 )}
@@ -284,10 +348,17 @@ export default function ProductDetailsPage() {
           />
 
           {/* Key Specifications */}
-          <KeySpecifications product={product} selectedVariant={selectedVariant} />
+          <KeySpecifications
+            product={product}
+            selectedVariant={selectedVariant}
+          />
 
           {/* Reviews */}
-          <section id="reviews" aria-labelledby="reviews-heading" className="scroll-mt-28">
+          <section
+            id="reviews"
+            aria-labelledby="reviews-heading"
+            className="scroll-mt-28"
+          >
             <div className="mb-6 flex items-center justify-between">
               <h2
                 id="reviews-heading"

@@ -41,8 +41,12 @@ vi.mock("../../../src/api/index.js", () => ({
   default: {
     get: vi.fn(() => Promise.reject(new Error("mocked: no network in tests"))),
     post: vi.fn(() => Promise.reject(new Error("mocked: no network in tests"))),
-    patch: vi.fn(() => Promise.reject(new Error("mocked: no network in tests"))),
-    delete: vi.fn(() => Promise.reject(new Error("mocked: no network in tests"))),
+    patch: vi.fn(() =>
+      Promise.reject(new Error("mocked: no network in tests")),
+    ),
+    delete: vi.fn(() =>
+      Promise.reject(new Error("mocked: no network in tests")),
+    ),
   },
 }));
 
@@ -122,7 +126,7 @@ async function renderTrackedOrder(order) {
       >
         <TrackOrderPage />
       </MemoryRouter>
-    </QueryClientProvider>
+    </QueryClientProvider>,
   );
   // The page auto-tracks when orderId/email arrive via search params
   // (useEffect in TrackOrderPage.jsx); wait for the order header, which
@@ -164,7 +168,7 @@ describe("FE-39 contract: dates derive from createdAt", () => {
     // Today the page formats order.orderedAt, which the server does not
     // send, so this renders "Placed on N/A" and this assertion fails.
     expect(
-      screen.getByText(`Placed on ${formatDate(order.createdAt)}`)
+      screen.getByText(`Placed on ${formatDate(order.createdAt)}`),
     ).toBeInTheDocument();
   });
 
@@ -172,7 +176,7 @@ describe("FE-39 contract: dates derive from createdAt", () => {
     const order = buildServerOrder();
     await renderTrackedOrder(order);
     const expectedEta = formatDate(
-      new Date(new Date(order.createdAt).getTime() + 7 * DAY_MS)
+      new Date(new Date(order.createdAt).getTime() + 7 * DAY_MS),
     );
     // Today getEstimatedDelivery() falls back to `new Date()` when
     // orderedAt is missing (TrackOrderPage.jsx:115), so the rendered ETA
@@ -198,9 +202,7 @@ describe("FE-39 fix: no createdAt means no fabricated dates", () => {
     // No date may be fabricated from today: neither today itself nor
     // the old buggy today + 7 days estimate may appear anywhere.
     expect(screen.queryByText(formatDate(Date.now()))).toBeNull();
-    expect(
-      screen.queryByText(formatDate(Date.now() + 7 * DAY_MS))
-    ).toBeNull();
+    expect(screen.queryByText(formatDate(Date.now() + 7 * DAY_MS))).toBeNull();
   });
 });
 
@@ -222,7 +224,7 @@ describe("FE-39 fix: every status in the server shape renders correctly", () => 
         // Delivered 5 days after creation: the delivery info must show
         // the actual deliveredAt under "Delivered On", not an estimate.
         order.deliveredAt = new Date(
-          new Date(order.createdAt).getTime() + 5 * DAY_MS
+          new Date(order.createdAt).getTime() + 5 * DAY_MS,
         ).toISOString();
       }
       await renderTrackedOrder(order);
@@ -232,7 +234,7 @@ describe("FE-39 fix: every status in the server shape renders correctly", () => 
       expect(screen.getAllByText(label).length).toBeGreaterThanOrEqual(1);
       // Placed-on is anchored to createdAt for every status.
       expect(
-        screen.getByText(`Placed on ${formatDate(order.createdAt)}`)
+        screen.getByText(`Placed on ${formatDate(order.createdAt)}`),
       ).toBeInTheDocument();
 
       if (status === "cancelled") {
@@ -241,12 +243,12 @@ describe("FE-39 fix: every status in the server shape renders correctly", () => 
       } else if (status === "delivered") {
         expect(screen.getByText("Delivered On")).toBeInTheDocument();
         expect(
-          screen.getByText(formatDate(order.deliveredAt))
+          screen.getByText(formatDate(order.deliveredAt)),
         ).toBeInTheDocument();
       } else {
         expect(screen.getByText("Est. Delivery")).toBeInTheDocument();
         const expectedEta = formatDate(
-          new Date(new Date(order.createdAt).getTime() + 7 * DAY_MS)
+          new Date(new Date(order.createdAt).getTime() + 7 * DAY_MS),
         );
         expect(screen.getByText(expectedEta)).toBeInTheDocument();
       }
@@ -300,8 +302,8 @@ describe("FE-39 PEN-TEST: legacy fields in the response are ignored", () => {
     expect(screen.queryByText(formatDate(order.orderedAt))).toBeNull();
     expect(
       screen.queryByText(
-        formatDate(new Date(order.orderedAt).getTime() + 7 * DAY_MS)
-      )
+        formatDate(new Date(order.orderedAt).getTime() + 7 * DAY_MS),
+      ),
     ).toBeNull();
     expect(screen.getByText("N/A")).toBeInTheDocument();
   });

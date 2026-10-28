@@ -8,7 +8,11 @@ import { describe, expect, it } from "vitest";
 
 import { chronologicalMessages } from "../../src/utils/chatMessages.js";
 
-const msg = (id, createdAt, content = `m-${id}`) => ({ _id: id, createdAt, content });
+const msg = (id, createdAt, content = `m-${id}`) => ({
+  _id: id,
+  createdAt,
+  content,
+});
 const page = (...messages) => ({ data: { messages } });
 
 const t = (h) => `2026-01-01T${String(h).padStart(2, "0")}:00:00.000Z`;
@@ -21,12 +25,13 @@ describe("chronologicalMessages", () => {
   });
 
   it("flattens pages and sorts ascending by createdAt", () => {
-    const pages = [
-      page(msg("c", t(3)), msg("b", t(2))),
-      page(msg("a", t(1))),
-    ];
+    const pages = [page(msg("c", t(3)), msg("b", t(2))), page(msg("a", t(1)))];
 
-    expect(chronologicalMessages(pages).map((m) => m._id)).toEqual(["a", "b", "c"]);
+    expect(chronologicalMessages(pages).map((m) => m._id)).toEqual([
+      "a",
+      "b",
+      "c",
+    ]);
   });
 
   it("sorts within a single page too", () => {
@@ -74,7 +79,12 @@ describe("chronologicalMessages", () => {
   });
 
   it("skips pages with missing data or messages", () => {
-    const pages = [{}, { data: {} }, { data: { messages: null } }, page(msg("a", t(1)))];
+    const pages = [
+      {},
+      { data: {} },
+      { data: { messages: null } },
+      page(msg("a", t(1))),
+    ];
 
     expect(chronologicalMessages(pages).map((m) => m._id)).toEqual(["a"]);
   });

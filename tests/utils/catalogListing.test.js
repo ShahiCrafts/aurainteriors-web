@@ -39,16 +39,30 @@ describe("apiSortFor", () => {
 describe("parseAttrSelection", () => {
   it("parses value lists and range bounds per key", () => {
     const selection = parseAttrSelection(
-      params("attr.color=red,blue&attr.seatingCapacity.min=2&attr.seatingCapacity.max=6")
+      params(
+        "attr.color=red,blue&attr.seatingCapacity.min=2&attr.seatingCapacity.max=6",
+      ),
     );
-    expect(selection.color).toEqual({ values: ["red", "blue"], min: null, max: null });
-    expect(selection.seatingCapacity).toEqual({ values: [], min: "2", max: "6" });
+    expect(selection.color).toEqual({
+      values: ["red", "blue"],
+      min: null,
+      max: null,
+    });
+    expect(selection.seatingCapacity).toEqual({
+      values: [],
+      min: "2",
+      max: "6",
+    });
   });
 
   it("ignores non-attr params and malformed attr keys", () => {
-    const selection = parseAttrSelection(params("categories=sofas&attr.=x&attr.color.extra.deep=y"));
+    const selection = parseAttrSelection(
+      params("categories=sofas&attr.=x&attr.color.extra.deep=y"),
+    );
     expect(selection).toEqual({});
-    expect(attrParamKeys(params("attr.color=red&categories=sofas"))).toEqual(["attr.color"]);
+    expect(attrParamKeys(params("attr.color=red&categories=sofas"))).toEqual([
+      "attr.color",
+    ]);
   });
 });
 
@@ -56,13 +70,25 @@ describe("attr patches", () => {
   const selection = parseAttrSelection(params("attr.color=red,blue"));
 
   it("toggling adds and removes values, clearing the key when empty", () => {
-    expect(attrValuePatch(selection, "color", "green")).toEqual({ "attr.color": "red,blue,green" });
-    expect(attrValuePatch(selection, "color", "red")).toEqual({ "attr.color": "blue" });
-    expect(attrValuePatch(parseAttrSelection(params("attr.color=red")), "color", "red")).toEqual({ "attr.color": null });
+    expect(attrValuePatch(selection, "color", "green")).toEqual({
+      "attr.color": "red,blue,green",
+    });
+    expect(attrValuePatch(selection, "color", "red")).toEqual({
+      "attr.color": "blue",
+    });
+    expect(
+      attrValuePatch(
+        parseAttrSelection(params("attr.color=red")),
+        "color",
+        "red",
+      ),
+    ).toEqual({ "attr.color": null });
   });
 
   it("remove patch never re-adds", () => {
-    expect(attrValueRemovePatch(selection, "color", "green")).toEqual({ "attr.color": "red,blue" });
+    expect(attrValueRemovePatch(selection, "color", "green")).toEqual({
+      "attr.color": "red,blue",
+    });
   });
 
   it("range patch sets both bounds and clears with nulls", () => {
@@ -79,16 +105,25 @@ describe("attr patches", () => {
 
 describe("rooms", () => {
   it("parses the comma list and toggles", () => {
-    expect(selectedRooms(params("room=living-room,bedroom"))).toEqual(["living-room", "bedroom"]);
-    expect(roomTogglePatch(["living-room"], "bedroom")).toEqual({ room: "living-room,bedroom" });
-    expect(roomTogglePatch(["living-room"], "living-room")).toEqual({ room: null });
+    expect(selectedRooms(params("room=living-room,bedroom"))).toEqual([
+      "living-room",
+      "bedroom",
+    ]);
+    expect(roomTogglePatch(["living-room"], "bedroom")).toEqual({
+      room: "living-room,bedroom",
+    });
+    expect(roomTogglePatch(["living-room"], "living-room")).toEqual({
+      room: null,
+    });
   });
 });
 
 describe("buildListingParams", () => {
   it("always asks for facets and passes attr params through verbatim", () => {
     const built = buildListingParams({
-      searchParams: params("categories=sofas&attr.color=red&attr.seatingCapacity.min=2&inStock=true&rating=4&sort=effective_price_low"),
+      searchParams: params(
+        "categories=sofas&attr.color=red&attr.seatingCapacity.min=2&inStock=true&rating=4&sort=effective_price_low",
+      ),
       page: 2,
       limit: 12,
     });
@@ -130,7 +165,7 @@ describe("buildListingParams", () => {
 
 describe("chips + clear-all", () => {
   const qs = params(
-    "categories=sofas&room=living-room&inStock=true&rating=4&minPrice=1000&attr.color=red,blue&attr.seatingCapacity.min=2"
+    "categories=sofas&room=living-room&inStock=true&rating=4&minPrice=1000&attr.color=red,blue&attr.seatingCapacity.min=2",
   );
 
   it("builds one chip per selected value with a removal patch", () => {
@@ -156,11 +191,15 @@ describe("chips + clear-all", () => {
 
   it("formats the price chip, marks the rating chip, swatches color chips", () => {
     const built = buildFilterChips(
-      params("minPrice=1000&maxPrice=26843&rating=4&colors=Teal&attr.color=Teal"),
-      { attributes: new Map([["color", { label: "Color", type: "color" }]]) }
+      params(
+        "minPrice=1000&maxPrice=26843&rating=4&colors=Teal&attr.color=Teal",
+      ),
+      { attributes: new Map([["color", { label: "Color", type: "color" }]]) },
     );
     const byId = Object.fromEntries(built.map((chip) => [chip.id, chip]));
-    expect(byId["price"].label).toBe(`Price ${formatNPR(1000)} – ${formatNPR(26843)}`);
+    expect(byId["price"].label).toBe(
+      `Price ${formatNPR(1000)} – ${formatNPR(26843)}`,
+    );
     expect(byId["rating"].kind).toBe("rating");
     expect(byId["rating"].label).toBe("4 & up");
     expect(byId["colors:Teal"].kind).toBe("color");
@@ -170,7 +209,7 @@ describe("chips + clear-all", () => {
     // Max-only price reads as an "up to" cap (the common slider case).
     const maxOnly = buildFilterChips(params("maxPrice=26843"));
     expect(maxOnly.find((chip) => chip.id === "price").label).toBe(
-      `Price up to ${formatNPR(26843)}`
+      `Price up to ${formatNPR(26843)}`,
     );
   });
 
@@ -195,41 +234,64 @@ describe("facetGroupVisible (post-delivery fix)", () => {
   const emptyEntry = { values: [], min: null, max: null };
 
   it("value-list facets need at least one option", () => {
-    const facet = { key: "frameMaterial", type: "enum", options: [{ value: "oak", count: 2 }] };
+    const facet = {
+      key: "frameMaterial",
+      type: "enum",
+      options: [{ value: "oak", count: 2 }],
+    };
     expect(facetGroupVisible(facet, noEntry)).toBe(true);
     expect(facetGroupVisible({ ...facet, options: [] }, noEntry)).toBe(false);
-    expect(facetGroupVisible({ ...facet, options: [] }, emptyEntry)).toBe(false);
-    expect(facetGroupVisible({ key: "c", type: "color", options: [] }, noEntry)).toBe(false);
-    expect(facetGroupVisible({ key: "b", type: "boolean", options: [] }, noEntry)).toBe(false);
-    expect(facetGroupVisible({ key: "s", type: "string", options: [] }, noEntry)).toBe(false);
+    expect(facetGroupVisible({ ...facet, options: [] }, emptyEntry)).toBe(
+      false,
+    );
+    expect(
+      facetGroupVisible({ key: "c", type: "color", options: [] }, noEntry),
+    ).toBe(false);
+    expect(
+      facetGroupVisible({ key: "b", type: "boolean", options: [] }, noEntry),
+    ).toBe(false);
+    expect(
+      facetGroupVisible({ key: "s", type: "string", options: [] }, noEntry),
+    ).toBe(false);
   });
 
   it("range facets need a usable numeric bound in the payload", () => {
-    const facet = { key: "seatingCapacity", type: "integer", options: [{ value: 2 }, { value: 6 }] };
+    const facet = {
+      key: "seatingCapacity",
+      type: "integer",
+      options: [{ value: 2 }, { value: 6 }],
+    };
     expect(facetGroupVisible(facet, noEntry)).toBe(true);
     expect(facetGroupVisible({ ...facet, options: [] }, noEntry)).toBe(false);
-    expect(facetGroupVisible({ ...facet, options: [{ value: "n/a" }] }, noEntry)).toBe(false);
     expect(
-      facetGroupVisible({ key: "w", type: "measurement", options: [], min: 10, max: 90 }, noEntry)
+      facetGroupVisible({ ...facet, options: [{ value: "n/a" }] }, noEntry),
+    ).toBe(false);
+    expect(
+      facetGroupVisible(
+        { key: "w", type: "measurement", options: [], min: 10, max: 90 },
+        noEntry,
+      ),
     ).toBe(true);
   });
 
   it("an active filter keeps its group visible even with no options", () => {
     const facet = { key: "frameMaterial", type: "enum", options: [] };
     expect(
-      facetGroupVisible(facet, { values: ["oak"], min: null, max: null })
+      facetGroupVisible(facet, { values: ["oak"], min: null, max: null }),
     ).toBe(true);
     const range = { key: "seatingCapacity", type: "integer", options: [] };
-    expect(
-      facetGroupVisible(range, { values: [], min: "2", max: null })
-    ).toBe(true);
-    expect(
-      facetGroupVisible(range, { values: [], min: null, max: "6" })
-    ).toBe(true);
+    expect(facetGroupVisible(range, { values: [], min: "2", max: null })).toBe(
+      true,
+    );
+    expect(facetGroupVisible(range, { values: [], min: null, max: "6" })).toBe(
+      true,
+    );
   });
 
   it("a missing facet is never visible", () => {
     expect(facetGroupVisible(null, noEntry)).toBe(false);
-    expect(facetGroupVisible(undefined, { values: ["x"], min: null, max: null })).toBe(false);
+    expect(
+      facetGroupVisible(undefined, { values: ["x"], min: null, max: null }),
+    ).toBe(false);
   });
 });

@@ -87,7 +87,7 @@ describe("FE-11: pixel-dimension ceiling in imageCompression", () => {
     imageWidth = 20000;
     imageHeight = 20000;
     await expect(compressImage(makeFile())).rejects.toThrow(
-      /dimension|pixel|too large/i
+      /dimension|pixel|too large/i,
     );
     expect(toBlobCalls).toBe(0);
   });
@@ -96,7 +96,7 @@ describe("FE-11: pixel-dimension ceiling in imageCompression", () => {
     imageWidth = 12000;
     imageHeight = 12000;
     await expect(compressFileIfNeeded(makeFile())).rejects.toThrow(
-      /dimension|pixel|too large/i
+      /dimension|pixel|too large/i,
     );
     expect(toBlobCalls).toBe(0);
   });

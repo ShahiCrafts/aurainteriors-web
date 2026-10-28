@@ -40,10 +40,23 @@ export default function Navbar() {
   const [cartEverOpened, setCartEverOpened] = useState(false);
   const [isProfileOpen, setIsProfileOpen] = useState(false);
   const queryClient = useQueryClient();
-  const { isAuthenticated, logout, openAuthModal, user } = useAuthStore(useShallow((state) => ({ isAuthenticated: state.isAuthenticated, logout: state.logout, openAuthModal: state.openAuthModal, user: state.user })));
-  const { data: cartData, isLoading: isCartLoading } = useCart({ enabled: isAuthenticated });
-  const { data: wishlistData, isLoading: isWishlistLoading } = useWishlist({ enabled: isAuthenticated });
-  const { items: guestCartItems } = useGuestCartStore(useShallow((state) => ({ items: state.items })));
+  const { isAuthenticated, logout, openAuthModal, user } = useAuthStore(
+    useShallow((state) => ({
+      isAuthenticated: state.isAuthenticated,
+      logout: state.logout,
+      openAuthModal: state.openAuthModal,
+      user: state.user,
+    })),
+  );
+  const { data: cartData, isLoading: isCartLoading } = useCart({
+    enabled: isAuthenticated,
+  });
+  const { data: wishlistData, isLoading: isWishlistLoading } = useWishlist({
+    enabled: isAuthenticated,
+  });
+  const { items: guestCartItems } = useGuestCartStore(
+    useShallow((state) => ({ items: state.items })),
+  );
 
   const cartCount = isAuthenticated
     ? cartData?.data?.cart?.totalItems || 0
@@ -62,7 +75,7 @@ export default function Navbar() {
 
   const { data: searchResultsData, isLoading: isSearchLoading } = useProducts(
     { search: debouncedSearch, limit: 5, status: "active" },
-    { enabled: debouncedSearch.length >= 2 }
+    { enabled: debouncedSearch.length >= 2 },
   );
 
   const searchResults = searchResultsData?.data?.products || [];
@@ -94,9 +107,24 @@ export default function Navbar() {
   };
 
   const profileMenuItems = [
-    { label: "My Profile", icon: <User size={16} />, path: "/profile", state: { activeTab: "personal-information" } },
-    { label: "My Wishlist", icon: <Heart size={16} />, path: "/profile", state: { activeTab: "wishlist" } },
-    { label: "My Orders", icon: <Package size={16} />, path: "/profile", state: { activeTab: "orders" } },
+    {
+      label: "My Profile",
+      icon: <User size={16} />,
+      path: "/profile",
+      state: { activeTab: "personal-information" },
+    },
+    {
+      label: "My Wishlist",
+      icon: <Heart size={16} />,
+      path: "/profile",
+      state: { activeTab: "wishlist" },
+    },
+    {
+      label: "My Orders",
+      icon: <Package size={16} />,
+      path: "/profile",
+      state: { activeTab: "orders" },
+    },
     {
       label: "Saved Addresses",
       icon: <MapPin size={16} />,
@@ -106,7 +134,11 @@ export default function Navbar() {
   ];
 
   const handleLogout = async () => {
-    try { await logout(); } catch { return; }
+    try {
+      await logout();
+    } catch {
+      return;
+    }
     queryClient.clear();
     setIsProfileOpen(false);
   };
@@ -133,7 +165,7 @@ export default function Navbar() {
             <form onSubmit={handleSearchSubmit} className="relative">
               <Search
                 size={16}
-                className="absolute left-[14px] top-1/2 -translate-y-1/2 text-neutral-400 pointer-events-none"
+                className="absolute left-3.5 top-1/2 -translate-y-1/2 text-neutral-400 pointer-events-none"
               />
               <input
                 type="text"
@@ -141,7 +173,7 @@ export default function Navbar() {
                 onChange={(e) => setSearchInput(e.target.value)}
                 onFocus={() => setIsSearchFocused(true)}
                 placeholder="Search furniture, décor, colours…"
-                className="w-full py-[11px] pr-[100px] pl-[44px] border-[1.5px] border-neutral-300 rounded-[10px] bg-[#FAFAFA] font-sans text-[14px] text-neutral-400 focus:outline-none transition-all duration-[220ms] focus:border-[#F27318] focus:bg-white placeholder:text-[#B8B4AE]"
+                className="w-full py-[11px] pr-[100px] pl-11 border-[1.5px] border-neutral-300 rounded-[10px] bg-[#FAFAFA] font-sans text-[14px] text-neutral-400 focus:outline-none transition-all duration-220 focus:border-brand focus:bg-white placeholder:text-[#B8B4AE]"
               />
               <div className="absolute right-[5px] top-1/2 -translate-y-1/2 flex items-center gap-2">
                 {searchInput && (
@@ -158,7 +190,7 @@ export default function Navbar() {
                 )}
                 <button
                   type="submit"
-                  className="bg-[#F27318] hover:bg-[#D9620E] text-white border-none rounded-[8px] px-[18px] py-[7px] font-sans text-[13.5px] font-semibold cursor-pointer transition-colors duration-200"
+                  className="bg-brand hover:bg-brand-hover text-white border-none rounded-lg px-[18px] py-[7px] font-sans text-[13.5px] font-semibold cursor-pointer transition-colors duration-200"
                 >
                   Search
                 </button>
@@ -166,7 +198,7 @@ export default function Navbar() {
             </form>
 
             {showDropdown && (
-              <div className="absolute top-full left-0 right-0 mt-2 bg-white border border-[#F0EFED] rounded-[12px] shadow-[0_10px_40px_rgba(0,0,0,0.12)] z-50 overflow-hidden animate-in fade-in slide-in-from-top-2 duration-200">
+              <div className="absolute top-full left-0 right-0 mt-2 bg-white border border-[#F0EFED] rounded-xl shadow-[0_10px_40px_rgba(0,0,0,0.12)] z-50 overflow-hidden animate-in fade-in slide-in-from-top-2 duration-200">
                 <div className="max-h-[420px] overflow-y-auto">
                   {searchResults.length > 0 ? (
                     <>
@@ -199,7 +231,7 @@ export default function Navbar() {
                               </p>
                             </div>
                             <div className="text-right">
-                              <span className="text-[14px] font-bold text-[#F27318]">
+                              <span className="text-[14px] font-bold text-brand">
                                 {formatNPR(product.price)}
                               </span>
                             </div>
@@ -209,7 +241,7 @@ export default function Navbar() {
                       <Link
                         to={`/shop?search=${encodeURIComponent(debouncedSearch)}`}
                         onClick={() => setIsSearchFocused(false)}
-                        className="flex items-center justify-center p-4 border-t border-[#F0EFED] text-[13px] font-bold text-[#1A1714] hover:text-[#F27318] transition-colors no-underline bg-[#FAFAFA]"
+                        className="flex items-center justify-center p-4 border-t border-[#F0EFED] text-[13px] font-bold text-[#1A1714] hover:text-brand transition-colors no-underline bg-[#FAFAFA]"
                       >
                         See all results for "{debouncedSearch}"
                       </Link>
@@ -233,18 +265,18 @@ export default function Navbar() {
           </div>
 
           <div className="flex md:hidden items-center gap-[18px] shrink-0 text-[#1A1714]">
-            <button className="bg-transparent border-none p-0 flex items-center justify-center cursor-pointer text-[#1A1714] hover:text-[#F27318] transition-colors">
+            <button className="bg-transparent border-none p-0 flex items-center justify-center cursor-pointer text-[#1A1714] hover:text-brand transition-colors">
               <Bell size={22} />
             </button>
-            <button className="bg-transparent border-none p-0 flex items-center justify-center cursor-pointer text-[#1A1714] hover:text-[#F27318] transition-colors">
+            <button className="bg-transparent border-none p-0 flex items-center justify-center cursor-pointer text-[#1A1714] hover:text-brand transition-colors">
               <Search size={22} />
             </button>
-            <button className="bg-transparent border-none p-0 flex items-center justify-center cursor-pointer text-[#1A1714] hover:text-[#F27318] transition-colors">
+            <button className="bg-transparent border-none p-0 flex items-center justify-center cursor-pointer text-[#1A1714] hover:text-brand transition-colors">
               <Menu size={24} />
             </button>
           </div>
 
-          <div className="hidden md:flex items-start gap-[6px] shrink-0">
+          <div className="hidden md:flex items-start gap-1.5 shrink-0">
             {showWishlistSkeleton ? (
               <WishlistActionSkeleton />
             ) : (
@@ -254,7 +286,7 @@ export default function Navbar() {
                     ? openAuthModal("login")
                     : navigate("/profile", { state: { activeTab: "wishlist" } })
                 }
-                className="flex flex-col items-center gap-[4px] px-2 md:px-[14px] py-[6px] rounded-[10px] cursor-pointer transition-colors duration-[180ms] text-[#6A6058] hover:text-[#1A1714] border-none bg-transparent font-sans relative group"
+                className="flex flex-col items-center gap-1 px-2 md:px-3.5 py-1.5 rounded-[10px] cursor-pointer transition-colors duration-180 text-[#6A6058] hover:text-[#1A1714] border-none bg-transparent font-sans relative group"
               >
                 <Heart className="w-5 h-5 md:w-[22px] md:h-[22px]" />
                 <span className="hidden md:block text-[12px] font-medium text-[#6A6058] group-hover:text-[#1A1714] whitespace-nowrap">
@@ -268,14 +300,14 @@ export default function Navbar() {
             ) : (
               <button
                 onClick={handleOpenCart}
-                className="flex flex-col items-center gap-[4px] px-2 md:px-[14px] py-[6px] rounded-[10px] cursor-pointer transition-colors duration-[180ms] text-[#6A6058] hover:text-[#1A1714] border-none bg-transparent font-sans relative group"
+                className="flex flex-col items-center gap-1 px-2 md:px-3.5 py-1.5 rounded-[10px] cursor-pointer transition-colors duration-180 text-[#6A6058] hover:text-[#1A1714] border-none bg-transparent font-sans relative group"
               >
                 <ShoppingCart className="w-5 h-5 md:w-[22px] md:h-[22px]" />
                 <span className="hidden md:block text-[12px] font-medium text-[#6A6058] group-hover:text-[#1A1714] whitespace-nowrap">
                   Cart ({cartCount})
                 </span>
                 {cartCount > 0 && (
-                  <span className="absolute -top-1 p-2 right-1 w-[15px] h-[15px] md:w-[17px] md:h-[17px] rounded-full bg-[#F27318] text-white text-[8px] md:text-[9px] font-bold flex items-center justify-center border-2 border-white">
+                  <span className="absolute -top-1 p-2 right-1 w-[15px] h-[15px] md:w-[17px] md:h-[17px] rounded-full bg-brand text-white text-[8px] md:text-[9px] font-bold flex items-center justify-center border-2 border-white">
                     {cartCount}
                   </span>
                 )}
@@ -288,7 +320,7 @@ export default function Navbar() {
               ) : (
                 <button
                   onClick={() => setIsProfileOpen(!isProfileOpen)}
-                  className="flex flex-col items-center gap-[4px] px-2 md:px-[14px] py-[6px] rounded-[10px] cursor-pointer transition-colors duration-[180ms] text-[#6A6058] hover:text-[#1A1714] border-none bg-transparent font-sans relative group"
+                  className="flex flex-col items-center gap-1 px-2 md:px-3.5 py-1.5 rounded-[10px] cursor-pointer transition-colors duration-180 text-[#6A6058] hover:text-[#1A1714] border-none bg-transparent font-sans relative group"
                 >
                   {isAuthenticated && user ? (
                     <div className="flex items-center gap-1">
@@ -297,7 +329,10 @@ export default function Navbar() {
                         alt="Profile"
                         className="w-10 h-10 rounded-full text-[10px] font-dm-sans"
                       />
-                      <ChevronDown size={12} className="text-[#6A6058] group-hover:text-[#1A1714] transition-colors" />
+                      <ChevronDown
+                        size={12}
+                        className="text-[#6A6058] group-hover:text-[#1A1714] transition-colors"
+                      />
                     </div>
                   ) : (
                     <User className="w-5 h-5" />
@@ -316,9 +351,9 @@ export default function Navbar() {
                     className="fixed inset-0 z-40"
                     onClick={() => setIsProfileOpen(false)}
                   />
-                  <div className="absolute right-0 mt-2 w-64 bg-white border border-[#F0EFED] rounded-[12px] shadow-[0_10px_40px_rgba(0,0,0,0.08)] z-50 py-1 overflow-hidden animate-in fade-in zoom-in duration-200">
-                    {isAuthenticated && (
-                      user ? (
+                  <div className="absolute right-0 mt-2 w-64 bg-white border border-[#F0EFED] rounded-xl shadow-[0_10px_40px_rgba(0,0,0,0.08)] z-50 py-1 overflow-hidden animate-in fade-in zoom-in duration-200">
+                    {isAuthenticated &&
+                      (user ? (
                         <div className="px-4 py-3 border-b border-[#F0EFED] bg-[#FAFAFA] flex items-center gap-3">
                           <UserAvatar
                             user={user}
@@ -336,8 +371,7 @@ export default function Navbar() {
                         </div>
                       ) : (
                         <ProfileMenuHeaderSkeleton />
-                      )
-                    )}
+                      ))}
 
                     {!isAuthenticated && (
                       <div className="p-4 border-b border-[#F0EFED]">
@@ -346,7 +380,7 @@ export default function Navbar() {
                             openAuthModal("login");
                             setIsProfileOpen(false);
                           }}
-                          className="flex items-center justify-center w-full h-10 bg-[#F27318] text-white text-[14px] font-bold rounded-[8px] hover:bg-[#D9620E] transition-all duration-200 border-none cursor-pointer shadow-sm"
+                          className="flex items-center justify-center w-full h-10 bg-brand text-white text-[14px] font-bold rounded-lg hover:bg-brand-hover transition-all duration-200 border-none cursor-pointer shadow-sm"
                         >
                           Sign In
                         </button>
@@ -357,7 +391,7 @@ export default function Navbar() {
                               openAuthModal("signup");
                               setIsProfileOpen(false);
                             }}
-                            className="text-[#F27318] font-bold hover:underline bg-transparent border-none p-0 cursor-pointer"
+                            className="text-brand font-bold hover:underline bg-transparent border-none p-0 cursor-pointer"
                           >
                             Click here
                           </button>
@@ -382,7 +416,7 @@ export default function Navbar() {
                           }}
                           className="flex items-center gap-3 px-4 py-3 text-[14px] text-[#5A5248] hover:text-[#1A1714] hover:bg-[#F9F8F6] transition-colors no-underline group/item"
                         >
-                          <span className="text-[#6A6058] group-hover/item:text-[#F27318] transition-colors">
+                          <span className="text-[#6A6058] group-hover/item:text-brand transition-colors">
                             {item.icon}
                           </span>
                           <span className="font-medium">{item.label}</span>
@@ -392,7 +426,7 @@ export default function Navbar() {
 
                     {isAuthenticated && (
                       <>
-                        <div className="h-[1px] bg-[#F0EFED] my-1 mx-2" />
+                        <div className="h-px bg-[#F0EFED] my-1 mx-2" />
                         <button
                           onClick={handleLogout}
                           className="w-full flex items-center gap-3 px-4 py-3 text-[14px] text-red-500 hover:bg-red-50 transition-colors border-none bg-transparent text-left cursor-pointer font-dm-sans group/logout"
@@ -415,7 +449,10 @@ export default function Navbar() {
 
       {cartEverOpened && (
         <Suspense fallback={null}>
-          <CartSlider isOpen={isCartOpen} onClose={() => setIsCartOpen(false)} />
+          <CartSlider
+            isOpen={isCartOpen}
+            onClose={() => setIsCartOpen(false)}
+          />
         </Suspense>
       )}
     </>

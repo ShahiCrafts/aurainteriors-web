@@ -6,7 +6,9 @@ import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 
 vi.mock("../../../src/hooks/product/useCategoryTan", () => ({
   useCategoryTree: () => ({
-    data: { data: { categories: [{ _id: "c1", name: "Sofas", slug: "sofas" }] } },
+    data: {
+      data: { categories: [{ _id: "c1", name: "Sofas", slug: "sofas" }] },
+    },
     isLoading: false,
   }),
 }));
@@ -26,7 +28,10 @@ vi.mock("../../../src/hooks/product/useArCatalogTan", () => ({
             name: "Velvet Chair",
             modelUrl: "https://cdn.aurainteriors.example/models/velvet.glb",
             modelFiles: [
-              { format: "glb", url: "https://cdn.aurainteriors.example/models/velvet.glb" },
+              {
+                format: "glb",
+                url: "https://cdn.aurainteriors.example/models/velvet.glb",
+              },
             ],
           },
         ],
@@ -75,18 +80,28 @@ describe("FE-65 primary navigation and custom controls", () => {
         <MemoryRouter>
           <CategoryBar />
         </MemoryRouter>
-      </QueryClientProvider>
+      </QueryClientProvider>,
     );
-    expect(screen.getByRole("link", { name: /Sofas/ })).toHaveAttribute("href", "/shop?categories=sofas");
+    expect(screen.getByRole("link", { name: /Sofas/ })).toHaveAttribute(
+      "href",
+      "/shop?categories=sofas",
+    );
     // The owner-requested "All" item is a real link too (an earlier
     // pin asserted its absence; the design decision was reversed).
-    expect(screen.getByRole("link", { name: /^All$/ })).toHaveAttribute("href", "/shop");
-    expect(screen.getByRole("button", { name: /Try AR View/ })).toBeInTheDocument();
+    expect(screen.getByRole("link", { name: /^All$/ })).toHaveAttribute(
+      "href",
+      "/shop",
+    );
+    expect(
+      screen.getByRole("button", { name: /Try AR View/ }),
+    ).toBeInTheDocument();
   });
 
   it("FilterSidebar filters are real checkboxes that toggle via change", () => {
     const onCategoryChange = vi.fn();
-    render(<FilterSidebar {...filterProps} onCategoryChange={onCategoryChange} />);
+    render(
+      <FilterSidebar {...filterProps} onCategoryChange={onCategoryChange} />,
+    );
     const box = screen.getByRole("checkbox", { name: /Sofas/ });
     fireEvent.click(box);
     expect(onCategoryChange).toHaveBeenCalledWith(["sofas"]);
@@ -100,34 +115,68 @@ describe("FE-65 primary navigation and custom controls", () => {
 
   it("star rating is a radiogroup: aria-checked follows selection and arrows change it", () => {
     render(<ReviewForm productId="p1" />);
-    expect(screen.getByRole("radiogroup", { name: "Rating" })).toBeInTheDocument();
+    expect(
+      screen.getByRole("radiogroup", { name: "Rating" }),
+    ).toBeInTheDocument();
     const three = screen.getByRole("radio", { name: "3 stars" });
     fireEvent.click(three);
     expect(three).toHaveAttribute("aria-checked", "true");
     fireEvent.keyDown(three, { key: "ArrowRight" });
-    expect(screen.getByRole("radio", { name: "4 stars" })).toHaveAttribute("aria-checked", "true");
+    expect(screen.getByRole("radio", { name: "4 stars" })).toHaveAttribute(
+      "aria-checked",
+      "true",
+    );
   });
 });
 
 describe("FE-66 live regions and icon-button names", () => {
   it("a success toast is a polite status, not an assertive alert", () => {
-    render(<ToastItem id={1} type="success" message="Added to cart" onDismiss={vi.fn()} />);
+    render(
+      <ToastItem
+        id={1}
+        type="success"
+        message="Added to cart"
+        onDismiss={vi.fn()}
+      />,
+    );
     const toast = screen.getByText("Added to cart").closest("div[role]");
     expect(toast).toHaveAttribute("role", "status");
     expect(toast).toHaveAttribute("aria-live", "polite");
   });
 
   it("an error toast stays assertive", () => {
-    render(<ToastItem id={2} type="error" message="Payment failed" onDismiss={vi.fn()} />);
+    render(
+      <ToastItem
+        id={2}
+        type="error"
+        message="Payment failed"
+        onDismiss={vi.fn()}
+      />,
+    );
     const toast = screen.getByText("Payment failed").closest("div[role]");
     expect(toast).toHaveAttribute("role", "alert");
     expect(toast).toHaveAttribute("aria-live", "assertive");
   });
 
   it("Pagination prev/next buttons have accessible names", () => {
-    render(<Pagination page={2} totalPages={5} pageSize={10} totalItems={50} onPageChange={vi.fn()} />);
-    expect(screen.getByRole("button", { name: "Previous page" })).toBeInTheDocument();
-    expect(screen.getByRole("button", { name: "Next page" })).toBeInTheDocument();
-    expect(screen.getByRole("button", { name: "2" })).toHaveAttribute("aria-current", "page");
+    render(
+      <Pagination
+        page={2}
+        totalPages={5}
+        pageSize={10}
+        totalItems={50}
+        onPageChange={vi.fn()}
+      />,
+    );
+    expect(
+      screen.getByRole("button", { name: "Previous page" }),
+    ).toBeInTheDocument();
+    expect(
+      screen.getByRole("button", { name: "Next page" }),
+    ).toBeInTheDocument();
+    expect(screen.getByRole("button", { name: "2" })).toHaveAttribute(
+      "aria-current",
+      "page",
+    );
   });
 });

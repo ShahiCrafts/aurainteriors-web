@@ -126,7 +126,9 @@ export default function Rooms() {
   if (error) {
     return (
       <div className="text-center py-12 bg-white rounded-2xl border border-gray-100">
-        <h2 className="text-xl font-semibold text-red-600 mb-2">Error Loading Rooms</h2>
+        <h2 className="text-xl font-semibold text-red-600 mb-2">
+          Error Loading Rooms
+        </h2>
         <p className="text-gray-500">{formatError(error)}</p>
       </div>
     );
@@ -160,7 +162,11 @@ export default function Rooms() {
             >
               <div className="w-10 h-10 rounded-lg overflow-hidden bg-gray-50 border border-gray-100 shrink-0">
                 {room.image ? (
-                  <ImageWithFallback src={getImageUrl(room.image, "categories")} alt={room.label} className="w-full h-full object-cover" />
+                  <ImageWithFallback
+                    src={getImageUrl(room.image, "categories")}
+                    alt={room.label}
+                    className="w-full h-full object-cover"
+                  />
                 ) : (
                   <div className="w-full h-full flex items-center justify-center text-[10px] font-bold text-gray-300">
                     {room.label?.slice(0, 2).toUpperCase()}
@@ -169,11 +175,17 @@ export default function Rooms() {
               </div>
               <div className="flex-1 min-w-0">
                 <div className="flex items-center gap-2 flex-wrap">
-                  <span className="font-semibold text-gray-900 text-sm">{room.label}</span>
-                  <span className="font-mono text-xs text-gray-400">{room.slug}</span>
+                  <span className="font-semibold text-gray-900 text-sm">
+                    {room.label}
+                  </span>
+                  <span className="font-mono text-xs text-gray-400">
+                    {room.slug}
+                  </span>
                 </div>
                 {room.description && (
-                  <p className="text-xs text-gray-500 mt-0.5 truncate">{room.description}</p>
+                  <p className="text-xs text-gray-500 mt-0.5 truncate">
+                    {room.description}
+                  </p>
                 )}
               </div>
               <span className="inline-flex items-center px-2.5 py-1 rounded-full text-[11px] font-semibold bg-emerald-50 text-emerald-700 shrink-0">
@@ -198,7 +210,9 @@ export default function Rooms() {
             </div>
           ))}
           {rooms.length === 0 && (
-            <p className="text-center text-sm text-gray-500 py-10">No rooms defined yet.</p>
+            <p className="text-center text-sm text-gray-500 py-10">
+              No rooms defined yet.
+            </p>
           )}
         </div>
       </div>
@@ -268,7 +282,8 @@ export default function Rooms() {
                     />
                     {editing && (
                       <p className="text-xs text-gray-400 mt-1">
-                        Slugs are immutable — categories and products reference rooms by slug.
+                        Slugs are immutable — categories and products reference
+                        rooms by slug.
                       </p>
                     )}
                   </div>
@@ -322,10 +337,11 @@ export default function Rooms() {
                   </div>
                   {editing && !form.active && (
                     <p className="text-xs text-amber-600 bg-amber-50 border border-amber-100 rounded-lg px-3 py-2">
-                      Heads up: this list reads the public active-only endpoint, so a
-                      deactivated room disappears from this page until an admin list endpoint
-                      ships (recorded as a server request). The room still exists and can be
-                      reactivated through the API.
+                      Heads up: this list reads the public active-only endpoint,
+                      so a deactivated room disappears from this page until an
+                      admin list endpoint ships (recorded as a server request).
+                      The room still exists and can be reactivated through the
+                      API.
                     </p>
                   )}
                   {formError && (
@@ -343,7 +359,9 @@ export default function Rooms() {
                     </button>
                     <button
                       type="submit"
-                      disabled={createMutation.isPending || updateMutation.isPending}
+                      disabled={
+                        createMutation.isPending || updateMutation.isPending
+                      }
                       className="flex-1 px-4 py-2 bg-teal-600 text-white rounded-lg font-medium hover:bg-teal-700 transition-colors disabled:opacity-50 text-sm"
                     >
                       {editing ? "Save Changes" : "Create Room"}

@@ -1,5 +1,12 @@
 import { useEffect, useState, useCallback } from "react";
-import { CheckCircle2, XCircle, AlertTriangle, ShoppingBag, Heart, X } from "lucide-react";
+import {
+  CheckCircle2,
+  XCircle,
+  AlertTriangle,
+  ShoppingBag,
+  Heart,
+  X,
+} from "lucide-react";
 
 /**
  * Type tokens — tuned to sit naturally on this app's white background.
@@ -11,22 +18,22 @@ import { CheckCircle2, XCircle, AlertTriangle, ShoppingBag, Heart, X } from "luc
 const TYPE = {
   success: {
     Icon: CheckCircle2,
-    iconColor: "#16a34a",   // green-600
-    barColor: "#22c55e",    // green-500
+    iconColor: "#16a34a", // green-600
+    barColor: "#22c55e", // green-500
   },
   error: {
     Icon: XCircle,
-    iconColor: "#dc2626",   // red-600
+    iconColor: "#dc2626", // red-600
     barColor: "#ef4444",
   },
   warning: {
     Icon: AlertTriangle,
-    iconColor: "#b45309",   // amber-700
+    iconColor: "#b45309", // amber-700
     barColor: "#f59e0b",
   },
   info: {
     Icon: ShoppingBag,
-    iconColor: "#F27318",   // app primary orange
+    iconColor: "#F27318", // app primary orange
     barColor: "#F27318",
   },
 };

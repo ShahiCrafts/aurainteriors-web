@@ -50,8 +50,12 @@ vi.mock("../../../src/hooks/newsletter/useNewsletterTan", () => ({
   useNewsletterSubscribe: () => ({ mutate: vi.fn(), isPending: false }),
 }));
 
-vi.mock("../../../src/layouts/customer/Navbar", () => ({ default: () => null }));
-vi.mock("../../../src/layouts/customer/Footer", () => ({ default: () => null }));
+vi.mock("../../../src/layouts/customer/Navbar", () => ({
+  default: () => null,
+}));
+vi.mock("../../../src/layouts/customer/Footer", () => ({
+  default: () => null,
+}));
 vi.mock("../../../src/lib/toast.js", () => ({
   toast: { error: mockState.toastError, success: vi.fn() },
 }));
@@ -74,28 +78,31 @@ describe("FE-26 BlogsPage like reconciliation", () => {
 
   it("successful like: heart fills and exactly one POST is made", () => {
     mockState.toggleLike.mockImplementation((id, opts) =>
-      opts?.onSuccess?.({ data: { likes: 8 } })
+      opts?.onSuccess?.({ data: { likes: 8 } }),
     );
     const { container } = render(
       <MemoryRouter>
         <BlogsPage />
-      </MemoryRouter>
+      </MemoryRouter>,
     );
     expect(heartFilled(container)).toBe(false);
     fireEvent.click(heartButton(container));
     expect(mockState.toggleLike).toHaveBeenCalledTimes(1);
-    expect(mockState.toggleLike).toHaveBeenCalledWith("post-1", expect.anything());
+    expect(mockState.toggleLike).toHaveBeenCalledWith(
+      "post-1",
+      expect.anything(),
+    );
     expect(heartFilled(container)).toBe(true);
   });
 
   it("failed like: heart rolls back and an error toast is shown", () => {
     mockState.toggleLike.mockImplementation((id, opts) =>
-      opts?.onError?.(new Error("network down"))
+      opts?.onError?.(new Error("network down")),
     );
     const { container } = render(
       <MemoryRouter>
         <BlogsPage />
-      </MemoryRouter>
+      </MemoryRouter>,
     );
     fireEvent.click(heartButton(container));
     expect(mockState.toggleLike).toHaveBeenCalledTimes(1);
@@ -105,12 +112,12 @@ describe("FE-26 BlogsPage like reconciliation", () => {
 
   it("second click after a successful like is an explicit no-op: no request, heart stays filled (aligned with the server count)", () => {
     mockState.toggleLike.mockImplementation((id, opts) =>
-      opts?.onSuccess?.({ data: { likes: 8 } })
+      opts?.onSuccess?.({ data: { likes: 8 } }),
     );
     const { container } = render(
       <MemoryRouter>
         <BlogsPage />
-      </MemoryRouter>
+      </MemoryRouter>,
     );
     fireEvent.click(heartButton(container));
     fireEvent.click(heartButton(container));
@@ -125,7 +132,7 @@ describe("FE-26 BlogsPage like reconciliation", () => {
     const { container } = render(
       <MemoryRouter>
         <BlogsPage />
-      </MemoryRouter>
+      </MemoryRouter>,
     );
     fireEvent.click(heartButton(container));
     fireEvent.click(heartButton(container));
@@ -143,7 +150,7 @@ describe("FE-26 BlogsPage like reconciliation", () => {
     const { container } = render(
       <MemoryRouter>
         <BlogsPage />
-      </MemoryRouter>
+      </MemoryRouter>,
     );
     fireEvent.click(heartButton(container));
     expect(heartFilled(container)).toBe(false);

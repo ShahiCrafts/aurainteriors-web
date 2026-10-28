@@ -1,4 +1,3 @@
-
 /**
  * @typedef {Object} ButtonProps
  * @property {"primary"|"secondary"|"ghost"|"danger"} [variant="primary"]
@@ -48,7 +47,12 @@ export default function Button({
   const classes = `inline-flex items-center justify-center gap-2 font-semibold rounded-lg transition-colors cursor-pointer disabled:opacity-60 disabled:cursor-not-allowed ${VARIANT_CLASSES[variant] || VARIANT_CLASSES.primary} ${SIZE_CLASSES[size] || SIZE_CLASSES.md} ${className}`;
   const content = (
     <>
-      {loading && <span className="h-4 w-4 shrink-0 rounded-full bg-current opacity-60 motion-safe:animate-pulse" aria-hidden="true" />}
+      {loading && (
+        <span
+          className="h-4 w-4 shrink-0 rounded-full bg-current opacity-60 motion-safe:animate-pulse"
+          aria-hidden="true"
+        />
+      )}
       {children}
     </>
   );

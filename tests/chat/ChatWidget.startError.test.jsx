@@ -17,7 +17,9 @@ vi.mock("../../src/hooks/chat/useChatTan.js", () => ({
   }),
   useSendMessage: () => ({ mutate: vi.fn() }),
 }));
-vi.mock("../../src/store/authStore.js", () => ({ default: () => ({ user: null }) }));
+vi.mock("../../src/store/authStore.js", () => ({
+  default: () => ({ user: null }),
+}));
 vi.mock("../../src/utils/guestSessionStorage.js", () => ({
   getGuestSessionId: () => null,
   setGuestSessionId: vi.fn(),
@@ -51,7 +53,10 @@ beforeEach(() => {
 
 describe("ChatWidget start-chat failures (FE-19)", () => {
   it("a generic start failure produces a toast (not silence)", () => {
-    h.startError = { response: { status: 500, data: { message: "Server unavailable" } }, displayMessage: "Server unavailable" };
+    h.startError = {
+      response: { status: 500, data: { message: "Server unavailable" } },
+      displayMessage: "Server unavailable",
+    };
     openAndStart();
     expect(h.toasts).toHaveLength(1);
     expect(h.toasts[0].message).toMatch(/server unavailable|could not start/i);
@@ -59,7 +64,16 @@ describe("ChatWidget start-chat failures (FE-19)", () => {
   });
 
   it("a rate-limit failure WITH retryAfter reports the wait in minutes", () => {
-    h.startError = { response: { status: 429, data: { code: "RATE_LIMIT_EXCEEDED", retryAfter: 120, message: "Too many" } } };
+    h.startError = {
+      response: {
+        status: 429,
+        data: {
+          code: "RATE_LIMIT_EXCEEDED",
+          retryAfter: 120,
+          message: "Too many",
+        },
+      },
+    };
     openAndStart();
     expect(h.toasts).toHaveLength(1);
     expect(h.toasts[0].message).toContain("2 minutes");
@@ -67,7 +81,12 @@ describe("ChatWidget start-chat failures (FE-19)", () => {
   });
 
   it("a rate-limit failure WITHOUT retryAfter never shows NaN (pen-test: missing field)", () => {
-    h.startError = { response: { status: 429, data: { code: "RATE_LIMIT_EXCEEDED", message: "Too many" } } };
+    h.startError = {
+      response: {
+        status: 429,
+        data: { code: "RATE_LIMIT_EXCEEDED", message: "Too many" },
+      },
+    };
     openAndStart();
     expect(h.toasts).toHaveLength(1);
     expect(h.toasts[0].message).not.toContain("NaN");
@@ -75,7 +94,9 @@ describe("ChatWidget start-chat failures (FE-19)", () => {
   });
 
   it("a status-only 429 (no body code) is still treated as rate-limited (pen-test: code omitted)", () => {
-    h.startError = { response: { status: 429, data: { message: "Slow down" } } };
+    h.startError = {
+      response: { status: 429, data: { message: "Slow down" } },
+    };
     openAndStart();
     expect(h.toasts[0].message).toMatch(/too many|wait|slow/i);
     expect(h.toasts[0].message).not.toContain("NaN");

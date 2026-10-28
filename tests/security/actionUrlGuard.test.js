@@ -9,7 +9,10 @@ import { readdirSync, readFileSync, statSync } from "node:fs";
 import path from "node:path";
 import { fileURLToPath } from "node:url";
 
-const SRC_ROOT = path.resolve(path.dirname(fileURLToPath(import.meta.url)), "../../src");
+const SRC_ROOT = path.resolve(
+  path.dirname(fileURLToPath(import.meta.url)),
+  "../../src",
+);
 
 const PATTERNS = [
   { id: "admin-string-replace", regex: /\.replace\(\s*["']\/admin["']/ },
@@ -35,11 +38,14 @@ describe("FE-04 actionUrl guard", () => {
     for (const file of files) {
       const rel = path.relative(path.resolve(SRC_ROOT, ".."), file);
       if (rel === "src/utils/safeUrl.js") continue;
-      readFileSync(file, "utf8").split("\n").forEach((line, i) => {
-        for (const { id, regex } of PATTERNS) {
-          if (regex.test(line)) hits.push(`${rel}:${i + 1} [${id}] ${line.trim()}`);
-        }
-      });
+      readFileSync(file, "utf8")
+        .split("\n")
+        .forEach((line, i) => {
+          for (const { id, regex } of PATTERNS) {
+            if (regex.test(line))
+              hits.push(`${rel}:${i + 1} [${id}] ${line.trim()}`);
+          }
+        });
     }
     expect(hits).toEqual([]);
   });

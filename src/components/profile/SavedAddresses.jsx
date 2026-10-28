@@ -70,9 +70,12 @@ export default function SavedAddresses() {
         {/* Header Info */}
         <div className="flex items-center justify-between shrink-0">
           <div>
-            <h2 className="text-[18px] font-semibold text-[#1A1714]">Saved Addresses</h2>
+            <h2 className="text-[18px] font-semibold text-[#1A1714]">
+              Saved Addresses
+            </h2>
             <p className="text-[14px] text-neutral-400 mt-1">
-              Manage your delivery locations and billing addresses for quick checkout.
+              Manage your delivery locations and billing addresses for quick
+              checkout.
             </p>
           </div>
           <Skeleton className="w-10 h-10 rounded-lg" />
@@ -95,7 +98,9 @@ export default function SavedAddresses() {
           <MapPin size={22} className="text-red-500" />
         </div>
         <div className="text-center space-y-1">
-          <h3 className="text-[16px] font-bold text-[#1A1714]">Unable to Load Addresses</h3>
+          <h3 className="text-[16px] font-bold text-[#1A1714]">
+            Unable to Load Addresses
+          </h3>
           <p className="text-[13px] text-neutral-400 max-w-xs">
             We couldn't retrieve your saved addresses. Please try again later.
           </p>
@@ -111,9 +116,12 @@ export default function SavedAddresses() {
       {/* Header Info */}
       <div className="flex items-center justify-between shrink-0">
         <div>
-          <h2 className="text-[18px] font-semibold text-[#1A1714]">Saved Addresses</h2>
+          <h2 className="text-[18px] font-semibold text-[#1A1714]">
+            Saved Addresses
+          </h2>
           <p className="text-[14px] text-neutral-400 mt-1">
-            Manage your delivery locations and billing addresses for quick checkout.
+            Manage your delivery locations and billing addresses for quick
+            checkout.
           </p>
         </div>
         {!isEmpty && (
@@ -133,9 +141,12 @@ export default function SavedAddresses() {
           <div className="w-16 h-16 rounded-2xl bg-white flex items-center justify-center mb-5 text-[#F27318]">
             <Map size={26} />
           </div>
-          <h3 className="text-[18px] font-semibold text-[#1A1714]">No addresses saved</h3>
+          <h3 className="text-[18px] font-semibold text-[#1A1714]">
+            No addresses saved
+          </h3>
           <p className="text-[14px] text-neutral-400 max-w-xs mt-1.5 mb-7 leading-relaxed">
-            Please register your default shipping or billing addresses for a faster checkout flow.
+            Please register your default shipping or billing addresses for a
+            faster checkout flow.
           </p>
           <button
             onClick={handleAddNew}

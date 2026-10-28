@@ -1,4 +1,7 @@
-import { shopCategoryUrl, selectedCategorySlugs } from "../../utils/shopFilters";
+import {
+  shopCategoryUrl,
+  selectedCategorySlugs,
+} from "../../utils/shopFilters";
 import { Link, useSearchParams } from "react-router-dom";
 import { ChevronRight } from "lucide-react";
 

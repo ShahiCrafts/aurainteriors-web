@@ -1,7 +1,19 @@
 import { useState, useEffect, useRef } from "react";
 import { useNavigate } from "react-router-dom";
-import { Mail, Lock, ShieldCheck, ArrowLeft, ChevronLeft, ChevronRight, Eye, EyeOff } from "lucide-react";
-import { useAdminLogin, useAdminVerifyOtp } from "../../hooks/auth/useAdminAuth";
+import {
+  Mail,
+  Lock,
+  ShieldCheck,
+  ArrowLeft,
+  ChevronLeft,
+  ChevronRight,
+  Eye,
+  EyeOff,
+} from "lucide-react";
+import {
+  useAdminLogin,
+  useAdminVerifyOtp,
+} from "../../hooks/auth/useAdminAuth";
 import useAuthStore, { getAuthRevision } from "../../store/authStore";
 import { useShallow } from "zustand/react/shallow";
 import { toast } from "../../lib/toast";
@@ -33,7 +45,13 @@ const CAROUSEL_SLIDES = [
 
 export default function AdminLoginPage() {
   const navigate = useNavigate();
-  const { signIn, isAuthenticated, user } = useAuthStore(useShallow((state) => ({ signIn: state.signIn, isAuthenticated: state.isAuthenticated, user: state.user })));
+  const { signIn, isAuthenticated, user } = useAuthStore(
+    useShallow((state) => ({
+      signIn: state.signIn,
+      isAuthenticated: state.isAuthenticated,
+      user: state.user,
+    })),
+  );
 
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
@@ -94,7 +112,10 @@ export default function AdminLoginPage() {
 
   const handleOtpPaste = (e) => {
     e.preventDefault();
-    const pastedData = e.clipboardData.getData("text").replace(/\D/g, "").slice(0, 6);
+    const pastedData = e.clipboardData
+      .getData("text")
+      .replace(/\D/g, "")
+      .slice(0, 6);
     if (pastedData) {
       const newOtpValues = [...otpValues];
       for (let i = 0; i < 6; i++) {
@@ -135,7 +156,9 @@ export default function AdminLoginPage() {
   }, []);
 
   const prevSlide = () =>
-    setActiveSlide((prev) => (prev - 1 + CAROUSEL_SLIDES.length) % CAROUSEL_SLIDES.length);
+    setActiveSlide(
+      (prev) => (prev - 1 + CAROUSEL_SLIDES.length) % CAROUSEL_SLIDES.length,
+    );
   const nextSlide = () =>
     setActiveSlide((prev) => (prev + 1) % CAROUSEL_SLIDES.length);
 
@@ -213,7 +236,7 @@ export default function AdminLoginPage() {
         onError: (error) => {
           toast.error(resolveLoginError(error));
         },
-      }
+      },
     );
   };
 
@@ -237,9 +260,11 @@ export default function AdminLoginPage() {
           navigate("/dashboard");
         },
         onError: (error) => {
-          toast.error(formatError(error) || "Invalid or expired verification code.");
+          toast.error(
+            formatError(error) || "Invalid or expired verification code.",
+          );
         },
-      }
+      },
     );
   };
 
@@ -257,7 +282,7 @@ export default function AdminLoginPage() {
         onError: (error) => {
           toast.error(resolveLoginError(error));
         },
-      }
+      },
     );
   };
 
@@ -271,7 +296,6 @@ export default function AdminLoginPage() {
 
   return (
     <div className="min-h-screen w-full flex bg-[#FCFBF7] font-dm-sans overflow-hidden">
-
       {/* LEFT PANEL: Image Carousel */}
       <div
         ref={carouselRef}
@@ -352,9 +376,7 @@ export default function AdminLoginPage() {
 
       {/* RIGHT PANEL: Authentication Form */}
       <div className="w-full lg:w-1/2 flex items-center justify-center p-8 md:p-16 relative bg-white">
-
         <div className="w-full max-w-[420px] relative z-10 flex flex-col">
-
           {/* Form Header */}
           <div className="mb-8">
             <img
@@ -388,7 +410,10 @@ export default function AdminLoginPage() {
                     placeholder="admin@aurainteriors.com"
                     required
                   />
-                  <Mail className="absolute left-4 top-1/2 -translate-y-1/2 text-neutral-400" size={16} />
+                  <Mail
+                    className="absolute left-4 top-1/2 -translate-y-1/2 text-neutral-400"
+                    size={16}
+                  />
                 </div>
               </div>
 
@@ -405,7 +430,10 @@ export default function AdminLoginPage() {
                     placeholder="••••••••••••"
                     required
                   />
-                  <Lock className="absolute left-4 top-1/2 -translate-y-1/2 text-neutral-400" size={16} />
+                  <Lock
+                    className="absolute left-4 top-1/2 -translate-y-1/2 text-neutral-400"
+                    size={16}
+                  />
                   <button
                     type="button"
                     onClick={() => setShowPassword((v) => !v)}
@@ -449,7 +477,10 @@ export default function AdminLoginPage() {
                 <label className="text-[11px] font-bold text-neutral-700 tracking-wider uppercase">
                   Verification Code
                 </label>
-                <div className="flex justify-between items-center gap-2 my-2" onPaste={handleOtpPaste}>
+                <div
+                  className="flex justify-between items-center gap-2 my-2"
+                  onPaste={handleOtpPaste}
+                >
                   {otpValues.map((val, i) => (
                     <input
                       key={i}
@@ -466,7 +497,12 @@ export default function AdminLoginPage() {
                   ))}
                 </div>
                 <div className="flex justify-between items-center text-[12px] text-neutral-500 mt-2">
-                  <span>Code expires in: <strong className="text-[#1A1714]">{formatTime(timer)}</strong></span>
+                  <span>
+                    Code expires in:{" "}
+                    <strong className="text-[#1A1714]">
+                      {formatTime(timer)}
+                    </strong>
+                  </span>
                   {timer === 0 ? (
                     <button
                       onClick={handleResendOtp}
@@ -506,13 +542,12 @@ export default function AdminLoginPage() {
           {/* Secure disclaimer */}
           <div className="mt-12 text-center border-t border-neutral-200 pt-6">
             <p className="text-[11px] text-neutral-400 leading-relaxed">
-              Secure administrative gateway. Unauthorized access or actions violate security protocols and will be logged.
+              Secure administrative gateway. Unauthorized access or actions
+              violate security protocols and will be logged.
             </p>
           </div>
-
         </div>
       </div>
-
     </div>
   );
 }

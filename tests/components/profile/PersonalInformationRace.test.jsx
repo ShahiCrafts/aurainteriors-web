@@ -13,7 +13,13 @@
 // restore that started before logout must not resurrect either.
 
 import { describe, it, expect, vi } from "vitest";
-import { render, screen, fireEvent, act, waitFor } from "@testing-library/react";
+import {
+  render,
+  screen,
+  fireEvent,
+  act,
+  waitFor,
+} from "@testing-library/react";
 
 vi.mock("../../../src/api/index.js", () => ({
   default: { get: vi.fn(), post: vi.fn() },
@@ -172,9 +178,10 @@ describe("FE-18 initialize() restore landing after logout", () => {
     const freshApi = (await import("../../../src/api/index.js")).default;
     let resolveMe;
     freshApi.get.mockImplementation(
-      () => new Promise((resolve) => {
-        resolveMe = resolve;
-      }),
+      () =>
+        new Promise((resolve) => {
+          resolveMe = resolve;
+        }),
     );
     freshApi.post.mockResolvedValue({});
     // Import-time initialize() starts now and stays in flight.

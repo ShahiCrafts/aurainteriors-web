@@ -34,13 +34,17 @@ export default function DynamicAttributesSection({
   showErrors,
   onChange,
 }) {
-  const { data: categoryData, isLoading } = useCategoryAttributes(categoryId || null);
+  const { data: categoryData, isLoading } = useCategoryAttributes(
+    categoryId || null,
+  );
   const { data: typeData } = useProductTypeAttributes(productType || null);
 
   const resolved = useMemo(() => {
     const categoryAttributes = categoryData?.data?.attributes;
     if (!categoryAttributes) return [];
-    const typeAttributes = productType ? typeData?.data?.attributes || null : null;
+    const typeAttributes = productType
+      ? typeData?.data?.attributes || null
+      : null;
     return mergeResolutions(categoryAttributes, typeAttributes);
   }, [categoryData, typeData, productType]);
 
@@ -56,7 +60,7 @@ export default function DynamicAttributesSection({
     (entry) =>
       (entry.storage || "catalogAttributes") === "catalogAttributes" &&
       !seededKeys.has(entry.key) &&
-      values[entry.key] === undefined
+      values[entry.key] === undefined,
   );
   if (unseeded.length > 0) {
     const additions = {};
@@ -65,7 +69,9 @@ export default function DynamicAttributesSection({
       additions[entry.key] = stored !== undefined ? stored : entry.defaultValue;
     }
     setValues((prev) => ({ ...prev, ...additions }));
-    setSeededKeys((prev) => new Set([...prev, ...unseeded.map((entry) => entry.key)]));
+    setSeededKeys(
+      (prev) => new Set([...prev, ...unseeded.map((entry) => entry.key)]),
+    );
   }
 
   const passthrough = useMemo(() => {
@@ -82,7 +88,7 @@ export default function DynamicAttributesSection({
   }, [resolved, values, passthrough, onChange]);
 
   const renderable = resolved.filter(
-    (entry) => (entry.storage || "catalogAttributes") === "catalogAttributes"
+    (entry) => (entry.storage || "catalogAttributes") === "catalogAttributes",
   );
   const fieldEntries = resolved.filter((entry) => entry.storage === "field");
 
@@ -90,7 +96,8 @@ export default function DynamicAttributesSection({
   for (const entry of renderable) {
     const value = values[entry.key];
     if (isEmptyAttributeValue(entry, value)) {
-      if (showErrors && entry.required) errors[entry.key] = `${entry.label} is required`;
+      if (showErrors && entry.required)
+        errors[entry.key] = `${entry.label} is required`;
     } else {
       const result = validateAttributeValue(entry, value);
       if (!result.ok) errors[entry.key] = result.error;
@@ -108,26 +115,33 @@ export default function DynamicAttributesSection({
     groups[groupIndex.get(group)][1].push(entry);
   }
 
-  const payloadPreview = buildAttributesPayload(resolved, values, passthrough).payload;
+  const payloadPreview = buildAttributesPayload(
+    resolved,
+    values,
+    passthrough,
+  ).payload;
 
   return (
     <div className="space-y-6">
       {!categoryId && (
         <p className="text-sm text-gray-500">
-          Choose a category in Basic Info to load the attributes that apply to it.
+          Choose a category in Basic Info to load the attributes that apply to
+          it.
         </p>
       )}
       {categoryId && isLoading && (
         <div className="space-y-2" aria-busy="true">
-          <span role="status" className="sr-only">Loading attributes…</span>
+          <span role="status" className="sr-only">
+            Loading attributes…
+          </span>
           <Skeleton className="h-10 w-full rounded-lg" />
           <Skeleton className="h-10 w-full rounded-lg" />
         </div>
       )}
       {categoryId && !isLoading && resolved.length === 0 && (
         <p className="text-sm text-gray-500">
-          No attributes apply to this category. Assign some from the Categories page, or mark
-          definitions as global in the Attributes page.
+          No attributes apply to this category. Assign some from the Categories
+          page, or mark definitions as global in the Attributes page.
         </p>
       )}
 
@@ -138,7 +152,10 @@ export default function DynamicAttributesSection({
           </h3>
           <div className="grid grid-cols-2 gap-4">
             {entries.map((entry) => (
-              <div key={entry.key} className={entry.type === "dimensions" ? "col-span-2" : ""}>
+              <div
+                key={entry.key}
+                className={entry.type === "dimensions" ? "col-span-2" : ""}
+              >
                 <AttributeValueInput
                   definition={entry}
                   value={values[entry.key]}
@@ -172,14 +189,16 @@ export default function DynamicAttributesSection({
       {Object.keys(passthrough).length > 0 && (
         <p className="text-xs text-gray-400">
           This product also carries stored values for{" "}
-          {Object.keys(passthrough).join(", ")}, which do not apply to the current category.
-          They are kept unchanged on save.
+          {Object.keys(passthrough).join(", ")}, which do not apply to the
+          current category. They are kept unchanged on save.
         </p>
       )}
 
       {renderable.length > 0 && (
         <details className="text-xs text-gray-400">
-          <summary className="cursor-pointer font-medium">Raw values (read-only)</summary>
+          <summary className="cursor-pointer font-medium">
+            Raw values (read-only)
+          </summary>
           <pre className="mt-2 bg-gray-50 border border-gray-100 rounded-lg p-3 overflow-x-auto">
             {JSON.stringify(payloadPreview, null, 2)}
           </pre>

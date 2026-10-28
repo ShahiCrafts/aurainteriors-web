@@ -47,14 +47,16 @@ describe("FE-12 — CategorySidebar category links", () => {
             path="/shop"
             element={
               <CategorySidebar
-                categories={[{ _id: "c9", slug: HOSTILE, name: "Weird", productCount: 2 }]}
+                categories={[
+                  { _id: "c9", slug: HOSTILE, name: "Weird", productCount: 2 },
+                ]}
                 currentCategory={null}
                 productCounts={{}}
               />
             }
           />
         </Routes>
-      </MemoryRouter>
+      </MemoryRouter>,
     );
     const link = screen.getByRole("link", { name: /Weird/ });
     expect(link.getAttribute("href")).toBe(`/shop?categories=${HOSTILE_ENC}`);
@@ -75,16 +77,20 @@ describe("FE-12 — CategorySidebar category links", () => {
             path="/shop"
             element={
               <CategorySidebar
-                categories={[{ _id: "c1", slug: "sofas", name: "Sofas", productCount: 5 }]}
+                categories={[
+                  { _id: "c1", slug: "sofas", name: "Sofas", productCount: 5 },
+                ]}
                 currentCategory={null}
                 productCounts={{}}
               />
             }
           />
         </Routes>
-      </MemoryRouter>
+      </MemoryRouter>,
     );
-    expect(screen.getByRole("link", { name: /Sofas/ }).getAttribute("href")).toBe("/shop?categories=sofas");
+    expect(
+      screen.getByRole("link", { name: /Sofas/ }).getAttribute("href"),
+    ).toBe("/shop?categories=sofas");
   });
 });
 
@@ -93,17 +99,19 @@ describe("FE-12 — MobileMenu category links", () => {
     render(
       <MemoryRouter>
         <MobileMenu isOpen onClose={() => {}} />
-      </MemoryRouter>
+      </MemoryRouter>,
     );
     const link = screen.getByRole("link", { name: /Chairs & Tables/ });
-    expect(link.getAttribute("href")).toBe("/shop?categories=chairs+%26+tables");
+    expect(link.getAttribute("href")).toBe(
+      "/shop?categories=chairs+%26+tables",
+    );
   });
 
   it("pen: a hostile category slug is encoded into one segment", () => {
     render(
       <MemoryRouter>
         <MobileMenu isOpen onClose={() => {}} />
-      </MemoryRouter>
+      </MemoryRouter>,
     );
     const link = screen.getByRole("link", { name: /Sofas\/Beds/ });
     expect(link.getAttribute("href")).toBe(`/shop?categories=${HOSTILE_ENC}`);
@@ -111,7 +119,10 @@ describe("FE-12 — MobileMenu category links", () => {
 });
 
 describe("FE-12 — class guard: no raw template route-path interpolation remains in src/", () => {
-  const SRC_ROOT = path.resolve(path.dirname(fileURLToPath(import.meta.url)), "../../src");
+  const SRC_ROOT = path.resolve(
+    path.dirname(fileURLToPath(import.meta.url)),
+    "../../src",
+  );
   // Owned by another Phase 4 worker this wave — reported to the
   // coordinator instead of edited here.
   const EXCLUDED_FILES = new Set([

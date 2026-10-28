@@ -18,12 +18,20 @@ import {
 } from "../../src/utils/adminForms.js";
 
 describe("FE-45 parseDiscountFormValues", () => {
-  const base = { discountPercentage: "25", minimumOrderAmount: "0", maxUsageLimit: "" };
+  const base = {
+    discountPercentage: "25",
+    minimumOrderAmount: "0",
+    maxUsageLimit: "",
+  };
 
   it("valid input parses to numbers", () => {
     const r = parseDiscountFormValues({ ...base, maxUsageLimit: "10" });
     expect(r.ok).toBe(true);
-    expect(r.values).toEqual({ discountPercentage: 25, minimumOrderAmount: 0, maxUsageLimit: 10 });
+    expect(r.values).toEqual({
+      discountPercentage: 25,
+      minimumOrderAmount: 0,
+      maxUsageLimit: 10,
+    });
   });
 
   it("empty usage limit parses to null (server allow(null))", () => {
@@ -33,27 +41,49 @@ describe("FE-45 parseDiscountFormValues", () => {
   });
 
   it("NaN percentage is refused, never sent", () => {
-    expect(parseDiscountFormValues({ ...base, discountPercentage: "abc" }).ok).toBe(false);
-    expect(parseDiscountFormValues({ ...base, discountPercentage: "" }).ok).toBe(false);
+    expect(
+      parseDiscountFormValues({ ...base, discountPercentage: "abc" }).ok,
+    ).toBe(false);
+    expect(
+      parseDiscountFormValues({ ...base, discountPercentage: "" }).ok,
+    ).toBe(false);
   });
 
   it("percentage outside 1..100 is refused (server bounds)", () => {
-    expect(parseDiscountFormValues({ ...base, discountPercentage: "0" }).ok).toBe(false);
-    expect(parseDiscountFormValues({ ...base, discountPercentage: "101" }).ok).toBe(false);
-    expect(parseDiscountFormValues({ ...base, discountPercentage: "100" }).ok).toBe(true);
-    expect(parseDiscountFormValues({ ...base, discountPercentage: "1" }).ok).toBe(true);
+    expect(
+      parseDiscountFormValues({ ...base, discountPercentage: "0" }).ok,
+    ).toBe(false);
+    expect(
+      parseDiscountFormValues({ ...base, discountPercentage: "101" }).ok,
+    ).toBe(false);
+    expect(
+      parseDiscountFormValues({ ...base, discountPercentage: "100" }).ok,
+    ).toBe(true);
+    expect(
+      parseDiscountFormValues({ ...base, discountPercentage: "1" }).ok,
+    ).toBe(true);
   });
 
   it("negative minimum order amount and non-positive usage limit are refused", () => {
-    expect(parseDiscountFormValues({ ...base, minimumOrderAmount: "-5" }).ok).toBe(false);
-    expect(parseDiscountFormValues({ ...base, maxUsageLimit: "0" }).ok).toBe(false);
-    expect(parseDiscountFormValues({ ...base, maxUsageLimit: "2.5" }).ok).toBe(false);
+    expect(
+      parseDiscountFormValues({ ...base, minimumOrderAmount: "-5" }).ok,
+    ).toBe(false);
+    expect(parseDiscountFormValues({ ...base, maxUsageLimit: "0" }).ok).toBe(
+      false,
+    );
+    expect(parseDiscountFormValues({ ...base, maxUsageLimit: "2.5" }).ok).toBe(
+      false,
+    );
   });
 });
 
 describe("FE-45 parseProductPriceStock", () => {
   it("valid input parses to numbers (no raw strings sent)", () => {
-    const r = parseProductPriceStock({ price: "499.99", stock: "12", originalPrice: "" });
+    const r = parseProductPriceStock({
+      price: "499.99",
+      stock: "12",
+      originalPrice: "",
+    });
     expect(r.ok).toBe(true);
     expect(r.values).toEqual({ price: 499.99, stock: 12 });
   });
@@ -71,13 +101,22 @@ describe("FE-45 parseProductPriceStock", () => {
   });
 
   it("fractional or negative stock is refused (server: integer min 0)", () => {
-    expect(parseProductPriceStock({ price: "10", stock: "3.5" }).ok).toBe(false);
+    expect(parseProductPriceStock({ price: "10", stock: "3.5" }).ok).toBe(
+      false,
+    );
     expect(parseProductPriceStock({ price: "10", stock: "-2" }).ok).toBe(false);
   });
 
   it("a present originalPrice must also be a positive number", () => {
-    expect(parseProductPriceStock({ price: "10", stock: "1", originalPrice: "xyz" }).ok).toBe(false);
-    const r = parseProductPriceStock({ price: "10", stock: "1", originalPrice: "20" });
+    expect(
+      parseProductPriceStock({ price: "10", stock: "1", originalPrice: "xyz" })
+        .ok,
+    ).toBe(false);
+    const r = parseProductPriceStock({
+      price: "10",
+      stock: "1",
+      originalPrice: "20",
+    });
     expect(r.ok).toBe(true);
     expect(r.values.originalPrice).toBe(20);
   });

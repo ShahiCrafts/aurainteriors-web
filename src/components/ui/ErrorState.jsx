@@ -32,7 +32,9 @@ export default function ErrorState({
         <AlertTriangle size={26} aria-hidden="true" />
       </div>
       <h3 className="text-base font-semibold text-neutral-800">{title}</h3>
-      {message && <p className="mt-1.5 max-w-sm text-sm text-neutral-500">{message}</p>}
+      {message && (
+        <p className="mt-1.5 max-w-sm text-sm text-neutral-500">{message}</p>
+      )}
       {onRetry && (
         <div className="mt-5">
           <Button variant="secondary" size="sm" onClick={onRetry}>

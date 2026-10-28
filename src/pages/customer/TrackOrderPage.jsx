@@ -86,10 +86,10 @@ export default function TrackOrderPage() {
           setOrder(null);
           setApiError(
             err.response?.data?.message ||
-            "Order not found. Please check your order ID and email."
+              "Order not found. Please check your order ID and email.",
           );
         },
-      }
+      },
     );
   };
 
@@ -99,7 +99,11 @@ export default function TrackOrderPage() {
 
   const formatDate = (dateString) => {
     if (!dateString) return "N/A";
-    return formatDateShared(dateString, { year: "numeric", month: "long", day: "numeric" });
+    return formatDateShared(dateString, {
+      year: "numeric",
+      month: "long",
+      day: "numeric",
+    });
   };
 
   const getImageUrl = (item) => getImageUrlUtil(item.image, "products");
@@ -168,7 +172,9 @@ export default function TrackOrderPage() {
                     />
                   </div>
                   {errors.orderId && (
-                    <p className="text-xs text-red-500 mt-1 font-dm-sans">{errors.orderId.message}</p>
+                    <p className="text-xs text-red-500 mt-1 font-dm-sans">
+                      {errors.orderId.message}
+                    </p>
                   )}
                 </div>
                 <div>
@@ -188,7 +194,9 @@ export default function TrackOrderPage() {
                     />
                   </div>
                   {errors.email && (
-                    <p className="text-xs text-red-500 mt-1 font-dm-sans">{errors.email.message}</p>
+                    <p className="text-xs text-red-500 mt-1 font-dm-sans">
+                      {errors.email.message}
+                    </p>
                   )}
                 </div>
               </div>
@@ -229,8 +237,9 @@ export default function TrackOrderPage() {
                     </p>
                   </div>
                   <span
-                    className={`px-4 py-2 rounded-full text-sm font-medium border ${STATUS_COLORS[order.orderStatus]
-                      }`}
+                    className={`px-4 py-2 rounded-full text-sm font-medium border ${
+                      STATUS_COLORS[order.orderStatus]
+                    }`}
                   >
                     {STATUS_LABELS[order.orderStatus]}
                   </span>
@@ -312,14 +321,15 @@ export default function TrackOrderPage() {
                         <h4 className="font-medium text-neutral-900 font-dm-sans">
                           {item.name}
                         </h4>
-                        {item.variant && Object.keys(item.variant).length > 0 && (
-                          <p className="text-sm text-neutral-500 font-dm-sans mt-1">
-                            {Object.entries(item.variant)
-                              .filter(([, v]) => v)
-                              .map(([k, v]) => `${k}: ${v}`)
-                              .join(" • ")}
-                          </p>
-                        )}
+                        {item.variant &&
+                          Object.keys(item.variant).length > 0 && (
+                            <p className="text-sm text-neutral-500 font-dm-sans mt-1">
+                              {Object.entries(item.variant)
+                                .filter(([, v]) => v)
+                                .map(([k, v]) => `${k}: ${v}`)
+                                .join(" • ")}
+                            </p>
+                          )}
                         <p className="text-sm text-neutral-500 font-dm-sans">
                           Qty: {item.quantity}
                         </p>
@@ -336,7 +346,9 @@ export default function TrackOrderPage() {
                 {/* Order Summary */}
                 <div className="mt-6 pt-4 border-t border-neutral-200 space-y-2">
                   <div className="flex justify-between text-sm">
-                    <span className="text-neutral-500 font-dm-sans">Subtotal</span>
+                    <span className="text-neutral-500 font-dm-sans">
+                      Subtotal
+                    </span>
                     <span className="text-neutral-900 font-dm-sans">
                       {formatNPR(order.subtotal)}
                     </span>
@@ -350,7 +362,9 @@ export default function TrackOrderPage() {
                     </div>
                   )}
                   <div className="flex justify-between text-sm">
-                    <span className="text-neutral-500 font-dm-sans">Shipping</span>
+                    <span className="text-neutral-500 font-dm-sans">
+                      Shipping
+                    </span>
                     <span className="text-neutral-900 font-dm-sans">
                       {order.shippingCost > 0
                         ? formatNPR(order.shippingCost)

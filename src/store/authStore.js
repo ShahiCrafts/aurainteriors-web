@@ -20,7 +20,9 @@ const clearLegacyAuth = () => {
   try {
     localStorage.removeItem("token");
     localStorage.removeItem("user");
-  } catch { /* Cookie authentication works without browser storage. */ }
+  } catch {
+    /* Cookie authentication works without browser storage. */
+  }
 };
 
 const useAuthStore = create((set, get) => {
@@ -37,12 +39,12 @@ const useAuthStore = create((set, get) => {
     authModalView: "email", // 'email', 'sent', 'onboarding'
 
     openAuthModal: (view = "email") => {
-      const mappedView = (view === "login" || view === "signup") ? "email" : view;
+      const mappedView = view === "login" || view === "signup" ? "email" : view;
       set({ isAuthModalOpen: true, authModalView: mappedView });
     },
     closeAuthModal: () => set({ isAuthModalOpen: false }),
     setAuthModalView: (view) => {
-      const mappedView = (view === "login" || view === "signup") ? "email" : view;
+      const mappedView = view === "login" || view === "signup" ? "email" : view;
       set({ authModalView: mappedView });
     },
 
@@ -105,18 +107,27 @@ const useAuthStore = create((set, get) => {
             setTimeout(resolve, 3000);
           }),
         ]);
-      } catch { /* Local sign-out already completed above. */ }
+      } catch {
+        /* Local sign-out already completed above. */
+      }
     },
 
     initialize: async () => {
       const revision = authRevision;
       try {
         const response = await api.get("/auth/me");
-        if (revision === authRevision && !get().isAuthenticated) set({ user: response.data.data.user, token: "cookie", isAuthenticated: true, loading: false });
-      } catch { if (revision === authRevision) set({ loading: false }); }
+        if (revision === authRevision && !get().isAuthenticated)
+          set({
+            user: response.data.data.user,
+            token: "cookie",
+            isAuthenticated: true,
+            loading: false,
+          });
+      } catch {
+        if (revision === authRevision) set({ loading: false });
+      }
     },
     setUser: (userData) => {
-
       set({ user: userData });
     },
   };

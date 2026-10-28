@@ -16,8 +16,7 @@ export default function CollectionPage() {
   const { data: collectionsData, isLoading } = useCollections();
   const collections =
     collectionsData?.data?.collections || collectionsData?.data || [];
-  const collection =
-    collections.find((entry) => entry.slug === slug) || null;
+  const collection = collections.find((entry) => entry.slug === slug) || null;
 
   const hero = collection ? (
     <div className="max-w-[1440px] mx-auto px-4 sm:px-5 md:px-6 lg:px-4 mb-8">

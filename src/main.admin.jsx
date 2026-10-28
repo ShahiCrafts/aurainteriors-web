@@ -36,5 +36,5 @@ createRoot(document.getElementById("root")).render(
         </ToastProvider>
       </QueryClientProvider>
     </BrowserRouter>
-  </StrictMode>
+  </StrictMode>,
 );

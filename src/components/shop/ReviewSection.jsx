@@ -1,5 +1,13 @@
 import { useState } from "react";
-import { Star, ChevronDown, ThumbsUp, CheckCircle, MoreVertical, Edit2, Trash2 } from "lucide-react";
+import {
+  Star,
+  ChevronDown,
+  ThumbsUp,
+  CheckCircle,
+  MoreVertical,
+  Edit2,
+  Trash2,
+} from "lucide-react";
 import { ReviewSkeleton } from "../common/Skeleton";
 import {
   useProductReviews,
@@ -15,7 +23,11 @@ import { toast } from "../../lib/toast";
 import formatError from "../../utils/errorHandler";
 import { formatDate as formatDateShared } from "../../utils/formatDate";
 
-export default function ReviewSection({ productId, productName, onEditReview }) {
+export default function ReviewSection({
+  productId,
+  productName,
+  onEditReview,
+}) {
   const [filter, setFilter] = useState({
     page: 1,
     limit: 6,
@@ -23,7 +35,12 @@ export default function ReviewSection({ productId, productName, onEditReview }) 
     rating: undefined,
   });
 
-  const { isAuthenticated, user } = useAuthStore(useShallow((state) => ({ isAuthenticated: state.isAuthenticated, user: state.user })));
+  const { isAuthenticated, user } = useAuthStore(
+    useShallow((state) => ({
+      isAuthenticated: state.isAuthenticated,
+      user: state.user,
+    })),
+  );
 
   const {
     data: reviewsData,
@@ -57,7 +74,6 @@ export default function ReviewSection({ productId, productName, onEditReview }) 
   return (
     <div className="font-dm-sans">
       <div className="grid grid-cols-1 lg:grid-cols-12 gap-10 lg:gap-20">
-
         {/* ── Left Column: Rating Summary ── */}
         <div className="lg:col-span-3">
           <div className="lg:sticky lg:top-32">
@@ -73,15 +89,22 @@ export default function ReviewSection({ productId, productName, onEditReview }) 
                       <Star
                         key={i}
                         size={20}
-                        className={i < Math.round(stats.average) ? "fill-[#F27318] text-[#F27318]" : "fill-black/[0.08] text-transparent"}
+                        className={
+                          i < Math.round(stats.average)
+                            ? "fill-[#F27318] text-[#F27318]"
+                            : "fill-black/[0.08] text-transparent"
+                        }
                       />
                     ))}
-                    <span className="text-[14px] text-black/35 font-semibold ml-1">({stats.total})</span>
+                    <span className="text-[14px] text-black/35 font-semibold ml-1">
+                      ({stats.total})
+                    </span>
                   </div>
                 </div>
               </div>
               <p className="text-[14px] text-black/30 font-medium leading-none font-dm-sans mt-3">
-                {stats.total} {stats.total === 1 ? "Rating" : "Ratings"} & {reviews.length} {reviews.length === 1 ? "Review" : "Reviews"}
+                {stats.total} {stats.total === 1 ? "Rating" : "Ratings"} &{" "}
+                {reviews.length} {reviews.length === 1 ? "Review" : "Reviews"}
               </p>
             </div>
 
@@ -90,19 +113,36 @@ export default function ReviewSection({ productId, productName, onEditReview }) 
               {breakdown.map((item) => (
                 <button
                   key={item.stars}
-                  onClick={() => handleFilterChange({ rating: filter.rating === item.stars ? undefined : item.stars })}
+                  onClick={() =>
+                    handleFilterChange({
+                      rating:
+                        filter.rating === item.stars ? undefined : item.stars,
+                    })
+                  }
                   className={`w-full flex items-center gap-2.5 py-0.5 group transition-all bg-transparent border-none cursor-pointer p-0 ${filter.rating === item.stars ? "opacity-100" : "opacity-50 hover:opacity-90"}`}
                 >
-                  <span className="text-[14px] font-bold text-black/50 w-4 text-right tabular-nums shrink-0 font-dm-sans">{item.stars}</span>
-                  <Star size={16} className="fill-[#F27318] text-[#F27318] shrink-0" />
+                  <span className="text-[14px] font-bold text-black/50 w-4 text-right tabular-nums shrink-0 font-dm-sans">
+                    {item.stars}
+                  </span>
+                  <Star
+                    size={16}
+                    className="fill-[#F27318] text-[#F27318] shrink-0"
+                  />
                   <div className="flex-1 h-[6px] bg-black/[0.04] rounded-full overflow-hidden">
                     <div
                       className={`h-full rounded-full transition-all duration-700 ease-out ${filter.rating === item.stars ? "bg-[#1A1714]" : "bg-[#F27318]"}`}
-                      style={{ width: stats.total > 0 ? `${(item.count / stats.total) * 100}%` : "0%" }}
+                      style={{
+                        width:
+                          stats.total > 0
+                            ? `${(item.count / stats.total) * 100}%`
+                            : "0%",
+                      }}
                     />
                   </div>
                   <span className="text-[14px] font-medium text-black/30 w-7 text-right tabular-nums shrink-0 font-dm-sans">
-                    {stats.total > 0 ? `${Math.round((item.count / stats.total) * 100)}%` : "0%"}
+                    {stats.total > 0
+                      ? `${Math.round((item.count / stats.total) * 100)}%`
+                      : "0%"}
                   </span>
                 </button>
               ))}
@@ -124,7 +164,9 @@ export default function ReviewSection({ productId, productName, onEditReview }) 
         <div className="lg:col-span-9">
           {/* Header */}
           <div className="flex items-center justify-between mb-1">
-            <h3 className="text-[18px] font-medium text-[#1A1714] font-dm-sans">Reviewed by customers</h3>
+            <h3 className="text-[18px] font-medium text-[#1A1714] font-dm-sans">
+              Reviewed by customers
+            </h3>
             <div className="relative">
               <select
                 value={filter.sort}
@@ -132,10 +174,15 @@ export default function ReviewSection({ productId, productName, onEditReview }) 
                 className="appearance-none bg-transparent border-none text-[14px] font-medium text-black/35 focus:outline-none cursor-pointer pr-5 hover:text-black/60 transition-colors font-dm-sans"
               >
                 {sortOptions.map((option) => (
-                  <option key={option.value} value={option.value}>{option.label}</option>
+                  <option key={option.value} value={option.value}>
+                    {option.label}
+                  </option>
                 ))}
               </select>
-              <ChevronDown size={11} className="absolute right-0 top-1/2 -translate-y-1/2 text-black/25 pointer-events-none" />
+              <ChevronDown
+                size={11}
+                className="absolute right-0 top-1/2 -translate-y-1/2 text-black/25 pointer-events-none"
+              />
             </div>
           </div>
 
@@ -173,7 +220,9 @@ export default function ReviewSection({ productId, productName, onEditReview }) 
             </div>
           ) : (
             <div className="py-20 text-center">
-              <p className="text-black/30 font-bold text-[15px] mb-1 font-dm-sans">No reviews yet.</p>
+              <p className="text-black/30 font-bold text-[15px] mb-1 font-dm-sans">
+                No reviews yet.
+              </p>
               <p className="text-[13px] text-black/20 font-medium font-dm-sans">
                 Be the first to share your experience with this piece.
               </p>
@@ -191,7 +240,12 @@ export default function ReviewSection({ productId, productName, onEditReview }) 
 function ReviewCard({ review, productId, isOwner, onEdit, isLast }) {
   const [showMenu, setShowMenu] = useState(false);
   const [deleteModalOpen, setDeleteModalOpen] = useState(false);
-  const { isAuthenticated, user } = useAuthStore(useShallow((state) => ({ isAuthenticated: state.isAuthenticated, user: state.user })));
+  const { isAuthenticated, user } = useAuthStore(
+    useShallow((state) => ({
+      isAuthenticated: state.isAuthenticated,
+      user: state.user,
+    })),
+  );
 
   const { mutate: markHelpful, isPending: isMarkingHelpful } = useMarkHelpful();
   const { mutate: deleteReview, isPending: isDeleting } = useDeleteReview();
@@ -205,7 +259,10 @@ function ReviewCard({ review, productId, isOwner, onEdit, isLast }) {
     }
     markHelpful(
       { productId, reviewId: review._id },
-      { onError: (err) => toast.error(formatError(err, "Failed to mark as helpful")) }
+      {
+        onError: (err) =>
+          toast.error(formatError(err, "Failed to mark as helpful")),
+      },
     );
   };
 
@@ -213,35 +270,53 @@ function ReviewCard({ review, productId, isOwner, onEdit, isLast }) {
     deleteReview(
       { productId, reviewId: review._id },
       {
-        onSuccess: () => { toast.success("Review deleted successfully"); setDeleteModalOpen(false); },
-        onError: (err) => toast.error(formatError(err, "Failed to delete review")),
-      }
+        onSuccess: () => {
+          toast.success("Review deleted successfully");
+          setDeleteModalOpen(false);
+        },
+        onError: (err) =>
+          toast.error(formatError(err, "Failed to delete review")),
+      },
     );
   };
 
   const formatDate = (dateString) =>
-    formatDateShared(dateString, { day: "2-digit", month: "short", year: "numeric" });
+    formatDateShared(dateString, {
+      day: "2-digit",
+      month: "short",
+      year: "numeric",
+    });
 
   const getUserName = () => {
     return `${review.user?.firstName || review.user?.name || "Anonymous"} ${review.user?.lastName || ""}`.trim();
   };
 
   return (
-    <div className={`py-6 font-dm-sans ${!isLast ? "border-b border-black/[0.05]" : ""}`}>
+    <div
+      className={`py-6 font-dm-sans ${!isLast ? "border-b border-black/[0.05]" : ""}`}
+    >
       {/* Row 1: Stars */}
       <div className="flex items-center gap-1 mb-2.5">
         {[...Array(5)].map((_, i) => (
           <Star
             key={i}
             size={18}
-            className={i < review.rating ? "fill-[#F27318] text-[#F27318]" : "fill-black/[0.06] text-transparent"}
+            className={
+              i < review.rating
+                ? "fill-[#F27318] text-[#F27318]"
+                : "fill-black/[0.06] text-transparent"
+            }
           />
         ))}
-        <span className="text-[14px] font-bold text-black/35 ml-1 font-dm-sans">({review.rating})</span>
+        <span className="text-[14px] font-bold text-black/35 ml-1 font-dm-sans">
+          ({review.rating})
+        </span>
       </div>
 
       {/* Row 2: Comment */}
-      <p className="text-[16px] text-[#1A1714]/80 leading-[1.75] font-medium mb-3 font-dm-sans">{review.comment}</p>
+      <p className="text-[16px] text-[#1A1714]/80 leading-[1.75] font-medium mb-3 font-dm-sans">
+        {review.comment}
+      </p>
 
       {/* Row 3: Author + Actions */}
       <div className="flex items-center justify-between">
@@ -257,7 +332,9 @@ function ReviewCard({ review, productId, isOwner, onEdit, isLast }) {
             </>
           )}
           <span className="text-black/15">·</span>
-          <span className="text-[14px] text-black/25 font-dm-sans">{formatDate(review.createdAt)}</span>
+          <span className="text-[14px] text-black/25 font-dm-sans">
+            {formatDate(review.createdAt)}
+          </span>
         </div>
 
         {/* Right: Helpful + Menu */}
@@ -265,12 +342,12 @@ function ReviewCard({ review, productId, isOwner, onEdit, isLast }) {
           <button
             onClick={handleMarkHelpful}
             disabled={isMarkingHelpful}
-            className={`inline-flex items-center gap-1.5 text-[14px] font-medium transition-colors bg-transparent border-none cursor-pointer p-0 font-dm-sans ${hasVoted ? "text-[#F27318]" : "text-black/25 hover:text-[#F27318]"
-              }`}
+            className={`inline-flex items-center gap-1.5 text-[14px] font-medium transition-colors bg-transparent border-none cursor-pointer p-0 font-dm-sans ${
+              hasVoted ? "text-[#F27318]" : "text-black/25 hover:text-[#F27318]"
+            }`}
           >
             <ThumbsUp size={14} className={hasVoted ? "fill-[#F27318]" : ""} />
-            Helpful
-            ({review.helpfulCount || 0})
+            Helpful ({review.helpfulCount || 0})
           </button>
 
           {isOwner && (
@@ -283,16 +360,25 @@ function ReviewCard({ review, productId, isOwner, onEdit, isLast }) {
               </button>
               {showMenu && (
                 <>
-                  <div className="fixed inset-0 z-10" onClick={() => setShowMenu(false)} />
+                  <div
+                    className="fixed inset-0 z-10"
+                    onClick={() => setShowMenu(false)}
+                  />
                   <div className="absolute right-0 top-full mt-1 bg-white border border-black/[0.06] rounded-lg shadow-lg shadow-black/[0.06] z-20 py-1 min-w-[120px]">
                     <button
-                      onClick={() => { onEdit?.(review); setShowMenu(false); }}
+                      onClick={() => {
+                        onEdit?.(review);
+                        setShowMenu(false);
+                      }}
                       className="w-full flex items-center gap-2 px-3.5 py-2 text-[12px] font-medium text-[#1A1714] hover:bg-black/[0.02] bg-transparent border-none cursor-pointer font-dm-sans"
                     >
                       <Edit2 size={11} /> Edit
                     </button>
                     <button
-                      onClick={() => { setDeleteModalOpen(true); setShowMenu(false); }}
+                      onClick={() => {
+                        setDeleteModalOpen(true);
+                        setShowMenu(false);
+                      }}
                       disabled={isDeleting}
                       className="w-full flex items-center gap-2 px-3.5 py-2 text-[12px] font-medium text-red-500 hover:bg-red-50/50 bg-transparent border-none cursor-pointer font-dm-sans"
                     >
@@ -312,7 +398,9 @@ function ReviewCard({ review, productId, isOwner, onEdit, isLast }) {
           <p className="text-[11px] font-bold text-[#F27318] mb-1 uppercase tracking-wider font-dm-sans">
             Aura Interiors
           </p>
-          <p className="text-[13px] text-black/55 leading-[1.65] font-medium font-dm-sans">{review.adminResponse.comment}</p>
+          <p className="text-[13px] text-black/55 leading-[1.65] font-medium font-dm-sans">
+            {review.adminResponse.comment}
+          </p>
         </div>
       )}
 

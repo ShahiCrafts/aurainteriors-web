@@ -20,16 +20,47 @@ const product = {
   _id: "p1",
   variantOptionKeys: ["color", "size"],
   catalogVariants: [
-    { _id: "v1", sku: "SOFA-RED-KING", options: { color: "red", size: "King" }, price: 1000, stock: 3, reservedStock: 1, enabled: true, images: ["https://cdn.example/red.jpg"], modelUrl: "https://cdn.example/red.glb" },
-    { _id: "v2", sku: "SOFA-BLUE-SINGLE", options: { color: "blue", size: "Single" }, price: 700, stock: 0, reservedStock: 0, enabled: true },
-    { _id: "v3", sku: "SOFA-RED-SINGLE", options: { color: "red", size: "Single" }, price: 800, stock: 2, reservedStock: 0, enabled: false },
+    {
+      _id: "v1",
+      sku: "SOFA-RED-KING",
+      options: { color: "red", size: "King" },
+      price: 1000,
+      stock: 3,
+      reservedStock: 1,
+      enabled: true,
+      images: ["https://cdn.example/red.jpg"],
+      modelUrl: "https://cdn.example/red.glb",
+    },
+    {
+      _id: "v2",
+      sku: "SOFA-BLUE-SINGLE",
+      options: { color: "blue", size: "Single" },
+      price: 700,
+      stock: 0,
+      reservedStock: 0,
+      enabled: true,
+    },
+    {
+      _id: "v3",
+      sku: "SOFA-RED-SINGLE",
+      options: { color: "red", size: "Single" },
+      price: 800,
+      stock: 2,
+      reservedStock: 0,
+      enabled: false,
+    },
   ],
 };
 
 describe("variant basics", () => {
   it("normalizes options (Map or object) to strings", () => {
-    expect(variantOptionsObject({ options: new Map([["seats", 3]]) })).toEqual({ seats: "3" });
-    expect(variantOptionsObject(product.catalogVariants[0])).toEqual({ color: "red", size: "King" });
+    expect(variantOptionsObject({ options: new Map([["seats", 3]]) })).toEqual({
+      seats: "3",
+    });
+    expect(variantOptionsObject(product.catalogVariants[0])).toEqual({
+      color: "red",
+      size: "King",
+    });
   });
 
   it("purchasability is enabled && stock - reserved > 0", () => {
@@ -40,10 +71,16 @@ describe("variant basics", () => {
   });
 
   it("finds the exact combination only", () => {
-    expect(findVariantBySelection(product, { color: "red", size: "King" })?._id).toBe("v1");
-    expect(findVariantBySelection(product, { color: "red", size: "Single" })?._id).toBe("v3");
+    expect(
+      findVariantBySelection(product, { color: "red", size: "King" })?._id,
+    ).toBe("v1");
+    expect(
+      findVariantBySelection(product, { color: "red", size: "Single" })?._id,
+    ).toBe("v3");
     expect(findVariantBySelection(product, { color: "red" })).toBeNull();
-    expect(findVariantBySelection(product, { color: "green", size: "King" })).toBeNull();
+    expect(
+      findVariantBySelection(product, { color: "green", size: "King" }),
+    ).toBeNull();
   });
 });
 
@@ -64,34 +101,80 @@ describe("optionValueStates — the same-variant rule in UI form", () => {
   });
 
   it("default selection lands on the first purchasable combination", () => {
-    expect(defaultVariantSelection(product)).toEqual({ color: "red", size: "King" });
+    expect(defaultVariantSelection(product)).toEqual({
+      color: "red",
+      size: "King",
+    });
   });
 });
 
 describe("gallery + AR resolution", () => {
   it("variant images win; variant modelUrl overrides the product model", () => {
-    expect(variantGalleryImages(product.catalogVariants[0])).toEqual([{ url: "https://cdn.example/red.jpg" }]);
+    expect(variantGalleryImages(product.catalogVariants[0])).toEqual([
+      { url: "https://cdn.example/red.jpg" },
+    ]);
     expect(variantGalleryImages(product.catalogVariants[1])).toBeNull();
-    expect(effectiveModelUrl({ modelUrl: "https://cdn.example/base.glb" }, product.catalogVariants[0])).toBe("https://cdn.example/red.glb");
-    expect(effectiveModelUrl({ modelUrl: "https://cdn.example/base.glb" }, product.catalogVariants[1])).toBe("https://cdn.example/base.glb");
+    expect(
+      effectiveModelUrl(
+        { modelUrl: "https://cdn.example/base.glb" },
+        product.catalogVariants[0],
+      ),
+    ).toBe("https://cdn.example/red.glb");
+    expect(
+      effectiveModelUrl(
+        { modelUrl: "https://cdn.example/base.glb" },
+        product.catalogVariants[1],
+      ),
+    ).toBe("https://cdn.example/base.glb");
   });
 });
 
 describe("specifications", () => {
   const definitions = {
-    material: { label: "Material", type: "string", displayGroup: "Build", storage: "catalogAttributes" },
-    assemblyRequired: { label: "Assembly required", type: "boolean", displayGroup: "Build", storage: "catalogAttributes" },
-    seatHeight: { label: "Seat height", type: "measurement", unit: "cm", displayGroup: "Size", storage: "catalogAttributes" },
-    dimensions: { label: "Dimensions", type: "dimensions", displayGroup: "Size", storage: "field", fieldPath: "dimensions" },
-    notStored: { label: "Not stored", type: "string", displayGroup: "Build", storage: "catalogAttributes" },
+    material: {
+      label: "Material",
+      type: "string",
+      displayGroup: "Build",
+      storage: "catalogAttributes",
+    },
+    assemblyRequired: {
+      label: "Assembly required",
+      type: "boolean",
+      displayGroup: "Build",
+      storage: "catalogAttributes",
+    },
+    seatHeight: {
+      label: "Seat height",
+      type: "measurement",
+      unit: "cm",
+      displayGroup: "Size",
+      storage: "catalogAttributes",
+    },
+    dimensions: {
+      label: "Dimensions",
+      type: "dimensions",
+      displayGroup: "Size",
+      storage: "field",
+      fieldPath: "dimensions",
+    },
+    notStored: {
+      label: "Not stored",
+      type: "string",
+      displayGroup: "Build",
+      storage: "catalogAttributes",
+    },
   };
 
   it("formats values per type", () => {
     expect(formatSpecValue(definitions.assemblyRequired, true)).toBe("Yes");
     expect(formatSpecValue(definitions.assemblyRequired, false)).toBe("No");
-    expect(formatSpecValue(definitions.seatHeight, { value: 45, unit: "cm" })).toBe("45 cm");
+    expect(
+      formatSpecValue(definitions.seatHeight, { value: 45, unit: "cm" }),
+    ).toBe("45 cm");
     expect(formatSpecValue(definitions.material, "")).toBeNull();
-    expect(formatSpecValue({ type: "multi-enum" }, ["oak", "walnut"])).toBe("oak, walnut");
+    expect(formatSpecValue({ type: "multi-enum" }, ["oak", "walnut"])).toBe(
+      "oak, walnut",
+    );
   });
 
   it("groups stored catalogAttributes only — field defs and blanks omitted", () => {
@@ -104,12 +187,17 @@ describe("specifications", () => {
           dimensions: { length: 10 },
         },
       },
-      definitions
+      definitions,
     );
     expect(groups.map((group) => group.group)).toEqual(["Build", "Size"]);
     const build = groups.find((group) => group.group === "Build");
-    expect(build.items.map((item) => item.key)).toEqual(["material", "assemblyRequired"]);
+    expect(build.items.map((item) => item.key)).toEqual([
+      "material",
+      "assemblyRequired",
+    ]);
     const size = groups.find((group) => group.group === "Size");
-    expect(size.items).toEqual([{ key: "seatHeight", label: "Seat height", value: "45 cm" }]);
+    expect(size.items).toEqual([
+      { key: "seatHeight", label: "Seat height", value: "45 cm" },
+    ]);
   });
 });

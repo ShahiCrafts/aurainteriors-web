@@ -13,9 +13,17 @@ const ITEMS = [
 describe("Breadcrumbs", () => {
   it("renders a Breadcrumb nav with links for non-final items", () => {
     render(<Breadcrumbs items={ITEMS} />);
-    expect(screen.getByRole("navigation", { name: "Breadcrumb" })).toBeInTheDocument();
-    expect(screen.getByRole("link", { name: "Home" })).toHaveAttribute("href", "/");
-    expect(screen.getByRole("link", { name: "Shop" })).toHaveAttribute("href", "/shop");
+    expect(
+      screen.getByRole("navigation", { name: "Breadcrumb" }),
+    ).toBeInTheDocument();
+    expect(screen.getByRole("link", { name: "Home" })).toHaveAttribute(
+      "href",
+      "/",
+    );
+    expect(screen.getByRole("link", { name: "Shop" })).toHaveAttribute(
+      "href",
+      "/shop",
+    );
   });
 
   it("marks only the last item aria-current=page and never links it", () => {

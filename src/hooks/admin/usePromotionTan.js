@@ -16,7 +16,6 @@ export const PROMOTION_KEYS = {
 // promotion's detail and analytics.
 const promotionListKey = () => [...PROMOTION_KEYS.all(), "list"];
 
-
 // Get all promotions (Admin)
 export const usePromotions = (params = {}) => {
   return useQuery({

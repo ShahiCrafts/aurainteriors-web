@@ -1,5 +1,11 @@
 import { describe, it, expect, vi, beforeEach } from "vitest";
-import { render, screen, within, fireEvent, waitFor } from "@testing-library/react";
+import {
+  render,
+  screen,
+  within,
+  fireEvent,
+  waitFor,
+} from "@testing-library/react";
 
 // Phase 7 characterization — written BEFORE the Categories.jsx split
 // against the unsplit page. Pins the create/edit/delete form
@@ -12,32 +18,78 @@ const updateMutate = vi.hoisted(() => vi.fn().mockResolvedValue({}));
 const deleteMutate = vi.hoisted(() => vi.fn().mockResolvedValue({}));
 
 const CATEGORIES = [
-  { _id: "root1", name: "Furniture", slug: "furniture", description: "", parent: null, status: "active", sortOrder: 0, productCount: 2, subcategories: [], roomSlugs: [] },
-  { _id: "child1", name: "Sofas", slug: "sofas", description: "Comfy", parent: "root1", status: "active", sortOrder: 0, productCount: 5, subcategories: [], roomSlugs: [] },
-  { _id: "root2", name: "Lighting", slug: "lighting", description: "", parent: null, status: "active", sortOrder: 1, productCount: 4, subcategories: [], roomSlugs: [] },
+  {
+    _id: "root1",
+    name: "Furniture",
+    slug: "furniture",
+    description: "",
+    parent: null,
+    status: "active",
+    sortOrder: 0,
+    productCount: 2,
+    subcategories: [],
+    roomSlugs: [],
+  },
+  {
+    _id: "child1",
+    name: "Sofas",
+    slug: "sofas",
+    description: "Comfy",
+    parent: "root1",
+    status: "active",
+    sortOrder: 0,
+    productCount: 5,
+    subcategories: [],
+    roomSlugs: [],
+  },
+  {
+    _id: "root2",
+    name: "Lighting",
+    slug: "lighting",
+    description: "",
+    parent: null,
+    status: "active",
+    sortOrder: 1,
+    productCount: 4,
+    subcategories: [],
+    roomSlugs: [],
+  },
 ];
 
 vi.mock("../../../src/hooks/product/useCategoryTan", () => ({
-  useCategories: () => ({ data: { data: { categories: CATEGORIES } }, isLoading: false, error: null }),
+  useCategories: () => ({
+    data: { data: { categories: CATEGORIES } },
+    isLoading: false,
+    error: null,
+  }),
   useCreateCategory: () => ({ mutateAsync: createMutate, isPending: false }),
   useUpdateCategory: () => ({ mutateAsync: updateMutate, isPending: false }),
   useDeleteCategory: () => ({ mutateAsync: deleteMutate, isPending: false }),
 }));
 
 vi.mock("../../../src/hooks/catalog/useCatalogTan", () => ({
-  useProductTypes: () => ({ data: { data: { productTypes: [{ key: "sofa", label: "Sofa" }] } }, isLoading: false }),
-  useRooms: () => ({ data: { data: { rooms: [{ slug: "living-room", label: "Living Room" }] } }, isLoading: false }),
+  useProductTypes: () => ({
+    data: { data: { productTypes: [{ key: "sofa", label: "Sofa" }] } },
+    isLoading: false,
+  }),
+  useRooms: () => ({
+    data: { data: { rooms: [{ slug: "living-room", label: "Living Room" }] } },
+    isLoading: false,
+  }),
   useReorderCategories: () => ({ mutate: vi.fn(), isPending: false }),
 }));
 
-vi.mock("../../../src/components/admin/catalog/CategoryAttributesEditor", () => ({
-  default: ({ category, onClose }) => (
-    <div>
-      <span>Attributes for {category.name}</span>
-      <button onClick={onClose}>Close attributes</button>
-    </div>
-  ),
-}));
+vi.mock(
+  "../../../src/components/admin/catalog/CategoryAttributesEditor",
+  () => ({
+    default: ({ category, onClose }) => (
+      <div>
+        <span>Attributes for {category.name}</span>
+        <button onClick={onClose}>Close attributes</button>
+      </div>
+    ),
+  }),
+);
 
 vi.mock("../../../src/components/modals/ConfirmationDialog", () => ({
   default: ({ isOpen, onConfirm, onCancel }) =>
@@ -75,9 +127,18 @@ describe("Categories admin — form submission (Phase 7 characterization)", () =
     render(<Categories />);
     fireEvent.click(screen.getByRole("button", { name: "Add Category" }));
 
-    fireEvent.change(fieldByLabel("Category Name *"), { target: { value: "Desks" } });
-    fireEvent.change(fieldByLabel("Description"), { target: { value: "Work desks" } });
-    fireEvent.click(within(screen.getByRole("dialog", { name: "Category" })).getByRole("button", { name: "Add Category" }));
+    fireEvent.change(fieldByLabel("Category Name *"), {
+      target: { value: "Desks" },
+    });
+    fireEvent.change(fieldByLabel("Description"), {
+      target: { value: "Work desks" },
+    });
+    fireEvent.click(
+      within(screen.getByRole("dialog", { name: "Category" })).getByRole(
+        "button",
+        { name: "Add Category" },
+      ),
+    );
 
     await waitFor(() => expect(createMutate).toHaveBeenCalledTimes(1));
     expect(createMutate).toHaveBeenCalledWith({
@@ -123,11 +184,21 @@ describe("Categories admin — form submission (Phase 7 characterization)", () =
     const row = screen.getByTestId("category-row-furniture");
     fireEvent.click(within(row).getByTitle("Add subcategory"));
 
-    fireEvent.change(fieldByLabel("Category Name *"), { target: { value: "Chairs" } });
-    fireEvent.click(within(screen.getByRole("dialog", { name: "Category" })).getByRole("button", { name: "Add Category" }));
+    fireEvent.change(fieldByLabel("Category Name *"), {
+      target: { value: "Chairs" },
+    });
+    fireEvent.click(
+      within(screen.getByRole("dialog", { name: "Category" })).getByRole(
+        "button",
+        { name: "Add Category" },
+      ),
+    );
 
     await waitFor(() => expect(createMutate).toHaveBeenCalledTimes(1));
-    expect(createMutate.mock.calls[0][0]).toMatchObject({ name: "Chairs", parent: "root1" });
+    expect(createMutate.mock.calls[0][0]).toMatchObject({
+      name: "Chairs",
+      parent: "root1",
+    });
   });
 
   it("deletes through the confirmation dialog with the row id", async () => {

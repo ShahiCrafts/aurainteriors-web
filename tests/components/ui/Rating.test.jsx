@@ -28,8 +28,12 @@ describe("Rating interactive mode", () => {
     render(<Rating value={2} interactive onChange={onChange} />);
     const buttons = screen.getAllByRole("button");
     expect(buttons).toHaveLength(5);
-    expect(screen.getByRole("button", { name: "Rate 1 star" })).toBeInTheDocument();
-    expect(screen.getByRole("button", { name: "Rate 4 stars" })).toBeInTheDocument();
+    expect(
+      screen.getByRole("button", { name: "Rate 1 star" }),
+    ).toBeInTheDocument();
+    expect(
+      screen.getByRole("button", { name: "Rate 4 stars" }),
+    ).toBeInTheDocument();
 
     fireEvent.click(screen.getByRole("button", { name: "Rate 4 stars" }));
     expect(onChange).toHaveBeenCalledWith(4);
@@ -37,13 +41,11 @@ describe("Rating interactive mode", () => {
 
   it("marks the current value with aria-pressed", () => {
     render(<Rating value={3} interactive onChange={vi.fn()} />);
-    expect(screen.getByRole("button", { name: "Rate 3 stars" })).toHaveAttribute(
-      "aria-pressed",
-      "true",
-    );
-    expect(screen.getByRole("button", { name: "Rate 5 stars" })).toHaveAttribute(
-      "aria-pressed",
-      "false",
-    );
+    expect(
+      screen.getByRole("button", { name: "Rate 3 stars" }),
+    ).toHaveAttribute("aria-pressed", "true");
+    expect(
+      screen.getByRole("button", { name: "Rate 5 stars" }),
+    ).toHaveAttribute("aria-pressed", "false");
   });
 });

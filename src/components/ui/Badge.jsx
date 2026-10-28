@@ -26,7 +26,8 @@ export default function Badge({
   className = "",
   children,
 }) {
-  const resolvedTone = tone || (status ? toneForStatus(status, category) : "neutral");
+  const resolvedTone =
+    tone || (status ? toneForStatus(status, category) : "neutral");
   return (
     <span
       className={`inline-flex items-center gap-1 rounded-full px-2.5 py-0.5 text-xs font-semibold ${TONE_CLASSES[resolvedTone] || TONE_CLASSES.neutral} ${className}`}

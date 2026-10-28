@@ -31,8 +31,22 @@ const inputClass =
   "w-full px-4 h-10 rounded-lg border border-gray-200 focus:border-teal-500 focus:ring-2 focus:ring-teal-500/10 outline-none text-sm transition-all bg-white";
 const labelClass = "block text-sm font-medium text-gray-700 mb-2";
 
-const RULE_TYPES = ["new-arrivals", "best-sellers", "featured", "on-sale", "attribute-match"];
-const SCALAR_TYPES = ["string", "enum", "boolean", "integer", "decimal", "money", "color"];
+const RULE_TYPES = [
+  "new-arrivals",
+  "best-sellers",
+  "featured",
+  "on-sale",
+  "attribute-match",
+];
+const SCALAR_TYPES = [
+  "string",
+  "enum",
+  "boolean",
+  "integer",
+  "decimal",
+  "money",
+  "color",
+];
 
 const EMPTY_FORM = {
   slug: "",
@@ -65,8 +79,15 @@ function ManualProductPicker({ selectedIds, onChange, seedNames }) {
     setAppliedSeed(seedNames);
   }
 
-  const { data } = useProducts({ search: query, limit: 10, page: 1, status: "all" });
-  const results = (data?.data?.products || []).filter((p) => !selectedIds.includes(p._id));
+  const { data } = useProducts({
+    search: query,
+    limit: 10,
+    page: 1,
+    status: "all",
+  });
+  const results = (data?.data?.products || []).filter(
+    (p) => !selectedIds.includes(p._id),
+  );
 
   const add = (product) => {
     setNames((prev) => ({ ...prev, [product._id]: product.name }));
@@ -76,9 +97,13 @@ function ManualProductPicker({ selectedIds, onChange, seedNames }) {
   return (
     <div className="space-y-3">
       <div>
-        <span className={labelClass}>Selected products ({selectedIds.length})</span>
+        <span className={labelClass}>
+          Selected products ({selectedIds.length})
+        </span>
         {selectedIds.length === 0 ? (
-          <p className="text-xs text-gray-400">No products selected yet — search below to add.</p>
+          <p className="text-xs text-gray-400">
+            No products selected yet — search below to add.
+          </p>
         ) : (
           <ul className="space-y-1.5">
             {selectedIds.map((id) => (
@@ -127,7 +152,9 @@ function ManualProductPicker({ selectedIds, onChange, seedNames }) {
                 <span className="text-sm text-gray-700 truncate">
                   {product.name}
                   {product.price !== undefined && (
-                    <span className="text-gray-400 text-xs ml-2">{product.price}</span>
+                    <span className="text-gray-400 text-xs ml-2">
+                      {product.price}
+                    </span>
                   )}
                 </span>
                 <button
@@ -158,7 +185,7 @@ export default function Collections() {
   const { data: definitionsData } = useAttributeDefinitions();
   const definitions = useMemo(
     () => definitionsData?.data?.attributeDefinitions || [],
-    [definitionsData]
+    [definitionsData],
   );
   const createMutation = useCreateCollection();
   const updateMutation = useUpdateCollection();
@@ -172,7 +199,9 @@ export default function Collections() {
 
   // Resolved products of the collection being edited — the source
   // of display names for its stored productIds.
-  const { data: detailData } = useCollection(editing?.slug || null, { limit: 100 });
+  const { data: detailData } = useCollection(editing?.slug || null, {
+    limit: 100,
+  });
   const seedNames = useMemo(() => {
     const out = {};
     for (const product of detailData?.data?.products || []) {
@@ -187,9 +216,9 @@ export default function Collections() {
         (d) =>
           (d.storage || "catalogAttributes") === "catalogAttributes" &&
           d.active !== false &&
-          SCALAR_TYPES.includes(d.type)
+          SCALAR_TYPES.includes(d.type),
       ),
-    [definitions]
+    [definitions],
   );
   const attrDefinition = scalarDefinitions.find((d) => d.key === form.attrKey);
 
@@ -218,7 +247,8 @@ export default function Collections() {
       limit: collection.rule?.params?.limit ?? 20,
       attrKey: collection.rule?.params?.key || "",
       attrValue:
-        collection.rule?.params?.value !== undefined && collection.rule?.params?.value !== null
+        collection.rule?.params?.value !== undefined &&
+        collection.rule?.params?.value !== null
           ? String(collection.rule.params.value)
           : "",
     });
@@ -235,7 +265,10 @@ export default function Collections() {
     } else if (form.ruleType === "attribute-match") {
       let value = form.attrValue;
       if (attrDefinition?.type === "boolean") value = form.attrValue === "true";
-      else if (attrDefinition && ["integer", "decimal", "money"].includes(attrDefinition.type)) {
+      else if (
+        attrDefinition &&
+        ["integer", "decimal", "money"].includes(attrDefinition.type)
+      ) {
         value = Number(form.attrValue);
       }
       params.key = form.attrKey;
@@ -246,7 +279,11 @@ export default function Collections() {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-    if (form.kind === "rule" && form.ruleType === "attribute-match" && !form.attrKey) {
+    if (
+      form.kind === "rule" &&
+      form.ruleType === "attribute-match" &&
+      !form.attrKey
+    ) {
       setFormError("Choose the attribute an attribute-match rule matches on.");
       return;
     }
@@ -300,18 +337,24 @@ export default function Collections() {
   if (error) {
     return (
       <div className="text-center py-12 bg-white rounded-2xl border border-gray-100">
-        <h2 className="text-xl font-semibold text-red-600 mb-2">Error Loading Collections</h2>
+        <h2 className="text-xl font-semibold text-red-600 mb-2">
+          Error Loading Collections
+        </h2>
         <p className="text-gray-500">{formatError(error)}</p>
       </div>
     );
   }
 
   const ruleSummary = (collection) => {
-    if (collection.kind !== "rule") return `${collection.productIds?.length || 0} products`;
+    if (collection.kind !== "rule")
+      return `${collection.productIds?.length || 0} products`;
     const { type, params } = collection.rule || {};
-    if (type === "new-arrivals") return `New in the last ${params?.windowDays ?? 30} days`;
-    if (type === "best-sellers") return `Top ${params?.limit ?? 20} by units sold`;
-    if (type === "attribute-match") return `Matches ${params?.key} = ${params?.value}`;
+    if (type === "new-arrivals")
+      return `New in the last ${params?.windowDays ?? 30} days`;
+    if (type === "best-sellers")
+      return `Top ${params?.limit ?? 20} by units sold`;
+    if (type === "attribute-match")
+      return `Matches ${params?.key} = ${params?.value}`;
     return type || "rule";
   };
 
@@ -321,7 +364,8 @@ export default function Collections() {
         <div>
           <h1 className="text-2xl font-bold text-gray-900">Collections</h1>
           <p className="text-gray-500 mt-0.5 text-sm">
-            Curated product lists — picked by hand, or computed by a rule at read time.
+            Curated product lists — picked by hand, or computed by a rule at
+            read time.
           </p>
         </div>
         <button
@@ -343,8 +387,12 @@ export default function Collections() {
             >
               <div className="flex-1 min-w-0">
                 <div className="flex items-center gap-2 flex-wrap">
-                  <span className="font-semibold text-gray-900 text-sm">{collection.label}</span>
-                  <span className="font-mono text-xs text-gray-400">{collection.slug}</span>
+                  <span className="font-semibold text-gray-900 text-sm">
+                    {collection.label}
+                  </span>
+                  <span className="font-mono text-xs text-gray-400">
+                    {collection.slug}
+                  </span>
                   <span
                     className={`px-2 py-0.5 rounded-full text-[10px] font-bold uppercase tracking-wider ${
                       collection.kind === "rule"
@@ -355,7 +403,9 @@ export default function Collections() {
                     {collection.kind === "rule" ? "Rule" : "Manual"}
                   </span>
                 </div>
-                <p className="text-xs text-gray-500 mt-0.5">{ruleSummary(collection)}</p>
+                <p className="text-xs text-gray-500 mt-0.5">
+                  {ruleSummary(collection)}
+                </p>
               </div>
               <span className="inline-flex items-center px-2.5 py-1 rounded-full text-[11px] font-semibold bg-emerald-50 text-emerald-700 shrink-0">
                 Active
@@ -379,7 +429,9 @@ export default function Collections() {
             </div>
           ))}
           {collections.length === 0 && (
-            <p className="text-center text-sm text-gray-500 py-10">No collections defined yet.</p>
+            <p className="text-center text-sm text-gray-500 py-10">
+              No collections defined yet.
+            </p>
           )}
         </div>
       </div>
@@ -403,7 +455,11 @@ export default function Collections() {
               <Dialog
                 open
                 onClose={() => setShowModal(false)}
-                label={editing ? `Edit collection ${editing.label}` : "Add collection"}
+                label={
+                  editing
+                    ? `Edit collection ${editing.label}`
+                    : "Add collection"
+                }
                 className="bg-white rounded-2xl w-full max-h-[90vh] overflow-y-auto relative"
               >
                 <div className="flex items-center justify-between p-5 border-b border-gray-100">
@@ -449,12 +505,17 @@ export default function Collections() {
                         required={!editing}
                       />
                       {editing && (
-                        <p className="text-xs text-gray-400 mt-1">Slugs are immutable.</p>
+                        <p className="text-xs text-gray-400 mt-1">
+                          Slugs are immutable.
+                        </p>
                       )}
                     </div>
                   </div>
                   <div>
-                    <label htmlFor="collection-description" className={labelClass}>
+                    <label
+                      htmlFor="collection-description"
+                      className={labelClass}
+                    >
                       Description
                     </label>
                     <textarea
@@ -518,10 +579,10 @@ export default function Collections() {
                   </div>
                   {editing && !form.active && (
                     <p className="text-xs text-amber-600 bg-amber-50 border border-amber-100 rounded-lg px-3 py-2">
-                      Heads up: this list reads the public active-only endpoint, so a
-                      deactivated collection disappears from this page until an admin list
-                      endpoint ships (recorded as a server request). It can be reactivated
-                      through the API.
+                      Heads up: this list reads the public active-only endpoint,
+                      so a deactivated collection disappears from this page
+                      until an admin list endpoint ships (recorded as a server
+                      request). It can be reactivated through the API.
                     </p>
                   )}
 
@@ -534,7 +595,10 @@ export default function Collections() {
                   ) : (
                     <div className="space-y-4">
                       <div>
-                        <label htmlFor="collection-rule-type" className={labelClass}>
+                        <label
+                          htmlFor="collection-rule-type"
+                          className={labelClass}
+                        >
                           Rule type
                         </label>
                         <select
@@ -552,7 +616,10 @@ export default function Collections() {
                       </div>
                       {form.ruleType === "new-arrivals" && (
                         <div>
-                          <label htmlFor="collection-window" className={labelClass}>
+                          <label
+                            htmlFor="collection-window"
+                            className={labelClass}
+                          >
                             Window (days)
                           </label>
                           <input
@@ -561,14 +628,19 @@ export default function Collections() {
                             min="1"
                             max="365"
                             value={form.windowDays}
-                            onChange={(e) => set({ windowDays: e.target.value })}
+                            onChange={(e) =>
+                              set({ windowDays: e.target.value })
+                            }
                             className={inputClass}
                           />
                         </div>
                       )}
                       {form.ruleType === "best-sellers" && (
                         <div>
-                          <label htmlFor="collection-limit" className={labelClass}>
+                          <label
+                            htmlFor="collection-limit"
+                            className={labelClass}
+                          >
                             Limit
                           </label>
                           <input
@@ -585,13 +657,18 @@ export default function Collections() {
                       {form.ruleType === "attribute-match" && (
                         <div className="grid grid-cols-2 gap-4">
                           <div>
-                            <label htmlFor="collection-attr-key" className={labelClass}>
+                            <label
+                              htmlFor="collection-attr-key"
+                              className={labelClass}
+                            >
                               Attribute
                             </label>
                             <select
                               id="collection-attr-key"
                               value={form.attrKey}
-                              onChange={(e) => set({ attrKey: e.target.value, attrValue: "" })}
+                              onChange={(e) =>
+                                set({ attrKey: e.target.value, attrValue: "" })
+                              }
                               className={inputClass}
                             >
                               <option value="">Choose an attribute…</option>
@@ -603,14 +680,20 @@ export default function Collections() {
                             </select>
                           </div>
                           <div>
-                            <label htmlFor="collection-attr-value" className={labelClass}>
+                            <label
+                              htmlFor="collection-attr-value"
+                              className={labelClass}
+                            >
                               Value
                             </label>
-                            {attrDefinition && (attrDefinition.allowedValues || []).length > 0 ? (
+                            {attrDefinition &&
+                            (attrDefinition.allowedValues || []).length > 0 ? (
                               <select
                                 id="collection-attr-value"
                                 value={form.attrValue}
-                                onChange={(e) => set({ attrValue: e.target.value })}
+                                onChange={(e) =>
+                                  set({ attrValue: e.target.value })
+                                }
                                 className={inputClass}
                               >
                                 <option value="">Choose…</option>
@@ -624,7 +707,9 @@ export default function Collections() {
                               <select
                                 id="collection-attr-value"
                                 value={form.attrValue}
-                                onChange={(e) => set({ attrValue: e.target.value })}
+                                onChange={(e) =>
+                                  set({ attrValue: e.target.value })
+                                }
                                 className={inputClass}
                               >
                                 <option value="">Choose…</option>
@@ -636,17 +721,20 @@ export default function Collections() {
                                 id="collection-attr-value"
                                 type="text"
                                 value={form.attrValue}
-                                onChange={(e) => set({ attrValue: e.target.value })}
+                                onChange={(e) =>
+                                  set({ attrValue: e.target.value })
+                                }
                                 className={inputClass}
                               />
                             )}
                           </div>
                         </div>
                       )}
-                      {(form.ruleType === "featured" || form.ruleType === "on-sale") && (
+                      {(form.ruleType === "featured" ||
+                        form.ruleType === "on-sale") && (
                         <p className="text-xs text-gray-400">
-                          This rule needs no parameters — it is evaluated from product flags
-                          and prices at read time.
+                          This rule needs no parameters — it is evaluated from
+                          product flags and prices at read time.
                         </p>
                       )}
                     </div>
@@ -667,7 +755,9 @@ export default function Collections() {
                     </button>
                     <button
                       type="submit"
-                      disabled={createMutation.isPending || updateMutation.isPending}
+                      disabled={
+                        createMutation.isPending || updateMutation.isPending
+                      }
                       className="flex-1 px-4 py-2 bg-teal-600 text-white rounded-lg font-medium hover:bg-teal-700 transition-colors disabled:opacity-50 text-sm"
                     >
                       {editing ? "Save Changes" : "Create Collection"}

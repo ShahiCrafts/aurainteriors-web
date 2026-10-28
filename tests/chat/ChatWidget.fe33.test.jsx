@@ -28,7 +28,9 @@ vi.mock("../../src/hooks/chat/useChatTan.js", () => ({
   useStartChat: () => ({ isPending: false, mutate: vi.fn() }),
   useSendMessage: () => ({ mutate: vi.fn() }),
 }));
-vi.mock("../../src/store/authStore.js", () => ({ default: () => ({ user: h.user }) }));
+vi.mock("../../src/store/authStore.js", () => ({
+  default: () => ({ user: h.user }),
+}));
 vi.mock("../../src/utils/guestSessionStorage.js", () => ({
   getGuestSessionId: () => null,
   setGuestSessionId: vi.fn(),
@@ -36,13 +38,20 @@ vi.mock("../../src/utils/guestSessionStorage.js", () => ({
 }));
 vi.mock("../../src/components/chat/ChatWindow.jsx", () => ({
   default: ({ chat }) => (
-    <div data-testid="chat-window">{chat ? `conversation:${chat._id}` : "welcome-screen"}</div>
+    <div data-testid="chat-window">
+      {chat ? `conversation:${chat._id}` : "welcome-screen"}
+    </div>
   ),
 }));
 
 import ChatWidget from "../../src/components/chat/ChatWidget.jsx";
 
-const chat = (id, extra = {}) => ({ _id: id, status: "ai_handling", unreadCountCustomer: 0, ...extra });
+const chat = (id, extra = {}) => ({
+  _id: id,
+  status: "ai_handling",
+  unreadCountCustomer: 0,
+  ...extra,
+});
 const chatsPage = (chats) => ({ data: { chats } });
 
 function clickFab(container) {
@@ -68,14 +77,18 @@ describe("ChatWidget unread badge (FE-33)", () => {
 
     // Nothing is active/open yet, so pre-fix totalUnread was 0 and no
     // badge rendered at all. The badge must show 2 + 3 = 5.
-    const badge = [...container.querySelectorAll("span")].find((s) => s.textContent === "5");
+    const badge = [...container.querySelectorAll("span")].find(
+      (s) => s.textContent === "5",
+    );
     expect(badge).toBeTruthy();
   });
 
   it("shows no badge when every conversation is read", () => {
     h.myChatsData = chatsPage([chat("chat-a"), chat("chat-b")]);
     const { container } = render(<ChatWidget />);
-    const badge = [...container.querySelectorAll("span")].find((s) => /^\d+\+?$/.test(s.textContent));
+    const badge = [...container.querySelectorAll("span")].find((s) =>
+      /^\d+\+?$/.test(s.textContent),
+    );
     expect(badge).toBeUndefined();
   });
 });
@@ -87,7 +100,9 @@ describe("ChatWidget active chat resolution (FE-33)", () => {
     h.myChatsData = chatsPage([chat("chat-11", { unreadCountCustomer: 1 })]);
     const { container, rerender } = render(<ChatWidget />);
     clickFab(container);
-    expect(screen.getByTestId("chat-window")).toHaveTextContent("conversation:chat-11");
+    expect(screen.getByTestId("chat-window")).toHaveTextContent(
+      "conversation:chat-11",
+    );
 
     // Ten newer chats then push it out of page 1 (limit 10): the
     // first page no longer contains it. The widget must fetch it by
@@ -95,19 +110,29 @@ describe("ChatWidget active chat resolution (FE-33)", () => {
     h.myChatsData = chatsPage(
       Array.from({ length: 10 }, (_, i) => chat(`chat-new-${i + 1}`)),
     );
-    h.detailsData = { data: { chat: chat("chat-11", { unreadCountCustomer: 1 }) } };
+    h.detailsData = {
+      data: { chat: chat("chat-11", { unreadCountCustomer: 1 }) },
+    };
     rerender(<ChatWidget />);
 
-    expect(h.detailsCalls.some((c) => c.chatId === "chat-11" && c.enabled)).toBe(true);
-    expect(screen.getByTestId("chat-window")).toHaveTextContent("conversation:chat-11");
-    expect(screen.getByTestId("chat-window")).not.toHaveTextContent("welcome-screen");
+    expect(
+      h.detailsCalls.some((c) => c.chatId === "chat-11" && c.enabled),
+    ).toBe(true);
+    expect(screen.getByTestId("chat-window")).toHaveTextContent(
+      "conversation:chat-11",
+    );
+    expect(screen.getByTestId("chat-window")).not.toHaveTextContent(
+      "welcome-screen",
+    );
   });
 
   it("does not fetch by id when the active chat is already in the first page", () => {
     h.myChatsData = chatsPage([chat("chat-1"), chat("chat-2")]);
     const { container } = render(<ChatWidget />);
     clickFab(container);
-    expect(screen.getByTestId("chat-window")).toHaveTextContent("conversation:chat-1");
+    expect(screen.getByTestId("chat-window")).toHaveTextContent(
+      "conversation:chat-1",
+    );
     expect(h.detailsCalls.filter((c) => c.enabled)).toHaveLength(0);
   });
 });

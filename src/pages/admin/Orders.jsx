@@ -1,9 +1,9 @@
 import { formatDate, formatDateTime } from "../../utils/formatDate";
 import useDebounce from "../../hooks/useDebounce";
-import { useState, useEffect } from 'react';
+import { useState, useEffect } from "react";
 import Dialog from "../../components/common/Dialog";
-import { useLocation } from 'react-router-dom';
-import { motion, AnimatePresence } from 'framer-motion';
+import { useLocation } from "react-router-dom";
+import { motion, AnimatePresence } from "framer-motion";
 import {
   Search,
   X,
@@ -13,19 +13,24 @@ import {
   DollarSign,
   Clock,
   RotateCcw,
-} from 'lucide-react';
+} from "lucide-react";
 import Skeleton from "../../components/common/Skeleton";
-import { useAllOrders, useUpdateOrderStatus, useProcessReturnRequest, useOrderAdmin } from '../../hooks/order/useOrderTan';
+import {
+  useAllOrders,
+  useUpdateOrderStatus,
+  useProcessReturnRequest,
+  useOrderAdmin,
+} from "../../hooks/order/useOrderTan";
 import { toast } from "../../lib/toast";
-import Pagination from '../../components/common/Pagination';
+import Pagination from "../../components/common/Pagination";
 import formatError from "../../utils/errorHandler";
 import { formatNPR } from "../../utils/formatCurrency";
 
 export default function Orders() {
-  const [searchQuery, setSearchQuery] = useState('');
+  const [searchQuery, setSearchQuery] = useState("");
   const debouncedSearchQuery = useDebounce(searchQuery, 300); // PERF-F-007: input stays immediate; only the query-param value is debounced
-  const [filterStatus, setFilterStatus] = useState('all');
-  const [filterPaymentStatus, setFilterPaymentStatus] = useState('all');
+  const [filterStatus, setFilterStatus] = useState("all");
+  const [filterPaymentStatus, setFilterPaymentStatus] = useState("all");
   const [page, setPage] = useState(1);
   const [pageSize] = useState(10);
   const [selectedOrder, setSelectedOrder] = useState(null);
@@ -35,33 +40,42 @@ export default function Orders() {
   const [detailsOrder, setDetailsOrder] = useState(null);
   const [showStatusModal, setShowStatusModal] = useState(false);
   const [showReturnModal, setShowReturnModal] = useState(false);
-  const [newStatus, setNewStatus] = useState('');
-  const [returnDecision, setReturnDecision] = useState('');
-  const [adminNote, setAdminNote] = useState('');
+  const [newStatus, setNewStatus] = useState("");
+  const [returnDecision, setReturnDecision] = useState("");
+  const [adminNote, setAdminNote] = useState("");
 
   const queryParams = {
     page,
     limit: pageSize,
     ...(debouncedSearchQuery && { search: debouncedSearchQuery }),
-    ...(filterStatus !== 'all' && { status: filterStatus }),
-    ...(filterPaymentStatus !== 'all' && { paymentStatus: filterPaymentStatus }),
+    ...(filterStatus !== "all" && { status: filterStatus }),
+    ...(filterPaymentStatus !== "all" && {
+      paymentStatus: filterPaymentStatus,
+    }),
   };
 
   const { data: ordersData, isLoading, error } = useAllOrders(queryParams);
-  const { data: detailsData, isLoading: detailsLoading } = useOrderAdmin(detailsOrder?._id, {
-    enabled: !!detailsOrder,
-  });
+  const { data: detailsData, isLoading: detailsLoading } = useOrderAdmin(
+    detailsOrder?._id,
+    {
+      enabled: !!detailsOrder,
+    },
+  );
   const detailOrder = detailsData?.data?.order || detailsOrder;
   const updateStatusMutation = useUpdateOrderStatus();
   const processReturnMutation = useProcessReturnRequest();
 
   const orders = ordersData?.data?.orders || [];
   const pagination = ordersData?.data?.pagination || { total: 0, pages: 1 };
-  const stats = ordersData?.data?.stats || { totalRevenue: 0, paidRevenue: 0, pendingRevenue: 0 };
+  const stats = ordersData?.data?.stats || {
+    totalRevenue: 0,
+    paidRevenue: 0,
+    pendingRevenue: 0,
+  };
 
   const location = useLocation();
   const searchParams = new URLSearchParams(location.search);
-  const highlightOrderId = searchParams.get('highlight');
+  const highlightOrderId = searchParams.get("highlight");
 
   useEffect(() => {
     if (highlightOrderId && orders.length > 0) {
@@ -69,7 +83,7 @@ export default function Orders() {
       const timer = setTimeout(() => {
         const element = document.getElementById(`order-${highlightOrderId}`);
         if (element) {
-          element.scrollIntoView({ behavior: 'smooth', block: 'center' });
+          element.scrollIntoView({ behavior: "smooth", block: "center" });
         }
       }, 300);
       return () => clearTimeout(timer);
@@ -90,18 +104,18 @@ export default function Orders() {
         id: selectedOrder._id,
         data: { status: newStatus },
       });
-      toast.success('Order status updated successfully');
+      toast.success("Order status updated successfully");
       setShowStatusModal(false);
       setSelectedOrder(null);
     } catch (err) {
-      toast.error(formatError(err, 'Failed to update order status'));
+      toast.error(formatError(err, "Failed to update order status"));
     }
   };
 
   const handleReturnAction = (order) => {
     setSelectedOrder(order);
-    setReturnDecision('');
-    setAdminNote('');
+    setReturnDecision("");
+    setAdminNote("");
     setShowReturnModal(true);
   };
 
@@ -116,57 +130,88 @@ export default function Orders() {
       toast.success(`Return request ${returnDecision} successfully`);
       setShowReturnModal(false);
       setSelectedOrder(null);
-      setReturnDecision('');
-      setAdminNote('');
+      setReturnDecision("");
+      setAdminNote("");
     } catch (err) {
-      toast.error(formatError(err, 'Failed to process return request'));
+      toast.error(formatError(err, "Failed to process return request"));
     }
   };
 
-  const statusOptions = ['pending', 'confirmed', 'processing', 'shipped', 'delivered', 'cancelled'];
-  const paymentStatusOptions = ['pending', 'paid', 'failed', 'refunded'];
+  const statusOptions = [
+    "pending",
+    "confirmed",
+    "processing",
+    "shipped",
+    "delivered",
+    "cancelled",
+  ];
+  const paymentStatusOptions = ["pending", "paid", "failed", "refunded"];
 
   const getStatusColor = (status) => {
     switch (status) {
-      case 'pending': return 'bg-amber-50 text-amber-700 border border-amber-100';
-      case 'confirmed': return 'bg-blue-50 text-blue-700 border border-blue-100';
-      case 'processing': return 'bg-indigo-50 text-indigo-700 border border-indigo-100';
-      case 'shipped': return 'bg-violet-50 text-violet-700 border border-violet-100';
-      case 'delivered': return 'bg-teal-50 text-teal-700 border border-teal-100';
-      case 'cancelled': return 'bg-red-50 text-red-600 border border-red-100';
-      default: return 'bg-gray-50 text-gray-700 border border-gray-200';
+      case "pending":
+        return "bg-amber-50 text-amber-700 border border-amber-100";
+      case "confirmed":
+        return "bg-blue-50 text-blue-700 border border-blue-100";
+      case "processing":
+        return "bg-indigo-50 text-indigo-700 border border-indigo-100";
+      case "shipped":
+        return "bg-violet-50 text-violet-700 border border-violet-100";
+      case "delivered":
+        return "bg-teal-50 text-teal-700 border border-teal-100";
+      case "cancelled":
+        return "bg-red-50 text-red-600 border border-red-100";
+      default:
+        return "bg-gray-50 text-gray-700 border border-gray-200";
     }
   };
 
   const getStatusDot = (status) => {
     switch (status) {
-      case 'pending': return 'bg-amber-500';
-      case 'confirmed': return 'bg-blue-500';
-      case 'processing': return 'bg-indigo-500';
-      case 'shipped': return 'bg-violet-500';
-      case 'delivered': return 'bg-teal-500';
-      case 'cancelled': return 'bg-red-500';
-      default: return 'bg-gray-500';
+      case "pending":
+        return "bg-amber-500";
+      case "confirmed":
+        return "bg-blue-500";
+      case "processing":
+        return "bg-indigo-500";
+      case "shipped":
+        return "bg-violet-500";
+      case "delivered":
+        return "bg-teal-500";
+      case "cancelled":
+        return "bg-red-500";
+      default:
+        return "bg-gray-500";
     }
   };
 
   const getPaymentStatusColor = (status) => {
     switch (status) {
-      case 'pending': return 'bg-amber-50 text-amber-700 border border-amber-100';
-      case 'paid': return 'bg-teal-50 text-teal-700 border border-teal-100';
-      case 'failed': return 'bg-red-50 text-red-600 border border-red-100';
-      case 'refunded': return 'bg-orange-50 text-orange-700 border border-orange-100';
-      default: return 'bg-gray-50 text-gray-700 border border-gray-200';
+      case "pending":
+        return "bg-amber-50 text-amber-700 border border-amber-100";
+      case "paid":
+        return "bg-teal-50 text-teal-700 border border-teal-100";
+      case "failed":
+        return "bg-red-50 text-red-600 border border-red-100";
+      case "refunded":
+        return "bg-orange-50 text-orange-700 border border-orange-100";
+      default:
+        return "bg-gray-50 text-gray-700 border border-gray-200";
     }
   };
 
   const getReturnStatusColor = (status) => {
     switch (status) {
-      case 'requested': return 'bg-amber-50 text-amber-700 border border-amber-100';
-      case 'approved': return 'bg-teal-50 text-teal-700 border border-teal-100';
-      case 'rejected': return 'bg-red-50 text-red-600 border border-red-100';
-      case 'completed': return 'bg-blue-50 text-blue-700 border border-blue-100';
-      default: return '';
+      case "requested":
+        return "bg-amber-50 text-amber-700 border border-amber-100";
+      case "approved":
+        return "bg-teal-50 text-teal-700 border border-teal-100";
+      case "rejected":
+        return "bg-red-50 text-red-600 border border-red-100";
+      case "completed":
+        return "bg-blue-50 text-blue-700 border border-blue-100";
+      default:
+        return "";
     }
   };
 
@@ -174,7 +219,9 @@ export default function Orders() {
     return (
       <div className="flex items-center justify-center min-h-[400px]">
         <div className="text-center">
-          <h2 className="text-xl font-semibold text-gray-900 mb-2">Error Loading Orders</h2>
+          <h2 className="text-xl font-semibold text-gray-900 mb-2">
+            Error Loading Orders
+          </h2>
           <p className="text-gray-500">{error.message}</p>
         </div>
       </div>
@@ -195,10 +242,10 @@ export default function Orders() {
       {/* Page Header */}
       <div>
         <h1 className="text-2xl font-bold text-gray-900">Orders</h1>
-        <p className="text-gray-500 mt-0.5 text-sm">Manage and monitor all customer orders</p>
+        <p className="text-gray-500 mt-0.5 text-sm">
+          Manage and monitor all customer orders
+        </p>
       </div>
-
-
 
       {/* Orders Table */}
       <div className="bg-white rounded-xl border border-gray-100 overflow-hidden shadow-[0_2px_10px_-4px_rgba(0,0,0,0.05)]">
@@ -227,7 +274,7 @@ export default function Orders() {
               className="px-4 py-2.5 bg-white border border-gray-200 rounded-lg text-sm focus:outline-none focus:border-teal-500 focus:ring-2 focus:ring-teal-500/20 cursor-pointer"
             >
               <option value="all">All Status</option>
-              {statusOptions.map(status => (
+              {statusOptions.map((status) => (
                 <option key={status} value={status}>
                   {status.charAt(0).toUpperCase() + status.slice(1)}
                 </option>
@@ -242,7 +289,7 @@ export default function Orders() {
               className="px-4 py-2.5 bg-white border border-gray-200 rounded-lg text-sm focus:outline-none focus:border-teal-500 focus:ring-2 focus:ring-teal-500/20 cursor-pointer"
             >
               <option value="all">All Payment</option>
-              {paymentStatusOptions.map(status => (
+              {paymentStatusOptions.map((status) => (
                 <option key={status} value={status}>
                   {status.charAt(0).toUpperCase() + status.slice(1)}
                 </option>
@@ -255,13 +302,27 @@ export default function Orders() {
             <table className="w-full">
               <thead>
                 <tr className="bg-gray-50/80 border-b border-gray-100">
-                  <th className="px-6 py-4"><Skeleton className="h-4 w-16" /></th>
-                  <th className="px-6 py-4"><Skeleton className="h-4 w-24" /></th>
-                  <th className="px-6 py-4"><Skeleton className="h-4 w-20" /></th>
-                  <th className="px-6 py-4 text-right"><Skeleton className="h-4 w-16 ml-auto" /></th>
-                  <th className="px-6 py-4"><Skeleton className="h-4 w-16" /></th>
-                  <th className="px-6 py-4"><Skeleton className="h-4 w-16" /></th>
-                  <th className="px-6 py-4 text-center"><Skeleton className="h-4 w-16 mx-auto" /></th>
+                  <th className="px-6 py-4">
+                    <Skeleton className="h-4 w-16" />
+                  </th>
+                  <th className="px-6 py-4">
+                    <Skeleton className="h-4 w-24" />
+                  </th>
+                  <th className="px-6 py-4">
+                    <Skeleton className="h-4 w-20" />
+                  </th>
+                  <th className="px-6 py-4 text-right">
+                    <Skeleton className="h-4 w-16 ml-auto" />
+                  </th>
+                  <th className="px-6 py-4">
+                    <Skeleton className="h-4 w-16" />
+                  </th>
+                  <th className="px-6 py-4">
+                    <Skeleton className="h-4 w-16" />
+                  </th>
+                  <th className="px-6 py-4 text-center">
+                    <Skeleton className="h-4 w-16 mx-auto" />
+                  </th>
                 </tr>
               </thead>
               <tbody className="divide-y divide-gray-50">
@@ -279,10 +340,18 @@ export default function Orders() {
                         <Skeleton className="h-3 w-40" />
                       </div>
                     </td>
-                    <td className="px-6 py-4"><Skeleton className="h-4 w-24" /></td>
-                    <td className="px-6 py-4 text-right"><Skeleton className="h-4 w-20 ml-auto" /></td>
-                    <td className="px-6 py-4"><Skeleton className="h-6 w-20 rounded-full" /></td>
-                    <td className="px-6 py-4"><Skeleton className="h-6 w-16 rounded-full" /></td>
+                    <td className="px-6 py-4">
+                      <Skeleton className="h-4 w-24" />
+                    </td>
+                    <td className="px-6 py-4 text-right">
+                      <Skeleton className="h-4 w-20 ml-auto" />
+                    </td>
+                    <td className="px-6 py-4">
+                      <Skeleton className="h-6 w-20 rounded-full" />
+                    </td>
+                    <td className="px-6 py-4">
+                      <Skeleton className="h-6 w-16 rounded-full" />
+                    </td>
                     <td className="px-6 py-4">
                       <div className="flex justify-center gap-2">
                         <Skeleton className="w-8 h-8 rounded-lg" />
@@ -305,13 +374,27 @@ export default function Orders() {
             <table className="w-full">
               <thead>
                 <tr className="bg-gray-50/80 border-b border-gray-100">
-                  <th className="px-6 py-4 text-left text-xs font-semibold text-gray-500 uppercase tracking-wider">Order</th>
-                  <th className="px-6 py-4 text-left text-xs font-semibold text-gray-500 uppercase tracking-wider">Customer</th>
-                  <th className="px-6 py-4 text-left text-xs font-semibold text-gray-500 uppercase tracking-wider">Date</th>
-                  <th className="px-6 py-4 text-right text-xs font-semibold text-gray-500 uppercase tracking-wider">Amount</th>
-                  <th className="px-6 py-4 text-left text-xs font-semibold text-gray-500 uppercase tracking-wider">Status</th>
-                  <th className="px-6 py-4 text-left text-xs font-semibold text-gray-500 uppercase tracking-wider">Payment</th>
-                  <th className="px-6 py-4 text-center text-xs font-semibold text-gray-500 uppercase tracking-wider">Actions</th>
+                  <th className="px-6 py-4 text-left text-xs font-semibold text-gray-500 uppercase tracking-wider">
+                    Order
+                  </th>
+                  <th className="px-6 py-4 text-left text-xs font-semibold text-gray-500 uppercase tracking-wider">
+                    Customer
+                  </th>
+                  <th className="px-6 py-4 text-left text-xs font-semibold text-gray-500 uppercase tracking-wider">
+                    Date
+                  </th>
+                  <th className="px-6 py-4 text-right text-xs font-semibold text-gray-500 uppercase tracking-wider">
+                    Amount
+                  </th>
+                  <th className="px-6 py-4 text-left text-xs font-semibold text-gray-500 uppercase tracking-wider">
+                    Status
+                  </th>
+                  <th className="px-6 py-4 text-left text-xs font-semibold text-gray-500 uppercase tracking-wider">
+                    Payment
+                  </th>
+                  <th className="px-6 py-4 text-center text-xs font-semibold text-gray-500 uppercase tracking-wider">
+                    Actions
+                  </th>
                 </tr>
               </thead>
               <tbody className="divide-y divide-gray-50">
@@ -321,12 +404,16 @@ export default function Orders() {
                     id={`order-${order._id}`}
                     initial={{ opacity: 0 }}
                     animate={{ opacity: 1 }}
-                    className={`transition-colors hover:bg-gray-50/50 ${order._id === highlightOrderId ? 'animate-blink-twice' : ''}`}
+                    className={`transition-colors hover:bg-gray-50/50 ${order._id === highlightOrderId ? "animate-blink-twice" : ""}`}
                   >
                     <td className="px-6 py-4">
                       <div>
-                        <p className="font-mono text-sm font-medium text-gray-900">#{(order.orderId || '').slice(-8)}</p>
-                        <p className="text-xs text-gray-400 mt-0.5">{order.items?.length || 0} items</p>
+                        <p className="font-mono text-sm font-medium text-gray-900">
+                          #{(order.orderId || "").slice(-8)}
+                        </p>
+                        <p className="text-xs text-gray-400 mt-0.5">
+                          {order.items?.length || 0} items
+                        </p>
                       </div>
                     </td>
                     <td className="px-6 py-4">
@@ -334,7 +421,7 @@ export default function Orders() {
                         <p className="text-sm font-medium text-gray-900">
                           {order.user
                             ? `${order.user.firstName} ${order.user.lastName}`
-                            : `${order.guestInfo?.firstName || 'Guest'} ${order.guestInfo?.lastName || ''}`}
+                            : `${order.guestInfo?.firstName || "Guest"} ${order.guestInfo?.lastName || ""}`}
                         </p>
                         <p className="text-xs text-gray-400 mt-0.5">
                           {order.user?.email || order.guestInfo?.email}
@@ -344,9 +431,9 @@ export default function Orders() {
                     <td className="px-6 py-4">
                       <p className="text-sm text-gray-600">
                         {formatDate(order.createdAt, {
-                          month: 'short',
-                          day: 'numeric',
-                          year: 'numeric',
+                          month: "short",
+                          day: "numeric",
+                          year: "numeric",
                         })}
                       </p>
                     </td>
@@ -356,14 +443,26 @@ export default function Orders() {
                       </p>
                     </td>
                     <td className="px-6 py-4">
-                      <span className={`inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-medium ${getStatusColor(order.orderStatus)}`}>
-                        <span className={`w-1.5 h-1.5 rounded-full ${getStatusDot(order.orderStatus)}`}></span>
-                        {(order.orderStatus || '').charAt(0).toUpperCase() + (order.orderStatus || '').slice(1)}
+                      <span
+                        className={`inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-medium ${getStatusColor(order.orderStatus)}`}
+                      >
+                        <span
+                          className={`w-1.5 h-1.5 rounded-full ${getStatusDot(order.orderStatus)}`}
+                        ></span>
+                        {(order.orderStatus || "").charAt(0).toUpperCase() +
+                          (order.orderStatus || "").slice(1)}
                       </span>
                     </td>
                     <td className="px-6 py-4">
-                      <span className={`inline-flex px-2.5 py-1 rounded-full text-xs font-medium ${getPaymentStatusColor(order.paymentStatus)}`}>
-                        {order.refundRequest?.status === 'pending' ? 'Refund pending' : (order.paymentStatus || '').charAt(0).toUpperCase() + (order.paymentStatus || '').slice(1)}
+                      <span
+                        className={`inline-flex px-2.5 py-1 rounded-full text-xs font-medium ${getPaymentStatusColor(order.paymentStatus)}`}
+                      >
+                        {order.refundRequest?.status === "pending"
+                          ? "Refund pending"
+                          : (order.paymentStatus || "")
+                              .charAt(0)
+                              .toUpperCase() +
+                            (order.paymentStatus || "").slice(1)}
                       </span>
                     </td>
                     <td className="px-6 py-4">
@@ -375,7 +474,7 @@ export default function Orders() {
                         >
                           <ChevronDown className="w-4 h-4" />
                         </button>
-                        {order.returnRequest?.status === 'requested' && (
+                        {order.returnRequest?.status === "requested" && (
                           <button
                             onClick={() => handleReturnAction(order)}
                             className="p-2 text-amber-600 hover:bg-amber-50 rounded-lg transition-colors"
@@ -425,92 +524,181 @@ export default function Orders() {
               initial={{ scale: 0.95, opacity: 0 }}
               animate={{ scale: 1, opacity: 1 }}
               exit={{ scale: 0.95, opacity: 0 }}
-              onClick={e => e.stopPropagation()}
+              onClick={(e) => e.stopPropagation()}
               className="w-full max-w-lg"
             >
-             <Dialog open onClose={() => setDetailsOrder(null)} label="Order Details" className="bg-white rounded-xl max-w-lg w-full p-6 border border-gray-100 relative max-h-[85vh] overflow-y-auto">
-              <div className="flex items-center justify-between mb-5">
-                <h3 className="text-lg font-bold text-gray-900">Order Details</h3>
-                <button
-                  onClick={() => setDetailsOrder(null)}
-                  aria-label="Close details"
-                  className="p-2 hover:bg-gray-100 rounded-lg transition-colors"
-                >
-                  <X className="w-5 h-5 text-gray-400" />
-                </button>
-              </div>
+              <Dialog
+                open
+                onClose={() => setDetailsOrder(null)}
+                label="Order Details"
+                className="bg-white rounded-xl max-w-lg w-full p-6 border border-gray-100 relative max-h-[85vh] overflow-y-auto"
+              >
+                <div className="flex items-center justify-between mb-5">
+                  <h3 className="text-lg font-bold text-gray-900">
+                    Order Details
+                  </h3>
+                  <button
+                    onClick={() => setDetailsOrder(null)}
+                    aria-label="Close details"
+                    className="p-2 hover:bg-gray-100 rounded-lg transition-colors"
+                  >
+                    <X className="w-5 h-5 text-gray-400" />
+                  </button>
+                </div>
 
-              {detailsLoading && !detailsData ? (
-                <p className="text-sm text-gray-500">Loading order details…</p>
-              ) : detailOrder ? (
-                <div className="space-y-5 text-sm">
-                  <div>
-                    <p className="text-gray-500">Order: <span className="font-mono font-medium text-gray-900">{detailOrder.orderId}</span></p>
-                    <p className="text-gray-500 mt-1">
-                      Customer: <span className="font-medium text-gray-900">
-                        {detailOrder.user
-                          ? `${detailOrder.user.firstName || ''} ${detailOrder.user.lastName || ''}`.trim()
-                          : `${detailOrder.guestInfo?.firstName || 'Guest'} ${detailOrder.guestInfo?.lastName || ''}`.trim()}
-                      </span>
-                      {(detailOrder.user?.email || detailOrder.guestInfo?.email) && (
-                        <> · <span className="text-gray-900">{detailOrder.user?.email || detailOrder.guestInfo?.email}</span></>
-                      )}
-                    </p>
-                    <p className="text-gray-500 mt-1">
-                      Placed: <span className="text-gray-900">{detailOrder.createdAt ? formatDateTime(detailOrder.createdAt) : '—'}</span>
-                    </p>
-                    <p className="text-gray-500 mt-1">
-                      Status: <span className="font-medium text-gray-900">{detailOrder.orderStatus || '—'}</span>
-                      {' · '}Payment: <span className="font-medium text-gray-900">{detailOrder.paymentStatus || '—'}</span>
-                      {detailOrder.paymentMethod && <> ({detailOrder.paymentMethod.toUpperCase()})</>}
-                    </p>
-                  </div>
-
-                  <div>
-                    <h4 className="font-semibold text-gray-900 mb-2">Items</h4>
-                    <ul className="divide-y divide-gray-50">
-                      {(detailOrder.items || []).map((item, idx) => (
-                        <li key={item._id || idx} className="flex items-center justify-between py-2">
-                          <span className="text-gray-700">{item.name} <span className="text-gray-400">× {item.quantity || 0}</span></span>
-                          <span className="font-medium text-gray-900">{formatNPR((item.price || 0) * (item.quantity || 0))}</span>
-                        </li>
-                      ))}
-                    </ul>
-                  </div>
-
-                  <div className="border-t border-gray-100 pt-3 space-y-1">
-                    <p className="flex justify-between text-gray-500"><span>Subtotal</span><span className="text-gray-900">{formatNPR(detailOrder.subtotal || 0)}</span></p>
-                    {(detailOrder.discountAmount || 0) > 0 && (
-                      <p className="flex justify-between text-gray-500"><span>Discount{detailOrder.discountCode?.code ? ` (${detailOrder.discountCode.code})` : ''}</span><span className="text-gray-900">− {formatNPR(detailOrder.discountAmount || 0)}</span></p>
-                    )}
-                    <p className="flex justify-between text-gray-500"><span>Shipping</span><span className="text-gray-900">{formatNPR(detailOrder.shippingCost || 0)}</span></p>
-                    {(detailOrder.tax || 0) > 0 && (
-                      <p className="flex justify-between text-gray-500"><span>Tax</span><span className="text-gray-900">{formatNPR(detailOrder.tax || 0)}</span></p>
-                    )}
-                    <p className="flex justify-between font-semibold text-gray-900 pt-1"><span>Total</span><span>{formatNPR(detailOrder.total || 0)}</span></p>
-                  </div>
-
-                  {detailOrder.shippingAddress && (
+                {detailsLoading && !detailsData ? (
+                  <p className="text-sm text-gray-500">
+                    Loading order details…
+                  </p>
+                ) : detailOrder ? (
+                  <div className="space-y-5 text-sm">
                     <div>
-                      <h4 className="font-semibold text-gray-900 mb-1">Shipping Address</h4>
-                      <p className="text-gray-600">
-                        {detailOrder.shippingAddress.fullName}
-                        {detailOrder.shippingAddress.phone ? ` · ${detailOrder.shippingAddress.phone}` : ''}
-                        <br />
-                        {detailOrder.shippingAddress.addressLine1}
-                        {detailOrder.shippingAddress.addressLine2 ? `, ${detailOrder.shippingAddress.addressLine2}` : ''}
-                        <br />
-                        {detailOrder.shippingAddress.city}
-                        {detailOrder.shippingAddress.state ? `, ${detailOrder.shippingAddress.state}` : ''}
-                        {detailOrder.shippingAddress.postalCode ? ` ${detailOrder.shippingAddress.postalCode}` : ''}
-                        {detailOrder.shippingAddress.country ? `, ${detailOrder.shippingAddress.country}` : ''}
+                      <p className="text-gray-500">
+                        Order:{" "}
+                        <span className="font-mono font-medium text-gray-900">
+                          {detailOrder.orderId}
+                        </span>
+                      </p>
+                      <p className="text-gray-500 mt-1">
+                        Customer:{" "}
+                        <span className="font-medium text-gray-900">
+                          {detailOrder.user
+                            ? `${detailOrder.user.firstName || ""} ${detailOrder.user.lastName || ""}`.trim()
+                            : `${detailOrder.guestInfo?.firstName || "Guest"} ${detailOrder.guestInfo?.lastName || ""}`.trim()}
+                        </span>
+                        {(detailOrder.user?.email ||
+                          detailOrder.guestInfo?.email) && (
+                          <>
+                            {" "}
+                            ·{" "}
+                            <span className="text-gray-900">
+                              {detailOrder.user?.email ||
+                                detailOrder.guestInfo?.email}
+                            </span>
+                          </>
+                        )}
+                      </p>
+                      <p className="text-gray-500 mt-1">
+                        Placed:{" "}
+                        <span className="text-gray-900">
+                          {detailOrder.createdAt
+                            ? formatDateTime(detailOrder.createdAt)
+                            : "—"}
+                        </span>
+                      </p>
+                      <p className="text-gray-500 mt-1">
+                        Status:{" "}
+                        <span className="font-medium text-gray-900">
+                          {detailOrder.orderStatus || "—"}
+                        </span>
+                        {" · "}Payment:{" "}
+                        <span className="font-medium text-gray-900">
+                          {detailOrder.paymentStatus || "—"}
+                        </span>
+                        {detailOrder.paymentMethod && (
+                          <> ({detailOrder.paymentMethod.toUpperCase()})</>
+                        )}
                       </p>
                     </div>
-                  )}
 
-                </div>
-              ) : null}
-             </Dialog>
+                    <div>
+                      <h4 className="font-semibold text-gray-900 mb-2">
+                        Items
+                      </h4>
+                      <ul className="divide-y divide-gray-50">
+                        {(detailOrder.items || []).map((item, idx) => (
+                          <li
+                            key={item._id || idx}
+                            className="flex items-center justify-between py-2"
+                          >
+                            <span className="text-gray-700">
+                              {item.name}{" "}
+                              <span className="text-gray-400">
+                                × {item.quantity || 0}
+                              </span>
+                            </span>
+                            <span className="font-medium text-gray-900">
+                              {formatNPR(
+                                (item.price || 0) * (item.quantity || 0),
+                              )}
+                            </span>
+                          </li>
+                        ))}
+                      </ul>
+                    </div>
+
+                    <div className="border-t border-gray-100 pt-3 space-y-1">
+                      <p className="flex justify-between text-gray-500">
+                        <span>Subtotal</span>
+                        <span className="text-gray-900">
+                          {formatNPR(detailOrder.subtotal || 0)}
+                        </span>
+                      </p>
+                      {(detailOrder.discountAmount || 0) > 0 && (
+                        <p className="flex justify-between text-gray-500">
+                          <span>
+                            Discount
+                            {detailOrder.discountCode?.code
+                              ? ` (${detailOrder.discountCode.code})`
+                              : ""}
+                          </span>
+                          <span className="text-gray-900">
+                            − {formatNPR(detailOrder.discountAmount || 0)}
+                          </span>
+                        </p>
+                      )}
+                      <p className="flex justify-between text-gray-500">
+                        <span>Shipping</span>
+                        <span className="text-gray-900">
+                          {formatNPR(detailOrder.shippingCost || 0)}
+                        </span>
+                      </p>
+                      {(detailOrder.tax || 0) > 0 && (
+                        <p className="flex justify-between text-gray-500">
+                          <span>Tax</span>
+                          <span className="text-gray-900">
+                            {formatNPR(detailOrder.tax || 0)}
+                          </span>
+                        </p>
+                      )}
+                      <p className="flex justify-between font-semibold text-gray-900 pt-1">
+                        <span>Total</span>
+                        <span>{formatNPR(detailOrder.total || 0)}</span>
+                      </p>
+                    </div>
+
+                    {detailOrder.shippingAddress && (
+                      <div>
+                        <h4 className="font-semibold text-gray-900 mb-1">
+                          Shipping Address
+                        </h4>
+                        <p className="text-gray-600">
+                          {detailOrder.shippingAddress.fullName}
+                          {detailOrder.shippingAddress.phone
+                            ? ` · ${detailOrder.shippingAddress.phone}`
+                            : ""}
+                          <br />
+                          {detailOrder.shippingAddress.addressLine1}
+                          {detailOrder.shippingAddress.addressLine2
+                            ? `, ${detailOrder.shippingAddress.addressLine2}`
+                            : ""}
+                          <br />
+                          {detailOrder.shippingAddress.city}
+                          {detailOrder.shippingAddress.state
+                            ? `, ${detailOrder.shippingAddress.state}`
+                            : ""}
+                          {detailOrder.shippingAddress.postalCode
+                            ? ` ${detailOrder.shippingAddress.postalCode}`
+                            : ""}
+                          {detailOrder.shippingAddress.country
+                            ? `, ${detailOrder.shippingAddress.country}`
+                            : ""}
+                        </p>
+                      </div>
+                    )}
+                  </div>
+                ) : null}
+              </Dialog>
             </motion.div>
           </motion.div>
         )}
@@ -530,53 +718,67 @@ export default function Orders() {
               initial={{ scale: 0.95, opacity: 0 }}
               animate={{ scale: 1, opacity: 1 }}
               exit={{ scale: 0.95, opacity: 0 }}
-              onClick={e => e.stopPropagation()}
+              onClick={(e) => e.stopPropagation()}
               className="w-full max-w-md"
             >
-             <Dialog open onClose={() => setShowStatusModal(false)} label="Update Order Status" className="bg-white rounded-xl max-w-md w-full p-6 border border-gray-100 relative">
-              <div className="flex items-center justify-between mb-5">
-                <h3 className="text-lg font-bold text-gray-900">Update Order Status</h3>
-                <button
-                  onClick={() => setShowStatusModal(false)}
-                  className="p-2 hover:bg-gray-100 rounded-lg transition-colors"
-                >
-                  <X className="w-5 h-5 text-gray-400" />
-                </button>
-              </div>
+              <Dialog
+                open
+                onClose={() => setShowStatusModal(false)}
+                label="Update Order Status"
+                className="bg-white rounded-xl max-w-md w-full p-6 border border-gray-100 relative"
+              >
+                <div className="flex items-center justify-between mb-5">
+                  <h3 className="text-lg font-bold text-gray-900">
+                    Update Order Status
+                  </h3>
+                  <button
+                    onClick={() => setShowStatusModal(false)}
+                    className="p-2 hover:bg-gray-100 rounded-lg transition-colors"
+                  >
+                    <X className="w-5 h-5 text-gray-400" />
+                  </button>
+                </div>
 
-              <p className="text-sm text-gray-500 mb-4">Order: <span className="font-mono font-medium text-gray-900">{selectedOrder?.orderId}</span></p>
+                <p className="text-sm text-gray-500 mb-4">
+                  Order:{" "}
+                  <span className="font-mono font-medium text-gray-900">
+                    {selectedOrder?.orderId}
+                  </span>
+                </p>
 
-              <div className="mb-5">
-                <label className="block text-sm font-medium text-gray-700 mb-2">New Status</label>
-                <select
-                  value={newStatus}
-                  onChange={(e) => setNewStatus(e.target.value)}
-                  className="w-full px-4 py-2.5 border border-gray-200 rounded-lg text-sm focus:outline-none focus:border-teal-500 focus:ring-2 focus:ring-teal-500/20"
-                >
-                  {statusOptions.map(status => (
-                    <option key={status} value={status}>
-                      {status.charAt(0).toUpperCase() + status.slice(1)}
-                    </option>
-                  ))}
-                </select>
-              </div>
+                <div className="mb-5">
+                  <label className="block text-sm font-medium text-gray-700 mb-2">
+                    New Status
+                  </label>
+                  <select
+                    value={newStatus}
+                    onChange={(e) => setNewStatus(e.target.value)}
+                    className="w-full px-4 py-2.5 border border-gray-200 rounded-lg text-sm focus:outline-none focus:border-teal-500 focus:ring-2 focus:ring-teal-500/20"
+                  >
+                    {statusOptions.map((status) => (
+                      <option key={status} value={status}>
+                        {status.charAt(0).toUpperCase() + status.slice(1)}
+                      </option>
+                    ))}
+                  </select>
+                </div>
 
-              <div className="flex gap-3">
-                <button
-                  onClick={() => setShowStatusModal(false)}
-                  className="flex-1 px-4 py-2.5 border border-gray-200 text-gray-700 rounded-lg hover:bg-gray-50 transition-colors text-sm font-medium"
-                >
-                  Cancel
-                </button>
-                <button
-                  onClick={handleUpdateStatus}
-                  disabled={updateStatusMutation.isPending}
-                  className="flex-1 px-4 py-2.5 bg-teal-600 text-white rounded-lg hover:bg-teal-700 transition-colors disabled:opacity-50 flex items-center justify-center gap-2 text-sm font-medium"
-                >
-                                    Update
-                </button>
-              </div>
-             </Dialog>
+                <div className="flex gap-3">
+                  <button
+                    onClick={() => setShowStatusModal(false)}
+                    className="flex-1 px-4 py-2.5 border border-gray-200 text-gray-700 rounded-lg hover:bg-gray-50 transition-colors text-sm font-medium"
+                  >
+                    Cancel
+                  </button>
+                  <button
+                    onClick={handleUpdateStatus}
+                    disabled={updateStatusMutation.isPending}
+                    className="flex-1 px-4 py-2.5 bg-teal-600 text-white rounded-lg hover:bg-teal-700 transition-colors disabled:opacity-50 flex items-center justify-center gap-2 text-sm font-medium"
+                  >
+                    Update
+                  </button>
+                </div>
+              </Dialog>
             </motion.div>
           </motion.div>
         )}
@@ -594,79 +796,106 @@ export default function Orders() {
               initial={{ scale: 0.95, opacity: 0 }}
               animate={{ scale: 1, opacity: 1 }}
               exit={{ scale: 0.95, opacity: 0 }}
-              onClick={e => e.stopPropagation()}
+              onClick={(e) => e.stopPropagation()}
               className="w-full max-w-md"
             >
-             <Dialog open onClose={() => setShowReturnModal(false)} label="Process Return Request" className="bg-white rounded-xl max-w-md w-full p-6 border border-gray-100 relative">
-              <div className="flex items-center justify-between mb-5">
-                <h3 className="text-lg font-bold text-gray-900">Process Return Request</h3>
-                <button
-                  onClick={() => setShowReturnModal(false)}
-                  className="p-2 hover:bg-gray-100 rounded-lg transition-colors"
-                >
-                  <X className="w-5 h-5 text-gray-400" />
-                </button>
-              </div>
-
-              <div className="mb-5 p-4 bg-gray-50 rounded-lg">
-                <p className="text-sm text-gray-600 mb-1">Order: <span className="font-mono font-medium text-gray-900">{selectedOrder?.orderId}</span></p>
-                <p className="text-sm text-gray-600 mb-1">Reason: <span className="font-medium text-gray-900">{selectedOrder?.returnRequest?.reason}</span></p>
-                {selectedOrder?.returnRequest?.description && (
-                  <p className="text-sm text-gray-500 mt-2">{selectedOrder.returnRequest.description}</p>
-                )}
-              </div>
-
-              <div className="mb-5">
-                <label className="block text-sm font-medium text-gray-700 mb-2">Decision</label>
-                <div className="flex gap-3">
+              <Dialog
+                open
+                onClose={() => setShowReturnModal(false)}
+                label="Process Return Request"
+                className="bg-white rounded-xl max-w-md w-full p-6 border border-gray-100 relative"
+              >
+                <div className="flex items-center justify-between mb-5">
+                  <h3 className="text-lg font-bold text-gray-900">
+                    Process Return Request
+                  </h3>
                   <button
-                    onClick={() => setReturnDecision('approved')}
-                    className={`flex-1 px-4 py-2.5 rounded-lg border-2 text-sm font-medium transition-all ${returnDecision === 'approved'
-                      ? 'border-teal-500 bg-teal-50 text-teal-700'
-                      : 'border-gray-200 text-gray-600 hover:border-teal-300'
-                      }`}
+                    onClick={() => setShowReturnModal(false)}
+                    className="p-2 hover:bg-gray-100 rounded-lg transition-colors"
                   >
-                    Approve
-                  </button>
-                  <button
-                    onClick={() => setReturnDecision('rejected')}
-                    className={`flex-1 px-4 py-2.5 rounded-lg border-2 text-sm font-medium transition-all ${returnDecision === 'rejected'
-                      ? 'border-red-500 bg-red-50 text-red-700'
-                      : 'border-gray-200 text-gray-600 hover:border-red-300'
-                      }`}
-                  >
-                    Reject
+                    <X className="w-5 h-5 text-gray-400" />
                   </button>
                 </div>
-              </div>
 
-              <div className="mb-5">
-                <label className="block text-sm font-medium text-gray-700 mb-2">Admin Note (optional)</label>
-                <textarea
-                  value={adminNote}
-                  onChange={(e) => setAdminNote(e.target.value)}
-                  placeholder="Add a note for the customer..."
-                  className="w-full px-4 py-2.5 border border-gray-200 rounded-lg text-sm focus:outline-none focus:border-teal-500 focus:ring-2 focus:ring-teal-500/20 resize-none"
-                  rows={3}
-                />
-              </div>
+                <div className="mb-5 p-4 bg-gray-50 rounded-lg">
+                  <p className="text-sm text-gray-600 mb-1">
+                    Order:{" "}
+                    <span className="font-mono font-medium text-gray-900">
+                      {selectedOrder?.orderId}
+                    </span>
+                  </p>
+                  <p className="text-sm text-gray-600 mb-1">
+                    Reason:{" "}
+                    <span className="font-medium text-gray-900">
+                      {selectedOrder?.returnRequest?.reason}
+                    </span>
+                  </p>
+                  {selectedOrder?.returnRequest?.description && (
+                    <p className="text-sm text-gray-500 mt-2">
+                      {selectedOrder.returnRequest.description}
+                    </p>
+                  )}
+                </div>
 
-              <div className="flex gap-3">
-                <button
-                  onClick={() => setShowReturnModal(false)}
-                  className="flex-1 px-4 py-2.5 border border-gray-200 text-gray-700 rounded-lg hover:bg-gray-50 transition-colors text-sm font-medium"
-                >
-                  Cancel
-                </button>
-                <button
-                  onClick={handleProcessReturn}
-                  disabled={!returnDecision || processReturnMutation.isPending}
-                  className="flex-1 px-4 py-2.5 bg-teal-600 text-white rounded-lg hover:bg-teal-700 transition-colors disabled:opacity-50 flex items-center justify-center gap-2 text-sm font-medium"
-                >
-                                    Process
-                </button>
-              </div>
-             </Dialog>
+                <div className="mb-5">
+                  <label className="block text-sm font-medium text-gray-700 mb-2">
+                    Decision
+                  </label>
+                  <div className="flex gap-3">
+                    <button
+                      onClick={() => setReturnDecision("approved")}
+                      className={`flex-1 px-4 py-2.5 rounded-lg border-2 text-sm font-medium transition-all ${
+                        returnDecision === "approved"
+                          ? "border-teal-500 bg-teal-50 text-teal-700"
+                          : "border-gray-200 text-gray-600 hover:border-teal-300"
+                      }`}
+                    >
+                      Approve
+                    </button>
+                    <button
+                      onClick={() => setReturnDecision("rejected")}
+                      className={`flex-1 px-4 py-2.5 rounded-lg border-2 text-sm font-medium transition-all ${
+                        returnDecision === "rejected"
+                          ? "border-red-500 bg-red-50 text-red-700"
+                          : "border-gray-200 text-gray-600 hover:border-red-300"
+                      }`}
+                    >
+                      Reject
+                    </button>
+                  </div>
+                </div>
+
+                <div className="mb-5">
+                  <label className="block text-sm font-medium text-gray-700 mb-2">
+                    Admin Note (optional)
+                  </label>
+                  <textarea
+                    value={adminNote}
+                    onChange={(e) => setAdminNote(e.target.value)}
+                    placeholder="Add a note for the customer..."
+                    className="w-full px-4 py-2.5 border border-gray-200 rounded-lg text-sm focus:outline-none focus:border-teal-500 focus:ring-2 focus:ring-teal-500/20 resize-none"
+                    rows={3}
+                  />
+                </div>
+
+                <div className="flex gap-3">
+                  <button
+                    onClick={() => setShowReturnModal(false)}
+                    className="flex-1 px-4 py-2.5 border border-gray-200 text-gray-700 rounded-lg hover:bg-gray-50 transition-colors text-sm font-medium"
+                  >
+                    Cancel
+                  </button>
+                  <button
+                    onClick={handleProcessReturn}
+                    disabled={
+                      !returnDecision || processReturnMutation.isPending
+                    }
+                    className="flex-1 px-4 py-2.5 bg-teal-600 text-white rounded-lg hover:bg-teal-700 transition-colors disabled:opacity-50 flex items-center justify-center gap-2 text-sm font-medium"
+                  >
+                    Process
+                  </button>
+                </div>
+              </Dialog>
             </motion.div>
           </motion.div>
         )}

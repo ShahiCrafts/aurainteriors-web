@@ -17,23 +17,42 @@ const INTRO_PRODUCT = {
   _id: "intro",
   slug: "intro",
   name: "Aura Signature Sofa",
-  description: "Experience modern luxury with our signature handcrafted sofa piece.",
+  description:
+    "Experience modern luxury with our signature handcrafted sofa piece.",
   price: 45000,
-  modelFiles: [{ format: "glb", url: "https://fabritor.s3.ap-southeast-1.amazonaws.com/models/sofa_chair.glb" }],
-  modelUrl: "https://fabritor.s3.ap-southeast-1.amazonaws.com/models/sofa_chair.glb",
-  images: [{ url: "https://images.unsplash.com/photo-1567016376408-0226e4d0c1ea?w=800" }]
+  modelFiles: [
+    {
+      format: "glb",
+      url: "https://fabritor.s3.ap-southeast-1.amazonaws.com/models/sofa_chair.glb",
+    },
+  ],
+  modelUrl:
+    "https://fabritor.s3.ap-southeast-1.amazonaws.com/models/sofa_chair.glb",
+  images: [
+    {
+      url: "https://images.unsplash.com/photo-1567016376408-0226e4d0c1ea?w=800",
+    },
+  ],
 };
 
 export default function ARViewPage() {
   const { productSlug } = useParams();
   const navigate = useNavigate();
-  const { isAuthenticated } = useAuthStore(useShallow((state) => ({ isAuthenticated: state.isAuthenticated })));
-  const { addItem: addGuestItem } = useGuestCartStore(useShallow((state) => ({ addItem: state.addItem })));
+  const { isAuthenticated } = useAuthStore(
+    useShallow((state) => ({ isAuthenticated: state.isAuthenticated })),
+  );
+  const { addItem: addGuestItem } = useGuestCartStore(
+    useShallow((state) => ({ addItem: state.addItem })),
+  );
   const [customization, setCustomization] = useState({});
   const addInFlightRef = useRef(false);
 
-  const { data: productData, isLoading: productLoading, error: productError } = useProduct(productSlug === "intro" ? null : productSlug, {
-    enabled: productSlug !== "intro"
+  const {
+    data: productData,
+    isLoading: productLoading,
+    error: productError,
+  } = useProduct(productSlug === "intro" ? null : productSlug, {
+    enabled: productSlug !== "intro",
   });
 
   // FE-30: the picker catalog (page-walking, see useArCatalogProducts)
@@ -44,16 +63,17 @@ export default function ARViewPage() {
   const { data: catalogData } = useArCatalogProducts();
   const { data: categoriesData } = useCategories();
 
-  const product = productSlug === "intro" ? INTRO_PRODUCT : productData?.data?.product;
+  const product =
+    productSlug === "intro" ? INTRO_PRODUCT : productData?.data?.product;
   const categories = categoriesData?.data?.categories || [];
 
   // Filter products for AR compatibility and include intro if needed
   const arProducts = useMemo(
     () =>
       (catalogData?.data?.products || []).filter(
-        (p) => hasArModel(p) && p.slug !== productSlug
+        (p) => hasArModel(p) && p.slug !== productSlug,
       ),
-    [catalogData, productSlug]
+    [catalogData, productSlug],
   );
 
   // Combine selected product with others for the catalog
@@ -104,7 +124,7 @@ export default function ARViewPage() {
         onSettled: () => {
           addInFlightRef.current = false;
         },
-      }
+      },
     );
   };
 
@@ -115,7 +135,9 @@ export default function ARViewPage() {
           <Skeleton className="w-24 h-24 rounded-full mx-auto" />
           <Skeleton className="w-3/4 h-6 rounded mx-auto" />
           <Skeleton className="w-1/2 h-4 rounded mx-auto" />
-          <p className="text-neutral-400 text-sm">Preparing 3D AR Experience...</p>
+          <p className="text-neutral-400 text-sm">
+            Preparing 3D AR Experience...
+          </p>
         </div>
       </div>
     );
@@ -126,8 +148,12 @@ export default function ARViewPage() {
       <div className="min-h-screen bg-neutral-50 flex items-center justify-center p-4 font-dm-sans">
         <div className="text-center">
           <AlertCircle size={48} className="text-neutral-400 mx-auto mb-4" />
-          <h1 className="text-xl font-playfair text-neutral-900 mb-2">Product Not Found</h1>
-          <p className="text-neutral-500 mb-6">The product you're looking for doesn't exist.</p>
+          <h1 className="text-xl font-playfair text-neutral-900 mb-2">
+            Product Not Found
+          </h1>
+          <p className="text-neutral-500 mb-6">
+            The product you're looking for doesn't exist.
+          </p>
           <Link
             to="/shop"
             className="inline-flex items-center gap-2 text-teal-700 font-semibold hover:underline"

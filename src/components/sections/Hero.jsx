@@ -105,7 +105,10 @@ export default function Hero() {
               {slides[0].desc}
             </div>
             <div className="flex flex-col sm:flex-row items-start sm:items-center gap-4 sm:gap-6">
-              <Link to={shopCategoryUrl("living-room")} className="pointer-events-auto">
+              <Link
+                to={shopCategoryUrl("living-room")}
+                className="pointer-events-auto"
+              >
                 <button className="flex items-center justify-center gap-2 bg-[#F27318] text-white hover:bg-[#D9620E] shadow-sm rounded-lg px-8 sm:px-8 py-[11px] sm:py-[12px] font-sans text-[14px] sm:text-[16px] font-semibold cursor-pointer transition-colors duration-250">
                   {slides[0].cta}
                 </button>
@@ -119,7 +122,11 @@ export default function Hero() {
                 <div className="flex items-center gap-1 mb-0.5 sm:mb-1">
                   <div className="flex items-center gap-0.5 text-[#F27318]">
                     {[1, 2, 3, 4, 5].map((s) => (
-                      <Star key={s} size={10} className="fill-[#F27318] sm:w-[12px] sm:h-[12px]" />
+                      <Star
+                        key={s}
+                        size={10}
+                        className="fill-[#F27318] sm:w-[12px] sm:h-[12px]"
+                      />
                     ))}
                   </div>
                   <span className="text-[10px] sm:text-[11px] md:text-[13px] font-medium text-white/80 ml-0.5">
@@ -167,7 +174,10 @@ export default function Hero() {
                 {slides[1].desc}
               </div>
               <div className="mt-3 sm:mt-[18px]">
-                <Link to={shopCategoryUrl("bedroom")} className="pointer-events-auto">
+                <Link
+                  to={shopCategoryUrl("bedroom")}
+                  className="pointer-events-auto"
+                >
                   <button className="flex items-center justify-center gap-1.5 bg-white text-[#1A1714] hover:bg-[#F27318] hover:text-white rounded-lg px-3.5 sm:px-4 py-[7px] sm:py-[9px] font-sans text-[12px] sm:text-[13px] font-bold cursor-pointer transition-colors duration-200 shadow-sm">
                     {slides[1].cta} <ArrowUpRight size={14} />
                   </button>
@@ -216,7 +226,10 @@ export default function Hero() {
                 headboard
               </div>
               <div className="mt-3 sm:mt-[18px]">
-                <Link to={shopCategoryUrl("bedroom")} className="pointer-events-auto">
+                <Link
+                  to={shopCategoryUrl("bedroom")}
+                  className="pointer-events-auto"
+                >
                   <button className="flex items-center justify-center gap-1.5 bg-white text-[#1A1714] hover:bg-[#F27318] hover:text-white rounded-lg px-3.5 sm:px-4 py-[7px] sm:py-[9px] font-sans text-[12px] sm:text-[13px] font-bold cursor-pointer transition-colors duration-200 shadow-sm">
                     Shop Sale <ArrowUpRight size={14} />
                   </button>

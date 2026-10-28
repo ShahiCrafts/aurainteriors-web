@@ -12,7 +12,12 @@ const TABS = [
 
 function Harness({ activeId = "description", onChange = vi.fn() }) {
   return (
-    <Tabs tabs={TABS} activeId={activeId} onChange={onChange} ariaLabel="Product sections">
+    <Tabs
+      tabs={TABS}
+      activeId={activeId}
+      onChange={onChange}
+      ariaLabel="Product sections"
+    >
       {(activeTab) => <p>Panel: {activeTab.id}</p>}
     </Tabs>
   );
@@ -21,7 +26,9 @@ function Harness({ activeId = "description", onChange = vi.fn() }) {
 describe("Tabs", () => {
   it("renders a tablist with aria-selected on the active tab only", () => {
     render(<Harness />);
-    expect(screen.getByRole("tablist", { name: "Product sections" })).toBeInTheDocument();
+    expect(
+      screen.getByRole("tablist", { name: "Product sections" }),
+    ).toBeInTheDocument();
     expect(screen.getByRole("tab", { name: "Description" })).toHaveAttribute(
       "aria-selected",
       "true",
@@ -30,7 +37,9 @@ describe("Tabs", () => {
       "aria-selected",
       "false",
     );
-    expect(screen.getByRole("tabpanel")).toHaveTextContent("Panel: description");
+    expect(screen.getByRole("tabpanel")).toHaveTextContent(
+      "Panel: description",
+    );
   });
 
   it("calls onChange on click and renders the new panel when controlled state updates", () => {
@@ -60,7 +69,9 @@ describe("Tabs", () => {
     const onChange = vi.fn();
     render(<Harness activeId="reviews" onChange={onChange} />);
     // Next after "reviews" wraps past disabled "delivery" to "description".
-    fireEvent.keyDown(screen.getByRole("tab", { name: "Reviews" }), { key: "ArrowRight" });
+    fireEvent.keyDown(screen.getByRole("tab", { name: "Reviews" }), {
+      key: "ArrowRight",
+    });
     expect(onChange).toHaveBeenCalledWith("description");
   });
 });

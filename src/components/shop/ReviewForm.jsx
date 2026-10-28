@@ -1,7 +1,10 @@
 import { useState, useRef, useEffect } from "react";
 import { Star } from "lucide-react";
 import { toast } from "../../lib/toast";
-import { useCreateReview, useUpdateReview } from "../../hooks/review/useReviewTan";
+import {
+  useCreateReview,
+  useUpdateReview,
+} from "../../hooks/review/useReviewTan";
 import { useForm } from "react-hook-form";
 import { yupResolver } from "@hookform/resolvers/yup";
 import { reviewSchema } from "../../utils/validationSchemas";
@@ -68,7 +71,11 @@ export default function ReviewForm({
 
     const options = {
       onSuccess: () => {
-        toast.success(isEditing ? "Review updated successfully" : "Review submitted successfully");
+        toast.success(
+          isEditing
+            ? "Review updated successfully"
+            : "Review submitted successfully",
+        );
         if (onReviewSubmitted) onReviewSubmitted();
       },
       onError: (err) => {
@@ -77,7 +84,10 @@ export default function ReviewForm({
     };
 
     if (isEditing) {
-      updateReview({ productId, reviewId: existingReview._id, data: payload }, options);
+      updateReview(
+        { productId, reviewId: existingReview._id, data: payload },
+        options,
+      );
     } else {
       createReview({ productId, data: payload }, options);
     }
@@ -107,17 +117,24 @@ export default function ReviewForm({
                 onMouseLeave={() => setHoveredRating(0)}
                 onClick={() => handleStarClick(star)}
                 onKeyDown={(e) => {
-                  if (e.key === "ArrowRight" || e.key === "ArrowUp") { e.preventDefault(); handleStarClick(Math.min(5, star + 1)); }
-                  if (e.key === "ArrowLeft" || e.key === "ArrowDown") { e.preventDefault(); handleStarClick(Math.max(1, star - 1)); }
+                  if (e.key === "ArrowRight" || e.key === "ArrowUp") {
+                    e.preventDefault();
+                    handleStarClick(Math.min(5, star + 1));
+                  }
+                  if (e.key === "ArrowLeft" || e.key === "ArrowDown") {
+                    e.preventDefault();
+                    handleStarClick(Math.max(1, star - 1));
+                  }
                 }}
                 className="focus:outline-none focus-visible:ring-2 focus-visible:ring-teal-500 rounded-full transition-transform hover:scale-110"
               >
                 <Star
                   size={28}
-                  className={`${star <= (hoveredRating || rating)
-                    ? "fill-amber-400 text-amber-400"
-                    : "text-neutral-300"
-                    } transition-colors`}
+                  className={`${
+                    star <= (hoveredRating || rating)
+                      ? "fill-amber-400 text-amber-400"
+                      : "text-neutral-300"
+                  } transition-colors`}
                 />
               </button>
             ))}
@@ -150,7 +167,7 @@ export default function ReviewForm({
             </p>
           )}
           <p className="mt-1 text-xs text-neutral-400 font-dm-sans text-right">
-            {(title?.length || 0)}/100
+            {title?.length || 0}/100
           </p>
         </div>
 
@@ -175,7 +192,7 @@ export default function ReviewForm({
             </p>
           )}
           <p className="mt-1 text-xs text-neutral-400 font-dm-sans text-right">
-            {(comment?.length || 0)}/1000
+            {comment?.length || 0}/1000
           </p>
         </div>
 

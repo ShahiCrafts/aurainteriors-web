@@ -40,11 +40,15 @@ export default function Rating({
     return (
       <span className={`inline-flex items-center gap-1 ${className}`}>
         <Star size={px} className="fill-brand text-brand" aria-hidden="true" />
-        <span className={`font-semibold text-neutral-800 ${TEXT_SIZE[size] || TEXT_SIZE.md}`}>
+        <span
+          className={`font-semibold text-neutral-800 ${TEXT_SIZE[size] || TEXT_SIZE.md}`}
+        >
           {average.toFixed(1)}
         </span>
         {count != null && (
-          <span className={`text-neutral-400 ${TEXT_SIZE[size] || TEXT_SIZE.md}`}>
+          <span
+            className={`text-neutral-400 ${TEXT_SIZE[size] || TEXT_SIZE.md}`}
+          >
             ({count})
           </span>
         )}

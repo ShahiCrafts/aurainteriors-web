@@ -1,149 +1,166 @@
 import { useEffect, useId, useRef, useState } from "react";
-import { AlertTriangle, Trash2, LogOut, Info, X, CheckCircle } from "lucide-react";
+import {
+  AlertTriangle,
+  Trash2,
+  LogOut,
+  Info,
+  X,
+  CheckCircle,
+} from "lucide-react";
 import Dialog from "../common/Dialog";
 
 export default function ConfirmationDialog({
-    isOpen,
-    title,
-    message,
-    onConfirm,
-    onCancel,
-    confirmText = "Confirm",
-    cancelText = "Cancel",
-    type = "danger",
-    isLoading = false,
+  isOpen,
+  title,
+  message,
+  onConfirm,
+  onCancel,
+  confirmText = "Confirm",
+  cancelText = "Cancel",
+  type = "danger",
+  isLoading = false,
 }) {
-    const titleId = useId();
-    const cancelRef = useRef(null);
-    // FE-37: the dialog keeps its OWN pending state — previously the
-    // buttons disabled only when the caller threaded isLoading, so a
-    // caller that forgot left double-clicks free to fire the action
-    // twice. On confirm, both buttons disable until the onConfirm
-    // result settles (sync return or promise); the ref guard blocks
-    // re-entry synchronously, before the state update renders.
-    const [internalPending, setInternalPending] = useState(false);
-    const pendingRef = useRef(false);
-    useEffect(() => {
-        if (!isOpen) {
-            pendingRef.current = false;
-            setInternalPending(false);
-        }
-    }, [isOpen]);
-    const isBusy = isLoading || internalPending;
-    const handleConfirm = async () => {
-        if (isBusy || pendingRef.current) return;
-        pendingRef.current = true;
-        setInternalPending(true);
-        try {
-            await onConfirm();
-        } catch {
-            // onConfirm callers own their error reporting (their
-            // handlers toast); the dialog's job is only to re-enable
-            // so a failed action never wedges it.
-        } finally {
-            pendingRef.current = false;
-            setInternalPending(false);
-        }
-    };
-    if (!isOpen) return null;
+  const titleId = useId();
+  const cancelRef = useRef(null);
+  // FE-37: the dialog keeps its OWN pending state — previously the
+  // buttons disabled only when the caller threaded isLoading, so a
+  // caller that forgot left double-clicks free to fire the action
+  // twice. On confirm, both buttons disable until the onConfirm
+  // result settles (sync return or promise); the ref guard blocks
+  // re-entry synchronously, before the state update renders.
+  const [internalPending, setInternalPending] = useState(false);
+  const pendingRef = useRef(false);
+  useEffect(() => {
+    if (!isOpen) {
+      pendingRef.current = false;
+      setInternalPending(false);
+    }
+  }, [isOpen]);
+  const isBusy = isLoading || internalPending;
+  const handleConfirm = async () => {
+    if (isBusy || pendingRef.current) return;
+    pendingRef.current = true;
+    setInternalPending(true);
+    try {
+      await onConfirm();
+    } catch {
+      // onConfirm callers own their error reporting (their
+      // handlers toast); the dialog's job is only to re-enable
+      // so a failed action never wedges it.
+    } finally {
+      pendingRef.current = false;
+      setInternalPending(false);
+    }
+  };
+  if (!isOpen) return null;
 
-    const config = {
-        danger: {
-            icon: Trash2,
-            iconColor: "text-red-600",
-            iconBg: "bg-red-50",
-            buttonBg: "bg-red-600 hover:bg-red-700",
-        },
-        warning: {
-            icon: AlertTriangle,
-            iconColor: "text-amber-600",
-            iconBg: "bg-amber-50",
-            buttonBg: "bg-amber-600 hover:bg-amber-700",
-        },
-        logout: {
-            icon: LogOut,
-            iconColor: "text-red-600",
-            iconBg: "bg-red-50",
-            buttonBg: "bg-red-600 hover:bg-red-700",
-        },
-        info: {
-            icon: Info,
-            iconColor: "text-teal-600",
-            iconBg: "bg-teal-50",
-            buttonBg: "bg-teal-700 hover:bg-teal-800",
-        },
-        success: {
-            icon: CheckCircle,
-            iconColor: "text-emerald-600",
-            iconBg: "bg-emerald-50",
-            buttonBg: "bg-emerald-600 hover:bg-emerald-700",
-        },
-    };
+  const config = {
+    danger: {
+      icon: Trash2,
+      iconColor: "text-red-600",
+      iconBg: "bg-red-50",
+      buttonBg: "bg-red-600 hover:bg-red-700",
+    },
+    warning: {
+      icon: AlertTriangle,
+      iconColor: "text-amber-600",
+      iconBg: "bg-amber-50",
+      buttonBg: "bg-amber-600 hover:bg-amber-700",
+    },
+    logout: {
+      icon: LogOut,
+      iconColor: "text-red-600",
+      iconBg: "bg-red-50",
+      buttonBg: "bg-red-600 hover:bg-red-700",
+    },
+    info: {
+      icon: Info,
+      iconColor: "text-teal-600",
+      iconBg: "bg-teal-50",
+      buttonBg: "bg-teal-700 hover:bg-teal-800",
+    },
+    success: {
+      icon: CheckCircle,
+      iconColor: "text-emerald-600",
+      iconBg: "bg-emerald-50",
+      buttonBg: "bg-emerald-600 hover:bg-emerald-700",
+    },
+  };
 
-    const { icon: Icon, iconColor, iconBg, buttonBg } = config[type] || config.info;
+  const {
+    icon: Icon,
+    iconColor,
+    iconBg,
+    buttonBg,
+  } = config[type] || config.info;
 
-    return (
-        <div className="fixed inset-0 z-100 flex items-center justify-center p-4">
-            {/* Backdrop */}
-            <div
-                onClick={onCancel}
-                className="absolute inset-0 bg-black/40 backdrop-blur-sm transition-opacity"
-            />
+  return (
+    <div className="fixed inset-0 z-100 flex items-center justify-center p-4">
+      {/* Backdrop */}
+      <div
+        onClick={onCancel}
+        className="absolute inset-0 bg-black/40 backdrop-blur-sm transition-opacity"
+      />
 
-            {/* Modal — FE-64: shared Dialog primitive (alertdialog
+      {/* Modal — FE-64: shared Dialog primitive (alertdialog
                 semantics, focus trap, Escape, focus return, scroll lock).
                 Escape/backdrop both cancel; initial focus lands on the
                 Cancel action for destructive confirms. */}
-            <Dialog
-                open={isOpen}
-                onClose={onCancel}
-                role="alertdialog"
-                labelledBy={titleId}
-                initialFocusRef={cancelRef}
-                className="relative bg-white rounded-2xl shadow-xl w-full max-w-sm overflow-hidden border border-neutral-100 animate-in fade-in zoom-in-95 duration-200"
-            >
-                {/* Close button */}
-                <button
-                    onClick={onCancel}
-                    aria-label="Close dialog"
-                    className="absolute top-4 right-4 p-1.5 hover:bg-neutral-100 rounded-lg text-neutral-400 hover:text-neutral-600 transition-colors"
-                >
-                    <X size={18} />
-                </button>
+      <Dialog
+        open={isOpen}
+        onClose={onCancel}
+        role="alertdialog"
+        labelledBy={titleId}
+        initialFocusRef={cancelRef}
+        className="relative bg-white rounded-2xl shadow-xl w-full max-w-sm overflow-hidden border border-neutral-100 animate-in fade-in zoom-in-95 duration-200"
+      >
+        {/* Close button */}
+        <button
+          onClick={onCancel}
+          aria-label="Close dialog"
+          className="absolute top-4 right-4 p-1.5 hover:bg-neutral-100 rounded-lg text-neutral-400 hover:text-neutral-600 transition-colors"
+        >
+          <X size={18} />
+        </button>
 
-                {/* Content */}
-                <div className="p-6 pt-8 text-center">
-                    <div className={`w-14 h-14 ${iconBg} rounded-2xl flex items-center justify-center mx-auto mb-4`}>
-                        <Icon className={`w-7 h-7 ${iconColor}`} />
-                    </div>
+        {/* Content */}
+        <div className="p-6 pt-8 text-center">
+          <div
+            className={`w-14 h-14 ${iconBg} rounded-2xl flex items-center justify-center mx-auto mb-4`}
+          >
+            <Icon className={`w-7 h-7 ${iconColor}`} />
+          </div>
 
-                    <h3 id={titleId} className="text-xl font-bold text-neutral-900 mb-2 font-playfair">
-                        {title}
-                    </h3>
-                    <p className="text-sm text-neutral-500 leading-relaxed font-dm-sans max-w-[280px] mx-auto">
-                        {message}
-                    </p>
-                </div>
-
-                {/* Actions */}
-                <div className="px-6 pb-6 flex gap-3">
-                    <button
-                        ref={cancelRef}
-                        onClick={onCancel}
-                        disabled={isBusy}
-                        className="flex-1 px-4 py-2.5 border border-neutral-200 bg-white text-neutral-700 rounded-xl text-sm font-semibold hover:bg-neutral-50 transition-all font-dm-sans disabled:opacity-50"
-                    >
-                        {cancelText}
-                    </button>
-                    <button
-                        onClick={handleConfirm}
-                        disabled={isBusy}
-                        className={`flex-1 ${buttonBg} text-white px-4 py-2.5 rounded-xl text-sm font-semibold transition-all font-dm-sans flex items-center justify-center gap-2 disabled:opacity-70`}
-                    >
-                        {confirmText}
-                    </button>
-                </div>
-            </Dialog>
+          <h3
+            id={titleId}
+            className="text-xl font-bold text-neutral-900 mb-2 font-playfair"
+          >
+            {title}
+          </h3>
+          <p className="text-sm text-neutral-500 leading-relaxed font-dm-sans max-w-[280px] mx-auto">
+            {message}
+          </p>
         </div>
-    );
+
+        {/* Actions */}
+        <div className="px-6 pb-6 flex gap-3">
+          <button
+            ref={cancelRef}
+            onClick={onCancel}
+            disabled={isBusy}
+            className="flex-1 px-4 py-2.5 border border-neutral-200 bg-white text-neutral-700 rounded-xl text-sm font-semibold hover:bg-neutral-50 transition-all font-dm-sans disabled:opacity-50"
+          >
+            {cancelText}
+          </button>
+          <button
+            onClick={handleConfirm}
+            disabled={isBusy}
+            className={`flex-1 ${buttonBg} text-white px-4 py-2.5 rounded-xl text-sm font-semibold transition-all font-dm-sans flex items-center justify-center gap-2 disabled:opacity-70`}
+          >
+            {confirmText}
+          </button>
+        </div>
+      </Dialog>
+    </div>
+  );
 }

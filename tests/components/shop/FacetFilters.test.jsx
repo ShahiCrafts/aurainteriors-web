@@ -10,21 +10,40 @@ import FilterSidebar from "../../../src/components/shop/FilterSidebar.jsx";
 import { FilterChips } from "../../../src/components/shop/FacetFilters.jsx";
 
 const facets = {
-  category: { key: "category", label: "Category", type: "category", options: [] },
+  category: {
+    key: "category",
+    label: "Category",
+    type: "category",
+    options: [],
+  },
   room: {
     key: "room",
     label: "Room",
     type: "enum",
-    options: [{ value: "living-room", label: "Living Room", count: 4, selected: false }],
+    options: [
+      { value: "living-room", label: "Living Room", count: 4, selected: false },
+    ],
   },
-  price: { key: "price", label: "Price", type: "money", min: 1000, max: 90000, selected: { min: null, max: null } },
+  price: {
+    key: "price",
+    label: "Price",
+    type: "money",
+    min: 1000,
+    max: 90000,
+    selected: { min: null, max: null },
+  },
   availability: {
     key: "availability",
     label: "Availability",
     type: "boolean",
     options: [{ value: "inStock", count: 3, selected: false }],
   },
-  rating: { key: "rating", label: "Rating", type: "rating", options: [{ value: 4, count: 2, selected: false }] },
+  rating: {
+    key: "rating",
+    label: "Rating",
+    type: "rating",
+    options: [{ value: 4, count: 2, selected: false }],
+  },
   attributes: [
     {
       key: "frameMaterial",
@@ -57,7 +76,12 @@ const facets = {
       options: [{ value: "#7A4A21", count: 2, selected: false }],
     },
     // Legacy-owned keys must NOT double-render as facet sections.
-    { key: "colors", label: "Colors", type: "multi-enum", options: [{ value: "red", count: 1, selected: false }] },
+    {
+      key: "colors",
+      label: "Colors",
+      type: "multi-enum",
+      options: [{ value: "red", count: 1, selected: false }],
+    },
   ],
 };
 
@@ -80,11 +104,13 @@ const renderSidebar = () =>
       onRatingChange={vi.fn()}
       onResetFilters={vi.fn()}
       facets={facets}
-      facetSelection={{ frameMaterial: { values: ["walnut"], min: null, max: null } }}
+      facetSelection={{
+        frameMaterial: { values: ["walnut"], min: null, max: null },
+      }}
       selectedRooms={[]}
       inStockOnly={false}
       {...handlers}
-    />
+    />,
   );
 
 describe("FacetSections via FilterSidebar (Phase 7)", () => {
@@ -96,8 +122,12 @@ describe("FacetSections via FilterSidebar (Phase 7)", () => {
     expect(screen.getByText("Frame Material")).toBeInTheDocument();
     expect(screen.getByText("oak")).toBeInTheDocument();
     expect(screen.getByText("Assembly Required")).toBeInTheDocument();
-    expect(screen.getByLabelText("Seating Capacity minimum")).toBeInTheDocument();
-    expect(screen.getByLabelText("Seating Capacity maximum")).toBeInTheDocument();
+    expect(
+      screen.getByLabelText("Seating Capacity minimum"),
+    ).toBeInTheDocument();
+    expect(
+      screen.getByLabelText("Seating Capacity maximum"),
+    ).toBeInTheDocument();
     expect(screen.getByText("Available 2 – 6")).toBeInTheDocument();
     expect(screen.getByText("Upholstery Color")).toBeInTheDocument();
     // The colors attribute facet is owned by the legacy section.
@@ -123,7 +153,10 @@ describe("FacetSections via FilterSidebar (Phase 7)", () => {
   it("boolean facet toggles the 'true' value", () => {
     renderSidebar();
     fireEvent.click(screen.getByRole("checkbox", { name: /Yes/ }));
-    expect(handlers.onAttrToggle).toHaveBeenCalledWith("assemblyRequired", "true");
+    expect(handlers.onAttrToggle).toHaveBeenCalledWith(
+      "assemblyRequired",
+      "true",
+    );
   });
 
   it("range facet commits min/max on blur", () => {
@@ -131,13 +164,20 @@ describe("FacetSections via FilterSidebar (Phase 7)", () => {
     const min = screen.getByLabelText("Seating Capacity minimum");
     fireEvent.change(min, { target: { value: "3" } });
     fireEvent.blur(min);
-    expect(handlers.onAttrRange).toHaveBeenCalledWith("seatingCapacity", "3", null);
+    expect(handlers.onAttrRange).toHaveBeenCalledWith(
+      "seatingCapacity",
+      "3",
+      null,
+    );
   });
 
   it("color facet renders a swatch chip that toggles its value", () => {
     renderSidebar();
     fireEvent.click(screen.getByTitle("#7A4A21 (2)"));
-    expect(handlers.onAttrToggle).toHaveBeenCalledWith("upholsteryColor", "#7A4A21");
+    expect(handlers.onAttrToggle).toHaveBeenCalledWith(
+      "upholsteryColor",
+      "#7A4A21",
+    );
   });
 });
 
@@ -149,17 +189,42 @@ describe("Empty attribute facet groups (post-delivery fix)", () => {
   const emptyFacets = {
     ...facets,
     attributes: [
-      { key: "configuration", label: "Configuration", type: "enum", options: [] },
+      {
+        key: "configuration",
+        label: "Configuration",
+        type: "enum",
+        options: [],
+      },
       {
         key: "frameMaterial",
         label: "Frame Material",
         type: "enum",
         options: [{ value: "oak", count: 2, selected: false }],
       },
-      { key: "seatingCapacity", label: "Seating Capacity", type: "integer", options: [] },
-      { key: "upholsteryColor", label: "Upholstery Color", type: "color", options: [] },
-      { key: "assemblyRequired", label: "Assembly Required", type: "boolean", options: [] },
-      { key: "colors", label: "Colors", type: "multi-enum", options: [{ value: "red", count: 1, selected: false }] },
+      {
+        key: "seatingCapacity",
+        label: "Seating Capacity",
+        type: "integer",
+        options: [],
+      },
+      {
+        key: "upholsteryColor",
+        label: "Upholstery Color",
+        type: "color",
+        options: [],
+      },
+      {
+        key: "assemblyRequired",
+        label: "Assembly Required",
+        type: "boolean",
+        options: [],
+      },
+      {
+        key: "colors",
+        label: "Colors",
+        type: "multi-enum",
+        options: [{ value: "red", count: 1, selected: false }],
+      },
     ],
   };
 
@@ -182,7 +247,7 @@ describe("Empty attribute facet groups (post-delivery fix)", () => {
         onAttrRange={vi.fn()}
         onRoomToggle={vi.fn()}
         onInStockToggle={vi.fn()}
-      />
+      />,
     );
 
   it("hides attribute groups that carry no values", () => {
@@ -210,14 +275,16 @@ describe("Empty attribute facet groups (post-delivery fix)", () => {
         onRatingChange={vi.fn()}
         onResetFilters={vi.fn()}
         facets={emptyFacets}
-        facetSelection={{ configuration: { values: ["2-seater"], min: null, max: null } }}
+        facetSelection={{
+          configuration: { values: ["2-seater"], min: null, max: null },
+        }}
         selectedRooms={[]}
         inStockOnly={false}
         onAttrToggle={onAttrToggle}
         onAttrRange={vi.fn()}
         onRoomToggle={vi.fn()}
         onInStockToggle={vi.fn()}
-      />
+      />,
     );
     expect(screen.getByText("Configuration")).toBeInTheDocument();
     const box = screen.getByRole("checkbox", { name: /2-seater/ });
@@ -260,7 +327,7 @@ describe("Empty attribute facet groups (post-delivery fix)", () => {
         onAttrRange={vi.fn()}
         onRoomToggle={vi.fn()}
         onInStockToggle={vi.fn()}
-      />
+      />,
     );
     expect(screen.queryByText("No matching values.")).not.toBeInTheDocument();
     fireEvent.change(screen.getByLabelText("Search Frame Material values"), {
@@ -274,25 +341,52 @@ describe("FilterChips (Phase 7)", () => {
   it("removes a single chip and clears all", () => {
     const onRemove = vi.fn();
     const onClearAll = vi.fn();
-    const chip = { id: "attr:color:red", label: "Color: red", patch: { "attr.color": null } };
-    render(<FilterChips chips={[chip]} onRemove={onRemove} onClearAll={onClearAll} />);
-    fireEvent.click(screen.getByRole("button", { name: "Remove filter Color: red" }));
+    const chip = {
+      id: "attr:color:red",
+      label: "Color: red",
+      patch: { "attr.color": null },
+    };
+    render(
+      <FilterChips
+        chips={[chip]}
+        onRemove={onRemove}
+        onClearAll={onClearAll}
+      />,
+    );
+    fireEvent.click(
+      screen.getByRole("button", { name: "Remove filter Color: red" }),
+    );
     expect(onRemove).toHaveBeenCalledWith(chip);
     fireEvent.click(screen.getByRole("button", { name: "Clear all filters" }));
     expect(onClearAll).toHaveBeenCalled();
   });
 
   it("renders nothing without chips", () => {
-    const { container } = render(<FilterChips chips={[]} onRemove={vi.fn()} onClearAll={vi.fn()} />);
+    const { container } = render(
+      <FilterChips chips={[]} onRemove={vi.fn()} onClearAll={vi.fn()} />,
+    );
     expect(container).toBeEmptyDOMElement();
   });
 
   it("renders a color dot for swatched chips and a star for rating chips", () => {
     const chips = [
-      { id: "colors:Teal", label: "Teal", kind: "color", swatch: "#0d9488", patch: { colors: null } },
-      { id: "rating", label: "4 & up", kind: "rating", patch: { rating: null } },
+      {
+        id: "colors:Teal",
+        label: "Teal",
+        kind: "color",
+        swatch: "#0d9488",
+        patch: { colors: null },
+      },
+      {
+        id: "rating",
+        label: "4 & up",
+        kind: "rating",
+        patch: { rating: null },
+      },
     ];
-    const { container } = render(<FilterChips chips={chips} onRemove={vi.fn()} onClearAll={vi.fn()} />);
+    const { container } = render(
+      <FilterChips chips={chips} onRemove={vi.fn()} onClearAll={vi.fn()} />,
+    );
     const dot = container.querySelector("[data-chip-swatch]");
     expect(dot).not.toBeNull();
     expect(dot.style.backgroundColor).toBe("rgb(13, 148, 136)");

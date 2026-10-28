@@ -20,23 +20,23 @@ import * as yup from "yup";
 export const PHONE_PATTERN = /^[0-9+\-\s]+$/;
 
 export function isValidPhoneNumber(value) {
-    if (typeof value !== "string") return false;
-    const trimmed = value.trim();
-    if (trimmed.length < 7 || trimmed.length > 15) return false;
-    if (!PHONE_PATTERN.test(trimmed)) return false;
-    // '+' is only legal as the very first character (country code).
-    if (trimmed.slice(1).includes("+")) return false;
-    const digitCount = trimmed.replace(/\D/g, "").length;
-    return digitCount >= 7 && digitCount <= 15;
+  if (typeof value !== "string") return false;
+  const trimmed = value.trim();
+  if (trimmed.length < 7 || trimmed.length > 15) return false;
+  if (!PHONE_PATTERN.test(trimmed)) return false;
+  // '+' is only legal as the very first character (country code).
+  if (trimmed.slice(1).includes("+")) return false;
+  const digitCount = trimmed.replace(/\D/g, "").length;
+  return digitCount >= 7 && digitCount <= 15;
 }
 
 const phoneField = (requiredMessage = "Phone number is required") =>
-    yup
-        .string()
-        .required(requiredMessage)
-        .test("phone", "Phone number is not valid", (value) =>
-            isValidPhoneNumber(value)
-        );
+  yup
+    .string()
+    .required(requiredMessage)
+    .test("phone", "Phone number is not valid", (value) =>
+      isValidPhoneNumber(value),
+    );
 
 /**
  * Maximums below mirror the server schemas field-by-field (FE-45):
@@ -45,35 +45,84 @@ const phoneField = (requiredMessage = "Phone number is required") =>
  */
 
 export const shippingSchema = yup.object().shape({
-    firstName: yup.string().required("First name is required").min(2, "Minimum 2 characters").max(50, "Maximum 50 characters"),
-    lastName: yup.string().required("Last name is required").min(2, "Minimum 2 characters").max(50, "Maximum 50 characters"),
-    email: yup.string().email("Invalid email").required("Email is required").max(254, "Maximum 254 characters"),
-    phone: phoneField(),
-    addressLine1: yup.string().required("Street address is required").min(3, "Too short").max(200, "Maximum 200 characters"),
-    city: yup.string().required("City is required").min(2, "Too short").max(100, "Maximum 100 characters"),
-    postalCode: yup.string().required("ZIP code is required").min(4, "Too short").max(20, "Maximum 20 characters"),
-    country: yup.string().required("Country is required").min(2, "Too short").max(100, "Maximum 100 characters"),
+  firstName: yup
+    .string()
+    .required("First name is required")
+    .min(2, "Minimum 2 characters")
+    .max(50, "Maximum 50 characters"),
+  lastName: yup
+    .string()
+    .required("Last name is required")
+    .min(2, "Minimum 2 characters")
+    .max(50, "Maximum 50 characters"),
+  email: yup
+    .string()
+    .email("Invalid email")
+    .required("Email is required")
+    .max(254, "Maximum 254 characters"),
+  phone: phoneField(),
+  addressLine1: yup
+    .string()
+    .required("Street address is required")
+    .min(3, "Too short")
+    .max(200, "Maximum 200 characters"),
+  city: yup
+    .string()
+    .required("City is required")
+    .min(2, "Too short")
+    .max(100, "Maximum 100 characters"),
+  postalCode: yup
+    .string()
+    .required("ZIP code is required")
+    .min(4, "Too short")
+    .max(20, "Maximum 20 characters"),
+  country: yup
+    .string()
+    .required("Country is required")
+    .min(2, "Too short")
+    .max(100, "Maximum 100 characters"),
 });
 
-
-
 export const addressSchema = yup.object().shape({
-    fullName: yup.string().required("Full name is required").min(3, "Minimum 3 characters").max(100, "Maximum 100 characters"),
-    phone: phoneField(),
-    addressLine1: yup.string().required("Street address is required").min(3, "Too short").max(200, "Maximum 200 characters"),
-    addressLine2: yup.string().nullable().max(200, "Maximum 200 characters"),
-    city: yup.string().required("City is required").min(2, "Too short").max(100, "Maximum 100 characters"),
-    state: yup.string().nullable().max(100, "Maximum 100 characters"),
-    postalCode: yup.string().required("Postal code is required").min(4, "Too short").max(20, "Maximum 20 characters"),
-    country: yup.string().required("Country is required").min(2, "Too short").max(100, "Maximum 100 characters"),
-    label: yup.string().required(),
-    customLabel: yup.string().when("label", {
-        is: "other",
-        then: (schema) => schema.required("Custom label is required"),
-        otherwise: (schema) => schema.notRequired(),
-    }),
-    type: yup.string().oneOf(["delivery", "billing"]).required("Address type is required"),
-    isDefault: yup.boolean(),
+  fullName: yup
+    .string()
+    .required("Full name is required")
+    .min(3, "Minimum 3 characters")
+    .max(100, "Maximum 100 characters"),
+  phone: phoneField(),
+  addressLine1: yup
+    .string()
+    .required("Street address is required")
+    .min(3, "Too short")
+    .max(200, "Maximum 200 characters"),
+  addressLine2: yup.string().nullable().max(200, "Maximum 200 characters"),
+  city: yup
+    .string()
+    .required("City is required")
+    .min(2, "Too short")
+    .max(100, "Maximum 100 characters"),
+  state: yup.string().nullable().max(100, "Maximum 100 characters"),
+  postalCode: yup
+    .string()
+    .required("Postal code is required")
+    .min(4, "Too short")
+    .max(20, "Maximum 20 characters"),
+  country: yup
+    .string()
+    .required("Country is required")
+    .min(2, "Too short")
+    .max(100, "Maximum 100 characters"),
+  label: yup.string().required(),
+  customLabel: yup.string().when("label", {
+    is: "other",
+    then: (schema) => schema.required("Custom label is required"),
+    otherwise: (schema) => schema.notRequired(),
+  }),
+  type: yup
+    .string()
+    .oneOf(["delivery", "billing"])
+    .required("Address type is required"),
+  isDefault: yup.boolean(),
 });
 
 /**
@@ -87,23 +136,38 @@ export const addressSchema = yup.object().shape({
  * server; it now fails client-side with "Maximum 254 characters".
  */
 export const guestAddressSchema = addressSchema.shape({
-    email: yup.string().email("Invalid email").required("Email is required").max(254, "Maximum 254 characters"),
+  email: yup
+    .string()
+    .email("Invalid email")
+    .required("Email is required")
+    .max(254, "Maximum 254 characters"),
 });
 
 export const personalInfoSchema = yup.object().shape({
-    firstName: yup.string().required("First name is required").min(2, "Minimum 2 characters").max(50, "Maximum 50 characters"),
-    lastName: yup.string().required("Last name is required").min(2, "Minimum 2 characters").max(50, "Maximum 50 characters"),
-    phone: phoneField(),
-    // Server user.model gender enum includes "prefer_not_to_say".
-    gender: yup.string().oneOf(["male", "female", "other", "prefer_not_to_say"], "Invalid gender").nullable(),
-    // FE-45: the old .max(new Date()) froze "today" at module import;
-    // the future check is now evaluated on every validation.
-    dateOfBirth: yup
-        .date()
-        .nullable()
-        .test("not-in-future", "Date cannot be in the future", (value) =>
-            value == null ? true : value.getTime() <= Date.now()
-        ),
+  firstName: yup
+    .string()
+    .required("First name is required")
+    .min(2, "Minimum 2 characters")
+    .max(50, "Maximum 50 characters"),
+  lastName: yup
+    .string()
+    .required("Last name is required")
+    .min(2, "Minimum 2 characters")
+    .max(50, "Maximum 50 characters"),
+  phone: phoneField(),
+  // Server user.model gender enum includes "prefer_not_to_say".
+  gender: yup
+    .string()
+    .oneOf(["male", "female", "other", "prefer_not_to_say"], "Invalid gender")
+    .nullable(),
+  // FE-45: the old .max(new Date()) froze "today" at module import;
+  // the future check is now evaluated on every validation.
+  dateOfBirth: yup
+    .date()
+    .nullable()
+    .test("not-in-future", "Date cannot be in the future", (value) =>
+      value == null ? true : value.getTime() <= Date.now(),
+    ),
 });
 
 /**
@@ -114,37 +178,69 @@ export const personalInfoSchema = yup.object().shape({
  * `name` — the old schema's `fullName` was not a server field.
  */
 export const contactSchema = yup.object().shape({
-    name: yup.string().trim().required("Full name is required").min(1, "Name is required").max(100, "Maximum 100 characters"),
-    email: yup.string().trim().email("Invalid email").required("Email is required").max(254, "Maximum 254 characters"),
-    phone: yup.string().trim().max(20, "Maximum 20 characters").notRequired(),
-    subject: yup.string().trim().required("Subject is required").min(1, "Subject is required").max(200, "Maximum 200 characters"),
-    message: yup.string().trim().required("Message is required").min(1, "Message is required").max(5000, "Maximum 5000 characters"),
-    category: yup
-        .string()
-        .oneOf(["general", "support", "sales", "partnership", "feedback", "other"], "Invalid category")
-        .default("general"),
+  name: yup
+    .string()
+    .trim()
+    .required("Full name is required")
+    .min(1, "Name is required")
+    .max(100, "Maximum 100 characters"),
+  email: yup
+    .string()
+    .trim()
+    .email("Invalid email")
+    .required("Email is required")
+    .max(254, "Maximum 254 characters"),
+  phone: yup.string().trim().max(20, "Maximum 20 characters").notRequired(),
+  subject: yup
+    .string()
+    .trim()
+    .required("Subject is required")
+    .min(1, "Subject is required")
+    .max(200, "Maximum 200 characters"),
+  message: yup
+    .string()
+    .trim()
+    .required("Message is required")
+    .min(1, "Message is required")
+    .max(5000, "Maximum 5000 characters"),
+  category: yup
+    .string()
+    .oneOf(
+      ["general", "support", "sales", "partnership", "feedback", "other"],
+      "Invalid category",
+    )
+    .default("general"),
 });
 
 export const reviewSchema = yup.object().shape({
-    // Server review.validator: rating integer 1..5 — the old client
-    // rule had no maximum and no integer constraint (FE-45).
-    rating: yup
-        .number()
-        .required("Rating is required")
-        .integer("Rating must be a whole number")
-        .min(1, "Please select at least 1 star")
-        .max(5, "Rating cannot exceed 5"),
-    title: yup.string().max(100, "Title too long"),
-    comment: yup.string().required("Comment is required").min(10, "Comment too short").max(1000, "Comment cannot exceed 1000 characters"),
+  // Server review.validator: rating integer 1..5 — the old client
+  // rule had no maximum and no integer constraint (FE-45).
+  rating: yup
+    .number()
+    .required("Rating is required")
+    .integer("Rating must be a whole number")
+    .min(1, "Please select at least 1 star")
+    .max(5, "Rating cannot exceed 5"),
+  title: yup.string().max(100, "Title too long"),
+  comment: yup
+    .string()
+    .required("Comment is required")
+    .min(10, "Comment too short")
+    .max(1000, "Comment cannot exceed 1000 characters"),
 });
 
-
-
 export const trackOrderSchema = yup.object().shape({
-    orderId: yup.string().trim().required("Order ID is required"),
-    email: yup.string().email("Invalid email").trim().required("Email is required"),
+  orderId: yup.string().trim().required("Order ID is required"),
+  email: yup
+    .string()
+    .email("Invalid email")
+    .trim()
+    .required("Email is required"),
 });
 
 export const newsletterSchema = yup.object().shape({
-    email: yup.string().email("Invalid email address").required("Email is required"),
+  email: yup
+    .string()
+    .email("Invalid email address")
+    .required("Email is required"),
 });

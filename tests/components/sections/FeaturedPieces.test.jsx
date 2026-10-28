@@ -25,7 +25,12 @@ vi.mock("../../../src/hooks/product/useCategoryTan", () => ({
     data: {
       data: {
         categories: [
-          { _id: "c-lr", name: "Living Room", slug: "living-room", image: null },
+          {
+            _id: "c-lr",
+            name: "Living Room",
+            slug: "living-room",
+            image: null,
+          },
           { _id: "c-li", name: "Lighting", slug: "lighting", image: null },
         ],
       },
@@ -39,7 +44,9 @@ vi.mock("../../../src/hooks/useInView", () => ({
 }));
 
 vi.mock("../../../src/components/shop/ProductCard", () => ({
-  default: ({ product }) => <div data-testid="product-card">{product.name}</div>,
+  default: ({ product }) => (
+    <div data-testid="product-card">{product.name}</div>
+  ),
 }));
 
 import FeaturedPieces from "../../../src/components/sections/FeaturedPieces.jsx";
@@ -48,7 +55,7 @@ function renderSection() {
   return render(
     <MemoryRouter>
       <FeaturedPieces />
-    </MemoryRouter>
+    </MemoryRouter>,
   );
 }
 
@@ -66,14 +73,18 @@ describe("FeaturedPieces (uploaded variant)", () => {
     renderSection();
     expect(screen.getByText("Featured Products")).toBeInTheDocument();
     expect(screen.getByText("Handpicked for Your Home")).toBeInTheDocument();
-    expect(screen.getByRole("link", { name: /View All Products/ })).toHaveAttribute("href", "/shop");
+    expect(
+      screen.getByRole("link", { name: /View All Products/ }),
+    ).toHaveAttribute("href", "/shop");
   });
 
   it("has no category tabs and no paging arrows", () => {
     renderSection();
     expect(screen.queryByRole("button", { name: "All Products" })).toBeNull();
     expect(screen.queryByRole("button", { name: "Next products" })).toBeNull();
-    expect(screen.queryByRole("button", { name: "Previous products" })).toBeNull();
+    expect(
+      screen.queryByRole("button", { name: "Previous products" }),
+    ).toBeNull();
   });
 
   it("fetches a fixed two-row batch with no category filter", () => {
@@ -98,12 +109,12 @@ describe("FeaturedPieces (uploaded variant)", () => {
     // filters the shop to the three table categories.
     expect(screen.getByRole("link", { name: /Shop Tables/ })).toHaveAttribute(
       "href",
-      "/shop?categories=coffee-tables%2Cside-tables%2Cdining-tables"
+      "/shop?categories=coffee-tables%2Cside-tables%2Cdining-tables",
     );
     expect(screen.getByText(/Tables That/)).toBeInTheDocument();
     expect(screen.getByRole("link", { name: /Shop Lighting/ })).toHaveAttribute(
       "href",
-      "/shop?categories=lighting"
+      "/shop?categories=lighting",
     );
     expect(screen.getByText(/Lighting Collection/)).toBeInTheDocument();
   });

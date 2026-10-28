@@ -8,7 +8,10 @@
 //     disabled with out-of-stock styling
 // The parent owns the selection; this component only renders
 // and reports changes.
-import { optionValueStates, findVariantBySelection } from "../../utils/variantSelection";
+import {
+  optionValueStates,
+  findVariantBySelection,
+} from "../../utils/variantSelection";
 
 export default function VariantSelector({
   product,
@@ -28,7 +31,7 @@ export default function VariantSelector({
         const label = definition?.label || key;
         const values = states[key] || [];
         const hasOutOfStock = values.some(
-          (entry) => entry.exists && !entry.purchasable
+          (entry) => entry.exists && !entry.purchasable,
         );
         const hasUnavailable = values.some((entry) => !entry.exists);
         return (
@@ -83,7 +86,8 @@ export default function VariantSelector({
       })}
       {matched && (
         <p className="text-[13px] text-black/40">
-          SKU: <span className="font-semibold text-black/60">{matched.sku}</span>
+          SKU:{" "}
+          <span className="font-semibold text-black/60">{matched.sku}</span>
         </p>
       )}
     </div>

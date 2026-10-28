@@ -1,5 +1,11 @@
 import { describe, it, expect, vi, beforeEach } from "vitest";
-import { render, screen, fireEvent, within, waitFor } from "@testing-library/react";
+import {
+  render,
+  screen,
+  fireEvent,
+  within,
+  waitFor,
+} from "@testing-library/react";
 import { MemoryRouter } from "react-router-dom";
 
 // FE-38 — the admin Orders table's 'View details' eye button rendered
@@ -66,9 +72,18 @@ beforeEach(() => {
     isLoading: false,
     error: null,
   });
-  useUpdateOrderStatus.mockReturnValue({ mutateAsync: vi.fn(), isPending: false });
-  useProcessReturnRequest.mockReturnValue({ mutateAsync: vi.fn(), isPending: false });
-  useOrderAdmin.mockReturnValue({ data: { data: { order } }, isLoading: false });
+  useUpdateOrderStatus.mockReturnValue({
+    mutateAsync: vi.fn(),
+    isPending: false,
+  });
+  useProcessReturnRequest.mockReturnValue({
+    mutateAsync: vi.fn(),
+    isPending: false,
+  });
+  useOrderAdmin.mockReturnValue({
+    data: { data: { order } },
+    isLoading: false,
+  });
 });
 
 describe("Admin Orders 'View details' (FE-38)", () => {
@@ -76,7 +91,7 @@ describe("Admin Orders 'View details' (FE-38)", () => {
     render(
       <MemoryRouter>
         <Orders />
-      </MemoryRouter>
+      </MemoryRouter>,
     );
     expect(screen.queryByRole("dialog")).not.toBeInTheDocument();
 
@@ -89,14 +104,17 @@ describe("Admin Orders 'View details' (FE-38)", () => {
     expect(within(dialog).getByText(/Kathmandu/)).toBeInTheDocument();
     expect(within(dialog).getByText(/asha@example\.com/)).toBeInTheDocument();
     // The detail hook was driven with this order's id.
-    expect(useOrderAdmin).toHaveBeenCalledWith(order._id, expect.objectContaining({ enabled: true }));
+    expect(useOrderAdmin).toHaveBeenCalledWith(
+      order._id,
+      expect.objectContaining({ enabled: true }),
+    );
   });
 
   it("the details dialog closes again", async () => {
     render(
       <MemoryRouter>
         <Orders />
-      </MemoryRouter>
+      </MemoryRouter>,
     );
     fireEvent.click(screen.getByTitle("View details"));
     const dialog = screen.getByRole("dialog");
@@ -105,7 +123,7 @@ describe("Admin Orders 'View details' (FE-38)", () => {
     // through the exit animation before the node leaves the DOM —
     // await the same assertion instead of weakening it.
     await waitFor(() =>
-      expect(screen.queryByRole("dialog")).not.toBeInTheDocument()
+      expect(screen.queryByRole("dialog")).not.toBeInTheDocument(),
     );
   });
 });

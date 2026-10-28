@@ -12,7 +12,7 @@ const renderOverview = (props) =>
   render(
     <MemoryRouter>
       <SupportOverview {...props} />
-    </MemoryRouter>
+    </MemoryRouter>,
   );
 
 describe("SupportOverview (FE-14)", () => {
@@ -38,7 +38,12 @@ describe("SupportOverview (FE-14)", () => {
 
   it("renders real stats unchanged when data is provided", () => {
     renderOverview({
-      stats: { openConversations: 3, waitingForHuman: 1, urgent: 0, aiResolved: 9 },
+      stats: {
+        openConversations: 3,
+        waitingForHuman: 1,
+        urgent: 0,
+        aiResolved: 9,
+      },
     });
 
     expect(screen.getByText("Open Conversations")).toBeInTheDocument();
@@ -49,6 +54,8 @@ describe("SupportOverview (FE-14)", () => {
     expect(screen.getByText("0")).toBeInTheDocument();
     expect(screen.getByText("AI Resolved")).toBeInTheDocument();
     expect(screen.getByText("9")).toBeInTheDocument();
-    expect(screen.queryByText("No support data available")).not.toBeInTheDocument();
+    expect(
+      screen.queryByText("No support data available"),
+    ).not.toBeInTheDocument();
   });
 });

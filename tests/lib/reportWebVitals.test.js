@@ -1,5 +1,8 @@
 import { describe, it, expect, vi, afterEach } from "vitest";
-import { isWebVitalsEnabled, reportWebVitals } from "../../src/lib/reportWebVitals";
+import {
+  isWebVitalsEnabled,
+  reportWebVitals,
+} from "../../src/lib/reportWebVitals";
 
 // Phase 8 (PERF-F-008): the flag-off path must be a strict no-op —
 // main.jsx calls reportWebVitals() unconditionally, and the web-vitals

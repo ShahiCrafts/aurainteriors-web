@@ -30,11 +30,15 @@ vi.mock("../../../src/hooks/admin/useAdminNotificationSocket", () => ({
 
 vi.mock("../../../src/api/notificationApi", () => ({
   default: {
-    getNotifications: vi.fn(async () => ({ data: { notifications: hoisted.notifications } })),
+    getNotifications: vi.fn(async () => ({
+      data: { notifications: hoisted.notifications },
+    })),
     // FE-24: the bell now also fetches the unread count on mount and
     // can mark multiple as read; the mock surface covers both.
     getUnreadCount: vi.fn(async () => ({
-      data: { unreadCount: hoisted.notifications.filter((n) => !n.isRead).length },
+      data: {
+        unreadCount: hoisted.notifications.filter((n) => !n.isRead).length,
+      },
     })),
     markMultipleAsRead: vi.fn(async () => ({})),
     markAsRead: hoisted.markAsRead,
@@ -48,8 +52,12 @@ import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 // (useNotificationsTan), so renders need a provider. retry:false keeps
 // the deferred/rejected fetch tests deterministic.
 const renderBell = (ui) => {
-  const client = new QueryClient({ defaultOptions: { queries: { retry: false }, mutations: { retry: false } } });
-  return render(<QueryClientProvider client={client}>{ui}</QueryClientProvider>);
+  const client = new QueryClient({
+    defaultOptions: { queries: { retry: false }, mutations: { retry: false } },
+  });
+  return render(
+    <QueryClientProvider client={client}>{ui}</QueryClientProvider>,
+  );
 };
 
 const USER = { _id: "admin-1", role: "admin" };
@@ -111,7 +119,9 @@ describe("FE-04 NotificationBell actionUrl consumption", () => {
       data: { orderId: "ord42" },
     });
     await waitFor(() =>
-      expect(hoisted.navigate).toHaveBeenCalledWith("/dashboard/orders?highlight=ord42")
+      expect(hoisted.navigate).toHaveBeenCalledWith(
+        "/dashboard/orders?highlight=ord42",
+      ),
     );
   });
 
@@ -125,8 +135,8 @@ describe("FE-04 NotificationBell actionUrl consumption", () => {
     });
     await waitFor(() =>
       expect(hoisted.navigate).toHaveBeenCalledWith(
-        "/dashboard/orders?status=open&highlight=a%26highlight%3Dpwn"
-      )
+        "/dashboard/orders?status=open&highlight=a%26highlight%3Dpwn",
+      ),
     );
   });
 });

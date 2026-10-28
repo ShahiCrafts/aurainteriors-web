@@ -252,25 +252,28 @@ export default function Contacts() {
                     key={contact._id}
                     initial={{ opacity: 0 }}
                     animate={{ opacity: 1 }}
-                    className={`hover:bg-gray-50/50 transition-colors ${!contact.isRead ? "bg-teal-50/20" : ""
-                      }`}
+                    className={`hover:bg-gray-50/50 transition-colors ${
+                      !contact.isRead ? "bg-teal-50/20" : ""
+                    }`}
                   >
                     <td className="px-6 py-4">
                       <div className="flex items-center gap-3">
                         <div
-                          className={`w-8 h-8 rounded-full flex items-center justify-center font-bold text-xs ${!contact.isRead
-                            ? "bg-teal-100 text-teal-700"
-                            : "bg-gray-100 text-gray-500"
-                            }`}
+                          className={`w-8 h-8 rounded-full flex items-center justify-center font-bold text-xs ${
+                            !contact.isRead
+                              ? "bg-teal-100 text-teal-700"
+                              : "bg-gray-100 text-gray-500"
+                          }`}
                         >
-                          {(contact.name || '?')[0].toUpperCase()}
+                          {(contact.name || "?")[0].toUpperCase()}
                         </div>
                         <div className="min-w-0">
                           <p
-                            className={`text-sm truncate ${!contact.isRead
-                              ? "font-bold text-gray-900"
-                              : "font-medium text-gray-700"
-                              }`}
+                            className={`text-sm truncate ${
+                              !contact.isRead
+                                ? "font-bold text-gray-900"
+                                : "font-medium text-gray-700"
+                            }`}
                           >
                             {contact.name}
                           </p>
@@ -283,10 +286,11 @@ export default function Contacts() {
                     <td className="px-6 py-4">
                       <div className="max-w-[200px]">
                         <p
-                          className={`text-sm truncate ${!contact.isRead
-                            ? "text-gray-900 font-semibold"
-                            : "text-gray-600"
-                            }`}
+                          className={`text-sm truncate ${
+                            !contact.isRead
+                              ? "text-gray-900 font-semibold"
+                              : "text-gray-600"
+                          }`}
                         >
                           {contact.subject}
                         </p>
@@ -305,7 +309,7 @@ export default function Contacts() {
                           handleUpdateStatus(contact._id, e.target.value)
                         }
                         className={`text-[10px] font-bold uppercase tracking-wider px-2.5 py-1 rounded-full border-0 cursor-pointer outline-none ${getStatusStyle(
-                          contact.status
+                          contact.status,
                         )}`}
                       >
                         <option value="new">New</option>
@@ -351,13 +355,14 @@ export default function Contacts() {
                               isRead: !contact.isRead,
                             });
                             toast.success(
-                              `Marked as ${contact.isRead ? "unread" : "read"}`
+                              `Marked as ${contact.isRead ? "unread" : "read"}`,
                             );
                           }}
-                          className={`p-2 rounded-lg transition-colors ${!contact.isRead
-                            ? "text-teal-600 hover:bg-teal-50"
-                            : "text-gray-400 hover:bg-gray-100"
-                            }`}
+                          className={`p-2 rounded-lg transition-colors ${
+                            !contact.isRead
+                              ? "text-teal-600 hover:bg-teal-50"
+                              : "text-gray-400 hover:bg-gray-100"
+                          }`}
                         >
                           {contact.isRead ? (
                             <MailOpen size={16} />
@@ -403,7 +408,7 @@ export default function Contacts() {
             <div className="space-y-6">
               <div className="flex items-center gap-4 p-4 bg-gray-50 rounded-xl">
                 <div className="w-12 h-12 bg-white rounded-full flex items-center justify-center border border-gray-200 shadow-sm text-teal-600 font-bold">
-                  {(selectedContact.name || '?')[0]}
+                  {(selectedContact.name || "?")[0]}
                 </div>
                 <div>
                   <p className="text-sm font-bold text-gray-900">
@@ -429,7 +434,7 @@ export default function Contacts() {
                           : "text-blue-500"
                       }
                     />
-                    {(selectedContact.priority || '').toUpperCase()}
+                    {(selectedContact.priority || "").toUpperCase()}
                   </div>
                 </div>
                 <div className="p-3 border border-gray-100 rounded-lg">
@@ -438,7 +443,11 @@ export default function Contacts() {
                   </p>
                   <div className="flex items-center gap-2 text-xs font-semibold">
                     <Clock size={14} className="text-gray-400" />
-                    {formatTime(selectedContact.createdAt, { hour: '2-digit', minute: '2-digit', second: '2-digit' })}
+                    {formatTime(selectedContact.createdAt, {
+                      hour: "2-digit",
+                      minute: "2-digit",
+                      second: "2-digit",
+                    })}
                   </div>
                 </div>
               </div>
@@ -569,19 +578,24 @@ function Modal({ title, children, onClose }) {
         onClick={(e) => e.stopPropagation()}
         className="w-full max-w-lg"
       >
-       <Dialog open onClose={onClose} label={title} className="bg-white rounded-xl max-w-lg w-full p-6 shadow-2xl border border-gray-100">
-        <div className="flex items-center justify-between mb-6">
-          <h3 className="text-lg font-bold text-gray-900">{title}</h3>
-          <button
-            onClick={onClose}
-            aria-label="Close dialog"
-            className="p-2 hover:bg-gray-100 rounded-lg transition-colors"
-          >
-            <X className="w-5 h-5 text-gray-400" />
-          </button>
-        </div>
-        {children}
-       </Dialog>
+        <Dialog
+          open
+          onClose={onClose}
+          label={title}
+          className="bg-white rounded-xl max-w-lg w-full p-6 shadow-2xl border border-gray-100"
+        >
+          <div className="flex items-center justify-between mb-6">
+            <h3 className="text-lg font-bold text-gray-900">{title}</h3>
+            <button
+              onClick={onClose}
+              aria-label="Close dialog"
+              className="p-2 hover:bg-gray-100 rounded-lg transition-colors"
+            >
+              <X className="w-5 h-5 text-gray-400" />
+            </button>
+          </div>
+          {children}
+        </Dialog>
       </motion.div>
     </motion.div>
   );

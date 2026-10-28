@@ -3,11 +3,15 @@ import useCheckoutStore from "../../store/checkoutStore";
 import { useShallow } from "zustand/react/shallow";
 
 export default function PaymentStep() {
-  const { paymentMethod, setPaymentMethod } = useCheckoutStore(useShallow((state) => ({ paymentMethod: state.paymentMethod, setPaymentMethod: state.setPaymentMethod })));
+  const { paymentMethod, setPaymentMethod } = useCheckoutStore(
+    useShallow((state) => ({
+      paymentMethod: state.paymentMethod,
+      setPaymentMethod: state.setPaymentMethod,
+    })),
+  );
 
   return (
     <div className="space-y-8 font-dm-sans">
-
       {/* Payment Options */}
       <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
         {/* eSewa Option */}
@@ -55,14 +59,14 @@ export default function PaymentStep() {
           }`}
         >
           <div
-  className={`w-11 h-11 rounded-full flex items-center justify-center shrink-0 transition-colors ${
-    paymentMethod === "cod"
-      ? "bg-[#F27318] text-white"
-      : "bg-neutral-100 text-neutral-400"
-  }`}
->
-  <Banknote size={20} strokeWidth={2.2} />
-</div>
+            className={`w-11 h-11 rounded-full flex items-center justify-center shrink-0 transition-colors ${
+              paymentMethod === "cod"
+                ? "bg-[#F27318] text-white"
+                : "bg-neutral-100 text-neutral-400"
+            }`}
+          >
+            <Banknote size={20} strokeWidth={2.2} />
+          </div>
 
           <div className="flex-1 min-w-0">
             <p className="text-[16px] font-semibold text-[#1A1714]">

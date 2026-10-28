@@ -1,5 +1,11 @@
 import { describe, it, expect, vi, beforeEach } from "vitest";
-import { render, screen, within, fireEvent, waitFor } from "@testing-library/react";
+import {
+  render,
+  screen,
+  within,
+  fireEvent,
+  waitFor,
+} from "@testing-library/react";
 
 // Phase 7 characterization — written BEFORE the Products.jsx split
 // against the unsplit page. Pins the create (simple) / edit submit
@@ -40,30 +46,60 @@ const PRODUCT = {
 vi.mock("../../../src/hooks/product/useProductTan", () => ({
   useProducts: (params = {}) => {
     if (params.limit === 1) {
-      return { data: { data: { products: [], pagination: { total: 1, pages: 1, page: 1, limit: 1 } } }, isLoading: false };
+      return {
+        data: {
+          data: {
+            products: [],
+            pagination: { total: 1, pages: 1, page: 1, limit: 1 },
+          },
+        },
+        isLoading: false,
+      };
     }
     return {
-      data: { data: { products: [PRODUCT], pagination: { total: 1, pages: 1, page: params.page || 1, limit: params.limit || 10 } } },
+      data: {
+        data: {
+          products: [PRODUCT],
+          pagination: {
+            total: 1,
+            pages: 1,
+            page: params.page || 1,
+            limit: params.limit || 10,
+          },
+        },
+      },
       isLoading: false,
     };
   },
   useCreateProduct: () => ({ mutateAsync: createMutate, isPending: false }),
   useUpdateProduct: () => ({ mutateAsync: updateMutate, isPending: false }),
-  useDeleteProduct: () => ({ mutateAsync: vi.fn().mockResolvedValue({}), isPending: false }),
+  useDeleteProduct: () => ({
+    mutateAsync: vi.fn().mockResolvedValue({}),
+    isPending: false,
+  }),
 }));
 
 vi.mock("../../../src/hooks/product/useCategoryTan", () => ({
-  useCategories: () => ({ data: { data: { categories: [{ _id: "cat-1", name: "Sofas" }] } } }),
+  useCategories: () => ({
+    data: { data: { categories: [{ _id: "cat-1", name: "Sofas" }] } },
+  }),
 }));
 
 // Stable result objects (React Query returns cached references;
 // a fresh object per call would re-fire DynamicAttributesSection's
 // onChange effect forever).
 const CATALOG_STABLE = vi.hoisted(() => ({
-  productTypes: { data: { data: { productTypes: [{ key: "sofa", label: "Sofa" }] } } },
-  rooms: { data: { data: { rooms: [{ slug: "living-room", label: "Living Room" }] } } },
+  productTypes: {
+    data: { data: { productTypes: [{ key: "sofa", label: "Sofa" }] } },
+  },
+  rooms: {
+    data: { data: { rooms: [{ slug: "living-room", label: "Living Room" }] } },
+  },
   emptyAttributes: { data: { data: { attributes: [] } }, isLoading: false },
-  definitions: { data: { data: { attributeDefinitions: [] } }, isLoading: false },
+  definitions: {
+    data: { data: { attributeDefinitions: [] } },
+    isLoading: false,
+  },
 }));
 
 vi.mock("../../../src/hooks/catalog/useCatalogTan", () => ({
@@ -72,10 +108,22 @@ vi.mock("../../../src/hooks/catalog/useCatalogTan", () => ({
   useCategoryAttributes: () => CATALOG_STABLE.emptyAttributes,
   useProductTypeAttributes: () => CATALOG_STABLE.emptyAttributes,
   useAttributeDefinitions: () => CATALOG_STABLE.definitions,
-  useProductVariants: () => ({ data: { data: { variants: [] } }, isLoading: false }),
-  useCreateVariant: () => ({ mutateAsync: vi.fn().mockResolvedValue({}), isPending: false }),
-  useUpdateVariant: () => ({ mutateAsync: vi.fn().mockResolvedValue({}), isPending: false }),
-  useDeleteVariant: () => ({ mutateAsync: vi.fn().mockResolvedValue({}), isPending: false }),
+  useProductVariants: () => ({
+    data: { data: { variants: [] } },
+    isLoading: false,
+  }),
+  useCreateVariant: () => ({
+    mutateAsync: vi.fn().mockResolvedValue({}),
+    isPending: false,
+  }),
+  useUpdateVariant: () => ({
+    mutateAsync: vi.fn().mockResolvedValue({}),
+    isPending: false,
+  }),
+  useDeleteVariant: () => ({
+    mutateAsync: vi.fn().mockResolvedValue({}),
+    isPending: false,
+  }),
 }));
 
 vi.mock("../../../src/components/fallbacks/ImageWithFallback", () => ({
@@ -121,12 +169,20 @@ describe("Admin Products form submission (Phase 7 characterization)", () => {
 
   it("creates a simple product with the exact payload shape", async () => {
     const dialog = openCreate();
-    fireEvent.change(fieldByLabel(dialog, "Product Name *"), { target: { value: "New Chair" } });
-    fireEvent.change(fieldByLabel(dialog, "Category *"), { target: { value: "cat-1" } });
-    fireEvent.change(fieldByLabel(dialog, "Price *"), { target: { value: "2500" } });
+    fireEvent.change(fieldByLabel(dialog, "Product Name *"), {
+      target: { value: "New Chair" },
+    });
+    fireEvent.change(fieldByLabel(dialog, "Category *"), {
+      target: { value: "cat-1" },
+    });
+    fireEvent.change(fieldByLabel(dialog, "Price *"), {
+      target: { value: "2500" },
+    });
     fireEvent.change(fieldByLabel(dialog, "Stock"), { target: { value: "7" } });
 
-    fireEvent.click(within(dialog).getByRole("button", { name: "Add Product" }));
+    fireEvent.click(
+      within(dialog).getByRole("button", { name: "Add Product" }),
+    );
 
     await waitFor(() => expect(createMutate).toHaveBeenCalledTimes(1));
     expect(createMutate).toHaveBeenCalledWith({
@@ -151,7 +207,9 @@ describe("Admin Products form submission (Phase 7 characterization)", () => {
     expect(price.value).toBe("1000");
     fireEvent.change(price, { target: { value: "1500" } });
 
-    fireEvent.click(within(dialog).getByRole("button", { name: "Update Product" }));
+    fireEvent.click(
+      within(dialog).getByRole("button", { name: "Update Product" }),
+    );
 
     await waitFor(() => expect(updateMutate).toHaveBeenCalledTimes(1));
     const call = updateMutate.mock.calls[0][0];
@@ -180,12 +238,22 @@ describe("Admin Products form submission (Phase 7 characterization)", () => {
     fireEvent.change(input, { target: { files: [file] } });
 
     // FileReader preview lands in the form state (label count chip).
-    await waitFor(() => expect(within(dialog).getByText(/\(1 image\)/)).toBeInTheDocument());
+    await waitFor(() =>
+      expect(within(dialog).getByText(/\(1 image\)/)).toBeInTheDocument(),
+    );
 
-    fireEvent.change(fieldByLabel(dialog, "Product Name *"), { target: { value: "Imaged Chair" } });
-    fireEvent.change(fieldByLabel(dialog, "Category *"), { target: { value: "cat-1" } });
-    fireEvent.change(fieldByLabel(dialog, "Price *"), { target: { value: "900" } });
-    fireEvent.click(within(dialog).getByRole("button", { name: "Add Product" }));
+    fireEvent.change(fieldByLabel(dialog, "Product Name *"), {
+      target: { value: "Imaged Chair" },
+    });
+    fireEvent.change(fieldByLabel(dialog, "Category *"), {
+      target: { value: "cat-1" },
+    });
+    fireEvent.change(fieldByLabel(dialog, "Price *"), {
+      target: { value: "900" },
+    });
+    fireEvent.click(
+      within(dialog).getByRole("button", { name: "Add Product" }),
+    );
 
     await waitFor(() => expect(createMutate).toHaveBeenCalledTimes(1));
     const payload = createMutate.mock.calls[0][0];
@@ -196,12 +264,18 @@ describe("Admin Products form submission (Phase 7 characterization)", () => {
     const dialog = openEdit();
     // The existing preview's remove button appears on hover (opacity-0
     // class) but is present in the DOM.
-    const removeButtons = dialog.querySelectorAll('button[title="Remove image"]');
+    const removeButtons = dialog.querySelectorAll(
+      'button[title="Remove image"]',
+    );
     expect(removeButtons.length).toBe(1);
     fireEvent.click(removeButtons[0]);
 
-    fireEvent.click(within(dialog).getByRole("button", { name: "Update Product" }));
+    fireEvent.click(
+      within(dialog).getByRole("button", { name: "Update Product" }),
+    );
     await waitFor(() => expect(updateMutate).toHaveBeenCalledTimes(1));
-    expect(updateMutate.mock.calls[0][0].data.removeImages).toEqual(["https://example.com/sofa.jpg"]);
+    expect(updateMutate.mock.calls[0][0].data.removeImages).toEqual([
+      "https://example.com/sofa.jpg",
+    ]);
   });
 });

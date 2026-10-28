@@ -1,15 +1,15 @@
 import { formatDate } from "../../utils/formatDate";
 import { useState, useEffect, useRef } from "react";
-import { 
-  FileText, 
-  Upload, 
-  Trash2, 
-  RefreshCw, 
-  CheckCircle, 
-  AlertCircle, 
+import {
+  FileText,
+  Upload,
+  Trash2,
+  RefreshCw,
+  CheckCircle,
+  AlertCircle,
   Database,
   CloudLightning,
-  AlertTriangle
+  AlertTriangle,
 } from "lucide-react";
 import { TableSkeleton } from "../../components/common/Skeleton";
 import Pagination from "../../components/common/Pagination";
@@ -17,7 +17,7 @@ import {
   listDocuments,
   uploadDocument,
   deleteDocument,
-  retryDocument
+  retryDocument,
 } from "../../api/documentApi";
 import { validateMediaUrl } from "../../utils/safeUrl";
 
@@ -81,7 +81,9 @@ const KnowledgeBase = () => {
       setUploading(true);
       setError(null);
       await uploadDocument(file);
-      setSuccessMsg("Document uploaded successfully. Indexing started in background.");
+      setSuccessMsg(
+        "Document uploaded successfully. Indexing started in background.",
+      );
       fetchDocs(page);
       setTimeout(() => setSuccessMsg(null), 5000);
     } catch (err) {
@@ -100,7 +102,12 @@ const KnowledgeBase = () => {
   // Handle document deletion
   const handleDelete = async (id) => {
     if (deletingRef.current) return;
-    if (!window.confirm("Are you sure you want to delete this document? All vector indexes will be removed.")) return;
+    if (
+      !window.confirm(
+        "Are you sure you want to delete this document? All vector indexes will be removed.",
+      )
+    )
+      return;
     deletingRef.current = id;
     setDeletingId(id);
     try {
@@ -165,7 +172,7 @@ const KnowledgeBase = () => {
     } catch (err) {
       if (err?.response?.status === 404 || err?.status === 404) {
         setPartialDelete((prev) =>
-          prev ? { ...prev, recordGone: true, retryError: null } : prev
+          prev ? { ...prev, recordGone: true, retryError: null } : prev,
         );
       } else {
         setPartialDelete((prev) =>
@@ -174,7 +181,7 @@ const KnowledgeBase = () => {
                 ...prev,
                 retryError: err.displayMessage || "Cleanup retry failed",
               }
-            : prev
+            : prev,
         );
       }
     } finally {
@@ -199,22 +206,27 @@ const KnowledgeBase = () => {
       {/* Title Header */}
       <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
         <div>
-          <h1 className="text-2xl font-bold text-gray-900 tracking-tight">AI Knowledge Base</h1>
+          <h1 className="text-2xl font-bold text-gray-900 tracking-tight">
+            AI Knowledge Base
+          </h1>
           <p className="text-gray-500 mt-1 text-sm">
-            Upload files (PDF, DOCX, TXT, CSV) to embed and ingest into the RAG chatbot pipeline.
+            Upload files (PDF, DOCX, TXT, CSV) to embed and ingest into the RAG
+            chatbot pipeline.
           </p>
         </div>
 
         {/* Upload Button */}
-        <label className={`flex items-center gap-2 px-5 py-3 bg-teal-600 hover:bg-teal-700 text-white rounded-xl font-medium shadow-sm transition-all duration-200 cursor-pointer ${uploading ? "opacity-75 cursor-not-allowed" : ""}`}>
+        <label
+          className={`flex items-center gap-2 px-5 py-3 bg-teal-600 hover:bg-teal-700 text-white rounded-xl font-medium shadow-sm transition-all duration-200 cursor-pointer ${uploading ? "opacity-75 cursor-not-allowed" : ""}`}
+        >
           <Upload className="w-5 h-5" />
           <span>{uploading ? "Uploading..." : "Upload File"}</span>
-          <input 
-            type="file" 
-            accept=".pdf,.docx,.txt,.csv" 
-            className="hidden" 
-            onChange={handleUpload} 
-            disabled={uploading} 
+          <input
+            type="file"
+            accept=".pdf,.docx,.txt,.csv"
+            className="hidden"
+            onChange={handleUpload}
+            disabled={uploading}
           />
         </label>
       </div>
@@ -298,8 +310,12 @@ const KnowledgeBase = () => {
             <Database className="w-6 h-6" />
           </div>
           <div>
-            <p className="text-gray-400 text-xs font-bold uppercase tracking-wider">Total Documents</p>
-            <p className="text-2xl font-bold text-gray-900 mt-1">{documents.length}</p>
+            <p className="text-gray-400 text-xs font-bold uppercase tracking-wider">
+              Total Documents
+            </p>
+            <p className="text-2xl font-bold text-gray-900 mt-1">
+              {documents.length}
+            </p>
           </div>
         </div>
 
@@ -308,9 +324,11 @@ const KnowledgeBase = () => {
             <CheckCircle className="w-6 h-6" />
           </div>
           <div>
-            <p className="text-gray-400 text-xs font-bold uppercase tracking-wider">Indexed Active</p>
+            <p className="text-gray-400 text-xs font-bold uppercase tracking-wider">
+              Indexed Active
+            </p>
             <p className="text-2xl font-bold text-gray-900 mt-1">
-              {documents.filter(d => d.status === "indexed").length}
+              {documents.filter((d) => d.status === "indexed").length}
             </p>
           </div>
         </div>
@@ -320,9 +338,15 @@ const KnowledgeBase = () => {
             <CloudLightning className="w-6 h-6" />
           </div>
           <div>
-            <p className="text-gray-400 text-xs font-bold uppercase tracking-wider">Processing / Pending</p>
+            <p className="text-gray-400 text-xs font-bold uppercase tracking-wider">
+              Processing / Pending
+            </p>
             <p className="text-2xl font-bold text-gray-900 mt-1">
-              {documents.filter(d => ["pending", "processing"].includes(d.status)).length}
+              {
+                documents.filter((d) =>
+                  ["pending", "processing"].includes(d.status),
+                ).length
+              }
             </p>
           </div>
         </div>
@@ -332,8 +356,8 @@ const KnowledgeBase = () => {
       <div className="bg-white rounded-xl border border-gray-100 shadow-sm overflow-hidden">
         <div className="px-6 py-5 border-b border-gray-100 flex items-center justify-between">
           <h3 className="font-bold text-gray-900">Knowledge Files</h3>
-          <button 
-            onClick={() => fetchDocs(page)} 
+          <button
+            onClick={() => fetchDocs(page)}
             className="p-2 hover:bg-gray-50 rounded-lg text-gray-400 hover:text-gray-600 transition-colors"
           >
             <RefreshCw className="w-4 h-4" />
@@ -349,9 +373,12 @@ const KnowledgeBase = () => {
             <div className="w-16 h-16 rounded-full bg-gray-50 flex items-center justify-center mb-4">
               <FileText className="w-8 h-8 text-gray-400" />
             </div>
-            <h4 className="font-bold text-gray-900 text-lg">No documents uploaded yet</h4>
+            <h4 className="font-bold text-gray-900 text-lg">
+              No documents uploaded yet
+            </h4>
             <p className="text-gray-500 text-sm max-w-sm mt-2">
-              Upload store policies, FAQs, shipping rates, and refund guides to train your AI support agent.
+              Upload store policies, FAQs, shipping rates, and refund guides to
+              train your AI support agent.
             </p>
           </div>
         ) : (
@@ -368,7 +395,10 @@ const KnowledgeBase = () => {
               </thead>
               <tbody className="divide-y divide-gray-100">
                 {documents.map((doc) => (
-                  <tr key={doc._id} className="hover:bg-gray-50/30 transition-colors">
+                  <tr
+                    key={doc._id}
+                    className="hover:bg-gray-50/30 transition-colors"
+                  >
                     <td className="px-6 py-4">
                       <div className="flex items-center gap-3">
                         <div className="w-10 h-10 rounded-lg bg-teal-50/50 text-teal-600 flex items-center justify-center shrink-0">
@@ -376,9 +406,14 @@ const KnowledgeBase = () => {
                         </div>
                         <div className="min-w-0">
                           <a
-                            href={validateMediaUrl(doc.fileUrl, { fallback: "#", allowedHosts: ["res.cloudinary.com"] }) || "#"}
-                            target="_blank" 
-                            rel="noopener noreferrer" 
+                            href={
+                              validateMediaUrl(doc.fileUrl, {
+                                fallback: "#",
+                                allowedHosts: ["res.cloudinary.com"],
+                              }) || "#"
+                            }
+                            target="_blank"
+                            rel="noopener noreferrer"
                             className="font-bold text-gray-900 hover:text-teal-600 truncate block text-sm"
                           >
                             {doc.fileName}
@@ -431,7 +466,7 @@ const KnowledgeBase = () => {
                     <td className="px-6 py-4 text-right">
                       <div className="flex justify-end gap-2">
                         {doc.status === "failed" && (
-                          <button 
+                          <button
                             onClick={() => handleRetry(doc._id)}
                             title="Retry Indexing"
                             className="p-2 hover:bg-gray-100 text-teal-600 hover:text-teal-700 rounded-lg transition-colors"
@@ -439,7 +474,7 @@ const KnowledgeBase = () => {
                             <RefreshCw className="w-4 h-4" />
                           </button>
                         )}
-                        <button 
+                        <button
                           onClick={() => handleDelete(doc._id)}
                           disabled={deletingId === doc._id}
                           title="Delete Document"

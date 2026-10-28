@@ -84,39 +84,33 @@ export default function ContactPage() {
     // ({name, email, phone, subject, message, category}) — the old
     // payload sent BOTH `name` and the non-schema `fullName` plus
     // every other form key, and never sent a category at all.
-    submitContact(
-      buildContactPayload(data),
-      {
-        onSuccess: () => {
-          toast.success("Message sent successfully! We'll get back to you soon.");
-          reset();
-          window.scrollTo({ top: 0, behavior: "smooth" });
-        },
-        onError: (error) => {
-          toast.error(error.response?.data?.message || "Failed to send message.");
-        },
-      }
-    );
+    submitContact(buildContactPayload(data), {
+      onSuccess: () => {
+        toast.success("Message sent successfully! We'll get back to you soon.");
+        reset();
+        window.scrollTo({ top: 0, behavior: "smooth" });
+      },
+      onError: (error) => {
+        toast.error(error.response?.data?.message || "Failed to send message.");
+      },
+    });
   };
 
   return (
     <>
       <Navbar />
       <main className="min-h-screen bg-white font-dm-sans">
-
         {/* Full Width Split Layout - Responsive */}
         <div className="flex flex-col lg:flex-row min-h-screen pt-24 sm:pt-28 lg:pt-16 items-center justify-center gap-10 sm:gap-12 lg:gap-8 xl:gap-16 max-w-7xl mx-auto px-6 sm:px-8 lg:px-8 py-12 sm:py-14 lg:py-0">
-
           {/* Left Column: Info */}
           <div className="w-full lg:w-[45%] xl:w-[40%] flex flex-col justify-center text-center lg:text-left">
-
             <div className="max-w-md mx-auto lg:mx-0 lg:ml-auto w-full">
-
               <h1 className="text-4xl sm:text-5xl md:text-6xl lg:text-5xl font-light text-zinc-900 mb-3 sm:mb-4 tracking-tight font-playfair">
                 Get in <span className="italic text-teal-700">Touch.</span>
               </h1>
               <p className="text-zinc-600 text-base sm:text-lg max-w-sm mx-auto lg:mx-0 leading-relaxed font-dm-sans">
-                We are here to help. Reach out using the form or via our direct channels.
+                We are here to help. Reach out using the form or via our direct
+                channels.
               </p>
             </div>
 
@@ -127,8 +121,12 @@ export default function ContactPage() {
                     <Mail size={20} className="sm:w-[22px] sm:h-[22px]" />
                   </div>
                   <div className="text-left">
-                    <p className="text-xs text-zinc-500 uppercase tracking-wider font-bold mb-0.5">Email</p>
-                    <p className="text-base sm:text-lg font-medium text-gray-900">support@aurainteriors.live</p>
+                    <p className="text-xs text-zinc-500 uppercase tracking-wider font-bold mb-0.5">
+                      Email
+                    </p>
+                    <p className="text-base sm:text-lg font-medium text-gray-900">
+                      support@aurainteriors.live
+                    </p>
                   </div>
                 </div>
 
@@ -137,8 +135,12 @@ export default function ContactPage() {
                     <Phone size={20} className="sm:w-[22px] sm:h-[22px]" />
                   </div>
                   <div className="text-left">
-                    <p className="text-xs text-zinc-500 uppercase tracking-wider font-bold mb-0.5">Phone</p>
-                    <p className="text-base sm:text-lg font-medium text-gray-900">+977 9866291003</p>
+                    <p className="text-xs text-zinc-500 uppercase tracking-wider font-bold mb-0.5">
+                      Phone
+                    </p>
+                    <p className="text-base sm:text-lg font-medium text-gray-900">
+                      +977 9866291003
+                    </p>
                   </div>
                 </div>
 
@@ -147,8 +149,12 @@ export default function ContactPage() {
                     <MapPin size={20} className="sm:w-[22px] sm:h-[22px]" />
                   </div>
                   <div className="text-left">
-                    <p className="text-xs text-zinc-500 uppercase tracking-wider font-bold mb-0.5">Studio</p>
-                    <p className="text-base sm:text-lg font-medium text-gray-900">Lalitpur, Nepal</p>
+                    <p className="text-xs text-zinc-500 uppercase tracking-wider font-bold mb-0.5">
+                      Studio
+                    </p>
+                    <p className="text-base sm:text-lg font-medium text-gray-900">
+                      Lalitpur, Nepal
+                    </p>
                   </div>
                 </div>
               </div>
@@ -158,17 +164,25 @@ export default function ContactPage() {
           {/* Right Column: Form */}
           <div className="w-full lg:w-[45%] xl:w-[40%] flex flex-col justify-center">
             <div className="max-w-lg mx-auto lg:mx-0 lg:mr-auto w-full bg-white p-6 sm:p-7 md:p-8 rounded-2xl shadow-sm border border-gray-100">
-              <h2 className="text-2xl sm:text-3xl font-playfair font-light text-gray-950 mb-6 sm:mb-8 text-center lg:text-left">Send a Message</h2>
+              <h2 className="text-2xl sm:text-3xl font-playfair font-light text-gray-950 mb-6 sm:mb-8 text-center lg:text-left">
+                Send a Message
+              </h2>
 
-              <form onSubmit={handleSubmit(onSubmit)} className="space-y-4 sm:space-y-5">
-
+              <form
+                onSubmit={handleSubmit(onSubmit)}
+                className="space-y-4 sm:space-y-5"
+              >
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 sm:gap-5">
                   <div>
-                    <label htmlFor="contact-name" className="block text-xs font-bold text-gray-700 mb-1.5 uppercase tracking-wide">
+                    <label
+                      htmlFor="contact-name"
+                      className="block text-xs font-bold text-gray-700 mb-1.5 uppercase tracking-wide"
+                    >
                       Full Name <span className="text-red-500">*</span>
                     </label>
                     <div className="relative">
-                      <input id="contact-name"
+                      <input
+                        id="contact-name"
                         type="text"
                         {...register("name")}
                         placeholder="John Doe"
@@ -176,16 +190,22 @@ export default function ContactPage() {
                       />
                     </div>
                     {errors.name && (
-                      <p className="text-xs text-red-500 mt-1 font-dm-sans">{errors.name.message}</p>
+                      <p className="text-xs text-red-500 mt-1 font-dm-sans">
+                        {errors.name.message}
+                      </p>
                     )}
                   </div>
 
                   <div>
-                    <label htmlFor="contact-email" className="block text-xs font-bold text-gray-700 mb-1.5 uppercase tracking-wide">
+                    <label
+                      htmlFor="contact-email"
+                      className="block text-xs font-bold text-gray-700 mb-1.5 uppercase tracking-wide"
+                    >
                       Email Address <span className="text-red-500">*</span>
                     </label>
                     <div className="relative">
-                      <input id="contact-email"
+                      <input
+                        id="contact-email"
                         type="email"
                         {...register("email")}
                         placeholder="you@example.com"
@@ -193,18 +213,24 @@ export default function ContactPage() {
                       />
                     </div>
                     {errors.email && (
-                      <p className="text-xs text-red-500 mt-1 font-dm-sans">{errors.email.message}</p>
+                      <p className="text-xs text-red-500 mt-1 font-dm-sans">
+                        {errors.email.message}
+                      </p>
                     )}
                   </div>
                 </div>
 
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 sm:gap-5">
                   <div>
-                    <label htmlFor="contact-phone" className="block text-xs font-bold text-gray-700 mb-1.5 uppercase tracking-wide">
+                    <label
+                      htmlFor="contact-phone"
+                      className="block text-xs font-bold text-gray-700 mb-1.5 uppercase tracking-wide"
+                    >
                       Phone Number
                     </label>
                     <div className="relative">
-                      <input id="contact-phone"
+                      <input
+                        id="contact-phone"
                         type="tel"
                         {...register("phone")}
                         placeholder="+1 (555) 000-0000"
@@ -214,11 +240,15 @@ export default function ContactPage() {
                   </div>
 
                   <div>
-                    <label htmlFor="contact-subject" className="block text-xs font-bold text-gray-700 mb-1.5 uppercase tracking-wide">
+                    <label
+                      htmlFor="contact-subject"
+                      className="block text-xs font-bold text-gray-700 mb-1.5 uppercase tracking-wide"
+                    >
                       Subject <span className="text-red-500">*</span>
                     </label>
                     <div className="relative">
-                      <input id="contact-subject"
+                      <input
+                        id="contact-subject"
                         type="text"
                         {...register("subject")}
                         placeholder="Inquiry Topic"
@@ -226,7 +256,9 @@ export default function ContactPage() {
                       />
                     </div>
                     {errors.subject && (
-                      <p className="text-xs text-red-500 mt-1 font-dm-sans">{errors.subject.message}</p>
+                      <p className="text-xs text-red-500 mt-1 font-dm-sans">
+                        {errors.subject.message}
+                      </p>
                     )}
                   </div>
                 </div>
@@ -250,15 +282,22 @@ export default function ContactPage() {
                     ))}
                   </select>
                   {errors.category && (
-                    <p className="text-xs text-red-500 mt-1 font-dm-sans">{errors.category.message}</p>
+                    <p className="text-xs text-red-500 mt-1 font-dm-sans">
+                      {errors.category.message}
+                    </p>
                   )}
                   {errors.phone && (
-                    <p className="text-xs text-red-500 mt-1 font-dm-sans">{errors.phone.message}</p>
+                    <p className="text-xs text-red-500 mt-1 font-dm-sans">
+                      {errors.phone.message}
+                    </p>
                   )}
                 </div>
 
                 <div>
-                  <label htmlFor="contact-message" className="block text-xs font-bold text-gray-700 mb-1.5 uppercase tracking-wide">
+                  <label
+                    htmlFor="contact-message"
+                    className="block text-xs font-bold text-gray-700 mb-1.5 uppercase tracking-wide"
+                  >
                     Message <span className="text-red-500">*</span>
                   </label>
                   <div className="relative">
@@ -271,7 +310,9 @@ export default function ContactPage() {
                     />
                   </div>
                   {errors.message && (
-                    <p className="text-xs text-red-500 mt-1 font-dm-sans">{errors.message.message}</p>
+                    <p className="text-xs text-red-500 mt-1 font-dm-sans">
+                      {errors.message.message}
+                    </p>
                   )}
                 </div>
 
@@ -285,10 +326,7 @@ export default function ContactPage() {
               </form>
             </div>
           </div>
-
         </div>
-
-
       </main>
       <Footer />
     </>

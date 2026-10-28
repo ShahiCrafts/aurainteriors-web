@@ -20,12 +20,26 @@ import VariantLineSummary from "./VariantLineSummary";
 import { variantSummaryProps, lineUnitPrice } from "../../utils/cartLine";
 
 export default function CartSlider({ isOpen, onClose }) {
-  const { isAuthenticated } = useAuthStore(useShallow((state) => ({ isAuthenticated: state.isAuthenticated })));
+  const { isAuthenticated } = useAuthStore(
+    useShallow((state) => ({ isAuthenticated: state.isAuthenticated })),
+  );
   const { data, isLoading } = useCart({ enabled: isAuthenticated });
   const { mutate: updateCartItem, isPending: isUpdating } = useUpdateCartItem();
   const { mutate: removeFromCart, isPending: isRemoving } = useRemoveFromCart();
 
-  const { guestCartItems, updateGuestCartQuantity, removeGuestCartItem, getGuestCartTotals } = useGuestCartStore(useShallow((state) => ({ guestCartItems: state.items, updateGuestCartQuantity: state.updateItemQuantity, removeGuestCartItem: state.removeItem, getGuestCartTotals: state.getCartTotals })));
+  const {
+    guestCartItems,
+    updateGuestCartQuantity,
+    removeGuestCartItem,
+    getGuestCartTotals,
+  } = useGuestCartStore(
+    useShallow((state) => ({
+      guestCartItems: state.items,
+      updateGuestCartQuantity: state.updateItemQuantity,
+      removeGuestCartItem: state.removeItem,
+      getGuestCartTotals: state.getCartTotals,
+    })),
+  );
 
   const cart = data?.data?.cart;
   const cartItems = isAuthenticated ? cart?.items || [] : guestCartItems;
@@ -73,10 +87,10 @@ export default function CartSlider({ isOpen, onClose }) {
     <>
       <div
         className={`fixed inset-0 z-100 bg-black/40 h-screen transition-opacity duration-300 ${
-      isOpen
-        ? "opacity-100 visible pointer-events-auto"
-        : "opacity-0 invisible pointer-events-none"
-    }`}
+          isOpen
+            ? "opacity-100 visible pointer-events-auto"
+            : "opacity-0 invisible pointer-events-none"
+        }`}
         onClick={onClose}
       />
 
@@ -88,8 +102,9 @@ export default function CartSlider({ isOpen, onClose }) {
         aria-hidden={!isOpen || undefined}
         inert={!isOpen}
         tabIndex={-1}
-        className={`fixed top-0 right-0 z-101 h-full w-full sm:max-w-[480px] bg-white shadow-2xl transition-transform duration-300 ease-out flex flex-col font-sans ${isOpen ? "translate-x-0" : "translate-x-full"
-          }`}
+        className={`fixed top-0 right-0 z-101 h-full w-full sm:max-w-[480px] bg-white shadow-2xl transition-transform duration-300 ease-out flex flex-col font-sans ${
+          isOpen ? "translate-x-0" : "translate-x-full"
+        }`}
       >
         <div className="flex items-start justify-between px-6 py-6 border-b border-gray-100 bg-white">
           <div className="flex items-start gap-4">
@@ -135,9 +150,10 @@ export default function CartSlider({ isOpen, onClose }) {
                 Your Cart is Empty
               </h3>
               <p className="text-[14px] text-gray-500 mb-8 max-w-[280px]">
-                Looks like you haven't added any items yet. Start exploring our premium collection.
+                Looks like you haven't added any items yet. Start exploring our
+                premium collection.
               </p>
-              <Link 
+              <Link
                 to="/shop"
                 onClick={onClose}
                 className="bg-[#F27318] text-white px-8 py-3 font-bold text-[14px] rounded-lg hover:bg-[#D9620E] transition-colors inline-flex items-center justify-center"

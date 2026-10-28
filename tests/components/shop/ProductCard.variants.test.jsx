@@ -47,8 +47,22 @@ const variantProduct = {
   images: [],
   category: { name: "Sofas" },
   catalogVariants: [
-    { _id: "v1", sku: "SOFA-A", price: 45000, stock: 2, reservedStock: 0, enabled: true },
-    { _id: "v2", sku: "SOFA-B", price: 60000, stock: 0, reservedStock: 0, enabled: true },
+    {
+      _id: "v1",
+      sku: "SOFA-A",
+      price: 45000,
+      stock: 2,
+      reservedStock: 0,
+      enabled: true,
+    },
+    {
+      _id: "v2",
+      sku: "SOFA-B",
+      price: 60000,
+      stock: 0,
+      reservedStock: 0,
+      enabled: true,
+    },
   ],
 };
 
@@ -56,7 +70,7 @@ const renderCard = (product) =>
   render(
     <MemoryRouter>
       <ProductCard product={product} />
-    </MemoryRouter>
+    </MemoryRouter>,
   );
 
 describe("ProductCard variant presentation (Phase 7)", () => {
@@ -71,8 +85,22 @@ describe("ProductCard variant presentation (Phase 7)", () => {
     renderCard({
       ...variantProduct,
       catalogVariants: [
-        { _id: "v1", sku: "SOFA-A", price: 45000, stock: 1, reservedStock: 1, enabled: true },
-        { _id: "v2", sku: "SOFA-B", price: 60000, stock: 3, reservedStock: 0, enabled: false },
+        {
+          _id: "v1",
+          sku: "SOFA-A",
+          price: 45000,
+          stock: 1,
+          reservedStock: 1,
+          enabled: true,
+        },
+        {
+          _id: "v2",
+          sku: "SOFA-B",
+          price: 60000,
+          stock: 3,
+          reservedStock: 0,
+          enabled: false,
+        },
       ],
     });
     expect(screen.getByText("Out of stock")).toBeInTheDocument();
@@ -87,11 +115,13 @@ describe("ProductCard variant presentation (Phase 7)", () => {
 
   it("the cart button stays a link for variant products — a variant must be chosen on the product page first", () => {
     renderCard(variantProduct);
-    const cta = screen.getByRole("link", { name: "Select options for Variant Sofa" });
+    const cta = screen.getByRole("link", {
+      name: "Select options for Variant Sofa",
+    });
     expect(cta).toHaveAttribute("href", "/product/variant-sofa");
     expect(cta.querySelector("svg.lucide-shopping-cart")).not.toBeNull();
     expect(
-      screen.queryByRole("button", { name: /add .* to cart/i })
+      screen.queryByRole("button", { name: /add .* to cart/i }),
     ).not.toBeInTheDocument();
   });
 

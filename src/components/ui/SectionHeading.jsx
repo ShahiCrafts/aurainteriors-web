@@ -33,14 +33,18 @@ export default function SectionHeading({
         {title}
       </h2>
       {subtitle && (
-        <p className="mt-1.5 text-sm text-black/45 md:text-[15px]">{subtitle}</p>
+        <p className="mt-1.5 text-sm text-black/45 md:text-[15px]">
+          {subtitle}
+        </p>
       )}
     </div>
   );
 
   if (action) {
     return (
-      <div className={`flex flex-wrap items-end justify-between gap-4 ${className}`}>
+      <div
+        className={`flex flex-wrap items-end justify-between gap-4 ${className}`}
+      >
         {textBlock}
         {action}
       </div>

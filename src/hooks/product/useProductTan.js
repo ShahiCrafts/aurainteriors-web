@@ -1,13 +1,13 @@
-import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
-import productApi from '../../api/productApi';
+import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
+import productApi from "../../api/productApi";
 
 const PRODUCT_KEYS = {
-  all: ['products'],
-  list: (params) => [...PRODUCT_KEYS.all, 'list', params],
-  detail: (id) => [...PRODUCT_KEYS.all, 'detail', id],
-  featured: (limit) => [...PRODUCT_KEYS.all, 'featured', limit],
-  newArrivals: (limit) => [...PRODUCT_KEYS.all, 'newArrivals', limit],
-  related: (id, limit) => [...PRODUCT_KEYS.all, 'related', id, limit],
+  all: ["products"],
+  list: (params) => [...PRODUCT_KEYS.all, "list", params],
+  detail: (id) => [...PRODUCT_KEYS.all, "detail", id],
+  featured: (limit) => [...PRODUCT_KEYS.all, "featured", limit],
+  newArrivals: (limit) => [...PRODUCT_KEYS.all, "newArrivals", limit],
+  related: (id, limit) => [...PRODUCT_KEYS.all, "related", id, limit],
 };
 
 // FE-55: mutations invalidate the narrowest keys that changed —
@@ -19,9 +19,9 @@ const PRODUCT_KEYS = {
 // they are recommendation rails, and the mutated product's own
 // detail/list entries — the surfaces that display it as a subject —
 // are always invalidated.
-const productListKey = () => [...PRODUCT_KEYS.all, 'list'];
-const productFeaturedKey = () => [...PRODUCT_KEYS.all, 'featured'];
-const productNewArrivalsKey = () => [...PRODUCT_KEYS.all, 'newArrivals'];
+const productListKey = () => [...PRODUCT_KEYS.all, "list"];
+const productFeaturedKey = () => [...PRODUCT_KEYS.all, "featured"];
+const productNewArrivalsKey = () => [...PRODUCT_KEYS.all, "newArrivals"];
 const invalidateProductLists = (queryClient) => {
   queryClient.invalidateQueries({ queryKey: productListKey() });
   queryClient.invalidateQueries({ queryKey: productFeaturedKey() });
@@ -50,10 +50,18 @@ export const useProduct = (id, options = {}) => {
     queryKey: PRODUCT_KEYS.detail(id),
     queryFn: ({ signal }) => {
       let knownId;
-      for (const [, cached] of queryClient.getQueriesData({ queryKey: PRODUCT_KEYS.all })) {
+      for (const [, cached] of queryClient.getQueriesData({
+        queryKey: PRODUCT_KEYS.all,
+      })) {
         const product = cached?.data?.product;
-        const match = product?.slug === id ? product : cached?.data?.products?.find?.((item) => item?.slug === id);
-        if (match?._id) { knownId = match._id; break; }
+        const match =
+          product?.slug === id
+            ? product
+            : cached?.data?.products?.find?.((item) => item?.slug === id);
+        if (match?._id) {
+          knownId = match._id;
+          break;
+        }
       }
       return productApi.getById(id, { knownId, signal });
     },
@@ -145,12 +153,15 @@ export const useSetPrimaryImage = () => {
   const queryClient = useQueryClient();
 
   return useMutation({
-    mutationFn: ({ productId, imageId }) => productApi.setPrimaryImage(productId, imageId),
+    mutationFn: ({ productId, imageId }) =>
+      productApi.setPrimaryImage(productId, imageId),
     onSuccess: (_, { productId }) => {
       // Thumbnails render in lists, featured and new-arrivals rails
       // as well as the detail gallery.
       invalidateProductLists(queryClient);
-      queryClient.invalidateQueries({ queryKey: PRODUCT_KEYS.detail(productId) });
+      queryClient.invalidateQueries({
+        queryKey: PRODUCT_KEYS.detail(productId),
+      });
     },
   });
 };

@@ -5,4 +5,7 @@
  * shim so existing import paths (and test mocks of this path) keep
  * working; new code should import from common/Skeleton directly.
  */
-export { ListingCardSkeleton, ProductDetailsSkeleton } from "../common/Skeleton";
+export {
+  ListingCardSkeleton,
+  ProductDetailsSkeleton,
+} from "../common/Skeleton";

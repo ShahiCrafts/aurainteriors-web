@@ -94,7 +94,10 @@ export const useToggleBlogLike = () => {
         }
         if (Array.isArray(old.data.blogs)) {
           return old.data.blogs.some(isTarget)
-            ? { ...old, data: { ...old.data, blogs: old.data.blogs.map(patchPost) } }
+            ? {
+                ...old,
+                data: { ...old.data, blogs: old.data.blogs.map(patchPost) },
+              }
             : old;
         }
         return old;

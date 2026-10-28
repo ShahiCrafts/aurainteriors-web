@@ -21,9 +21,7 @@ import { useCategories } from "../../../hooks/product/useCategoryTan";
 import useDebounce from "../../../hooks/useDebounce";
 import { toast } from "../../../lib/toast";
 import ImageWithFallback from "../../../components/fallbacks/ImageWithFallback";
-import {
-  getProductImageUrl,
-} from "../../../utils/imageUrl";
+import { getProductImageUrl } from "../../../utils/imageUrl";
 import formatError from "../../../utils/errorHandler";
 import { API_V1_URL } from "../../../config/constants";
 import { formatNPR } from "../../../utils/formatCurrency";
@@ -42,7 +40,7 @@ export default function ProductListPage() {
   const [selectedCategory, setSelectedCategory] = useState("all");
   const [page, setPage] = useState(1);
   const [pageSize] = useState(10);
-  
+
   // Advanced filters state
   const [stockFilter, setStockFilter] = useState("all");
   const [modelFilter, setModelFilter] = useState("all");
@@ -60,7 +58,9 @@ export default function ProductListPage() {
     page,
     limit: pageSize,
     status: statusFilter,
-    ...(debouncedSearchQuery.trim() ? { search: debouncedSearchQuery.trim() } : {}),
+    ...(debouncedSearchQuery.trim()
+      ? { search: debouncedSearchQuery.trim() }
+      : {}),
     ...(selectedCategory !== "all" ? { category: selectedCategory } : {}),
   });
   const pageProducts = productsData?.data?.products || [];
@@ -90,8 +90,11 @@ export default function ProductListPage() {
   // four full-array filter passes on every render.
   const pageStats = useMemo(() => {
     return {
-      lowStockCount: pageProducts.filter((p) => p.stock > 0 && p.stock < 10).length,
-      modelCount: pageProducts.filter((p) => p.modelUrl || p.modelFiles?.length > 0).length,
+      lowStockCount: pageProducts.filter((p) => p.stock > 0 && p.stock < 10)
+        .length,
+      modelCount: pageProducts.filter(
+        (p) => p.modelUrl || p.modelFiles?.length > 0,
+      ).length,
     };
   }, [pageProducts]);
   const lowStockCount = pageStats.lowStockCount;
@@ -102,7 +105,11 @@ export default function ProductListPage() {
       // Stock Filter (page-scoped — no server parameter exists)
       if (stockFilter !== "all") {
         if (stockFilter === "outofstock" && product.stock !== 0) return false;
-        if (stockFilter === "lowstock" && (product.stock === 0 || product.stock >= 10)) return false;
+        if (
+          stockFilter === "lowstock" &&
+          (product.stock === 0 || product.stock >= 10)
+        )
+          return false;
         if (stockFilter === "instock" && product.stock === 0) return false;
       }
 
@@ -189,8 +196,12 @@ export default function ProductListPage() {
         <div className="bg-white rounded-xl p-5 border border-gray-100 shadow-[0_2px_10px_-4px_rgba(0,0,0,0.05)] relative overflow-hidden">
           <div className="flex items-start justify-between">
             <div>
-              <p className="text-sm font-medium text-gray-500 mb-1">Total Catalog</p>
-              <p className="text-2xl font-bold text-gray-900 tracking-tight">{totalProductsCount}</p>
+              <p className="text-sm font-medium text-gray-500 mb-1">
+                Total Catalog
+              </p>
+              <p className="text-2xl font-bold text-gray-900 tracking-tight">
+                {totalProductsCount}
+              </p>
             </div>
             <div className="p-2.5 rounded-xl bg-blue-600 text-white shadow-sm">
               <Package size={20} />
@@ -205,8 +216,12 @@ export default function ProductListPage() {
         <div className="bg-white rounded-xl p-5 border border-gray-100 shadow-[0_2px_10px_-4px_rgba(0,0,0,0.05)] relative overflow-hidden">
           <div className="flex items-start justify-between">
             <div>
-              <p className="text-sm font-medium text-gray-500 mb-1">Active Listings</p>
-              <p className="text-2xl font-bold text-gray-900 tracking-tight">{activeProductsCount}</p>
+              <p className="text-sm font-medium text-gray-500 mb-1">
+                Active Listings
+              </p>
+              <p className="text-2xl font-bold text-gray-900 tracking-tight">
+                {activeProductsCount}
+              </p>
             </div>
             <div className="p-2.5 rounded-xl bg-emerald-600 text-white shadow-sm">
               <CheckCircle size={20} />
@@ -221,9 +236,16 @@ export default function ProductListPage() {
         <div className="bg-white rounded-xl p-5 border border-gray-100 shadow-[0_2px_10px_-4px_rgba(0,0,0,0.05)] relative overflow-hidden">
           <div className="flex items-start justify-between">
             <div>
-              <p className="text-sm font-medium text-gray-500 mb-1">Stock Alerts</p>
+              <p className="text-sm font-medium text-gray-500 mb-1">
+                Stock Alerts
+              </p>
               <p className="text-2xl font-bold text-gray-900 tracking-tight">
-                {outOfStockCount} <span className="text-xs font-semibold text-red-500">Out</span> / {lowStockCount} <span className="text-xs font-semibold text-amber-500">Low (this page)</span>
+                {outOfStockCount}{" "}
+                <span className="text-xs font-semibold text-red-500">Out</span>{" "}
+                / {lowStockCount}{" "}
+                <span className="text-xs font-semibold text-amber-500">
+                  Low (this page)
+                </span>
               </p>
             </div>
             <div className="p-2.5 rounded-xl bg-rose-500 text-white shadow-sm">
@@ -239,8 +261,12 @@ export default function ProductListPage() {
         <div className="bg-white rounded-xl p-5 border border-gray-100 shadow-[0_2px_10px_-4px_rgba(0,0,0,0.05)] relative overflow-hidden">
           <div className="flex items-start justify-between">
             <div>
-              <p className="text-sm font-medium text-gray-500 mb-1">3D Models Ready (this page)</p>
-              <p className="text-2xl font-bold text-gray-900 tracking-tight">{modelCount}</p>
+              <p className="text-sm font-medium text-gray-500 mb-1">
+                3D Models Ready (this page)
+              </p>
+              <p className="text-2xl font-bold text-gray-900 tracking-tight">
+                {modelCount}
+              </p>
             </div>
             <div className="p-2.5 rounded-xl bg-purple-600 text-white shadow-sm">
               <Box size={20} />
@@ -342,13 +368,27 @@ export default function ProductListPage() {
             <table className="w-full">
               <thead>
                 <tr className="bg-gray-50/60 border-b border-gray-100">
-                  <th className="px-6 py-4"><Skeleton className="h-4 w-24" /></th>
-                  <th className="px-6 py-4"><Skeleton className="h-4 w-20" /></th>
-                  <th className="px-6 py-4"><Skeleton className="h-4 w-16" /></th>
-                  <th className="px-6 py-4"><Skeleton className="h-4 w-16" /></th>
-                  <th className="px-6 py-4"><Skeleton className="h-4 w-20" /></th>
-                  <th className="px-6 py-4"><Skeleton className="h-4 w-16" /></th>
-                  <th className="px-6 py-4 text-right"><Skeleton className="h-4 w-16 ml-auto" /></th>
+                  <th className="px-6 py-4">
+                    <Skeleton className="h-4 w-24" />
+                  </th>
+                  <th className="px-6 py-4">
+                    <Skeleton className="h-4 w-20" />
+                  </th>
+                  <th className="px-6 py-4">
+                    <Skeleton className="h-4 w-16" />
+                  </th>
+                  <th className="px-6 py-4">
+                    <Skeleton className="h-4 w-16" />
+                  </th>
+                  <th className="px-6 py-4">
+                    <Skeleton className="h-4 w-20" />
+                  </th>
+                  <th className="px-6 py-4">
+                    <Skeleton className="h-4 w-16" />
+                  </th>
+                  <th className="px-6 py-4 text-right">
+                    <Skeleton className="h-4 w-16 ml-auto" />
+                  </th>
                 </tr>
               </thead>
               <tbody className="divide-y divide-gray-50">
@@ -363,11 +403,21 @@ export default function ProductListPage() {
                         </div>
                       </div>
                     </td>
-                    <td className="px-6 py-4"><Skeleton className="h-4 w-24" /></td>
-                    <td className="px-6 py-4"><Skeleton className="h-4 w-20" /></td>
-                    <td className="px-6 py-4"><Skeleton className="h-4 w-16" /></td>
-                    <td className="px-6 py-4"><Skeleton className="h-6 w-20 rounded-full" /></td>
-                    <td className="px-6 py-4"><Skeleton className="h-6 w-16 rounded-full" /></td>
+                    <td className="px-6 py-4">
+                      <Skeleton className="h-4 w-24" />
+                    </td>
+                    <td className="px-6 py-4">
+                      <Skeleton className="h-4 w-20" />
+                    </td>
+                    <td className="px-6 py-4">
+                      <Skeleton className="h-4 w-16" />
+                    </td>
+                    <td className="px-6 py-4">
+                      <Skeleton className="h-6 w-20 rounded-full" />
+                    </td>
+                    <td className="px-6 py-4">
+                      <Skeleton className="h-6 w-16 rounded-full" />
+                    </td>
                     <td className="px-6 py-4 text-right">
                       <div className="flex justify-end gap-2">
                         <Skeleton className="w-8 h-8 rounded-lg" />
@@ -436,7 +486,8 @@ export default function ProductListPage() {
                             {product.name}
                           </p>
                           <p className="font-mono text-xs text-gray-400 mt-0.5">
-                            {product.sku || product._id?.slice(-8).toUpperCase()}
+                            {product.sku ||
+                              product._id?.slice(-8).toUpperCase()}
                           </p>
                         </div>
                       </div>
@@ -464,8 +515,8 @@ export default function ProductListPage() {
                           product.stock === 0
                             ? "text-red-500"
                             : product.stock < 10
-                            ? "text-amber-500"
-                            : "text-gray-600"
+                              ? "text-amber-500"
+                              : "text-gray-600"
                         }`}
                       >
                         {product.stock} units
@@ -493,14 +544,17 @@ export default function ProductListPage() {
                           product.status === "active"
                             ? "bg-emerald-50 text-emerald-700"
                             : product.status === "out_of_stock"
-                            ? "bg-red-50 text-red-700"
-                            : "bg-slate-100 text-slate-600"
+                              ? "bg-red-50 text-red-700"
+                              : "bg-slate-100 text-slate-600"
                         }`}
                       >
                         {getStatusLabel(product.status)}
                       </span>
                     </td>
-                    <td className="px-6 py-4" onClick={(e) => e.stopPropagation()}>
+                    <td
+                      className="px-6 py-4"
+                      onClick={(e) => e.stopPropagation()}
+                    >
                       <div className="flex items-center justify-end gap-1.5">
                         <button
                           onClick={() => handleOpenModal(product)}

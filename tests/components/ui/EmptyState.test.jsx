@@ -22,12 +22,16 @@ describe("EmptyState", () => {
       screen.getByText("Save pieces you love and they will show up here."),
     ).toBeInTheDocument();
     expect(container.querySelector("svg.lucide-heart")).not.toBeNull();
-    expect(screen.getByRole("link", { name: "Browse the shop" })).toBeInTheDocument();
+    expect(
+      screen.getByRole("link", { name: "Browse the shop" }),
+    ).toBeInTheDocument();
   });
 
   it("renders just the title when optional props are omitted", () => {
     const { container } = render(<EmptyState title="No results" />);
-    expect(screen.getByRole("heading", { name: "No results" })).toBeInTheDocument();
+    expect(
+      screen.getByRole("heading", { name: "No results" }),
+    ).toBeInTheDocument();
     expect(container.querySelector("svg")).toBeNull();
   });
 });

@@ -1,5 +1,5 @@
-import { AnimatePresence } from 'framer-motion';
-import CategoryAttributesEditor from '../../../components/admin/catalog/CategoryAttributesEditor';
+import { AnimatePresence } from "framer-motion";
+import CategoryAttributesEditor from "../../../components/admin/catalog/CategoryAttributesEditor";
 
 // Phase 7 split (from Categories.jsx) — the attributes-for-category
 // panel: a thin wrapper over the existing CategoryAttributesEditor,
@@ -12,15 +12,15 @@ export default function CategoryAttributesPanel({
 }) {
   return (
     <>
-    <AnimatePresence>
-      {attributesCategory && (
-        <CategoryAttributesEditor
-          category={attributesCategory}
-          categories={categories}
-          onClose={() => setAttributesCategory(null)}
-        />
-      )}
-    </AnimatePresence>
+      <AnimatePresence>
+        {attributesCategory && (
+          <CategoryAttributesEditor
+            category={attributesCategory}
+            categories={categories}
+            onClose={() => setAttributesCategory(null)}
+          />
+        )}
+      </AnimatePresence>
     </>
   );
 }

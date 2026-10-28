@@ -1,4 +1,10 @@
-import { render, screen, fireEvent, act, waitFor } from "@testing-library/react";
+import {
+  render,
+  screen,
+  fireEvent,
+  act,
+  waitFor,
+} from "@testing-library/react";
 import { describe, expect, it, vi, beforeEach } from "vitest";
 
 // FE-31 (uploads): files uploaded strictly one-by-one (60s timeout
@@ -20,9 +26,21 @@ vi.mock("../../src/api/chatApi.js", () => ({
       entry.resolve = resolve;
       entry.reject = reject;
       if (opts.signal) {
-        if (opts.signal.aborted) reject(Object.assign(new Error("canceled"), { name: "AbortError", code: "ERR_CANCELED" }));
+        if (opts.signal.aborted)
+          reject(
+            Object.assign(new Error("canceled"), {
+              name: "AbortError",
+              code: "ERR_CANCELED",
+            }),
+          );
         opts.signal.addEventListener("abort", () =>
-          reject(Object.assign(new Error("canceled"), { name: "AbortError", code: "ERR_CANCELED" })));
+          reject(
+            Object.assign(new Error("canceled"), {
+              name: "AbortError",
+              code: "ERR_CANCELED",
+            }),
+          ),
+        );
       }
     });
     h.uploads.push(entry);
@@ -31,7 +49,8 @@ vi.mock("../../src/api/chatApi.js", () => ({
 }));
 vi.mock("../../src/store/authStore.js", () => {
   const state = { openAuthModal: vi.fn(), user: null };
-  const store = (selector) => (typeof selector === "function" ? selector(state) : state);
+  const store = (selector) =>
+    typeof selector === "function" ? selector(state) : state;
   store.getState = () => state;
   return { default: store };
 });
@@ -44,9 +63,21 @@ import { uploadChatAttachment } from "../../src/api/chatApi.js";
 // declared-type/content mismatch FE-11 rejects).
 const makeFile = (name) =>
   new File(
-    [new Uint8Array([0x89, 0x50, 0x4e, 0x47, 0x0d, 0x0a, 0x1a, 0x0a, ...new Array(92).fill(0x61)])],
+    [
+      new Uint8Array([
+        0x89,
+        0x50,
+        0x4e,
+        0x47,
+        0x0d,
+        0x0a,
+        0x1a,
+        0x0a,
+        ...new Array(92).fill(0x61),
+      ]),
+    ],
     name,
-    { type: "image/png" }
+    { type: "image/png" },
   );
 
 async function selectAndSend(container, names) {
@@ -73,7 +104,14 @@ describe("ChatInput parallel uploads (FE-31)", () => {
     // land a tick after the click rather than synchronously.
     await waitFor(() => expect(uploadChatAttachment).toHaveBeenCalledTimes(3));
     await act(async () => {
-      h.uploads.forEach((u, i) => u.resolve({ attachment: { fileUrl: `https://res.cloudinary.com/demo/${i}.png`, fileName: `${i}.png` } }));
+      h.uploads.forEach((u, i) =>
+        u.resolve({
+          attachment: {
+            fileUrl: `https://res.cloudinary.com/demo/${i}.png`,
+            fileName: `${i}.png`,
+          },
+        }),
+      );
     });
     await waitFor(() => expect(h.sendMutate).toHaveBeenCalledTimes(1));
     const sent = h.sendMutate.mock.calls[0][0];
@@ -88,7 +126,14 @@ describe("ChatInput parallel uploads (FE-31)", () => {
     expect(textarea.disabled).toBe(false);
     fireEvent.change(textarea, { target: { value: "edited while uploading" } });
     expect(textarea.value).toBe("edited while uploading");
-    await act(async () => { h.uploads[0].resolve({ attachment: { fileUrl: "https://res.cloudinary.com/demo/a.png", fileName: "a.png" } }); });
+    await act(async () => {
+      h.uploads[0].resolve({
+        attachment: {
+          fileUrl: "https://res.cloudinary.com/demo/a.png",
+          fileName: "a.png",
+        },
+      });
+    });
   });
 
   it("shows per-file progress reported by the upload", async () => {
@@ -102,7 +147,14 @@ describe("ChatInput parallel uploads (FE-31)", () => {
     expect(await screen.findByText(/40%/)).toBeInTheDocument();
     expect(await screen.findByText(/80%/)).toBeInTheDocument();
     await act(async () => {
-      h.uploads.forEach((u, i) => u.resolve({ attachment: { fileUrl: `https://res.cloudinary.com/demo/${i}.png`, fileName: `${i}.png` } }));
+      h.uploads.forEach((u, i) =>
+        u.resolve({
+          attachment: {
+            fileUrl: `https://res.cloudinary.com/demo/${i}.png`,
+            fileName: `${i}.png`,
+          },
+        }),
+      );
     });
   });
 

@@ -19,7 +19,12 @@ vi.mock("../../src/lib/toast.js", () => ({
   default: { error: vi.fn() },
 }));
 
-const user = { _id: "user-1", firstName: "Asha", lastName: "Rai", email: "a@example.com" };
+const user = {
+  _id: "user-1",
+  firstName: "Asha",
+  lastName: "Rai",
+  email: "a@example.com",
+};
 
 // Fresh module registry per scenario. The axios adapter is stubbed
 // BEFORE the auth store is imported (when a scenario imports it), so
@@ -33,7 +38,13 @@ async function importFresh({ withAuthStore = false } = {}) {
   api.defaults.adapter = (config) => {
     seen.push(config);
     const data = config.url === "/auth/me" ? { data: { user } } : { data: {} };
-    return Promise.resolve({ data, status: 200, statusText: "OK", headers: {}, config });
+    return Promise.resolve({
+      data,
+      status: 200,
+      statusText: "OK",
+      headers: {},
+      config,
+    });
   };
   let authStore = null;
   if (withAuthStore) {
@@ -47,7 +58,9 @@ function lastProbeHeader(seen) {
   const probes = seen.filter((c) => c.url === "/probe");
   expect(probes.length).toBeGreaterThan(0);
   const headers = probes[probes.length - 1].headers;
-  return typeof headers?.get === "function" ? headers.get("Authorization") : headers?.Authorization;
+  return typeof headers?.get === "function"
+    ? headers.get("Authorization")
+    : headers?.Authorization;
 }
 
 describe("FE-59 tokenSource leaf + request interceptor", () => {
@@ -100,7 +113,9 @@ describe("FE-59 tokenSource leaf + request interceptor", () => {
 
 describe("FE-59 authStore registers its getter into the leaf", () => {
   it("initialize/signIn/sign-out are reflected in requests through the real api instance", async () => {
-    const { api, tokenSource, seen, authStore } = await importFresh({ withAuthStore: true });
+    const { api, tokenSource, seen, authStore } = await importFresh({
+      withAuthStore: true,
+    });
 
     // Import-time initialize() restored the session via the stubbed
     // /auth/me: the registered getter now reports the cookie sentinel.

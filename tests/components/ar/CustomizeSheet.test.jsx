@@ -33,7 +33,7 @@ function renderSheet(props = {}) {
       getProductImage={() => null}
       calculateTotalPrice={() => 10000}
       {...handlers}
-    />
+    />,
   );
   return handlers;
 }

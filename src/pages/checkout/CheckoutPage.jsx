@@ -52,10 +52,11 @@ function SelectionCheckbox({ checked, indeterminate, onChange, ariaLabel }) {
       aria-checked={indeterminate ? "mixed" : checked}
       aria-label={ariaLabel}
       onClick={onChange}
-      className={`w-[18px] h-[18px] rounded-[5px] flex items-center justify-center border transition-colors shrink-0 ${checked || indeterminate
+      className={`w-[18px] h-[18px] rounded-[5px] flex items-center justify-center border transition-colors shrink-0 ${
+        checked || indeterminate
           ? "bg-[#F27318] border-[#F27318]"
           : "bg-white border-neutral-300 hover:border-neutral-400"
-        }`}
+      }`}
     >
       {indeterminate ? (
         <Minus size={12} strokeWidth={3} className="text-white" />
@@ -68,8 +69,14 @@ function SelectionCheckbox({ checked, indeterminate, onChange, ariaLabel }) {
 
 export default function CheckoutPage() {
   const navigate = useNavigate();
-  const { isAuthenticated, user } = useAuthStore(useShallow((state) => ({ isAuthenticated: state.isAuthenticated, user: state.user })));
-  const { guestInfo,
+  const { isAuthenticated, user } = useAuthStore(
+    useShallow((state) => ({
+      isAuthenticated: state.isAuthenticated,
+      user: state.user,
+    })),
+  );
+  const {
+    guestInfo,
     setGuestInfo,
     shippingAddress,
     shippingAddressId,
@@ -86,19 +93,54 @@ export default function CheckoutPage() {
     setStep,
     getGuestCheckoutData,
     getAuthenticatedCheckoutData,
-    reset, } = useCheckoutStore(useShallow((state) => ({ guestInfo: state.guestInfo, setGuestInfo: state.setGuestInfo, shippingAddress: state.shippingAddress, shippingAddressId: state.shippingAddressId, setShippingAddress: state.setShippingAddress, setShippingAddressId: state.setShippingAddressId, appliedDiscount: state.appliedDiscount, setAppliedDiscount: state.setAppliedDiscount, clearDiscount: state.clearDiscount, paymentMethod: state.paymentMethod, setPaymentMethod: state.setPaymentMethod, currentStep: state.currentStep, nextStep: state.nextStep, prevStep: state.prevStep, setStep: state.setStep, getGuestCheckoutData: state.getGuestCheckoutData, getAuthenticatedCheckoutData: state.getAuthenticatedCheckoutData, reset: state.reset })));
+    reset,
+  } = useCheckoutStore(
+    useShallow((state) => ({
+      guestInfo: state.guestInfo,
+      setGuestInfo: state.setGuestInfo,
+      shippingAddress: state.shippingAddress,
+      shippingAddressId: state.shippingAddressId,
+      setShippingAddress: state.setShippingAddress,
+      setShippingAddressId: state.setShippingAddressId,
+      appliedDiscount: state.appliedDiscount,
+      setAppliedDiscount: state.setAppliedDiscount,
+      clearDiscount: state.clearDiscount,
+      paymentMethod: state.paymentMethod,
+      setPaymentMethod: state.setPaymentMethod,
+      currentStep: state.currentStep,
+      nextStep: state.nextStep,
+      prevStep: state.prevStep,
+      setStep: state.setStep,
+      getGuestCheckoutData: state.getGuestCheckoutData,
+      getAuthenticatedCheckoutData: state.getAuthenticatedCheckoutData,
+      reset: state.reset,
+    })),
+  );
 
   // Buy-now mode: a direct checkout for the buy-now line only. The
   // cart is not even fetched in this mode — nothing in it is listed,
   // ordered or removed by a buy-now checkout.
-  const { buyNowItem, updateBuyNowQuantity, clearBuyNowItem } = useBuyNowStore(useShallow((state) => ({ buyNowItem: state.item, updateBuyNowQuantity: state.updateQuantity, clearBuyNowItem: state.clearItem })));
+  const { buyNowItem, updateBuyNowQuantity, clearBuyNowItem } = useBuyNowStore(
+    useShallow((state) => ({
+      buyNowItem: state.item,
+      updateBuyNowQuantity: state.updateQuantity,
+      clearBuyNowItem: state.clearItem,
+    })),
+  );
   const isBuyNow = !!buyNowItem;
 
   const { data: cartData, isLoading: isCartLoading } = useCart({
     enabled: isAuthenticated && !isBuyNow,
   });
 
-  const { guestCartItems, updateGuestCartQuantity, removeGuestCartItem } = useGuestCartStore(useShallow((state) => ({ guestCartItems: state.items, updateGuestCartQuantity: state.updateItemQuantity, removeGuestCartItem: state.removeItem })));
+  const { guestCartItems, updateGuestCartQuantity, removeGuestCartItem } =
+    useGuestCartStore(
+      useShallow((state) => ({
+        guestCartItems: state.items,
+        updateGuestCartQuantity: state.updateItemQuantity,
+        removeGuestCartItem: state.removeItem,
+      })),
+    );
 
   const { mutate: updateCartItem, isPending: isUpdating } = useUpdateCartItem();
   const { mutate: removeFromCart, isPending: isRemoving } = useRemoveFromCart();
@@ -128,7 +170,12 @@ export default function CheckoutPage() {
     mode: "onTouched",
   });
 
-  const { reset: resetForm, handleSubmit: handleFormSubmit, watch, setValue } = methods;
+  const {
+    reset: resetForm,
+    handleSubmit: handleFormSubmit,
+    watch,
+    setValue,
+  } = methods;
 
   const watchedGuestInfo = watch(["firstName", "lastName", "email", "phone"]);
   const watchedShippingFields = watch([
@@ -140,8 +187,6 @@ export default function CheckoutPage() {
   ]);
   const [fName, lName, mail, ph] = watchedGuestInfo;
   const [addr1, cty, zip, cntry, st] = watchedShippingFields;
-
-
 
   const cart = cartData?.data?.cart;
   // Memoized: the selection effect below keys off this array's
@@ -196,7 +241,8 @@ export default function CheckoutPage() {
     [cartItems, selectedItemIds],
   );
 
-  const allSelected = cartItems.length > 0 && selectedCartItems.length === cartItems.length;
+  const allSelected =
+    cartItems.length > 0 && selectedCartItems.length === cartItems.length;
   const someSelected = selectedCartItems.length > 0 && !allSelected;
 
   const toggleSelectItem = (itemId) => {
@@ -212,7 +258,9 @@ export default function CheckoutPage() {
   };
 
   const toggleSelectAll = () => {
-    setSelectedItemIds(allSelected ? new Set() : new Set(cartItems.map((item) => item._id)));
+    setSelectedItemIds(
+      allSelected ? new Set() : new Set(cartItems.map((item) => item._id)),
+    );
   };
 
   // Phase 6 (REUSE-010): the totals arithmetic lives in
@@ -243,8 +291,6 @@ export default function CheckoutPage() {
     resetForm,
     setValue,
   });
-
-
 
   // Set when the shopper removes the buy-now line: that exit goes
   // back to the product, not through the empty-cart redirect below.
@@ -312,12 +358,17 @@ export default function CheckoutPage() {
       productId: item.product._id,
       quantity: item.quantity,
       variant: item.variant || {},
-      ...(item.variantId
-        ? { variantId: item.variantId, sku: item.sku }
-        : {}),
+      ...(item.variantId ? { variantId: item.variantId, sku: item.sku } : {}),
     }));
 
-  const promoSelectionKey = JSON.stringify(selectedCartItems.map(item => [item._id, item.quantity, item.product?.price, item.variant]));
+  const promoSelectionKey = JSON.stringify(
+    selectedCartItems.map((item) => [
+      item._id,
+      item.quantity,
+      item.product?.price,
+      item.variant,
+    ]),
+  );
   const promoRequestRef = useRef(0);
   const promoSelectionRef = useRef(promoSelectionKey);
   promoSelectionRef.current = promoSelectionKey;
@@ -335,25 +386,39 @@ export default function CheckoutPage() {
       toast.error("Please enter a promo code");
       return;
     }
-    if (!selectedCartItems.length) { toast.error("Select items before applying a promo"); return; }
+    if (!selectedCartItems.length) {
+      toast.error("Select items before applying a promo");
+      return;
+    }
     const selectionKey = promoSelectionKey;
     const requestId = ++promoRequestRef.current;
     // Cart checkout (signed-in) previews by cart-line id; guest and
     // buy-now checkouts preview by the items themselves — a buy-now
     // line has no cart line to reference.
-    const preview = isAuthenticated && !isBuyNow
-      ? { code: promoCode, selectedItemIds: selectedCartItems.map(item => item._id) }
-      : { code: promoCode, items: directItemsPayload() };
+    const preview =
+      isAuthenticated && !isBuyNow
+        ? {
+            code: promoCode,
+            selectedItemIds: selectedCartItems.map((item) => item._id),
+          }
+        : { code: promoCode, items: directItemsPayload() };
     applyDiscountMutation.mutate(preview, {
       onSuccess: (data) => {
-        if (promoRequestRef.current !== requestId || promoSelectionRef.current !== selectionKey) return;
+        if (
+          promoRequestRef.current !== requestId ||
+          promoSelectionRef.current !== selectionKey
+        )
+          return;
         setAppliedDiscount(data.data.discount);
         setPromoCode("");
         setShowPromoInput(false);
         toast.success("Promo code applied!");
       },
       onError: (err) => {
-        if (promoRequestRef.current === requestId && promoSelectionRef.current === selectionKey)
+        if (
+          promoRequestRef.current === requestId &&
+          promoSelectionRef.current === selectionKey
+        )
           toast.error(formatError(err, "Invalid promo code"));
       },
     });
@@ -376,7 +441,8 @@ export default function CheckoutPage() {
   const handleGoToPayment = () => {
     if (!ensureItemsSelected()) return;
 
-    const currentShippingAddressId = useCheckoutStore.getState().shippingAddressId;
+    const currentShippingAddressId =
+      useCheckoutStore.getState().shippingAddressId;
     if (currentShippingAddressId) {
       nextStep();
       return;
@@ -405,11 +471,11 @@ export default function CheckoutPage() {
           keyedCheckout(
             isBuyNow
               ? // Buy Now: order this line directly from its items —
-              // the server cart is neither read nor cleared.
-              getAuthenticatedCheckoutData({ items: directItemsPayload() })
+                // the server cart is neither read nor cleared.
+                getAuthenticatedCheckoutData({ items: directItemsPayload() })
               : getAuthenticatedCheckoutData(
-                selectedCartItems.map((item) => item._id),
-              ),
+                  selectedCartItems.map((item) => item._id),
+                ),
           ),
         );
       } else {
@@ -440,7 +506,7 @@ export default function CheckoutPage() {
         // they were.
         clearBuyNowItem();
       } else if (!isAuthenticated) {
-        selectedCartItems.forEach(item => removeGuestCartItem(item._id));
+        selectedCartItems.forEach((item) => removeGuestCartItem(item._id));
       }
       reset();
       navigate(
@@ -487,7 +553,6 @@ export default function CheckoutPage() {
           {/* Left Side: Content & Steps */}
           <div className="flex-1 bg-white">
             <div className="w-full px-4 sm:px-6 lg:px-12 py-12 lg:py-12">
-
               <div className="flex items-center gap-3 mb-10">
                 {[
                   { n: 1, label: "Shipping" },
@@ -496,24 +561,30 @@ export default function CheckoutPage() {
                   <div key={n} className="flex items-center gap-3">
                     <div className="flex items-center gap-2">
                       <div
-                        className={`w-7 h-7 rounded-full flex items-center justify-center text-[14px] font-bold transition-all ${currentStep === n
+                        className={`w-7 h-7 rounded-full flex items-center justify-center text-[14px] font-bold transition-all ${
+                          currentStep === n
                             ? "bg-[#F27318] text-white"
                             : currentStep > n
                               ? "bg-[#F27318]/20 text-[#F27318]"
                               : "bg-gray-100 text-neutral-500"
-                          }`}
+                        }`}
                       >
                         {currentStep > n ? "✓" : n}
                       </div>
                       <span
-                        className={`text-[16px] font-semibold ${currentStep === n ? "text-[#1A1714]" : "text-neutral-500"
-                          }`}
+                        className={`text-[16px] font-semibold ${
+                          currentStep === n
+                            ? "text-[#1A1714]"
+                            : "text-neutral-500"
+                        }`}
                       >
                         {label}
                       </span>
                     </div>
                     {i === 0 && (
-                      <div className={`h-px w-10 ${currentStep > 1 ? "bg-[#F27318]/40" : "bg-neutral-200"}`} />
+                      <div
+                        className={`h-px w-10 ${currentStep > 1 ? "bg-[#F27318]/40" : "bg-neutral-200"}`}
+                      />
                     )}
                   </div>
                 ))}
@@ -737,7 +808,9 @@ export default function CheckoutPage() {
                         type="text"
                         value={promoCode}
                         onChange={(e) => setPromoCode(e.target.value)}
-                        onKeyDown={(e) => e.key === "Enter" && handleApplyPromo()}
+                        onKeyDown={(e) =>
+                          e.key === "Enter" && handleApplyPromo()
+                        }
                         placeholder="Enter code"
                         className="flex-1 px-4 py-2.5 bg-neutral-50 border border-neutral-200 rounded-md text-[14px] focus:outline-none focus:border-[#F27318] transition-all"
                         autoFocus
@@ -779,7 +852,10 @@ export default function CheckoutPage() {
                 ) : (
                   <>
                     {currentStep === 1 ? "Next: Payment" : "Place Order"}
-                    <ChevronRight size={18} className="group-hover:translate-x-0.5 transition-transform" />
+                    <ChevronRight
+                      size={18}
+                      className="group-hover:translate-x-0.5 transition-transform"
+                    />
                   </>
                 )}
               </button>

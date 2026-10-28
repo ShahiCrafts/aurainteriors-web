@@ -56,6 +56,8 @@ describe("Field", () => {
         <input type="text" />
       </Field>,
     );
-    expect(container.querySelector('[aria-hidden="true"]')).toHaveTextContent("*");
+    expect(container.querySelector('[aria-hidden="true"]')).toHaveTextContent(
+      "*",
+    );
   });
 });

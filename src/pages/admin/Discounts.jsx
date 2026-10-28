@@ -133,7 +133,7 @@ export default function Discounts() {
           onError: (err) => {
             toast.error(formatError(err, "Operation failed"));
           },
-        }
+        },
       );
     } else {
       createMutation.mutate(formData, {
@@ -197,7 +197,7 @@ export default function Discounts() {
   };
 
   const filteredDiscounts = discounts.filter((d) =>
-    (d.code || '').toLowerCase().includes(searchQuery.toLowerCase())
+    (d.code || "").toLowerCase().includes(searchQuery.toLowerCase()),
   );
 
   return (
@@ -391,170 +391,175 @@ export default function Discounts() {
               className="w-full max-w-lg"
               onClick={(e) => e.stopPropagation()}
             >
-             <Dialog open onClose={() => setModalOpen(false)} label="Discount code" className="bg-white rounded-xl shadow-xl w-full overflow-hidden relative">
-              <div className="flex items-center justify-between px-6 py-4 border-b border-gray-100">
-                <h2 className="text-lg font-bold text-gray-900">
-                  {editingDiscount ? "Edit Discount" : "New Discount Code"}
-                </h2>
-                <button
-                  onClick={() => setModalOpen(false)}
-                  className="p-2 hover:bg-gray-100 rounded-lg"
-                >
-                  <X size={20} className="text-gray-400" />
-                </button>
-              </div>
+              <Dialog
+                open
+                onClose={() => setModalOpen(false)}
+                label="Discount code"
+                className="bg-white rounded-xl shadow-xl w-full overflow-hidden relative"
+              >
+                <div className="flex items-center justify-between px-6 py-4 border-b border-gray-100">
+                  <h2 className="text-lg font-bold text-gray-900">
+                    {editingDiscount ? "Edit Discount" : "New Discount Code"}
+                  </h2>
+                  <button
+                    onClick={() => setModalOpen(false)}
+                    className="p-2 hover:bg-gray-100 rounded-lg"
+                  >
+                    <X size={20} className="text-gray-400" />
+                  </button>
+                </div>
 
-              <div className="p-6 space-y-4">
-                <div className="grid grid-cols-2 gap-4">
-                  <div className="col-span-2 sm:col-span-1">
-                    <label className="block text-xs font-bold uppercase text-gray-500 mb-1.5">
-                      Coupon Code *
-                    </label>
-                    <input
-                      type="text"
-                      value={discountForm.code}
-                      onChange={(e) =>
-                        setDiscountForm({
-                          ...discountForm,
-                          code: e.target.value.toUpperCase(),
-                        })
-                      }
-                      className="w-full px-3 py-2 border border-gray-200 rounded-lg focus:border-teal-500 outline-none font-mono font-bold"
-                      placeholder="SALE50"
-                    />
-                  </div>
-                  <div className="col-span-2 sm:col-span-1">
-                    <label className="block text-xs font-bold uppercase text-gray-500 mb-1.5">
-                      Discount % *
-                    </label>
-                    <div className="relative">
+                <div className="p-6 space-y-4">
+                  <div className="grid grid-cols-2 gap-4">
+                    <div className="col-span-2 sm:col-span-1">
+                      <label className="block text-xs font-bold uppercase text-gray-500 mb-1.5">
+                        Coupon Code *
+                      </label>
                       <input
-                        type="number"
-                        value={discountForm.discountPercentage}
+                        type="text"
+                        value={discountForm.code}
                         onChange={(e) =>
                           setDiscountForm({
                             ...discountForm,
-                            discountPercentage: e.target.value,
+                            code: e.target.value.toUpperCase(),
                           })
                         }
-                        className="w-full px-3 py-2 border border-gray-200 rounded-lg focus:border-teal-500 outline-none"
-                        placeholder="20"
-                      />
-                      <Percent
-                        size={14}
-                        className="absolute right-3 top-3 text-gray-400"
+                        className="w-full px-3 py-2 border border-gray-200 rounded-lg focus:border-teal-500 outline-none font-mono font-bold"
+                        placeholder="SALE50"
                       />
                     </div>
-                  </div>
-                </div>
-                <div>
-                  <label className="block text-xs font-bold uppercase text-gray-500 mb-1.5">
-                    Description
-                  </label>
-                  <input
-                    value={discountForm.description}
-                    onChange={(e) =>
-                      setDiscountForm({
-                        ...discountForm,
-                        description: e.target.value,
-                      })
-                    }
-                    className="w-full px-3 py-2 border border-gray-200 rounded-lg focus:border-teal-500 outline-none text-sm"
-                    placeholder="Holiday season sale..."
-                  />
-                </div>
-                <div className="grid grid-cols-2 gap-4">
-                  <div>
-                    <label className="block text-xs font-bold uppercase text-gray-500 mb-1.5">
-                      Min. Order (NPR)
-                    </label>
-                    <input
-                      type="number"
-                      value={discountForm.minimumOrderAmount}
-                      onChange={(e) =>
-                        setDiscountForm({
-                          ...discountForm,
-                          minimumOrderAmount: e.target.value,
-                        })
-                      }
-                      className="w-full px-3 py-2 border border-gray-200 rounded-lg focus:border-teal-500 outline-none"
-                    />
+                    <div className="col-span-2 sm:col-span-1">
+                      <label className="block text-xs font-bold uppercase text-gray-500 mb-1.5">
+                        Discount % *
+                      </label>
+                      <div className="relative">
+                        <input
+                          type="number"
+                          value={discountForm.discountPercentage}
+                          onChange={(e) =>
+                            setDiscountForm({
+                              ...discountForm,
+                              discountPercentage: e.target.value,
+                            })
+                          }
+                          className="w-full px-3 py-2 border border-gray-200 rounded-lg focus:border-teal-500 outline-none"
+                          placeholder="20"
+                        />
+                        <Percent
+                          size={14}
+                          className="absolute right-3 top-3 text-gray-400"
+                        />
+                      </div>
+                    </div>
                   </div>
                   <div>
                     <label className="block text-xs font-bold uppercase text-gray-500 mb-1.5">
-                      Max Usage
+                      Description
                     </label>
                     <input
-                      type="number"
-                      value={discountForm.maxUsageLimit}
+                      value={discountForm.description}
                       onChange={(e) =>
                         setDiscountForm({
                           ...discountForm,
-                          maxUsageLimit: e.target.value,
-                        })
-                      }
-                      className="w-full px-3 py-2 border border-gray-200 rounded-lg focus:border-teal-500 outline-none"
-                      placeholder="Unlimited"
-                    />
-                  </div>
-                </div>
-                <div className="grid grid-cols-2 gap-4">
-                  <div>
-                    <label className="block text-xs font-bold uppercase text-gray-500 mb-1.5">
-                      Expiry Date *
-                    </label>
-                    <input
-                      type="date"
-                      value={discountForm.expiryDate}
-                      onChange={(e) =>
-                        setDiscountForm({
-                          ...discountForm,
-                          expiryDate: e.target.value,
+                          description: e.target.value,
                         })
                       }
                       className="w-full px-3 py-2 border border-gray-200 rounded-lg focus:border-teal-500 outline-none text-sm"
-                      min={new Date().toISOString().split("T")[0]}
+                      placeholder="Holiday season sale..."
                     />
                   </div>
-                  <div className="flex items-end">
-                    <label className="flex items-center gap-3 cursor-pointer p-2 hover:bg-gray-50 rounded-lg w-full">
+                  <div className="grid grid-cols-2 gap-4">
+                    <div>
+                      <label className="block text-xs font-bold uppercase text-gray-500 mb-1.5">
+                        Min. Order (NPR)
+                      </label>
                       <input
-                        type="checkbox"
-                        checked={discountForm.isActive}
+                        type="number"
+                        value={discountForm.minimumOrderAmount}
                         onChange={(e) =>
                           setDiscountForm({
                             ...discountForm,
-                            isActive: e.target.checked,
+                            minimumOrderAmount: e.target.value,
                           })
                         }
-                        className="w-4 h-4 text-teal-600 rounded border-gray-300 focus:ring-teal-500"
+                        className="w-full px-3 py-2 border border-gray-200 rounded-lg focus:border-teal-500 outline-none"
                       />
-                      <span className="text-xs font-bold text-gray-600 uppercase">
-                        Active Now
-                      </span>
-                    </label>
+                    </div>
+                    <div>
+                      <label className="block text-xs font-bold uppercase text-gray-500 mb-1.5">
+                        Max Usage
+                      </label>
+                      <input
+                        type="number"
+                        value={discountForm.maxUsageLimit}
+                        onChange={(e) =>
+                          setDiscountForm({
+                            ...discountForm,
+                            maxUsageLimit: e.target.value,
+                          })
+                        }
+                        className="w-full px-3 py-2 border border-gray-200 rounded-lg focus:border-teal-500 outline-none"
+                        placeholder="Unlimited"
+                      />
+                    </div>
+                  </div>
+                  <div className="grid grid-cols-2 gap-4">
+                    <div>
+                      <label className="block text-xs font-bold uppercase text-gray-500 mb-1.5">
+                        Expiry Date *
+                      </label>
+                      <input
+                        type="date"
+                        value={discountForm.expiryDate}
+                        onChange={(e) =>
+                          setDiscountForm({
+                            ...discountForm,
+                            expiryDate: e.target.value,
+                          })
+                        }
+                        className="w-full px-3 py-2 border border-gray-200 rounded-lg focus:border-teal-500 outline-none text-sm"
+                        min={new Date().toISOString().split("T")[0]}
+                      />
+                    </div>
+                    <div className="flex items-end">
+                      <label className="flex items-center gap-3 cursor-pointer p-2 hover:bg-gray-50 rounded-lg w-full">
+                        <input
+                          type="checkbox"
+                          checked={discountForm.isActive}
+                          onChange={(e) =>
+                            setDiscountForm({
+                              ...discountForm,
+                              isActive: e.target.checked,
+                            })
+                          }
+                          className="w-4 h-4 text-teal-600 rounded border-gray-300 focus:ring-teal-500"
+                        />
+                        <span className="text-xs font-bold text-gray-600 uppercase">
+                          Active Now
+                        </span>
+                      </label>
+                    </div>
                   </div>
                 </div>
-              </div>
 
-              <div className="p-6 border-t border-gray-100 flex gap-3">
-                <button
-                  onClick={() => setModalOpen(false)}
-                  className="flex-1 px-4 py-2.5 border border-gray-200 text-gray-600 rounded-lg text-xs font-bold uppercase tracking-wider hover:bg-gray-50"
-                >
-                  Cancel
-                </button>
-                <button
-                  onClick={handleSaveDiscount}
-                  disabled={
-                    createMutation.isPending || updateMutation.isPending
-                  }
-                  className="flex-1 bg-teal-600 text-white px-4 py-2.5 rounded-lg text-xs font-bold uppercase tracking-wider hover:bg-teal-700 shadow-md flex items-center justify-center gap-2"
-                >
-                  {editingDiscount ? "Update" : "Save"}
-                </button>
-              </div>
-             </Dialog>
+                <div className="p-6 border-t border-gray-100 flex gap-3">
+                  <button
+                    onClick={() => setModalOpen(false)}
+                    className="flex-1 px-4 py-2.5 border border-gray-200 text-gray-600 rounded-lg text-xs font-bold uppercase tracking-wider hover:bg-gray-50"
+                  >
+                    Cancel
+                  </button>
+                  <button
+                    onClick={handleSaveDiscount}
+                    disabled={
+                      createMutation.isPending || updateMutation.isPending
+                    }
+                    className="flex-1 bg-teal-600 text-white px-4 py-2.5 rounded-lg text-xs font-bold uppercase tracking-wider hover:bg-teal-700 shadow-md flex items-center justify-center gap-2"
+                  >
+                    {editingDiscount ? "Update" : "Save"}
+                  </button>
+                </div>
+              </Dialog>
             </motion.div>
           </div>
         )}

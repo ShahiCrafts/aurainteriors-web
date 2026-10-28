@@ -53,7 +53,7 @@ describe("FilterSidebar material counts (FE-14)", () => {
 
   it("shows a count badge only for materials whose count is supplied", () => {
     render(
-      <FilterSidebar {...baseProps} materialCounts={{ Velvet: 7, Wood: 3 }} />
+      <FilterSidebar {...baseProps} materialCounts={{ Velvet: 7, Wood: 3 }} />,
     );
 
     expect(screen.getByText("7")).toBeInTheDocument();
@@ -101,7 +101,7 @@ describe("FilterSidebar price range + checkbox identity (FE-23)", () => {
       <FilterSidebar
         {...priceProps}
         selectedPriceRange={{ min: 10000, max: 50000 }}
-      />
+      />,
     );
     const { minInput, maxInput } = priceInputs();
     expect(minInput.value).toBe("10,000");
@@ -115,7 +115,7 @@ describe("FilterSidebar price range + checkbox identity (FE-23)", () => {
         {...priceProps}
         selectedPriceRange={{ min: 10000, max: 50000 }}
         onPriceChange={onPriceChange}
-      />
+      />,
     );
     fireEvent.click(screen.getByRole("button", { name: "RESET" }));
     expect(onPriceChange).toHaveBeenCalledWith({ min: 0, max: 500000 });
@@ -144,7 +144,7 @@ describe("FilterSidebar price range + checkbox identity (FE-23)", () => {
         {...priceProps}
         selectedPriceRange={{ min: 0, max: 100000 }}
         onPriceChange={onPriceChange}
-      />
+      />,
     );
     const { maxInput } = priceInputs();
     fireEvent.change(maxInput, { target: { value: "999999999" } });
@@ -157,18 +157,18 @@ describe("FilterSidebar price range + checkbox identity (FE-23)", () => {
       { _id: "cat-1", slug: "sofas", name: "Sofas", productCount: 3 },
     ];
     const { container } = render(
-      <FilterSidebar {...priceProps} categories={categories} />
+      <FilterSidebar {...priceProps} categories={categories} />,
     );
-    const labelBefore = [...container.querySelectorAll("label")].find(
-      (el) => el.textContent.includes("Sofas")
+    const labelBefore = [...container.querySelectorAll("label")].find((el) =>
+      el.textContent.includes("Sofas"),
     );
     expect(labelBefore).toBeTruthy();
 
     const { minInput } = priceInputs();
     fireEvent.change(minInput, { target: { value: "100" } });
 
-    const labelAfter = [...container.querySelectorAll("label")].find(
-      (el) => el.textContent.includes("Sofas")
+    const labelAfter = [...container.querySelectorAll("label")].find((el) =>
+      el.textContent.includes("Sofas"),
     );
     // Same DOM node: the checkbox subtree was NOT unmounted/remounted.
     expect(labelAfter).toBe(labelBefore);
@@ -181,10 +181,10 @@ describe("FilterSidebar price range + checkbox identity (FE-23)", () => {
         {...priceProps}
         selectedRating={4}
         onRatingChange={onRatingChange}
-      />
+      />,
     );
     expect(
-      screen.getByRole("button", { name: /4 stars/i })
+      screen.getByRole("button", { name: /4 stars/i }),
     ).toBeInTheDocument();
     fireEvent.click(screen.getByRole("button", { name: /any rating/i }));
     expect(onRatingChange).toHaveBeenCalledWith(0);

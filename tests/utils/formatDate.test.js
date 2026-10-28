@@ -21,15 +21,20 @@ describe("formatDate (REUSE-017)", () => {
   it("matches the en-NP formatter for the same options (fixed locale)", () => {
     const options = { month: "short", day: "numeric", year: "numeric" };
     expect(formatDate(D, options)).toBe(
-      new Intl.DateTimeFormat("en-NP", options).format(new Date(D))
+      new Intl.DateTimeFormat("en-NP", options).format(new Date(D)),
     );
   });
 
   it("passes options through (long month, weekday)", () => {
-    expect(formatDate(D, { month: "long", day: "numeric", year: "numeric" })).toContain("October");
+    expect(
+      formatDate(D, { month: "long", day: "numeric", year: "numeric" }),
+    ).toContain("October");
     expect(formatDate(D, { weekday: "long" })).toContain("Saturday");
     expect(formatDate(D, { day: "2-digit", month: "short" })).toBe(
-      new Intl.DateTimeFormat("en-NP", { day: "2-digit", month: "short" }).format(new Date(D))
+      new Intl.DateTimeFormat("en-NP", {
+        day: "2-digit",
+        month: "short",
+      }).format(new Date(D)),
     );
   });
 
@@ -54,7 +59,10 @@ describe("formatDateTime / formatTime", () => {
 
   it("formatTime renders time only and honours options", () => {
     expect(formatTime(D)).toBe(
-      new Intl.DateTimeFormat("en-NP", { hour: "2-digit", minute: "2-digit" }).format(new Date(D))
+      new Intl.DateTimeFormat("en-NP", {
+        hour: "2-digit",
+        minute: "2-digit",
+      }).format(new Date(D)),
     );
     expect(formatTime(null)).toBe("");
     expect(formatDateTime(null)).toBe("");
@@ -70,16 +78,30 @@ describe("formatRelative", () => {
     expect(formatRelative(ago(5 * 60 * 1000), { now })).toBe("5 minutes ago");
     expect(formatRelative(ago(3 * 3600 * 1000), { now })).toBe("3 hours ago");
     expect(formatRelative(ago(2 * 86400 * 1000), { now })).toBe("2 days ago");
-    expect(formatRelative(ago(40 * 86400 * 1000), { now })).toBe("1 months ago");
+    expect(formatRelative(ago(40 * 86400 * 1000), { now })).toBe(
+      "1 months ago",
+    );
   });
 
   it("day style matches the ReviewItem phrasing", () => {
-    expect(formatRelative(ago(3600 * 1000), { now, style: "day" })).toBe("Today");
-    expect(formatRelative(ago(86400 * 1000), { now, style: "day" })).toBe("Yesterday");
-    expect(formatRelative(ago(3 * 86400 * 1000), { now, style: "day" })).toBe("3 days ago");
-    expect(formatRelative(ago(14 * 86400 * 1000), { now, style: "day" })).toBe("2 weeks ago");
-    expect(formatRelative(ago(90 * 86400 * 1000), { now, style: "day" })).toBe("3 months ago");
-    expect(formatRelative(ago(400 * 86400 * 1000), { now, style: "day" })).toBe("1 years ago");
+    expect(formatRelative(ago(3600 * 1000), { now, style: "day" })).toBe(
+      "Today",
+    );
+    expect(formatRelative(ago(86400 * 1000), { now, style: "day" })).toBe(
+      "Yesterday",
+    );
+    expect(formatRelative(ago(3 * 86400 * 1000), { now, style: "day" })).toBe(
+      "3 days ago",
+    );
+    expect(formatRelative(ago(14 * 86400 * 1000), { now, style: "day" })).toBe(
+      "2 weeks ago",
+    );
+    expect(formatRelative(ago(90 * 86400 * 1000), { now, style: "day" })).toBe(
+      "3 months ago",
+    );
+    expect(formatRelative(ago(400 * 86400 * 1000), { now, style: "day" })).toBe(
+      "1 years ago",
+    );
   });
 
   it("returns '' for invalid input", () => {

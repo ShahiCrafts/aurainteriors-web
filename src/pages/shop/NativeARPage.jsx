@@ -14,11 +14,16 @@ const INTRO_PRODUCT = {
   _id: "intro",
   slug: "intro",
   name: "Aura Signature Sofa",
-  description: "Experience modern luxury with our signature handcrafted sofa piece.",
+  description:
+    "Experience modern luxury with our signature handcrafted sofa piece.",
   price: 45000,
   modelFiles: [{ format: "glb", url: "/sofa_chair.glb" }],
   modelUrl: "/sofa_chair.glb",
-  images: [{ url: "https://images.unsplash.com/photo-1567016376408-0226e4d0c1ea?w=800" }]
+  images: [
+    {
+      url: "https://images.unsplash.com/photo-1567016376408-0226e4d0c1ea?w=800",
+    },
+  ],
 };
 
 export default function NativeARPage() {
@@ -26,10 +31,14 @@ export default function NativeARPage() {
   const location = useLocation();
   const initialProductSlug = useMemo(
     () => new URLSearchParams(location.search).get("select"),
-    [location.search]
+    [location.search],
   );
-  const { isAuthenticated } = useAuthStore(useShallow((state) => ({ isAuthenticated: state.isAuthenticated })));
-  const { addItem: addGuestItem } = useGuestCartStore(useShallow((state) => ({ addItem: state.addItem })));
+  const { isAuthenticated } = useAuthStore(
+    useShallow((state) => ({ isAuthenticated: state.isAuthenticated })),
+  );
+  const { addItem: addGuestItem } = useGuestCartStore(
+    useShallow((state) => ({ addItem: state.addItem })),
+  );
   const [userSelectedProduct, setUserSelectedProduct] = useState(null);
   const [customization, setCustomization] = useState({});
   const addInFlightRef = useRef(false);
@@ -51,7 +60,8 @@ export default function NativeARPage() {
   // The picker catalog (walks every server page — see
   // useArCatalogProducts) and the category tree stream in behind the
   // AR experience; neither gates rendering or session start.
-  const { data: catalogData, isLoading: catalogLoading } = useArCatalogProducts();
+  const { data: catalogData, isLoading: catalogLoading } =
+    useArCatalogProducts();
   const { data: categoriesData } = useCategories();
 
   const { mutate: addToCart, isPending: isAddingToCart } = useAddToCart();
@@ -60,7 +70,7 @@ export default function NativeARPage() {
 
   const arProducts = useMemo(
     () => (catalogData?.data?.products || []).filter(hasArModel),
-    [catalogData]
+    [catalogData],
   );
 
   const allArProducts = useMemo(() => {
@@ -90,7 +100,7 @@ export default function NativeARPage() {
     // The direct lookup settled without a product (e.g. 404): the
     // catalog may still know the slug; otherwise fall back to intro.
     const found = arProducts.find(
-      (p) => p.slug === initialProductSlug || p._id === initialProductSlug
+      (p) => p.slug === initialProductSlug || p._id === initialProductSlug,
     );
     if (found) return found;
     if (!catalogLoading || linkedError) return INTRO_PRODUCT;
@@ -140,7 +150,7 @@ export default function NativeARPage() {
         onSettled: () => {
           addInFlightRef.current = false;
         },
-      }
+      },
     );
   };
 

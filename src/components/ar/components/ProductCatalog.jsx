@@ -22,7 +22,6 @@ const ProductCatalog = ({
       className="absolute bottom-0 left-0 right-0 z-40 safe-bottom bg-linear-to-t from-black via-black/90 to-transparent pt-8"
       data-hide-on-capture
     >
-
       <div className="flex justify-between items-end px-5 pb-3 gap-3">
         <div className="flex items-center gap-3 flex-1">
           <div className="w-10 h-10 border border-white/10 bg-white/5 backdrop-blur-xl rounded-2xl flex items-center justify-center">

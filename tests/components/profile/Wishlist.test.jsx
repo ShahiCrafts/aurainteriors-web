@@ -72,7 +72,7 @@ function renderWishlist(product) {
   return render(
     <MemoryRouter>
       <Wishlist />
-    </MemoryRouter>
+    </MemoryRouter>,
   );
 }
 
@@ -141,7 +141,7 @@ describe("Wishlist add-all + pagination (FE-27)", () => {
     return render(
       <MemoryRouter>
         <Wishlist />
-      </MemoryRouter>
+      </MemoryRouter>,
     );
   }
 
@@ -153,7 +153,7 @@ describe("Wishlist add-all + pagination (FE-27)", () => {
   it("announces success only after every add resolves", async () => {
     const resolvers = [];
     cartState.mutateAsync = vi.fn(
-      () => new Promise((resolve) => resolvers.push(resolve))
+      () => new Promise((resolve) => resolvers.push(resolve)),
     );
     renderItems([makeProduct(1), makeProduct(2)]);
 
@@ -166,8 +166,8 @@ describe("Wishlist add-all + pagination (FE-27)", () => {
     resolvers.forEach((resolve) => resolve());
     await waitFor(() =>
       expect(toast.success).toHaveBeenCalledWith(
-        expect.stringContaining("2 items added to cart")
-      )
+        expect.stringContaining("2 items added to cart"),
+      ),
     );
     expect(toast.error).not.toHaveBeenCalled();
     expect(toast.warning).not.toHaveBeenCalled();
@@ -177,7 +177,7 @@ describe("Wishlist add-all + pagination (FE-27)", () => {
     cartState.mutateAsync = vi.fn(({ productId }) =>
       productId === "prod-2"
         ? Promise.reject(new Error("out of stock"))
-        : Promise.resolve()
+        : Promise.resolve(),
     );
     renderItems([makeProduct(1), makeProduct(2)]);
 
@@ -185,8 +185,8 @@ describe("Wishlist add-all + pagination (FE-27)", () => {
 
     await waitFor(() =>
       expect(toast.warning).toHaveBeenCalledWith(
-        expect.stringContaining("1 of 2")
-      )
+        expect.stringContaining("1 of 2"),
+      ),
     );
     expect(toast.success).not.toHaveBeenCalled();
   });
@@ -217,7 +217,7 @@ describe("Wishlist add-all + pagination (FE-27)", () => {
     utils.rerender(
       <MemoryRouter>
         <Wishlist />
-      </MemoryRouter>
+      </MemoryRouter>,
     );
 
     // The remaining items are shown — not an empty stranded grid.

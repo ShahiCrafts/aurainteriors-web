@@ -44,32 +44,116 @@ vi.mock("../../src/lib/adminScope.js", () => ({
 }));
 
 vi.mock("../../src/api/index.js", () => ({
-  default: { get: vi.fn().mockRejectedValue(new Error("401")), post: vi.fn(), patch: vi.fn(), delete: vi.fn() },
+  default: {
+    get: vi.fn().mockRejectedValue(new Error("401")),
+    post: vi.fn(),
+    patch: vi.fn(),
+    delete: vi.fn(),
+  },
 }));
 
 vi.mock("../../src/api/announcementApi.js", () => ({
-  default: { getAll: vi.fn(), getById: vi.fn(), create: vi.fn(), update: vi.fn(), delete: vi.fn(), publish: vi.fn(), schedule: vi.fn(), archive: vi.fn(), getStats: vi.fn(), getPublic: vi.fn(), getPublicById: vi.fn() },
+  default: {
+    getAll: vi.fn(),
+    getById: vi.fn(),
+    create: vi.fn(),
+    update: vi.fn(),
+    delete: vi.fn(),
+    publish: vi.fn(),
+    schedule: vi.fn(),
+    archive: vi.fn(),
+    getStats: vi.fn(),
+    getPublic: vi.fn(),
+    getPublicById: vi.fn(),
+  },
 }));
 vi.mock("../../src/api/contactApi.js", () => ({
-  default: { getAll: vi.fn(), getById: vi.fn(), update: vi.fn(), markAsRead: vi.fn(), respond: vi.fn(), delete: vi.fn(), bulkUpdate: vi.fn(), getStats: vi.fn(), submit: vi.fn() },
+  default: {
+    getAll: vi.fn(),
+    getById: vi.fn(),
+    update: vi.fn(),
+    markAsRead: vi.fn(),
+    respond: vi.fn(),
+    delete: vi.fn(),
+    bulkUpdate: vi.fn(),
+    getStats: vi.fn(),
+    submit: vi.fn(),
+  },
 }));
 vi.mock("../../src/api/discountApi.js", () => ({
-  default: { getAll: vi.fn(), getById: vi.fn(), create: vi.fn(), update: vi.fn(), delete: vi.fn(), apply: vi.fn(), validate: vi.fn(), preview: vi.fn() },
+  default: {
+    getAll: vi.fn(),
+    getById: vi.fn(),
+    create: vi.fn(),
+    update: vi.fn(),
+    delete: vi.fn(),
+    apply: vi.fn(),
+    validate: vi.fn(),
+    preview: vi.fn(),
+  },
 }));
 vi.mock("../../src/api/promotionApi.js", () => ({
-  default: { getAll: vi.fn(), getById: vi.fn(), create: vi.fn(), update: vi.fn(), delete: vi.fn(), send: vi.fn(), schedule: vi.fn(), cancel: vi.fn(), getAnalytics: vi.fn(), preview: vi.fn(), trackEngagement: vi.fn() },
+  default: {
+    getAll: vi.fn(),
+    getById: vi.fn(),
+    create: vi.fn(),
+    update: vi.fn(),
+    delete: vi.fn(),
+    send: vi.fn(),
+    schedule: vi.fn(),
+    cancel: vi.fn(),
+    getAnalytics: vi.fn(),
+    preview: vi.fn(),
+    trackEngagement: vi.fn(),
+  },
 }));
 vi.mock("../../src/api/userApi.js", () => ({
-  default: { getAll: vi.fn(), getById: vi.fn(), updateStatus: vi.fn(), delete: vi.fn(), resetPassword: vi.fn() },
+  default: {
+    getAll: vi.fn(),
+    getById: vi.fn(),
+    updateStatus: vi.fn(),
+    delete: vi.fn(),
+    resetPassword: vi.fn(),
+  },
 }));
 vi.mock("../../src/api/categoryApi.js", () => ({
-  default: { getAll: vi.fn(), getTree: vi.fn(), getById: vi.fn(), getProducts: vi.fn(), create: vi.fn(), update: vi.fn(), delete: vi.fn() },
+  default: {
+    getAll: vi.fn(),
+    getTree: vi.fn(),
+    getById: vi.fn(),
+    getProducts: vi.fn(),
+    create: vi.fn(),
+    update: vi.fn(),
+    delete: vi.fn(),
+  },
 }));
 vi.mock("../../src/api/productApi.js", () => ({
-  default: { getAll: vi.fn(), getById: vi.fn(), getFeatured: vi.fn(), getNewArrivals: vi.fn(), getRelated: vi.fn(), create: vi.fn(), update: vi.fn(), delete: vi.fn(), hardDelete: vi.fn(), setPrimaryImage: vi.fn(), updateStock: vi.fn() },
+  default: {
+    getAll: vi.fn(),
+    getById: vi.fn(),
+    getFeatured: vi.fn(),
+    getNewArrivals: vi.fn(),
+    getRelated: vi.fn(),
+    create: vi.fn(),
+    update: vi.fn(),
+    delete: vi.fn(),
+    hardDelete: vi.fn(),
+    setPrimaryImage: vi.fn(),
+    updateStock: vi.fn(),
+  },
 }));
 vi.mock("../../src/api/blogApi.js", () => ({
-  default: { getAll: vi.fn(), getById: vi.fn(), getCategories: vi.fn(), getPopular: vi.fn(), getFeatured: vi.fn(), getRelated: vi.fn(), toggleLike: vi.fn(), getSources: vi.fn(), getStats: vi.fn() },
+  default: {
+    getAll: vi.fn(),
+    getById: vi.fn(),
+    getCategories: vi.fn(),
+    getPopular: vi.fn(),
+    getFeatured: vi.fn(),
+    getRelated: vi.fn(),
+    toggleLike: vi.fn(),
+    getSources: vi.fn(),
+    getStats: vi.fn(),
+  },
 }));
 vi.mock("../../src/api/addressApi.js", () => ({
   getAllAddresses: vi.fn(),
@@ -91,15 +175,55 @@ import blogApi from "../../src/api/blogApi.js";
 import * as addressApi from "../../src/api/addressApi.js";
 import useAuthStore from "../../src/store/authStore.js";
 
-import { ANNOUNCEMENT_KEYS, useCreateAnnouncement, useUpdateAnnouncement, useDeleteAnnouncement } from "../../src/hooks/admin/useAnnouncementTan.js";
-import { CONTACT_KEYS, useUpdateContact, useMarkAsRead, useDeleteContact, useBulkUpdateContacts } from "../../src/hooks/admin/useContactTan.js";
-import { DISCOUNT_KEYS, useCreateDiscount, useUpdateDiscount, useDeleteDiscount } from "../../src/hooks/admin/useDiscountTan.js";
-import { PROMOTION_KEYS, useCreatePromotion, useUpdatePromotion, useSendPromotion } from "../../src/hooks/admin/usePromotionTan.js";
-import { USER_KEYS, useUpdateUserStatus, useDeleteUser } from "../../src/hooks/admin/useUserTan.js";
-import { useCreateCategory, useUpdateCategory, useDeleteCategory } from "../../src/hooks/product/useCategoryTan.js";
-import { useCreateProduct, useUpdateProduct, useDeleteProduct, useUpdateStock, useSetPrimaryImage } from "../../src/hooks/product/useProductTan.js";
+import {
+  ANNOUNCEMENT_KEYS,
+  useCreateAnnouncement,
+  useUpdateAnnouncement,
+  useDeleteAnnouncement,
+} from "../../src/hooks/admin/useAnnouncementTan.js";
+import {
+  CONTACT_KEYS,
+  useUpdateContact,
+  useMarkAsRead,
+  useDeleteContact,
+  useBulkUpdateContacts,
+} from "../../src/hooks/admin/useContactTan.js";
+import {
+  DISCOUNT_KEYS,
+  useCreateDiscount,
+  useUpdateDiscount,
+  useDeleteDiscount,
+} from "../../src/hooks/admin/useDiscountTan.js";
+import {
+  PROMOTION_KEYS,
+  useCreatePromotion,
+  useUpdatePromotion,
+  useSendPromotion,
+} from "../../src/hooks/admin/usePromotionTan.js";
+import {
+  USER_KEYS,
+  useUpdateUserStatus,
+  useDeleteUser,
+} from "../../src/hooks/admin/useUserTan.js";
+import {
+  useCreateCategory,
+  useUpdateCategory,
+  useDeleteCategory,
+} from "../../src/hooks/product/useCategoryTan.js";
+import {
+  useCreateProduct,
+  useUpdateProduct,
+  useDeleteProduct,
+  useUpdateStock,
+  useSetPrimaryImage,
+} from "../../src/hooks/product/useProductTan.js";
 import { useToggleBlogLike } from "../../src/hooks/blog/useBlogTan.js";
-import { useCreateAddress, useUpdateAddress, useDeleteAddress, useSetDefaultAddress } from "../../src/hooks/profile/useAddressTan.js";
+import {
+  useCreateAddress,
+  useUpdateAddress,
+  useDeleteAddress,
+  useSetDefaultAddress,
+} from "../../src/hooks/profile/useAddressTan.js";
 
 // Category / Product / Blog key factories are module-private; the
 // literals below are copied from their definitions in source.
@@ -144,11 +268,15 @@ function seed(client, entries) {
   for (const [key, data] of entries) client.setQueryData(key, data);
 }
 
-const invalidated = (client, key) => client.getQueryState(key)?.isInvalidated === true;
-const notInvalidated = (client, key) => client.getQueryState(key)?.isInvalidated === false;
+const invalidated = (client, key) =>
+  client.getQueryState(key)?.isInvalidated === true;
+const notInvalidated = (client, key) =>
+  client.getQueryState(key)?.isInvalidated === false;
 
 async function runMutation(client, useHook, arg) {
-  const { result } = renderHook(() => useHook(), { wrapper: wrapperFor(client) });
+  const { result } = renderHook(() => useHook(), {
+    wrapper: wrapperFor(client),
+  });
   await act(async () => {
     await result.current.mutateAsync(arg);
   });
@@ -157,12 +285,29 @@ async function runMutation(client, useHook, arg) {
 
 beforeEach(() => {
   vi.clearAllMocks();
-  for (const api of [announcementApi, contactApi, discountApi, promotionApi, userApi, categoryApi, productApi, blogApi]) {
+  for (const api of [
+    announcementApi,
+    contactApi,
+    discountApi,
+    promotionApi,
+    userApi,
+    categoryApi,
+    productApi,
+    blogApi,
+  ]) {
     for (const fn of Object.values(api)) fn.mockResolvedValue({});
   }
-  for (const fn of Object.values(addressApi)) fn.mockResolvedValue({ data: {} });
-  blogApi.toggleLike.mockResolvedValue({ status: "success", data: { likes: 8 } });
-  useAuthStore.setState({ user: { _id: "user-1" }, isAuthenticated: true, loading: false });
+  for (const fn of Object.values(addressApi))
+    fn.mockResolvedValue({ data: {} });
+  blogApi.toggleLike.mockResolvedValue({
+    status: "success",
+    data: { likes: 8 },
+  });
+  useAuthStore.setState({
+    user: { _id: "user-1" },
+    isAuthenticated: true,
+    loading: false,
+  });
 });
 
 describe("FE-55 announcements: narrow invalidation", () => {
@@ -182,13 +327,20 @@ describe("FE-55 announcements: narrow invalidation", () => {
 
   it("update invalidates list + its detail + stats, NOT sibling details, public or other domains", async () => {
     const client = seededClient();
-    await runMutation(client, useUpdateAnnouncement, { id: "ann-1", data: { title: "New" } });
+    await runMutation(client, useUpdateAnnouncement, {
+      id: "ann-1",
+      data: { title: "New" },
+    });
     expect(invalidated(client, ANNOUNCEMENT_KEYS.list({ page: 1 }))).toBe(true);
     expect(invalidated(client, ANNOUNCEMENT_KEYS.detail("ann-1"))).toBe(true);
     // Stats cards sit on the same admin screen and count by status.
     expect(invalidated(client, ANNOUNCEMENT_KEYS.stats())).toBe(true);
-    expect(notInvalidated(client, ANNOUNCEMENT_KEYS.detail("ann-2"))).toBe(true);
-    expect(notInvalidated(client, ANNOUNCEMENT_KEYS.public({ page: 1 }))).toBe(true);
+    expect(notInvalidated(client, ANNOUNCEMENT_KEYS.detail("ann-2"))).toBe(
+      true,
+    );
+    expect(notInvalidated(client, ANNOUNCEMENT_KEYS.public({ page: 1 }))).toBe(
+      true,
+    );
     expect(notInvalidated(client, USER_KEYS.list({ page: 1 }))).toBe(true);
     expect(notInvalidated(client, CONTACT_KEYS.list({ page: 1 }))).toBe(true);
   });
@@ -198,8 +350,12 @@ describe("FE-55 announcements: narrow invalidation", () => {
     await runMutation(client, useCreateAnnouncement, { title: "Hi" });
     expect(invalidated(client, ANNOUNCEMENT_KEYS.list({ page: 1 }))).toBe(true);
     expect(invalidated(client, ANNOUNCEMENT_KEYS.stats())).toBe(true);
-    expect(notInvalidated(client, ANNOUNCEMENT_KEYS.detail("ann-1"))).toBe(true);
-    expect(notInvalidated(client, ANNOUNCEMENT_KEYS.public({ page: 1 }))).toBe(true);
+    expect(notInvalidated(client, ANNOUNCEMENT_KEYS.detail("ann-1"))).toBe(
+      true,
+    );
+    expect(notInvalidated(client, ANNOUNCEMENT_KEYS.public({ page: 1 }))).toBe(
+      true,
+    );
   });
 
   it("delete invalidates list + stats, NOT sibling details", async () => {
@@ -207,7 +363,9 @@ describe("FE-55 announcements: narrow invalidation", () => {
     await runMutation(client, useDeleteAnnouncement, "ann-1");
     expect(invalidated(client, ANNOUNCEMENT_KEYS.list({ page: 1 }))).toBe(true);
     expect(invalidated(client, ANNOUNCEMENT_KEYS.stats())).toBe(true);
-    expect(notInvalidated(client, ANNOUNCEMENT_KEYS.detail("ann-2"))).toBe(true);
+    expect(notInvalidated(client, ANNOUNCEMENT_KEYS.detail("ann-2"))).toBe(
+      true,
+    );
   });
 });
 
@@ -233,7 +391,9 @@ describe("FE-55 contacts: narrow invalidation", () => {
     expect(notInvalidated(client, CONTACT_KEYS.detail("c-2"))).toBe(true);
     // No page consumes contact stats (grep: hook defined, never used).
     expect(notInvalidated(client, CONTACT_KEYS.stats())).toBe(true);
-    expect(notInvalidated(client, ANNOUNCEMENT_KEYS.list({ page: 1 }))).toBe(true);
+    expect(notInvalidated(client, ANNOUNCEMENT_KEYS.list({ page: 1 }))).toBe(
+      true,
+    );
   });
 
   it("markAsRead invalidates list + that contact's detail only", async () => {
@@ -254,7 +414,10 @@ describe("FE-55 contacts: narrow invalidation", () => {
 
   it("bulk update invalidates the list + each affected detail, no others", async () => {
     const client = seededClient();
-    await runMutation(client, useBulkUpdateContacts, { ids: ["c-1", "c-2"], isRead: true });
+    await runMutation(client, useBulkUpdateContacts, {
+      ids: ["c-1", "c-2"],
+      isRead: true,
+    });
     expect(invalidated(client, CONTACT_KEYS.list({ page: 1 }))).toBe(true);
     expect(invalidated(client, CONTACT_KEYS.detail("c-1"))).toBe(true);
     expect(invalidated(client, CONTACT_KEYS.detail("c-2"))).toBe(true);
@@ -355,7 +518,10 @@ describe("FE-55 users: narrow invalidation", () => {
 
   it("updateStatus invalidates list + its detail, NOT sibling detail", async () => {
     const client = seededClient();
-    await runMutation(client, useUpdateUserStatus, { id: "u-1", isActive: false });
+    await runMutation(client, useUpdateUserStatus, {
+      id: "u-1",
+      isActive: false,
+    });
     expect(invalidated(client, USER_KEYS.list({ page: 1 }))).toBe(true);
     expect(invalidated(client, USER_KEYS.detail("u-1"))).toBe(true);
     expect(notInvalidated(client, USER_KEYS.detail("u-2"))).toBe(true);
@@ -389,7 +555,9 @@ describe("FE-55 categories: narrow invalidation", () => {
     expect(invalidated(client, CATEGORY_KEYS.tree())).toBe(true);
     expect(invalidated(client, CATEGORY_KEYS.detail("cat-1"))).toBe(true);
     expect(notInvalidated(client, CATEGORY_KEYS.detail("cat-2"))).toBe(true);
-    expect(notInvalidated(client, CATEGORY_KEYS.products("cat-1", {}))).toBe(true);
+    expect(notInvalidated(client, CATEGORY_KEYS.products("cat-1", {}))).toBe(
+      true,
+    );
   });
 
   it("create invalidates list + tree only", async () => {
@@ -431,7 +599,9 @@ describe("FE-55 products: narrow invalidation", () => {
     expect(invalidated(client, PRODUCT_KEYS.featured(8))).toBe(true);
     expect(invalidated(client, PRODUCT_KEYS.newArrivals(8))).toBe(true);
     expect(notInvalidated(client, PRODUCT_KEYS.detail("prod-2"))).toBe(true);
-    expect(notInvalidated(client, PRODUCT_KEYS.related("prod-2", 4))).toBe(true);
+    expect(notInvalidated(client, PRODUCT_KEYS.related("prod-2", 4))).toBe(
+      true,
+    );
   });
 
   it("create invalidates list + featured/newArrivals, NOT details", async () => {
@@ -463,7 +633,10 @@ describe("FE-55 products: narrow invalidation", () => {
 
   it("setPrimaryImage invalidates list + detail + featured/newArrivals (thumbnails everywhere), NOT sibling detail", async () => {
     const client = seededClient();
-    await runMutation(client, useSetPrimaryImage, { productId: "prod-1", imageId: "img-9" });
+    await runMutation(client, useSetPrimaryImage, {
+      productId: "prod-1",
+      imageId: "img-9",
+    });
     expect(invalidated(client, PRODUCT_KEYS.list({ page: 1 }))).toBe(true);
     expect(invalidated(client, PRODUCT_KEYS.detail("prod-1"))).toBe(true);
     expect(invalidated(client, PRODUCT_KEYS.featured(8))).toBe(true);
@@ -476,12 +649,45 @@ describe("FE-55 blog like: direct cache update, no domain invalidation", () => {
   function seededClient() {
     const client = makeClient();
     seed(client, [
-      [BLOG_KEYS.detail("post-1"), { status: "success", data: { blog: { _id: "post-1", slug: "post-one", likes: 7 } } }],
-      [BLOG_KEYS.list({ page: 1 }), { status: "success", data: { blogs: [{ _id: "post-1", likes: 7 }, { _id: "post-2", likes: 3 }], pagination: { page: 1, pages: 1 } } }],
-      [BLOG_KEYS.popular(5), { status: "success", data: { blogs: [{ _id: "post-1", likes: 7 }] } }],
-      [BLOG_KEYS.featured(3), { status: "success", data: { blogs: [{ _id: "post-2", likes: 3 }] } }],
-      [BLOG_KEYS.categories(), { status: "success", data: { categories: [{ slug: "design", count: 2 }] } }],
-      [BLOG_KEYS.related("post-9", 3), { status: "success", data: { blogs: [{ _id: "post-1", likes: 7 }] } }],
+      [
+        BLOG_KEYS.detail("post-1"),
+        {
+          status: "success",
+          data: { blog: { _id: "post-1", slug: "post-one", likes: 7 } },
+        },
+      ],
+      [
+        BLOG_KEYS.list({ page: 1 }),
+        {
+          status: "success",
+          data: {
+            blogs: [
+              { _id: "post-1", likes: 7 },
+              { _id: "post-2", likes: 3 },
+            ],
+            pagination: { page: 1, pages: 1 },
+          },
+        },
+      ],
+      [
+        BLOG_KEYS.popular(5),
+        { status: "success", data: { blogs: [{ _id: "post-1", likes: 7 }] } },
+      ],
+      [
+        BLOG_KEYS.featured(3),
+        { status: "success", data: { blogs: [{ _id: "post-2", likes: 3 }] } },
+      ],
+      [
+        BLOG_KEYS.categories(),
+        {
+          status: "success",
+          data: { categories: [{ slug: "design", count: 2 }] },
+        },
+      ],
+      [
+        BLOG_KEYS.related("post-9", 3),
+        { status: "success", data: { blogs: [{ _id: "post-1", likes: 7 }] } },
+      ],
     ]);
     return client;
   }
@@ -490,12 +696,18 @@ describe("FE-55 blog like: direct cache update, no domain invalidation", () => {
     const client = seededClient();
     await runMutation(client, useToggleBlogLike, "post-1");
 
-    expect(client.getQueryData(BLOG_KEYS.detail("post-1")).data.blog.likes).toBe(8);
+    expect(
+      client.getQueryData(BLOG_KEYS.detail("post-1")).data.blog.likes,
+    ).toBe(8);
     const list = client.getQueryData(BLOG_KEYS.list({ page: 1 }));
     expect(list.data.blogs.find((b) => b._id === "post-1").likes).toBe(8);
     expect(list.data.blogs.find((b) => b._id === "post-2").likes).toBe(3);
-    expect(client.getQueryData(BLOG_KEYS.popular(5)).data.blogs[0].likes).toBe(8);
-    expect(client.getQueryData(BLOG_KEYS.related("post-9", 3)).data.blogs[0].likes).toBe(8);
+    expect(client.getQueryData(BLOG_KEYS.popular(5)).data.blogs[0].likes).toBe(
+      8,
+    );
+    expect(
+      client.getQueryData(BLOG_KEYS.related("post-9", 3)).data.blogs[0].likes,
+    ).toBe(8);
 
     for (const key of [
       BLOG_KEYS.detail("post-1"),
@@ -512,18 +724,27 @@ describe("FE-55 blog like: direct cache update, no domain invalidation", () => {
       status: "success",
       data: { categories: [{ slug: "design", count: 2 }] },
     });
-    expect(client.getQueryData(BLOG_KEYS.featured(3)).data.blogs[0].likes).toBe(3);
+    expect(client.getQueryData(BLOG_KEYS.featured(3)).data.blogs[0].likes).toBe(
+      3,
+    );
   });
 
   it("pen: liking a different post leaves the first post's cached counts untouched", async () => {
     const client = seededClient();
-    blogApi.toggleLike.mockResolvedValue({ status: "success", data: { likes: 4 } });
+    blogApi.toggleLike.mockResolvedValue({
+      status: "success",
+      data: { likes: 4 },
+    });
     await runMutation(client, useToggleBlogLike, "post-2");
     const list = client.getQueryData(BLOG_KEYS.list({ page: 1 }));
     expect(list.data.blogs.find((b) => b._id === "post-2").likes).toBe(4);
     expect(list.data.blogs.find((b) => b._id === "post-1").likes).toBe(7);
-    expect(client.getQueryData(BLOG_KEYS.detail("post-1")).data.blog.likes).toBe(7);
-    expect(client.getQueryData(BLOG_KEYS.featured(3)).data.blogs[0].likes).toBe(4);
+    expect(
+      client.getQueryData(BLOG_KEYS.detail("post-1")).data.blog.likes,
+    ).toBe(7);
+    expect(client.getQueryData(BLOG_KEYS.featured(3)).data.blogs[0].likes).toBe(
+      4,
+    );
   });
 
   it("fallback: a response without a usable count invalidates ONLY detail + list, never categories/popular/featured", async () => {
@@ -557,7 +778,10 @@ describe("FE-55 addresses: per-address invalidation", () => {
 
   it("update invalidates the list + ONLY that address's detail", async () => {
     const client = seededClient();
-    await runMutation(client, useUpdateAddress, { id: "addr-1", data: { city: "Pokhara" } });
+    await runMutation(client, useUpdateAddress, {
+      id: "addr-1",
+      data: { city: "Pokhara" },
+    });
     expect(invalidated(client, LIST_KEY)).toBe(true);
     expect(invalidated(client, DETAIL_1)).toBe(true);
     expect(notInvalidated(client, DETAIL_2)).toBe(true);

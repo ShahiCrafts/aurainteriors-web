@@ -77,14 +77,22 @@ describe("FE-45 shared phone validator (one rule for every form)", () => {
 
   for (const [name, schema, base] of forms) {
     it(`${name}: hyphenated server-legal number passes`, async () => {
-      await expect(schema.isValid({ ...base, phone: "+977-9841234567" })).resolves.toBe(true);
+      await expect(
+        schema.isValid({ ...base, phone: "+977-9841234567" }),
+      ).resolves.toBe(true);
     });
     it(`${name}: '+++++++' is rejected`, async () => {
-      await expect(schema.isValid({ ...base, phone: "+++++++" })).resolves.toBe(false);
+      await expect(schema.isValid({ ...base, phone: "+++++++" })).resolves.toBe(
+        false,
+      );
     });
     it(`${name}: too-short and too-long numbers are rejected`, async () => {
-      await expect(schema.isValid({ ...base, phone: "123" })).resolves.toBe(false);
-      await expect(schema.isValid({ ...base, phone: "1234567890123456" })).resolves.toBe(false);
+      await expect(schema.isValid({ ...base, phone: "123" })).resolves.toBe(
+        false,
+      );
+      await expect(
+        schema.isValid({ ...base, phone: "1234567890123456" }),
+      ).resolves.toBe(false);
     });
   }
 });
@@ -92,51 +100,101 @@ describe("FE-45 shared phone validator (one rule for every form)", () => {
 describe("FE-45 review rating maximum + integer (server: integer 1..5)", () => {
   const base = { rating: 5, title: "Great", comment: "Really great sofa." };
   it("rating 1 and 5 pass; 0, 5.5, 42 and 999 fail", async () => {
-    await expect(reviewSchema.isValid({ ...base, rating: 1 })).resolves.toBe(true);
-    await expect(reviewSchema.isValid({ ...base, rating: 5 })).resolves.toBe(true);
-    await expect(reviewSchema.isValid({ ...base, rating: 0 })).resolves.toBe(false);
-    await expect(reviewSchema.isValid({ ...base, rating: 5.5 })).resolves.toBe(false);
-    await expect(reviewSchema.isValid({ ...base, rating: 42 })).resolves.toBe(false);
-    await expect(reviewSchema.isValid({ ...base, rating: 999 })).resolves.toBe(false);
+    await expect(reviewSchema.isValid({ ...base, rating: 1 })).resolves.toBe(
+      true,
+    );
+    await expect(reviewSchema.isValid({ ...base, rating: 5 })).resolves.toBe(
+      true,
+    );
+    await expect(reviewSchema.isValid({ ...base, rating: 0 })).resolves.toBe(
+      false,
+    );
+    await expect(reviewSchema.isValid({ ...base, rating: 5.5 })).resolves.toBe(
+      false,
+    );
+    await expect(reviewSchema.isValid({ ...base, rating: 42 })).resolves.toBe(
+      false,
+    );
+    await expect(reviewSchema.isValid({ ...base, rating: 999 })).resolves.toBe(
+      false,
+    );
   });
   it("comment max mirrors the server cap of 1000 (at-limit passes, +1 fails)", async () => {
-    await expect(reviewSchema.isValid({ ...base, comment: "c".repeat(1000) })).resolves.toBe(true);
-    await expect(reviewSchema.isValid({ ...base, comment: "c".repeat(1001) })).resolves.toBe(false);
+    await expect(
+      reviewSchema.isValid({ ...base, comment: "c".repeat(1000) }),
+    ).resolves.toBe(true);
+    await expect(
+      reviewSchema.isValid({ ...base, comment: "c".repeat(1001) }),
+    ).resolves.toBe(false);
   });
 });
 
 describe("FE-45 client maximums mirror the server schemas", () => {
   it("shipping: firstName 50, addressLine1 200, city 100, postalCode 20, country 100", async () => {
-    await expect(shippingSchema.isValid({ ...SHIPPING, firstName: "f".repeat(50) })).resolves.toBe(true);
-    await expect(shippingSchema.isValid({ ...SHIPPING, firstName: "f".repeat(51) })).resolves.toBe(false);
-    await expect(shippingSchema.isValid({ ...SHIPPING, addressLine1: "a".repeat(201) })).resolves.toBe(false);
-    await expect(shippingSchema.isValid({ ...SHIPPING, city: "c".repeat(101) })).resolves.toBe(false);
-    await expect(shippingSchema.isValid({ ...SHIPPING, postalCode: "p".repeat(21) })).resolves.toBe(false);
-    await expect(shippingSchema.isValid({ ...SHIPPING, country: "c".repeat(101) })).resolves.toBe(false);
+    await expect(
+      shippingSchema.isValid({ ...SHIPPING, firstName: "f".repeat(50) }),
+    ).resolves.toBe(true);
+    await expect(
+      shippingSchema.isValid({ ...SHIPPING, firstName: "f".repeat(51) }),
+    ).resolves.toBe(false);
+    await expect(
+      shippingSchema.isValid({ ...SHIPPING, addressLine1: "a".repeat(201) }),
+    ).resolves.toBe(false);
+    await expect(
+      shippingSchema.isValid({ ...SHIPPING, city: "c".repeat(101) }),
+    ).resolves.toBe(false);
+    await expect(
+      shippingSchema.isValid({ ...SHIPPING, postalCode: "p".repeat(21) }),
+    ).resolves.toBe(false);
+    await expect(
+      shippingSchema.isValid({ ...SHIPPING, country: "c".repeat(101) }),
+    ).resolves.toBe(false);
   });
 
   it("address: fullName 100, addressLine1/2 200, city/state 100, postalCode 20, country 100", async () => {
-    await expect(addressSchema.isValid({ ...ADDRESS, fullName: "f".repeat(100) })).resolves.toBe(true);
-    await expect(addressSchema.isValid({ ...ADDRESS, fullName: "f".repeat(101) })).resolves.toBe(false);
-    await expect(addressSchema.isValid({ ...ADDRESS, addressLine1: "a".repeat(201) })).resolves.toBe(false);
-    await expect(addressSchema.isValid({ ...ADDRESS, addressLine2: "a".repeat(201) })).resolves.toBe(false);
-    await expect(addressSchema.isValid({ ...ADDRESS, state: "s".repeat(101) })).resolves.toBe(false);
+    await expect(
+      addressSchema.isValid({ ...ADDRESS, fullName: "f".repeat(100) }),
+    ).resolves.toBe(true);
+    await expect(
+      addressSchema.isValid({ ...ADDRESS, fullName: "f".repeat(101) }),
+    ).resolves.toBe(false);
+    await expect(
+      addressSchema.isValid({ ...ADDRESS, addressLine1: "a".repeat(201) }),
+    ).resolves.toBe(false);
+    await expect(
+      addressSchema.isValid({ ...ADDRESS, addressLine2: "a".repeat(201) }),
+    ).resolves.toBe(false);
+    await expect(
+      addressSchema.isValid({ ...ADDRESS, state: "s".repeat(101) }),
+    ).resolves.toBe(false);
   });
 
   it("personalInfo: first/last name max 50 (user model)", async () => {
-    await expect(personalInfoSchema.isValid({ ...PERSONAL, firstName: "f".repeat(51) })).resolves.toBe(false);
-    await expect(personalInfoSchema.isValid({ ...PERSONAL, lastName: "l".repeat(51) })).resolves.toBe(false);
+    await expect(
+      personalInfoSchema.isValid({ ...PERSONAL, firstName: "f".repeat(51) }),
+    ).resolves.toBe(false);
+    await expect(
+      personalInfoSchema.isValid({ ...PERSONAL, lastName: "l".repeat(51) }),
+    ).resolves.toBe(false);
   });
 
   it("personalInfo: gender enum includes the server's prefer_not_to_say", async () => {
-    await expect(personalInfoSchema.isValid({ ...PERSONAL, gender: "prefer_not_to_say" })).resolves.toBe(true);
-    await expect(personalInfoSchema.isValid({ ...PERSONAL, gender: "bogus" })).resolves.toBe(false);
+    await expect(
+      personalInfoSchema.isValid({ ...PERSONAL, gender: "prefer_not_to_say" }),
+    ).resolves.toBe(true);
+    await expect(
+      personalInfoSchema.isValid({ ...PERSONAL, gender: "bogus" }),
+    ).resolves.toBe(false);
   });
 
   it("personalInfo: a future dateOfBirth is rejected (evaluated per-validation, not at import)", async () => {
     const future = new Date(Date.now() + 24 * 60 * 60 * 1000);
-    await expect(personalInfoSchema.isValid({ ...PERSONAL, dateOfBirth: future })).resolves.toBe(false);
+    await expect(
+      personalInfoSchema.isValid({ ...PERSONAL, dateOfBirth: future }),
+    ).resolves.toBe(false);
     const past = new Date("1990-01-01");
-    await expect(personalInfoSchema.isValid({ ...PERSONAL, dateOfBirth: past })).resolves.toBe(true);
+    await expect(
+      personalInfoSchema.isValid({ ...PERSONAL, dateOfBirth: past }),
+    ).resolves.toBe(true);
   });
 });

@@ -8,7 +8,10 @@ import { formatNPR } from "../../utils/formatCurrency";
 const G = "#F27318";
 
 const topOffers = [
-  { icon: <Truck size={12} />, text: `Free delivery on orders above ${formatNPR(5000)}` },
+  {
+    icon: <Truck size={12} />,
+    text: `Free delivery on orders above ${formatNPR(5000)}`,
+  },
   { icon: <Tag size={12} />, text: "Use DECOR15 — flat 15% off sitewide" },
 ];
 
@@ -19,7 +22,12 @@ const topLinks = [
 
 export default function TopBar() {
   const navigate = useNavigate();
-  const { isAuthenticated, openAuthModal } = useAuthStore(useShallow((state) => ({ isAuthenticated: state.isAuthenticated, openAuthModal: state.openAuthModal })));
+  const { isAuthenticated, openAuthModal } = useAuthStore(
+    useShallow((state) => ({
+      isAuthenticated: state.isAuthenticated,
+      openAuthModal: state.openAuthModal,
+    })),
+  );
   const { defaultAddress, isLoading } = useDefaultAddress();
 
   const handleAddressClick = () => {
@@ -47,33 +55,33 @@ export default function TopBar() {
         >
           <MapPin size={14} color={G} className="shrink-0" />
           <span className="hidden sm:inline">Deliver to</span>
-          <span className="font-bold text-[#1A1714] border-b-[1.5px] border-dashed border-[#F27318]">
+          <span className="font-bold text-[#1A1714] border-b-[1.5px] border-dashed border-brand">
             {addressText}
           </span>
         </div>
-        <div className="hidden lg:block w-[1px] h-[18px] bg-[#DDDBD8]" />
-        <div className="hidden lg:flex items-center gap-[14px]">
+        <div className="hidden lg:block w-px h-[18px] bg-[#DDDBD8]" />
+        <div className="hidden lg:flex items-center gap-3.5">
           {topOffers.map((o, i) => (
-            <div key={i} className="flex items-center gap-[14px]">
+            <div key={i} className="flex items-center gap-3.5">
               <div className="flex items-center gap-[5px] text-[13px] text-[#5A5248] whitespace-nowrap">
-                <span className="text-[#F27318] shrink-0">{o.icon}</span>
+                <span className="text-brand shrink-0">{o.icon}</span>
                 <span>{o.text}</span>
               </div>
               {i < topOffers.length - 1 && (
-                <div className="w-[1px] h-[14px] bg-[#DDDBD8]" />
+                <div className="w-px h-3.5 bg-[#DDDBD8]" />
               )}
             </div>
           ))}
         </div>
       </div>
-      <div className="flex items-center gap-1 sm:gap-[2px] overflow-x-auto scrollbar-hide">
+      <div className="flex items-center gap-1 sm:gap-0.5 overflow-x-auto scrollbar-hide">
         {topLinks.map((l, i) => (
-          <div key={l.label} className="flex items-center gap-1 sm:gap-[2px]">
+          <div key={l.label} className="flex items-center gap-1 sm:gap-0.5">
             {i > 0 && (
-              <div className="hidden sm:block w-[1px] h-[14px] md:h-[18px] bg-[#DDDBD8] mx-1 sm:mx-0" />
+              <div className="hidden sm:block w-px h-3.5 md:h-[18px] bg-[#DDDBD8] mx-1 sm:mx-0" />
             )}
-            <span className="flex items-center gap-1 sm:gap-[5px] text-[11px] sm:text-[13.5px] font-light text-[#6A6058] cursor-pointer px-2 sm:px-[9px] py-[5px] rounded-[7px] whitespace-nowrap transition-all duration-[180ms] hover:bg-[#ECEAE6] hover:text-[#1A1714]">
-              <span className="text-[#F27318] shrink-0">{l.icon}</span>
+            <span className="flex items-center gap-1 sm:gap-[5px] text-[11px] sm:text-[13.5px] font-light text-[#6A6058] cursor-pointer px-2 sm:px-[9px] py-[5px] rounded-[7px] whitespace-nowrap transition-all duration-180 hover:bg-[#ECEAE6] hover:text-[#1A1714]">
+              <span className="text-brand shrink-0">{l.icon}</span>
               <span className="hidden sm:inline">{l.label}</span>
             </span>
           </div>

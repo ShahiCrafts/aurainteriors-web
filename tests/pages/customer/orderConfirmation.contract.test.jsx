@@ -20,8 +20,12 @@ vi.mock("../../../src/api/index.js", () => ({
   default: {
     get: vi.fn(() => Promise.reject(new Error("mocked: no network in tests"))),
     post: vi.fn(() => Promise.reject(new Error("mocked: no network in tests"))),
-    patch: vi.fn(() => Promise.reject(new Error("mocked: no network in tests"))),
-    delete: vi.fn(() => Promise.reject(new Error("mocked: no network in tests"))),
+    patch: vi.fn(() =>
+      Promise.reject(new Error("mocked: no network in tests")),
+    ),
+    delete: vi.fn(() =>
+      Promise.reject(new Error("mocked: no network in tests")),
+    ),
   },
 }));
 
@@ -103,7 +107,7 @@ async function renderConfirmation(order) {
           />
         </Routes>
       </MemoryRouter>
-    </QueryClientProvider>
+    </QueryClientProvider>,
   );
   // The invoice block renders only after the tracking mutation succeeds.
   await screen.findByText("Date Issued");
@@ -120,13 +124,15 @@ describe("FE-39 sibling: OrderConfirmationPage vs the trimmed tracking view", ()
 
     expect(screen.getByText(formatDate(order.createdAt))).toBeInTheDocument();
     const expectedEta = formatDate(
-      new Date(new Date(order.createdAt).getTime() + 10 * DAY_MS)
+      new Date(new Date(order.createdAt).getTime() + 10 * DAY_MS),
     );
     expect(screen.getByText(expectedEta)).toBeInTheDocument();
     // Real in-shape data still renders.
     expect(screen.getByText("Test Sofa")).toBeInTheDocument();
     // The identity shown is the email the customer tracked with.
-    expect(screen.getAllByText("guest@example.com").length).toBeGreaterThanOrEqual(1);
+    expect(
+      screen.getAllByText("guest@example.com").length,
+    ).toBeGreaterThanOrEqual(1);
     expect(screen.getByText("Guest Customer")).toBeInTheDocument();
   });
 
@@ -138,9 +144,7 @@ describe("FE-39 sibling: OrderConfirmationPage vs the trimmed tracking view", ()
     // Both Date Issued and Est. Delivery fall back to the honest "N/A".
     expect(screen.getAllByText("N/A").length).toBeGreaterThanOrEqual(2);
     expect(screen.queryByText(formatDate(Date.now()))).toBeNull();
-    expect(
-      screen.queryByText(formatDate(Date.now() + 10 * DAY_MS))
-    ).toBeNull();
+    expect(screen.queryByText(formatDate(Date.now() + 10 * DAY_MS))).toBeNull();
   });
 
   it("PEN-TEST: legacy fields (orderedAt / shippingAddress / guestInfo / user) are ignored", async () => {
@@ -162,7 +166,9 @@ describe("FE-39 sibling: OrderConfirmationPage vs the trimmed tracking view", ()
     expect(screen.queryByText("Legacy User")).toBeNull();
     expect(screen.queryByText("legacy@example.com")).toBeNull();
     // Identity remains the real tracking email + honest generic label.
-    expect(screen.getAllByText("guest@example.com").length).toBeGreaterThanOrEqual(1);
+    expect(
+      screen.getAllByText("guest@example.com").length,
+    ).toBeGreaterThanOrEqual(1);
     expect(screen.getByText("Guest Customer")).toBeInTheDocument();
   });
 });

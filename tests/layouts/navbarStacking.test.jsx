@@ -10,18 +10,34 @@ import { MemoryRouter } from "react-router-dom";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 
 vi.mock("../../src/store/authStore", () => ({
-  default: () => ({ isAuthenticated: false, logout: vi.fn(), openAuthModal: vi.fn(), user: null }),
+  default: () => ({
+    isAuthenticated: false,
+    logout: vi.fn(),
+    openAuthModal: vi.fn(),
+    user: null,
+  }),
 }));
 vi.mock("../../src/store/guestCartStore", () => ({
   default: (selector) => selector({ items: [] }),
 }));
-vi.mock("../../src/hooks/cart/useCartTan", () => ({ useCart: () => ({ data: undefined }) }));
-vi.mock("../../src/hooks/cart/useWishlistTan", () => ({ useWishlist: () => ({ data: undefined }) }));
-vi.mock("../../src/hooks/product/useProductTan", () => ({ useProducts: () => ({ data: undefined, isLoading: false }) }));
-vi.mock("../../src/hooks/product/useCategoryTan", () => ({
-  useCategoryTree: () => ({ data: { data: { categories: [] } }, isLoading: false }),
+vi.mock("../../src/hooks/cart/useCartTan", () => ({
+  useCart: () => ({ data: undefined }),
 }));
-vi.mock("../../src/hooks/product/useArCatalogTan", () => ({ useArCatalogProducts: () => ({ data: undefined }) }));
+vi.mock("../../src/hooks/cart/useWishlistTan", () => ({
+  useWishlist: () => ({ data: undefined }),
+}));
+vi.mock("../../src/hooks/product/useProductTan", () => ({
+  useProducts: () => ({ data: undefined, isLoading: false }),
+}));
+vi.mock("../../src/hooks/product/useCategoryTan", () => ({
+  useCategoryTree: () => ({
+    data: { data: { categories: [] } },
+    isLoading: false,
+  }),
+}));
+vi.mock("../../src/hooks/product/useArCatalogTan", () => ({
+  useArCatalogProducts: () => ({ data: undefined }),
+}));
 
 import Navbar from "../../src/layouts/customer/Navbar";
 import CategoryBar from "../../src/components/navigation/CategoryBar";
@@ -40,7 +56,7 @@ describe("Navbar / CategoryBar stacking", () => {
           <Navbar />
           <CategoryBar />
         </MemoryRouter>
-      </QueryClientProvider>
+      </QueryClientProvider>,
     );
     const header = container.querySelector("nav.sticky");
     const categoryBar = container.querySelector("div.sticky");

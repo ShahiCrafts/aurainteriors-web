@@ -23,7 +23,12 @@ const SIZE_CLASSES = {
  *
  * @param {PriceProps} props
  */
-export default function Price({ amount, compareAt, size = "md", className = "" }) {
+export default function Price({
+  amount,
+  compareAt,
+  size = "md",
+  className = "",
+}) {
   const sizeClass = SIZE_CLASSES[size] || SIZE_CLASSES.md;
   const showCompare =
     compareAt != null &&

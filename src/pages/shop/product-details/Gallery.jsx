@@ -1,11 +1,5 @@
 import { motion, AnimatePresence } from "framer-motion";
-import {
-  Star,
-  ChevronLeft,
-  ChevronRight,
-  Maximize2,
-  X,
-} from "lucide-react";
+import { Star, ChevronLeft, ChevronRight, Maximize2, X } from "lucide-react";
 import ImageMagnifier from "../../../components/shop/ImageMagnifier";
 import arIcon from "../../../assets/icons/ar_icon.png";
 import Dialog from "../../../components/common/Dialog";
@@ -30,13 +24,25 @@ export default function Gallery({
             <button
               key={index}
               onClick={() => setSelectedImage(index)}
-              className={`relative shrink-0 w-20 h-20 rounded-lg overflow-hidden border-2 transition-all ${selectedImage === index ? "border-[#F27318]" : "border-transparent hover:border-black/10"
-                }`}
+              className={`relative shrink-0 w-20 h-20 rounded-lg overflow-hidden border-2 transition-all ${
+                selectedImage === index
+                  ? "border-[#F27318]"
+                  : "border-transparent hover:border-black/10"
+              }`}
             >
-              <img src={getImageUrl(image)} srcSet={getImageSrcSet(image, [160, 320])} sizes="80px" loading="lazy" alt={`${product.name} thumbnail ${index + 1}`} className="w-full h-full object-cover" />
+              <img
+                src={getImageUrl(image)}
+                srcSet={getImageSrcSet(image, [160, 320])}
+                sizes="80px"
+                loading="lazy"
+                alt={`${product.name} thumbnail ${index + 1}`}
+                className="w-full h-full object-cover"
+              />
               {isLastVisible && (
                 <div className="absolute inset-0 bg-black/50 flex items-center justify-center">
-                  <span className="text-white text-xs font-bold">+{images.length - 5}</span>
+                  <span className="text-white text-xs font-bold">
+                    +{images.length - 5}
+                  </span>
                 </div>
               )}
             </button>
@@ -92,8 +98,11 @@ export default function Gallery({
               {images.map((_, index) => (
                 <div
                   key={index}
-                  className={`h-1.5 rounded-full transition-all duration-300 ${selectedImage === index ? "w-5 bg-[#F27318]" : "w-1.5 bg-neutral-300/60"
-                    }`}
+                  className={`h-1.5 rounded-full transition-all duration-300 ${
+                    selectedImage === index
+                      ? "w-5 bg-[#F27318]"
+                      : "w-1.5 bg-neutral-300/60"
+                  }`}
                 />
               ))}
             </div>
@@ -127,7 +136,12 @@ export function GalleryLightbox({
             className="fixed inset-0 z-[100] bg-black/90 flex items-center justify-center"
             onClick={() => setIsLightboxOpen(false)}
           >
-            <Dialog open={isLightboxOpen} onClose={() => setIsLightboxOpen(false)} label="Product image viewer" className="absolute inset-0 flex items-center justify-center">
+            <Dialog
+              open={isLightboxOpen}
+              onClose={() => setIsLightboxOpen(false)}
+              label="Product image viewer"
+              className="absolute inset-0 flex items-center justify-center"
+            >
               {/* Close button */}
               <button
                 onClick={() => setIsLightboxOpen(false)}
@@ -151,7 +165,9 @@ export function GalleryLightbox({
                   <button
                     onClick={(e) => {
                       e.stopPropagation();
-                      setSelectedImage((prev) => (prev === 0 ? images.length - 1 : prev - 1));
+                      setSelectedImage((prev) =>
+                        prev === 0 ? images.length - 1 : prev - 1,
+                      );
                     }}
                     className="absolute left-4 sm:left-8 w-11 h-11 bg-white/10 hover:bg-white/20 rounded-full flex items-center justify-center text-white transition-all"
                   >
@@ -160,7 +176,9 @@ export function GalleryLightbox({
                   <button
                     onClick={(e) => {
                       e.stopPropagation();
-                      setSelectedImage((prev) => (prev === images.length - 1 ? 0 : prev + 1));
+                      setSelectedImage((prev) =>
+                        prev === images.length - 1 ? 0 : prev + 1,
+                      );
                     }}
                     className="absolute right-4 sm:right-8 w-11 h-11 bg-white/10 hover:bg-white/20 rounded-full flex items-center justify-center text-white transition-all"
                   >
@@ -176,7 +194,10 @@ export function GalleryLightbox({
                 animate={{ scale: 1, opacity: 1 }}
                 transition={{ duration: 0.2 }}
                 src={getImageUrl(images[selectedImage])}
-                srcSet={getImageSrcSet(images[selectedImage], [600, 1200, 1920])}
+                srcSet={getImageSrcSet(
+                  images[selectedImage],
+                  [600, 1200, 1920],
+                )}
                 sizes="90vw"
                 alt={product.name}
                 className="max-w-[90vw] max-h-[85vh] object-contain"
@@ -193,10 +214,20 @@ export function GalleryLightbox({
                     <button
                       key={index}
                       onClick={() => setSelectedImage(index)}
-                      className={`shrink-0 w-12 h-12 rounded-lg overflow-hidden border-2 transition-all ${selectedImage === index ? "border-white" : "border-transparent opacity-60 hover:opacity-100"
-                        }`}
+                      className={`shrink-0 w-12 h-12 rounded-lg overflow-hidden border-2 transition-all ${
+                        selectedImage === index
+                          ? "border-white"
+                          : "border-transparent opacity-60 hover:opacity-100"
+                      }`}
                     >
-                      <img src={getImageUrl(image)} srcSet={getImageSrcSet(image, [96, 192])} sizes="48px" loading="lazy" alt={`${product.name} thumbnail ${index + 1}`} className="w-full h-full object-cover" />
+                      <img
+                        src={getImageUrl(image)}
+                        srcSet={getImageSrcSet(image, [96, 192])}
+                        sizes="48px"
+                        loading="lazy"
+                        alt={`${product.name} thumbnail ${index + 1}`}
+                        className="w-full h-full object-cover"
+                      />
                     </button>
                   ))}
                 </div>

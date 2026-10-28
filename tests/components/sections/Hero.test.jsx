@@ -26,7 +26,7 @@ describe("Hero: owner-restored rating and pricing render", () => {
     render(
       <MemoryRouter>
         <Hero />
-      </MemoryRouter>
+      </MemoryRouter>,
     );
 
     expect(screen.getByText(/4\.9\/5 \(2k\+ Reviews\)/)).toBeInTheDocument();
@@ -38,7 +38,7 @@ describe("Hero: owner-restored rating and pricing render", () => {
     render(
       <MemoryRouter>
         <Hero />
-      </MemoryRouter>
+      </MemoryRouter>,
     );
 
     expect(screen.getByText("Calmora Bed Frame")).toBeInTheDocument();
@@ -50,7 +50,7 @@ describe("Hero: owner-restored rating and pricing render", () => {
     render(
       <MemoryRouter>
         <Hero />
-      </MemoryRouter>
+      </MemoryRouter>,
     );
 
     expect(screen.getByText(/That Fits You/)).toBeInTheDocument();

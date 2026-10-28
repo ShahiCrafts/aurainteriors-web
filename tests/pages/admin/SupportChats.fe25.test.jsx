@@ -60,10 +60,13 @@ vi.mock("../../../src/components/admin/chat/AiAssistantPanel", () => ({
   ),
 }));
 
-vi.mock("../../../src/api/chatApi.js", () => ({ uploadChatAttachment: vi.fn() }));
+vi.mock("../../../src/api/chatApi.js", () => ({
+  uploadChatAttachment: vi.fn(),
+}));
 vi.mock("../../../src/store/authStore.js", () => {
   const state = { openAuthModal: vi.fn(), user: null };
-  const store = (selector) => (typeof selector === "function" ? selector(state) : state);
+  const store = (selector) =>
+    typeof selector === "function" ? selector(state) : state;
   store.getState = () => state;
   return { default: store };
 });
@@ -139,7 +142,10 @@ describe("FE-25 SupportChats selection", () => {
     expect(screen.getByTestId("conversation")).toHaveTextContent("c1:open");
 
     setChats([
-      chat("c1", { status: "resolved", metadata: { suggestedReply: "Fresh reply" } }),
+      chat("c1", {
+        status: "resolved",
+        metadata: { suggestedReply: "Fresh reply" },
+      }),
       chat("c2"),
     ]);
     rerender(<SupportChats />);
@@ -149,12 +155,16 @@ describe("FE-25 SupportChats selection", () => {
   });
 
   it("AI panel 'Send to Input' delivers the reply to the conversation composer (not console.log)", () => {
-    setChats([chat("c1", { metadata: { suggestedReply: "Hello, help is here" } })]);
+    setChats([
+      chat("c1", { metadata: { suggestedReply: "Hello, help is here" } }),
+    ]);
     render(<SupportChats />);
     fireEvent.click(screen.getByText("Send to Input"));
-    expect(hoisted.conversationProps.draftReply?.text).toBe("Hello, help is here");
+    expect(hoisted.conversationProps.draftReply?.text).toBe(
+      "Hello, help is here",
+    );
     expect(screen.getByTestId("conversation")).toHaveTextContent(
-      "draft=Hello, help is here"
+      "draft=Hello, help is here",
     );
   });
 
@@ -173,7 +183,7 @@ describe("FE-25 SupportChats selection", () => {
 describe("FE-25 ChatInput draftReply (composer end of the wiring)", () => {
   it("a draftReply prop inserts the text into the composer textarea", () => {
     const { rerender } = render(
-      <ChatInput chatId="c1" onTyping={() => {}} draftReply={null} />
+      <ChatInput chatId="c1" onTyping={() => {}} draftReply={null} />,
     );
     const textarea = screen.getByPlaceholderText(/type your message/i);
     expect(textarea.value).toBe("");
@@ -183,7 +193,7 @@ describe("FE-25 ChatInput draftReply (composer end of the wiring)", () => {
         chatId="c1"
         onTyping={() => {}}
         draftReply={{ text: "Suggested reply text", nonce: 1 }}
-      />
+      />,
     );
     expect(textarea.value).toBe("Suggested reply text");
   });

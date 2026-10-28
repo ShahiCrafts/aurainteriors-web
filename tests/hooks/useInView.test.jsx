@@ -88,7 +88,7 @@ describe("FE-32 useInView", () => {
     // matters is that observe() ran again for the remounted element.
     expect(observedElements.length).toBeGreaterThanOrEqual(2);
     expect(observedElements[observedElements.length - 1]).toBe(
-      screen.getByTestId("target")
+      screen.getByTestId("target"),
     );
     intersect(true);
     expect(screen.getByTestId("target")).toHaveTextContent("in-view");
@@ -120,7 +120,7 @@ describe("FE-32 ShopByCategory viewport gating", () => {
         <MemoryRouter>
           <ShopByCategory />
         </MemoryRouter>
-      </QueryClientProvider>
+      </QueryClientProvider>,
     );
 
     // Give React Query every chance to (wrongly) fire.

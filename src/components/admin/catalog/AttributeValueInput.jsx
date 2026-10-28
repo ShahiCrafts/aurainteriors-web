@@ -30,14 +30,25 @@ function MultiEnumInput({ definition, value, onChange, id }) {
 
   if (allowed.length > 0) {
     return (
-      <div className="flex flex-wrap gap-x-4 gap-y-2 pt-1" role="group" aria-label={definition.label}>
+      <div
+        className="flex flex-wrap gap-x-4 gap-y-2 pt-1"
+        role="group"
+        aria-label={definition.label}
+      >
         {allowed.map((option) => (
-          <label key={option} className="flex items-center gap-2 cursor-pointer text-sm text-gray-700">
+          <label
+            key={option}
+            className="flex items-center gap-2 cursor-pointer text-sm text-gray-700"
+          >
             <input
               type="checkbox"
               checked={values.includes(option)}
               onChange={(e) =>
-                onChange(e.target.checked ? [...values, option] : values.filter((v) => v !== option))
+                onChange(
+                  e.target.checked
+                    ? [...values, option]
+                    : values.filter((v) => v !== option),
+                )
               }
               className="w-4 h-4 rounded border-gray-300 text-[#025E5D] focus:ring-[#025E5D]"
             />
@@ -126,36 +137,44 @@ export default function AttributeValueInput({
       break;
 
     case "enum":
-      control = allowed.length > 0 ? (
-        <select
-          id={fieldId}
-          value={value ?? ""}
-          onChange={(e) => onChange(e.target.value)}
-          disabled={disabled}
-          className={inputClass}
-        >
-          <option value="">Select…</option>
-          {allowed.map((option) => (
-            <option key={option} value={option}>
-              {option}
-            </option>
-          ))}
-        </select>
-      ) : (
-        <input
-          id={fieldId}
-          type="text"
-          value={value ?? ""}
-          onChange={(e) => onChange(e.target.value)}
-          disabled={disabled}
-          className={inputClass}
-          placeholder="Free-form value"
-        />
-      );
+      control =
+        allowed.length > 0 ? (
+          <select
+            id={fieldId}
+            value={value ?? ""}
+            onChange={(e) => onChange(e.target.value)}
+            disabled={disabled}
+            className={inputClass}
+          >
+            <option value="">Select…</option>
+            {allowed.map((option) => (
+              <option key={option} value={option}>
+                {option}
+              </option>
+            ))}
+          </select>
+        ) : (
+          <input
+            id={fieldId}
+            type="text"
+            value={value ?? ""}
+            onChange={(e) => onChange(e.target.value)}
+            disabled={disabled}
+            className={inputClass}
+            placeholder="Free-form value"
+          />
+        );
       break;
 
     case "multi-enum":
-      control = <MultiEnumInput definition={definition} value={value} onChange={onChange} id={fieldId} />;
+      control = (
+        <MultiEnumInput
+          definition={definition}
+          value={value}
+          onChange={onChange}
+          id={fieldId}
+        />
+      );
       break;
 
     case "boolean":
@@ -163,7 +182,9 @@ export default function AttributeValueInput({
         <select
           id={fieldId}
           value={value === true ? "true" : value === false ? "false" : ""}
-          onChange={(e) => onChange(e.target.value === "" ? null : e.target.value === "true")}
+          onChange={(e) =>
+            onChange(e.target.value === "" ? null : e.target.value === "true")
+          }
           disabled={disabled}
           className={inputClass}
         >
@@ -193,7 +214,10 @@ export default function AttributeValueInput({
       break;
 
     case "measurement": {
-      const current = value && typeof value === "object" ? value : { value: "", unit: definition.unit || units[0] || "" };
+      const current =
+        value && typeof value === "object"
+          ? value
+          : { value: "", unit: definition.unit || units[0] || "" };
       control = (
         <div className="flex gap-2">
           <input
@@ -236,50 +260,63 @@ export default function AttributeValueInput({
     }
 
     case "color":
-      control = allowed.length > 0 ? (
-        <select
-          id={fieldId}
-          value={value ?? ""}
-          onChange={(e) => onChange(e.target.value)}
-          disabled={disabled}
-          className={inputClass}
-        >
-          <option value="">Select…</option>
-          {allowed.map((option) => (
-            <option key={option} value={option}>
-              {option}
-            </option>
-          ))}
-        </select>
-      ) : (
-        <div className="flex items-center gap-2">
-          <span
-            className="w-10 h-10 rounded-lg border border-gray-200 shrink-0"
-            style={{ backgroundColor: /^#[0-9a-fA-F]{6}$/.test(value || "") ? value : "transparent" }}
-            aria-hidden="true"
-          />
-          <input
+      control =
+        allowed.length > 0 ? (
+          <select
             id={fieldId}
-            type="text"
             value={value ?? ""}
             onChange={(e) => onChange(e.target.value)}
             disabled={disabled}
             className={inputClass}
-            placeholder="#RRGGBB"
-          />
-        </div>
-      );
+          >
+            <option value="">Select…</option>
+            {allowed.map((option) => (
+              <option key={option} value={option}>
+                {option}
+              </option>
+            ))}
+          </select>
+        ) : (
+          <div className="flex items-center gap-2">
+            <span
+              className="w-10 h-10 rounded-lg border border-gray-200 shrink-0"
+              style={{
+                backgroundColor: /^#[0-9a-fA-F]{6}$/.test(value || "")
+                  ? value
+                  : "transparent",
+              }}
+              aria-hidden="true"
+            />
+            <input
+              id={fieldId}
+              type="text"
+              value={value ?? ""}
+              onChange={(e) => onChange(e.target.value)}
+              disabled={disabled}
+              className={inputClass}
+              placeholder="#RRGGBB"
+            />
+          </div>
+        );
       break;
 
     case "dimensions": {
       const current =
         value && typeof value === "object"
           ? value
-          : { length: "", width: "", height: "", unit: definition.unit || "cm" };
+          : {
+              length: "",
+              width: "",
+              height: "",
+              unit: definition.unit || "cm",
+            };
       const unitOptions = units.length > 0 ? units : ["cm", "m", "in"];
       const part = (name, label) => (
         <div key={name}>
-          <label htmlFor={`${fieldId}-${name}`} className="block text-xs font-medium text-gray-500 mb-1">
+          <label
+            htmlFor={`${fieldId}-${name}`}
+            className="block text-xs font-medium text-gray-500 mb-1"
+          >
             {label}
           </label>
           <input
@@ -298,7 +335,10 @@ export default function AttributeValueInput({
           {part("width", "Width")}
           {part("height", "Height")}
           <div>
-            <label htmlFor={`${fieldId}-unit`} className="block text-xs font-medium text-gray-500 mb-1">
+            <label
+              htmlFor={`${fieldId}-unit`}
+              className="block text-xs font-medium text-gray-500 mb-1"
+            >
               Unit
             </label>
             <select
@@ -338,9 +378,16 @@ export default function AttributeValueInput({
       {labelText !== null ? (
         <label htmlFor={fieldId} className={labelClass}>
           {labelText !== undefined ? labelText : definition.label}
-          {labelText === undefined && definition.required ? <span className="text-red-500"> *</span> : null}
-          {labelText === undefined && definition.unit && definition.type !== "measurement" ? (
-            <span className="text-gray-400 font-normal"> ({definition.unit})</span>
+          {labelText === undefined && definition.required ? (
+            <span className="text-red-500"> *</span>
+          ) : null}
+          {labelText === undefined &&
+          definition.unit &&
+          definition.type !== "measurement" ? (
+            <span className="text-gray-400 font-normal">
+              {" "}
+              ({definition.unit})
+            </span>
           ) : null}
         </label>
       ) : null}

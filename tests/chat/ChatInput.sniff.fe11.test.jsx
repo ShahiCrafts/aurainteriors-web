@@ -11,7 +11,11 @@ import { describe, expect, it, vi, beforeEach } from "vitest";
 // any network call.)
 
 const h = vi.hoisted(() => ({ uploads: 0, sendMutate: vi.fn() }));
-const toastMock = vi.hoisted(() => ({ error: vi.fn(), success: vi.fn(), info: vi.fn() }));
+const toastMock = vi.hoisted(() => ({
+  error: vi.fn(),
+  success: vi.fn(),
+  info: vi.fn(),
+}));
 
 vi.mock("../../src/hooks/chat/useChatTan.js", () => ({
   useSendMessage: () => ({ mutateAsync: h.sendMutate }),
@@ -19,13 +23,16 @@ vi.mock("../../src/hooks/chat/useChatTan.js", () => ({
 vi.mock("../../src/api/chatApi.js", () => ({
   uploadChatAttachment: vi.fn(async () => {
     h.uploads += 1;
-    return { attachment: { fileUrl: "https://example.com/x.png", fileName: "x.png" } };
+    return {
+      attachment: { fileUrl: "https://example.com/x.png", fileName: "x.png" },
+    };
   }),
 }));
 vi.mock("../../src/lib/toast.js", () => ({ toast: toastMock }));
 vi.mock("../../src/store/authStore.js", () => {
   const state = { openAuthModal: vi.fn(), user: null };
-  const store = (selector) => (typeof selector === "function" ? selector(state) : state);
+  const store = (selector) =>
+    typeof selector === "function" ? selector(state) : state;
   store.getState = () => state;
   return { default: store };
 });
@@ -64,8 +71,8 @@ describe("FE-11: ChatInput send path sniffs attachment content", () => {
     await selectTypeAndSend(container, evil);
     await waitFor(() =>
       expect(toastMock.error).toHaveBeenCalledWith(
-        expect.stringMatching(/JPEG, PNG, WebP, GIF or PDF/)
-      )
+        expect.stringMatching(/JPEG, PNG, WebP, GIF or PDF/),
+      ),
     );
     expect(uploadChatAttachment).not.toHaveBeenCalled();
     expect(h.sendMutate).not.toHaveBeenCalled();

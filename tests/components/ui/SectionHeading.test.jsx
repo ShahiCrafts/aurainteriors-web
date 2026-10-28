@@ -15,18 +15,30 @@ describe("SectionHeading", () => {
     );
     expect(screen.getByText("Featured Products")).toBeInTheDocument();
     expect(
-      screen.getByRole("heading", { level: 2, name: "Handpicked for Your Home" }),
+      screen.getByRole("heading", {
+        level: 2,
+        name: "Handpicked for Your Home",
+      }),
     ).toBeInTheDocument();
-    expect(screen.getByText("Explore our most loved pieces.")).toBeInTheDocument();
+    expect(
+      screen.getByText("Explore our most loved pieces."),
+    ).toBeInTheDocument();
   });
 
   it("renders the optional trailing action", () => {
-    render(<SectionHeading title="Blog" action={<a href="/blog">View all</a>} />);
-    expect(screen.getByRole("link", { name: "View all" })).toHaveAttribute("href", "/blog");
+    render(
+      <SectionHeading title="Blog" action={<a href="/blog">View all</a>} />,
+    );
+    expect(screen.getByRole("link", { name: "View all" })).toHaveAttribute(
+      "href",
+      "/blog",
+    );
   });
 
   it("centres the text block when align=center and no action", () => {
-    const { container } = render(<SectionHeading title="Hello" align="center" />);
+    const { container } = render(
+      <SectionHeading title="Hello" align="center" />,
+    );
     expect(container.querySelector(".text-center")).not.toBeNull();
   });
 });

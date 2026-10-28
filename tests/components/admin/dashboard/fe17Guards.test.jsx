@@ -24,7 +24,7 @@ describe("FE-17 dashboard guards", () => {
     render(
       <MemoryRouter>
         <TopProductsTable products={undefined} />
-      </MemoryRouter>
+      </MemoryRouter>,
     );
     expect(screen.getByText("No sales data yet")).toBeInTheDocument();
   });
@@ -33,7 +33,7 @@ describe("FE-17 dashboard guards", () => {
     render(
       <MemoryRouter>
         <TopProductsTable products={[{ _id: "p1", name: "Sofa" }]} />
-      </MemoryRouter>
+      </MemoryRouter>,
     );
     expect(screen.getByText("Sofa")).toBeInTheDocument();
   });
@@ -41,8 +41,16 @@ describe("FE-17 dashboard guards", () => {
   it("RecentOrdersTable renders an order missing orderId/total", () => {
     render(
       <MemoryRouter>
-        <RecentOrdersTable orders={[{ _id: "o1", orderStatus: "pending", createdAt: "2026-01-01T00:00:00.000Z" }]} />
-      </MemoryRouter>
+        <RecentOrdersTable
+          orders={[
+            {
+              _id: "o1",
+              orderStatus: "pending",
+              createdAt: "2026-01-01T00:00:00.000Z",
+            },
+          ]}
+        />
+      </MemoryRouter>,
     );
     expect(screen.getByText("Recent Orders")).toBeInTheDocument();
     expect(screen.queryByText("No orders yet")).not.toBeInTheDocument();

@@ -70,42 +70,55 @@ export default function CatalogListing({
     min: Number(searchParams.get("minPrice")) || 0,
     max: Number(searchParams.get("maxPrice")) || DEFAULT_PRICE_BOUNDS.max,
   };
-  const selectedColors = searchParams.get("colors")?.split(",").filter(Boolean) || [];
-  const selectedMaterials = searchParams.get("materials")?.split(",").filter(Boolean) || [];
+  const selectedColors =
+    searchParams.get("colors")?.split(",").filter(Boolean) || [];
+  const selectedMaterials =
+    searchParams.get("materials")?.split(",").filter(Boolean) || [];
   const selectedRating = Number(searchParams.get("rating")) || 0;
   const attrSelection = parseAttrSelection(searchParams);
   const rooms = selectedRooms(searchParams);
   const inStockOnly = searchParams.get("inStock") === "true";
 
   const updateFilters = (patch, replace = false) => {
-    setSearchParams((previous) => {
-      const next = new URLSearchParams(previous);
-      if (!Object.prototype.hasOwnProperty.call(patch, "page")) {
-        next.delete("page");
-      }
-      Object.entries(patch).forEach(([key, value]) => {
-        next.delete(key);
-        if (value !== "" && value !== null && value !== undefined) {
-          next.set(key, String(value));
+    setSearchParams(
+      (previous) => {
+        const next = new URLSearchParams(previous);
+        if (!Object.prototype.hasOwnProperty.call(patch, "page")) {
+          next.delete("page");
         }
-      });
-      return next;
-    }, { replace });
+        Object.entries(patch).forEach(([key, value]) => {
+          next.delete(key);
+          if (value !== "" && value !== null && value !== undefined) {
+            next.set(key, String(value));
+          }
+        });
+        return next;
+      },
+      { replace },
+    );
   };
 
-  const setSortBy = (value) => updateFilters({ sort: value === "featured" ? null : value });
-  const setSelectedCategories = (values) => updateFilters({ categories: values.join(",") });
-  const setSelectedColors = (values) => updateFilters({ colors: values.join(",") });
-  const setSelectedMaterials = (values) => updateFilters({ materials: values.join(",") });
-  const setSelectedRating = (value) => updateFilters({ rating: value > 0 ? value : null });
+  const setSortBy = (value) =>
+    updateFilters({ sort: value === "featured" ? null : value });
+  const setSelectedCategories = (values) =>
+    updateFilters({ categories: values.join(",") });
+  const setSelectedColors = (values) =>
+    updateFilters({ colors: values.join(",") });
+  const setSelectedMaterials = (values) =>
+    updateFilters({ materials: values.join(",") });
+  const setSelectedRating = (value) =>
+    updateFilters({ rating: value > 0 ? value : null });
   const handleAttrToggle = (key, value) =>
     updateFilters(attrValuePatch(attrSelection, key, value));
-  const handleAttrRange = (key, min, max) => updateFilters(attrRangePatch(key, min, max));
-  const handleRoomToggle = (slug) => updateFilters(roomTogglePatch(rooms, slug));
+  const handleAttrRange = (key, min, max) =>
+    updateFilters(attrRangePatch(key, min, max));
+  const handleRoomToggle = (slug) =>
+    updateFilters(roomTogglePatch(rooms, slug));
   const handleInStockToggle = () =>
     updateFilters({ inStock: inStockOnly ? null : "true" });
 
-  const { data: categoryTreeData, isLoading: isCategoryTreeLoading } = useCategoryTree();
+  const { data: categoryTreeData, isLoading: isCategoryTreeLoading } =
+    useCategoryTree();
   const categories = categoryTreeData?.data?.categories || [];
   const currentCategory =
     selectedCategories.length === 1
@@ -117,7 +130,8 @@ export default function CatalogListing({
       : [];
 
   const params = buildListingParams({ searchParams, page, limit, pinned });
-  const { data: productsData, isLoading: isProductsLoading } = useProducts(params);
+  const { data: productsData, isLoading: isProductsLoading } =
+    useProducts(params);
   const products = productsData?.data?.products || [];
   const facets = productsData?.data?.facets || null;
   const pagination = productsData?.data?.pagination || {
@@ -130,9 +144,9 @@ export default function CatalogListing({
 
   const priceBounds = facets?.price
     ? {
-      min: facets.price.min ?? DEFAULT_PRICE_BOUNDS.min,
-      max: facets.price.max ?? DEFAULT_PRICE_BOUNDS.max,
-    }
+        min: facets.price.min ?? DEFAULT_PRICE_BOUNDS.min,
+        max: facets.price.max ?? DEFAULT_PRICE_BOUNDS.max,
+      }
     : DEFAULT_PRICE_BOUNDS;
   const setPriceRange = (value) =>
     updateFilters(
@@ -140,7 +154,7 @@ export default function CatalogListing({
         minPrice: value.min > priceBounds.min ? value.min : null,
         maxPrice: value.max < priceBounds.max ? value.max : null,
       },
-      true
+      true,
     );
 
   useEffect(() => {
@@ -158,9 +172,14 @@ export default function CatalogListing({
   };
 
   const handleResetFilters = () =>
-    updateFilters({ ...clearAllFiltersPatch(searchParams), sort: null, search: null });
+    updateFilters({
+      ...clearAllFiltersPatch(searchParams),
+      sort: null,
+      search: null,
+    });
 
-  const handleClearFilters = () => updateFilters(clearAllFiltersPatch(searchParams));
+  const handleClearFilters = () =>
+    updateFilters(clearAllFiltersPatch(searchParams));
 
   const breadcrumbs = [
     { name: "Home", path: "/" },
@@ -181,19 +200,19 @@ export default function CatalogListing({
           [category.slug, category.name],
           ...flatten(category.subcategories || category.children || []),
         ]);
-      })(categories)
+      })(categories),
     ),
     rooms: new Map(
       (facets?.room?.options || []).map((option) => [
         String(option.value),
         option.label || String(option.value),
-      ])
+      ]),
     ),
     attributes: new Map(
       (facets?.attributes || []).map((facet) => [
         facet.key,
         { label: facet.label, type: facet.type, unit: facet.unit },
-      ])
+      ]),
     ),
   };
   const chips = buildFilterChips(searchParams, chipLabels);
@@ -240,10 +259,11 @@ export default function CatalogListing({
           {index > 0 && <span className="text-black/10">/</span>}
           <Link
             to={crumb.path}
-            className={`hover:text-[#F27318] transition-colors ${index === breadcrumbs.length - 1
+            className={`hover:text-[#F27318] transition-colors ${
+              index === breadcrumbs.length - 1
                 ? "text-black/60 font-semibold pointer-events-none"
                 : ""
-              }`}
+            }`}
           >
             {crumb.name}
           </Link>
@@ -264,7 +284,7 @@ export default function CatalogListing({
         <div className="flex flex-col lg:flex-row gap-6 md:gap-8 lg:gap-12">
           <aside className="hidden lg:block lg:w-64 shrink-0">
             {breadcrumbNav(
-              "flex items-center gap-2 text-[14px] font-medium text-black/40 mb-10 flex-wrap"
+              "flex items-center gap-2 text-[14px] font-medium text-black/40 mb-10 flex-wrap",
             )}
             <div className="sticky top-28">
               {isCategoryTreeLoading || isLoading ? (
@@ -277,7 +297,7 @@ export default function CatalogListing({
 
           <div className="flex-1 min-w-0">
             {breadcrumbNav(
-              "flex lg:hidden items-center gap-2 text-[13px] sm:text-[14px] font-medium text-black/40 mb-5 flex-wrap"
+              "flex lg:hidden items-center gap-2 text-[13px] sm:text-[14px] font-medium text-black/40 mb-5 flex-wrap",
             )}
 
             <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 mb-5">
@@ -325,8 +345,9 @@ export default function CatalogListing({
                     </span>
                     <ChevronDown
                       size={16}
-                      className={`text-black/20 transition-transform duration-300 shrink-0 ${showSortDropdown ? "rotate-180" : ""
-                        }`}
+                      className={`text-black/20 transition-transform duration-300 shrink-0 ${
+                        showSortDropdown ? "rotate-180" : ""
+                      }`}
                     />
                   </button>
 
@@ -343,10 +364,11 @@ export default function CatalogListing({
                           <button
                             key={option.value}
                             onClick={() => handleSortChange(option.value)}
-                            className={`w-full text-left px-5 py-3 text-[14px] font-medium transition-colors ${sortBy === option.value
+                            className={`w-full text-left px-5 py-3 text-[14px] font-medium transition-colors ${
+                              sortBy === option.value
                                 ? "text-[#F27318] bg-[#F27318]/5"
                                 : "text-[#1A1714] hover:bg-black/[0.02]"
-                              }`}
+                            }`}
                           >
                             {option.label}
                           </button>
@@ -360,20 +382,22 @@ export default function CatalogListing({
                   <button
                     onClick={() => setViewMode("grid")}
                     aria-label="Grid view"
-                    className={`p-2 rounded-[4px] transition-all ${viewMode === "grid"
+                    className={`p-2 rounded-[4px] transition-all ${
+                      viewMode === "grid"
                         ? "bg-[#F27318] text-white shadow-sm"
                         : "text-black/30 hover:text-black/60"
-                      }`}
+                    }`}
                   >
                     <Grid3X3 size={16} />
                   </button>
                   <button
                     onClick={() => setViewMode("list")}
                     aria-label="List view"
-                    className={`p-2 rounded-[4px] transition-all ${viewMode === "list"
+                    className={`p-2 rounded-[4px] transition-all ${
+                      viewMode === "list"
                         ? "bg-[#F27318] text-white shadow-sm"
                         : "text-black/30 hover:text-black/60"
-                      }`}
+                    }`}
                   >
                     <List size={16} />
                   </button>
@@ -384,7 +408,8 @@ export default function CatalogListing({
             {searchQuery && (
               <div className="mb-5 flex items-center gap-2 text-sm text-[#7A7068]">
                 <span>
-                  Results for <strong className="text-[#1A1714]">“{searchQuery}”</strong>
+                  Results for{" "}
+                  <strong className="text-[#1A1714]">“{searchQuery}”</strong>
                 </span>
                 <button
                   type="button"
@@ -457,7 +482,11 @@ export default function CatalogListing({
                   }
                 >
                   {products.map((product) => (
-                    <ProductCard key={product._id} product={product} viewMode={viewMode} />
+                    <ProductCard
+                      key={product._id}
+                      product={product}
+                      viewMode={viewMode}
+                    />
                   ))}
                 </div>
 

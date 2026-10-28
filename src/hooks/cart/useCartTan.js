@@ -1,5 +1,5 @@
 import useAuthStore from "../../store/authStore";
-import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
+import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { toast } from "../../lib/toast";
 import cartApi from "../../api/cartApi";
 import formatError from "../../utils/errorHandler";
@@ -43,7 +43,7 @@ const makeCartErrorHandler = (queryClient) => (error) => {
 };
 
 export const useCart = (options = {}) => {
-  const userId = useAuthStore(state => state.user?._id);
+  const userId = useAuthStore((state) => state.user?._id);
   return useQuery({
     queryKey: CART_KEYS.list(userId),
     queryFn: () => cartApi.getCart(),

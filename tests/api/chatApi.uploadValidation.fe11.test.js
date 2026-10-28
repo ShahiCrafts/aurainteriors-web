@@ -43,9 +43,11 @@ const JPEG = [0xff, 0xd8, 0xff, 0xe0];
 const PDF = [..."%PDF-1.7"].map((c) => c.charCodeAt(0));
 const MZ = [0x4d, 0x5a];
 
-const pngFile = () => new File([bytes(PNG)], "photo.png", { type: "image/png" });
+const pngFile = () =>
+  new File([bytes(PNG)], "photo.png", { type: "image/png" });
 const mzFile = () => new File([bytes(MZ)], "evil.png", { type: "image/png" });
-const pdfFile = () => new File([bytes(PDF)], "doc.pdf", { type: "application/pdf" });
+const pdfFile = () =>
+  new File([bytes(PDF)], "doc.pdf", { type: "application/pdf" });
 
 // --- Canvas/Image stubs (FE-05 style) ----------------------------------
 const OriginalImage = globalThis.Image;
@@ -94,7 +96,7 @@ afterAll(() => {
 describe("FE-11: uploadChatAttachment validates content before any network call", () => {
   it("pen-test: MZ executable declared as image/png rejects and api.post is never called", async () => {
     await expect(uploadChatAttachment("chat-1", mzFile())).rejects.toThrow(
-      /JPEG, PNG, WebP, GIF or PDF/
+      /JPEG, PNG, WebP, GIF or PDF/,
     );
     expect(api.post).not.toHaveBeenCalled();
   });
@@ -106,7 +108,7 @@ describe("FE-11: uploadChatAttachment validates content before any network call"
     // substitute must reject before the network.
     encoderBytes = MZ;
     await expect(uploadChatAttachment("chat-1", pngFile())).rejects.toThrow(
-      /JPEG, PNG, WebP, GIF or PDF/
+      /JPEG, PNG, WebP, GIF or PDF/,
     );
     expect(api.post).not.toHaveBeenCalled();
   });

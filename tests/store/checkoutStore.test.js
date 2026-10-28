@@ -102,7 +102,11 @@ describe("setters", () => {
   });
 
   it("setShippingAddress replaces the whole address object (no merge)", () => {
-    const address = { fullName: "Asha Rai", city: "Kathmandu", country: "Nepal" };
+    const address = {
+      fullName: "Asha Rai",
+      city: "Kathmandu",
+      country: "Nepal",
+    };
     state().setShippingAddress(address);
     expect(state().shippingAddress).toEqual(address);
   });
@@ -184,7 +188,11 @@ describe("isShippingValid", () => {
   });
 
   it("is true once guest info and the required address fields are filled", () => {
-    state().setGuestInfo({ email: "a@example.com", firstName: "Asha", lastName: "Rai" });
+    state().setGuestInfo({
+      email: "a@example.com",
+      firstName: "Asha",
+      lastName: "Rai",
+    });
     state().setShippingAddress({
       fullName: "Asha Rai",
       phone: "9800000000",
@@ -200,7 +208,11 @@ describe("isShippingValid", () => {
   });
 
   it("is true with a saved address id even if the typed address is incomplete", () => {
-    state().setGuestInfo({ email: "a@example.com", firstName: "Asha", lastName: "Rai" });
+    state().setGuestInfo({
+      email: "a@example.com",
+      firstName: "Asha",
+      lastName: "Rai",
+    });
     state().setShippingAddressId("addr-1");
 
     expect(state().isShippingValid()).toBe(true);

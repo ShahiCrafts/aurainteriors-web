@@ -53,7 +53,7 @@ function renderPage() {
       <Routes>
         <Route path="/blog/:slug" element={<BlogDetailsPage />} />
       </Routes>
-    </MemoryRouter>
+    </MemoryRouter>,
   );
 }
 
@@ -93,7 +93,7 @@ describe("BlogDetailsPage related-post links (FE-12)", () => {
 
     expect(screen.getByRole("link", { name: /Normal Post/ })).toHaveAttribute(
       "href",
-      "/blog/normal-post"
+      "/blog/normal-post",
     );
   });
 });

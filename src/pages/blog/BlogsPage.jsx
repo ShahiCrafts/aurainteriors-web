@@ -7,10 +7,15 @@ import {
   Bookmark,
   ChevronDown,
   ArrowRight,
-  } from "lucide-react";
+} from "lucide-react";
 import Navbar from "../../layouts/customer/Navbar";
 import Footer from "../../layouts/customer/Footer";
-import { useBlogs, useBlogCategories, usePopularBlogs, useToggleBlogLike } from "../../hooks/blog/useBlogTan";
+import {
+  useBlogs,
+  useBlogCategories,
+  usePopularBlogs,
+  useToggleBlogLike,
+} from "../../hooks/blog/useBlogTan";
 import { getBlogImageUrl } from "../../utils/imageUrl";
 import { formatDate } from "../../utils/formatDate";
 import { UserAvatar } from "../../components/common/InitialsAvatar";
@@ -47,7 +52,8 @@ export default function BlogsPage() {
   const { data: popularData } = usePopularBlogs(3);
 
   const { mutate: toggleLike } = useToggleBlogLike();
-  const { mutate: subscribeNewsletter, isPending: isSubscribing } = useNewsletterSubscribe();
+  const { mutate: subscribeNewsletter, isPending: isSubscribing } =
+    useNewsletterSubscribe();
 
   const blogs = blogsData?.data?.blogs || [];
   const pagination = blogsData?.data?.pagination || {};
@@ -71,7 +77,7 @@ export default function BlogsPage() {
     setSavedPosts((prev) =>
       prev.includes(postId)
         ? prev.filter((id) => id !== postId)
-        : [...prev, postId]
+        : [...prev, postId],
     );
   };
 
@@ -101,11 +107,14 @@ export default function BlogsPage() {
 
   const handleNewsletterSubmit = (e) => {
     e.preventDefault();
-    subscribeNewsletter({ email: newsletterEmail, source: 'blog' }, {
-      onSuccess: () => {
-        setNewsletterEmail("");
-      }
-    });
+    subscribeNewsletter(
+      { email: newsletterEmail, source: "blog" },
+      {
+        onSuccess: () => {
+          setNewsletterEmail("");
+        },
+      },
+    );
   };
 
   const loadMore = () => {
@@ -145,10 +154,11 @@ export default function BlogsPage() {
                   <button
                     key={category.slug}
                     onClick={() => handleCategoryChange(category.slug)}
-                    className={`px-4 py-2 rounded-full text-sm font-medium transition-all duration-200 whitespace-nowrap ${activeCategory === category.slug
-                      ? "bg-[#F27318] text-white"
-                      : "bg-neutral-100 text-neutral-700 hover:bg-neutral-200"
-                      }`}
+                    className={`px-4 py-2 rounded-full text-sm font-medium transition-all duration-200 whitespace-nowrap ${
+                      activeCategory === category.slug
+                        ? "bg-[#F27318] text-white"
+                        : "bg-neutral-100 text-neutral-700 hover:bg-neutral-200"
+                    }`}
                   >
                     {category.name} ({category.count})
                   </button>
@@ -191,7 +201,10 @@ export default function BlogsPage() {
               {blogsLoading ? (
                 <div className="space-y-8">
                   {[...Array(3)].map((_, i) => (
-                    <div key={i} className="flex flex-col sm:flex-row gap-6 animate-pulse">
+                    <div
+                      key={i}
+                      className="flex flex-col sm:flex-row gap-6 animate-pulse"
+                    >
                       <Skeleton className="w-full sm:w-64 md:w-72 h-48 sm:h-44 md:h-48 shrink-0 rounded-xl" />
                       <div className="flex-1 space-y-4 py-2">
                         <div className="flex gap-2">
@@ -304,7 +317,7 @@ export default function BlogsPage() {
                     disabled={isSubscribing}
                     className="w-full py-2.5 rounded-lg bg-white text-[#F27318] font-semibold text-sm hover:bg-orange-50 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
                   >
-                    {isSubscribing ? 'Subscribing...' : 'Subscribe'}
+                    {isSubscribing ? "Subscribing..." : "Subscribe"}
                   </button>
                 </form>
               </div>
@@ -355,9 +368,7 @@ function BlogCard({
           <Bookmark
             size={16}
             className={
-              isSaved
-                ? "fill-neutral-800 text-neutral-800"
-                : "text-neutral-600"
+              isSaved ? "fill-neutral-800 text-neutral-800" : "text-neutral-600"
             }
           />
         </button>
@@ -413,7 +424,8 @@ function BlogCard({
                 {post.author?.name || "Editorial Team"}
               </p>
               <p className="text-xs text-neutral-500">
-                {post.source?.name ? `${post.source.name} • ` : ''}{formattedDate}
+                {post.source?.name ? `${post.source.name} • ` : ""}
+                {formattedDate}
               </p>
             </div>
           </div>

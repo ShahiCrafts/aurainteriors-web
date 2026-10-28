@@ -125,10 +125,14 @@ const CustomizeSheet = ({
                   className="group"
                   title="Original"
                 >
-                  <div className={`w-10 h-10 rounded-full flex items-center justify-center active:scale-95 transition-all border-2 bg-[conic-gradient(#d6c7b4_0_25%,#4f5b4d_0_50%,#8d6e63_0_75%,#ece8e1_0)] ${!customization?.color ? "ring-2 ring-offset-2 ring-offset-black/80 ring-teal-400 scale-110 border-white/50" : "border-white/20"}`}>
+                  <div
+                    className={`w-10 h-10 rounded-full flex items-center justify-center active:scale-95 transition-all border-2 bg-[conic-gradient(#d6c7b4_0_25%,#4f5b4d_0_50%,#8d6e63_0_75%,#ece8e1_0)] ${!customization?.color ? "ring-2 ring-offset-2 ring-offset-black/80 ring-teal-400 scale-110 border-white/50" : "border-white/20"}`}
+                  >
                     {!customization?.color && <IoCheckmarkCircle size={18} />}
                   </div>
-                  <span className="text-[9px] text-white/50 mt-1 block text-center">Original</span>
+                  <span className="text-[9px] text-white/50 mt-1 block text-center">
+                    Original
+                  </span>
                 </button>
                 {selectedProduct.colors.map((color, idx) => {
                   const hexColor = getColorHex(color);
@@ -150,7 +154,9 @@ const CustomizeSheet = ({
                         triggerHaptic("light");
                       }}
                       className={`group ${isUnavailable ? "opacity-50 cursor-not-allowed" : ""}`}
-                      title={isUnavailable ? `${color} (unavailable in AR)` : color}
+                      title={
+                        isUnavailable ? `${color} (unavailable in AR)` : color
+                      }
                     >
                       <div
                         style={{ backgroundColor: hexColor || "#888" }}
@@ -177,35 +183,37 @@ const CustomizeSheet = ({
           )}
 
           {/* Material Options */}
-          {selectedProduct?.materials && selectedProduct.materials.length > 0 && (
-            <div className="mb-4">
-              <span className="text-[10px] font-medium text-white/40 uppercase tracking-wider mb-2 block">
-                Material
-              </span>
-              <div className="flex flex-wrap gap-2">
-                {selectedProduct.materials.map((material, idx) => (
-                  <button
-                    key={idx}
-                    onClick={() => {
-                      onCustomize?.({ ...customization, material });
-                      triggerHaptic("light");
-                    }}
-                    className={`px-4 py-2 rounded-full text-xs font-medium transition-all active:scale-95 ${
-                      customization?.material === material
-                        ? "bg-teal-500 text-white"
-                        : "bg-white/10 text-white/70"
-                    }`}
-                  >
-                    {material}
-                  </button>
-                ))}
+          {selectedProduct?.materials &&
+            selectedProduct.materials.length > 0 && (
+              <div className="mb-4">
+                <span className="text-[10px] font-medium text-white/40 uppercase tracking-wider mb-2 block">
+                  Material
+                </span>
+                <div className="flex flex-wrap gap-2">
+                  {selectedProduct.materials.map((material, idx) => (
+                    <button
+                      key={idx}
+                      onClick={() => {
+                        onCustomize?.({ ...customization, material });
+                        triggerHaptic("light");
+                      }}
+                      className={`px-4 py-2 rounded-full text-xs font-medium transition-all active:scale-95 ${
+                        customization?.material === material
+                          ? "bg-teal-500 text-white"
+                          : "bg-white/10 text-white/70"
+                      }`}
+                    >
+                      {material}
+                    </button>
+                  ))}
+                </div>
               </div>
-            </div>
-          )}
+            )}
 
           {/* No customization options */}
           {(!selectedProduct?.colors || selectedProduct.colors.length === 0) &&
-            (!selectedProduct?.materials || selectedProduct.materials.length === 0) && (
+            (!selectedProduct?.materials ||
+              selectedProduct.materials.length === 0) && (
               <div className="mb-4 p-4 bg-white/5 rounded-xl text-center">
                 <p className="text-white/50 text-sm">
                   No customization options available for this product.

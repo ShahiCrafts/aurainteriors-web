@@ -6,8 +6,16 @@ import { formatNPR, formatNPRNumber } from "../../../utils/formatCurrency";
 const PRICE_RANGES = [
   { label: "All Prices", min: 0, max: Infinity },
   { label: `Under ${formatNPR(10000)}`, min: 0, max: 10000 },
-  { label: `${formatNPR(10000)} - ${formatNPRNumber(25000)}`, min: 10000, max: 25000 },
-  { label: `${formatNPR(25000)} - ${formatNPRNumber(50000)}`, min: 25000, max: 50000 },
+  {
+    label: `${formatNPR(10000)} - ${formatNPRNumber(25000)}`,
+    min: 10000,
+    max: 25000,
+  },
+  {
+    label: `${formatNPR(25000)} - ${formatNPRNumber(50000)}`,
+    min: 25000,
+    max: 50000,
+  },
   { label: `Above ${formatNPR(50000)}`, min: 50000, max: Infinity },
 ];
 
@@ -54,7 +62,12 @@ const FilterModal = ({
             <div className="w-9 h-9 bg-teal-500/20 rounded-full flex items-center justify-center">
               <IoFilter size={16} className="text-teal-400" />
             </div>
-            <h2 id="ar-filter-title" className="text-sm font-semibold text-white">Filter & Sort</h2>
+            <h2
+              id="ar-filter-title"
+              className="text-sm font-semibold text-white"
+            >
+              Filter & Sort
+            </h2>
           </div>
           <button
             onClick={onClose}

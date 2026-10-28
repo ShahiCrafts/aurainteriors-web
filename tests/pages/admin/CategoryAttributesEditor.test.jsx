@@ -9,25 +9,81 @@ import { render, screen, within, fireEvent } from "@testing-library/react";
 const setAssignmentsMutate = vi.hoisted(() => vi.fn().mockResolvedValue({}));
 
 const DEFINITIONS = [
-  { key: "frameMaterial", label: "Frame Material", type: "enum", allowedValues: ["Oak", "Pine"], storage: "catalogAttributes", active: true },
-  { key: "warrantyYears", label: "Warranty (years)", type: "integer", storage: "catalogAttributes", active: true },
-  { key: "careInstructions", label: "Care Instructions", type: "string", storage: "catalogAttributes", active: true },
+  {
+    key: "frameMaterial",
+    label: "Frame Material",
+    type: "enum",
+    allowedValues: ["Oak", "Pine"],
+    storage: "catalogAttributes",
+    active: true,
+  },
+  {
+    key: "warrantyYears",
+    label: "Warranty (years)",
+    type: "integer",
+    storage: "catalogAttributes",
+    active: true,
+  },
+  {
+    key: "careInstructions",
+    label: "Care Instructions",
+    type: "string",
+    storage: "catalogAttributes",
+    active: true,
+  },
 ];
 
 const RESOLVED = [
-  { key: "frameMaterial", label: "Frame Material", type: "enum", allowedValues: ["Oak", "Pine"], storage: "catalogAttributes", required: false, source: "global" },
-  { key: "warrantyYears", label: "Warranty (years)", type: "integer", storage: "catalogAttributes", required: false, source: "category", sourceCategoryId: "root1" },
-  { key: "careInstructions", label: "Care Instructions", type: "string", storage: "catalogAttributes", required: true, source: "category", sourceCategoryId: "cat1" },
+  {
+    key: "frameMaterial",
+    label: "Frame Material",
+    type: "enum",
+    allowedValues: ["Oak", "Pine"],
+    storage: "catalogAttributes",
+    required: false,
+    source: "global",
+  },
+  {
+    key: "warrantyYears",
+    label: "Warranty (years)",
+    type: "integer",
+    storage: "catalogAttributes",
+    required: false,
+    source: "category",
+    sourceCategoryId: "root1",
+  },
+  {
+    key: "careInstructions",
+    label: "Care Instructions",
+    type: "string",
+    storage: "catalogAttributes",
+    required: true,
+    source: "category",
+    sourceCategoryId: "cat1",
+  },
 ];
 
 vi.mock("../../../src/hooks/catalog/useCatalogTan", () => ({
-  useAttributeDefinitions: () => ({ data: { data: { attributeDefinitions: DEFINITIONS } }, isLoading: false }),
-  useCategoryAssignments: () => ({
-    data: { data: { assignments: [{ attributeKey: "careInstructions", required: true }] } },
+  useAttributeDefinitions: () => ({
+    data: { data: { attributeDefinitions: DEFINITIONS } },
     isLoading: false,
   }),
-  useCategoryAttributes: () => ({ data: { data: { attributes: RESOLVED } }, isLoading: false }),
-  useSetCategoryAssignments: () => ({ mutateAsync: setAssignmentsMutate, isPending: false }),
+  useCategoryAssignments: () => ({
+    data: {
+      data: {
+        assignments: [{ attributeKey: "careInstructions", required: true }],
+      },
+    },
+    isLoading: false,
+  }),
+  useCategoryAttributes: () => ({
+    data: { data: { attributes: RESOLVED } },
+    isLoading: false,
+  }),
+  useSetCategoryAssignments: () => ({
+    mutateAsync: setAssignmentsMutate,
+    isPending: false,
+  }),
 }));
 
 vi.mock("../../../src/lib/toast.js", () => ({
@@ -52,7 +108,7 @@ describe("CategoryAttributesEditor (Phase 6)", () => {
         category={{ _id: "cat1", name: "Sofas" }}
         categories={CATEGORIES}
         onClose={vi.fn()}
-      />
+      />,
     );
 
     expect(screen.getByText("Global default")).toBeInTheDocument();
@@ -61,12 +117,18 @@ describe("CategoryAttributesEditor (Phase 6)", () => {
 
     // Inherited rows are read-only: they offer Override, not inputs.
     const frameRow = screen.getByText("Frame Material").closest("div.border");
-    expect(within(frameRow).getByRole("button", { name: "Override here" })).toBeInTheDocument();
-    expect(within(frameRow).queryByLabelText("Required")).not.toBeInTheDocument();
+    expect(
+      within(frameRow).getByRole("button", { name: "Override here" }),
+    ).toBeInTheDocument();
+    expect(
+      within(frameRow).queryByLabelText("Required"),
+    ).not.toBeInTheDocument();
 
     // The own assignment renders editable controls pre-filled from
     // the server list (required: true → "Required").
-    const careSelect = screen.getByLabelText("Required", { selector: "#assign-required-careInstructions" });
+    const careSelect = screen.getByLabelText("Required", {
+      selector: "#assign-required-careInstructions",
+    });
     expect(careSelect).toHaveValue("required");
   });
 
@@ -76,11 +138,15 @@ describe("CategoryAttributesEditor (Phase 6)", () => {
         category={{ _id: "cat1", name: "Sofas" }}
         categories={CATEGORIES}
         onClose={vi.fn()}
-      />
+      />,
     );
 
-    const warrantyRow = screen.getByText("Warranty (years)").closest("div.border");
-    fireEvent.click(within(warrantyRow).getByRole("button", { name: "Deactivate here" }));
+    const warrantyRow = screen
+      .getByText("Warranty (years)")
+      .closest("div.border");
+    fireEvent.click(
+      within(warrantyRow).getByRole("button", { name: "Deactivate here" }),
+    );
     expect(screen.getByText("Deactivated here")).toBeInTheDocument();
 
     fireEvent.click(screen.getByRole("button", { name: "Save assignments" }));
@@ -92,7 +158,7 @@ describe("CategoryAttributesEditor (Phase 6)", () => {
       expect.arrayContaining([
         { attributeKey: "careInstructions", active: true, required: true },
         { attributeKey: "warrantyYears", active: false },
-      ])
+      ]),
     );
     expect(payload.assignments).toHaveLength(2);
   });

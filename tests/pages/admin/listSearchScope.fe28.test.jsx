@@ -124,7 +124,9 @@ const HINT = /matches from this page only/i;
 describe("Admin list search scope (FE-28)", () => {
   it("Announcements: placeholder is page-scoped and typing shows the page-only hint", () => {
     render(<Announcements />);
-    const input = screen.getByPlaceholderText(/search announcements on this page/i);
+    const input = screen.getByPlaceholderText(
+      /search announcements on this page/i,
+    );
     expect(screen.queryByText(HINT)).not.toBeInTheDocument();
     fireEvent.change(input, { target: { value: "Monsoon" } });
     expect(screen.getByText(HINT)).toBeInTheDocument();

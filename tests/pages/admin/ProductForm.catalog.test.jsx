@@ -43,26 +43,106 @@ const PRODUCT = {
 };
 
 const RESOLUTION = [
-  { key: "careInstructions", label: "Care Instructions", type: "string", storage: "catalogAttributes", required: true, source: "category", displayGroup: "Care" },
-  { key: "frameMaterial", label: "Frame Material", type: "enum", allowedValues: ["Oak", "Pine"], storage: "catalogAttributes", required: false, source: "global" },
-  { key: "foldable", label: "Foldable", type: "boolean", storage: "catalogAttributes", required: false, source: "global" },
-  { key: "seatCount", label: "Seat Count", type: "integer", min: 1, max: 8, storage: "catalogAttributes", required: false, source: "global" },
-  { key: "seatDepth", label: "Seat Depth", type: "measurement", unit: "cm", acceptedUnits: ["cm", "in"], storage: "catalogAttributes", required: false, source: "global" },
-  { key: "finishColor", label: "Finish Color", type: "color", storage: "catalogAttributes", required: false, source: "global" },
-  { key: "dimensions", label: "Dimensions", type: "dimensions", storage: "field", fieldPath: "dimensions", required: false, source: "global" },
+  {
+    key: "careInstructions",
+    label: "Care Instructions",
+    type: "string",
+    storage: "catalogAttributes",
+    required: true,
+    source: "category",
+    displayGroup: "Care",
+  },
+  {
+    key: "frameMaterial",
+    label: "Frame Material",
+    type: "enum",
+    allowedValues: ["Oak", "Pine"],
+    storage: "catalogAttributes",
+    required: false,
+    source: "global",
+  },
+  {
+    key: "foldable",
+    label: "Foldable",
+    type: "boolean",
+    storage: "catalogAttributes",
+    required: false,
+    source: "global",
+  },
+  {
+    key: "seatCount",
+    label: "Seat Count",
+    type: "integer",
+    min: 1,
+    max: 8,
+    storage: "catalogAttributes",
+    required: false,
+    source: "global",
+  },
+  {
+    key: "seatDepth",
+    label: "Seat Depth",
+    type: "measurement",
+    unit: "cm",
+    acceptedUnits: ["cm", "in"],
+    storage: "catalogAttributes",
+    required: false,
+    source: "global",
+  },
+  {
+    key: "finishColor",
+    label: "Finish Color",
+    type: "color",
+    storage: "catalogAttributes",
+    required: false,
+    source: "global",
+  },
+  {
+    key: "dimensions",
+    label: "Dimensions",
+    type: "dimensions",
+    storage: "field",
+    fieldPath: "dimensions",
+    required: false,
+    source: "global",
+  },
 ];
 
 const DEFINITIONS = [
-  { key: "frameMaterial", label: "Frame Material", type: "enum", allowedValues: ["Oak", "Pine"], storage: "catalogAttributes", active: true },
-  { key: "seatCount", label: "Seat Count", type: "integer", storage: "catalogAttributes", active: true },
-  { key: "careInstructions", label: "Care Instructions", type: "string", storage: "catalogAttributes", active: true },
+  {
+    key: "frameMaterial",
+    label: "Frame Material",
+    type: "enum",
+    allowedValues: ["Oak", "Pine"],
+    storage: "catalogAttributes",
+    active: true,
+  },
+  {
+    key: "seatCount",
+    label: "Seat Count",
+    type: "integer",
+    storage: "catalogAttributes",
+    active: true,
+  },
+  {
+    key: "careInstructions",
+    label: "Care Instructions",
+    type: "string",
+    storage: "catalogAttributes",
+    active: true,
+  },
 ];
 
 vi.mock("../../../src/hooks/product/useProductTan", () => ({
   useProducts: (params = {}) => {
     if (params.limit === 1) {
       return {
-        data: { data: { products: [], pagination: { total: 1, pages: 1, page: 1, limit: 1 } } },
+        data: {
+          data: {
+            products: [],
+            pagination: { total: 1, pages: 1, page: 1, limit: 1 },
+          },
+        },
         isLoading: false,
       };
     }
@@ -70,15 +150,29 @@ vi.mock("../../../src/hooks/product/useProductTan", () => ({
       data: {
         data: {
           products: [PRODUCT],
-          pagination: { total: 1, pages: 1, page: params.page || 1, limit: params.limit || 10 },
+          pagination: {
+            total: 1,
+            pages: 1,
+            page: params.page || 1,
+            limit: params.limit || 10,
+          },
         },
       },
       isLoading: false,
     };
   },
-  useCreateProduct: () => ({ mutateAsync: createProductMutate, isPending: false }),
-  useUpdateProduct: () => ({ mutateAsync: updateProductMutate, isPending: false }),
-  useDeleteProduct: () => ({ mutateAsync: vi.fn().mockResolvedValue({}), isPending: false }),
+  useCreateProduct: () => ({
+    mutateAsync: createProductMutate,
+    isPending: false,
+  }),
+  useUpdateProduct: () => ({
+    mutateAsync: updateProductMutate,
+    isPending: false,
+  }),
+  useDeleteProduct: () => ({
+    mutateAsync: vi.fn().mockResolvedValue({}),
+    isPending: false,
+  }),
 }));
 
 vi.mock("../../../src/hooks/product/useCategoryTan", () => ({
@@ -88,15 +182,40 @@ vi.mock("../../../src/hooks/product/useCategoryTan", () => ({
 }));
 
 vi.mock("../../../src/hooks/catalog/useCatalogTan", () => ({
-  useProductTypes: () => ({ data: { data: { productTypes: [{ key: "sofa", label: "Sofa" }] } } }),
-  useRooms: () => ({ data: { data: { rooms: [{ slug: "living-room", label: "Living Room" }] } } }),
-  useCategoryAttributes: () => ({ data: { data: { attributes: RESOLUTION } }, isLoading: false }),
-  useProductTypeAttributes: () => ({ data: { data: { attributes: [] } }, isLoading: false }),
-  useAttributeDefinitions: () => ({ data: { data: { attributeDefinitions: DEFINITIONS } }, isLoading: false }),
-  useProductVariants: () => ({ data: { data: { variants: variantsFixture.list } }, isLoading: false }),
-  useCreateVariant: () => ({ mutateAsync: createVariantMutate, isPending: false }),
-  useUpdateVariant: () => ({ mutateAsync: vi.fn().mockResolvedValue({}), isPending: false }),
-  useDeleteVariant: () => ({ mutateAsync: vi.fn().mockResolvedValue({}), isPending: false }),
+  useProductTypes: () => ({
+    data: { data: { productTypes: [{ key: "sofa", label: "Sofa" }] } },
+  }),
+  useRooms: () => ({
+    data: { data: { rooms: [{ slug: "living-room", label: "Living Room" }] } },
+  }),
+  useCategoryAttributes: () => ({
+    data: { data: { attributes: RESOLUTION } },
+    isLoading: false,
+  }),
+  useProductTypeAttributes: () => ({
+    data: { data: { attributes: [] } },
+    isLoading: false,
+  }),
+  useAttributeDefinitions: () => ({
+    data: { data: { attributeDefinitions: DEFINITIONS } },
+    isLoading: false,
+  }),
+  useProductVariants: () => ({
+    data: { data: { variants: variantsFixture.list } },
+    isLoading: false,
+  }),
+  useCreateVariant: () => ({
+    mutateAsync: createVariantMutate,
+    isPending: false,
+  }),
+  useUpdateVariant: () => ({
+    mutateAsync: vi.fn().mockResolvedValue({}),
+    isPending: false,
+  }),
+  useDeleteVariant: () => ({
+    mutateAsync: vi.fn().mockResolvedValue({}),
+    isPending: false,
+  }),
 }));
 
 vi.mock("../../../src/components/fallbacks/ImageWithFallback", () => ({
@@ -151,21 +270,30 @@ describe("Product form — dynamic attributes (Phase 6)", () => {
     expect(care.tagName).toBe("INPUT");
     expect(care).toHaveAttribute("type", "text");
 
-    expect(within(dialog).getByLabelText(/Frame Material/).tagName).toBe("SELECT");
+    expect(within(dialog).getByLabelText(/Frame Material/).tagName).toBe(
+      "SELECT",
+    );
     expect(within(dialog).getByLabelText(/Foldable/).tagName).toBe("SELECT");
 
     const seatCount = within(dialog).getByLabelText(/Seat Count/);
     expect(seatCount).toHaveAttribute("type", "number");
 
-    expect(within(dialog).getByLabelText("Seat Depth value")).toHaveAttribute("type", "number");
-    expect(within(dialog).getByLabelText("Seat Depth unit").tagName).toBe("SELECT");
+    expect(within(dialog).getByLabelText("Seat Depth value")).toHaveAttribute(
+      "type",
+      "number",
+    );
+    expect(within(dialog).getByLabelText("Seat Depth unit").tagName).toBe(
+      "SELECT",
+    );
 
     expect(within(dialog).getByLabelText(/Finish Color/).tagName).toBe("INPUT");
 
     // storage:'field' definitions are NOT duplicated as inputs —
     // the standard product fields own them.
     expect(dialog.querySelector("#attr-dimensions")).toBeNull();
-    expect(within(dialog).getByText(/edited in the standard product fields/)).toBeInTheDocument();
+    expect(
+      within(dialog).getByText(/edited in the standard product fields/),
+    ).toBeInTheDocument();
   });
 
   it("blocks submit on a missing required attribute, then saves with the value", async () => {
@@ -178,11 +306,15 @@ describe("Product form — dynamic attributes (Phase 6)", () => {
       target: { value: "500" },
     });
 
-    const saveButton = within(dialog).getByRole("button", { name: "Add Product" });
+    const saveButton = within(dialog).getByRole("button", {
+      name: "Add Product",
+    });
     fireEvent.click(saveButton);
 
     expect(createProductMutate).not.toHaveBeenCalled();
-    expect(toastError).toHaveBeenCalledWith(expect.stringContaining("Care Instructions"));
+    expect(toastError).toHaveBeenCalledWith(
+      expect.stringContaining("Care Instructions"),
+    );
 
     fireEvent.change(within(dialog).getByLabelText(/Care Instructions/), {
       target: { value: "Wipe with a dry cloth" },
@@ -192,7 +324,7 @@ describe("Product form — dynamic attributes (Phase 6)", () => {
     expect(createProductMutate).toHaveBeenCalledTimes(1);
     const payload = createProductMutate.mock.calls[0][0];
     expect(payload.catalogAttributes).toEqual(
-      expect.objectContaining({ careInstructions: "Wipe with a dry cloth" })
+      expect.objectContaining({ careInstructions: "Wipe with a dry cloth" }),
     );
     expect(payload.productType).toBe("");
     expect(payload.roomSlugs).toEqual([]);
@@ -211,9 +343,13 @@ describe("Product form — variant editor (Phase 6)", () => {
     fireEvent.click(within(dialog).getByRole("button", { name: /Variants/ }));
 
     // The axis picker reflects the product's saved variantOptionKeys.
-    expect(within(dialog).getByLabelText("Frame Material", { selector: "input" })).toBeChecked();
+    expect(
+      within(dialog).getByLabelText("Frame Material", { selector: "input" }),
+    ).toBeChecked();
 
-    fireEvent.click(within(dialog).getByRole("button", { name: "Add Variant" }));
+    fireEvent.click(
+      within(dialog).getByRole("button", { name: "Add Variant" }),
+    );
     const variantDialog = screen.getByRole("dialog", { name: "Add variant" });
 
     fireEvent.change(within(variantDialog).getByLabelText(/^SKU/), {
@@ -229,10 +365,15 @@ describe("Product form — variant editor (Phase 6)", () => {
     createVariantMutate.mockRejectedValueOnce({
       response: {
         status: 409,
-        data: { message: "A variant with this combination of options already exists for this product" },
+        data: {
+          message:
+            "A variant with this combination of options already exists for this product",
+        },
       },
     });
-    fireEvent.click(within(variantDialog).getByRole("button", { name: "Add Variant" }));
+    fireEvent.click(
+      within(variantDialog).getByRole("button", { name: "Add Variant" }),
+    );
 
     expect(createVariantMutate).toHaveBeenCalledWith({
       productId: "p1",
@@ -243,7 +384,9 @@ describe("Product form — variant editor (Phase 6)", () => {
       }),
     });
     expect(
-      await within(variantDialog).findByText(/combination of options already exists/)
+      await within(variantDialog).findByText(
+        /combination of options already exists/,
+      ),
     ).toBeInTheDocument();
   });
 
@@ -263,11 +406,15 @@ describe("Product form — variant editor (Phase 6)", () => {
     const dialog = openEditModal();
     fireEvent.click(within(dialog).getByRole("button", { name: /Variants/ }));
 
-    expect(within(dialog).getByText(/Option axes are locked while variants exist/)).toBeInTheDocument();
+    expect(
+      within(dialog).getByText(/Option axes are locked while variants exist/),
+    ).toBeInTheDocument();
     expect(within(dialog).getByText("SOFA-1-OAK")).toBeInTheDocument();
 
     fireEvent.click(within(dialog).getByTitle("Edit variant"));
-    const variantDialog = await screen.findByRole("dialog", { name: /Edit variant/ });
+    const variantDialog = await screen.findByRole("dialog", {
+      name: /Edit variant/,
+    });
     const skuInput = within(variantDialog).getByLabelText(/^SKU/);
     expect(skuInput).toHaveValue("SOFA-1-OAK");
     expect(skuInput).toBeDisabled();

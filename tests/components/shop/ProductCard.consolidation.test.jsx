@@ -68,7 +68,14 @@ const variantProduct = {
   category: { name: "Sofas" },
   rating: { average: 4.0, count: 3 },
   catalogVariants: [
-    { _id: "v1", sku: "SOFA-A", price: 18000, stock: 2, reservedStock: 0, enabled: true },
+    {
+      _id: "v1",
+      sku: "SOFA-A",
+      price: 18000,
+      stock: 2,
+      reservedStock: 0,
+      enabled: true,
+    },
   ],
 };
 
@@ -76,7 +83,7 @@ function renderCard(product, props = {}) {
   return render(
     <MemoryRouter>
       <ProductCard product={product} {...props} />
-    </MemoryRouter>
+    </MemoryRouter>,
   );
 }
 
@@ -89,10 +96,10 @@ describe("ProductCard variant: grid (default)", () => {
     expect(screen.getByText("(12)")).toBeInTheDocument();
     expect(screen.getByText("20% OFF")).toBeInTheDocument();
     expect(
-      screen.getByRole("button", { name: "Add Simple Chair to cart" })
+      screen.getByRole("button", { name: "Add Simple Chair to cart" }),
     ).toBeInTheDocument();
     expect(
-      screen.getByRole("button", { name: "Add Simple Chair to wishlist" })
+      screen.getByRole("button", { name: "Add Simple Chair to wishlist" }),
     ).toBeInTheDocument();
   });
 
@@ -105,10 +112,10 @@ describe("ProductCard variant: grid (default)", () => {
   it("showAddToCart=false and showWishlist=false remove both actions", () => {
     renderCard(simpleProduct, { showAddToCart: false, showWishlist: false });
     expect(
-      screen.queryByRole("button", { name: /to cart/ })
+      screen.queryByRole("button", { name: /to cart/ }),
     ).not.toBeInTheDocument();
     expect(
-      screen.queryByRole("button", { name: /wishlist/ })
+      screen.queryByRole("button", { name: /wishlist/ }),
     ).not.toBeInTheDocument();
   });
 
@@ -126,7 +133,7 @@ describe("ProductCard variant: list", () => {
     expect(screen.getByText("(12)")).toBeInTheDocument();
     expect(screen.getByText(/NPR\s12,000/)).toBeInTheDocument();
     expect(
-      screen.queryByRole("button", { name: /add to cart/i })
+      screen.queryByRole("button", { name: /add to cart/i }),
     ).not.toBeInTheDocument();
   });
 
@@ -134,7 +141,7 @@ describe("ProductCard variant: list", () => {
     renderCard(simpleProduct, { viewMode: "list" });
     expect(screen.getByText("Chairs")).toBeInTheDocument();
     expect(
-      screen.queryByRole("button", { name: /add to cart/i })
+      screen.queryByRole("button", { name: /add to cart/i }),
     ).not.toBeInTheDocument();
   });
 
@@ -152,7 +159,7 @@ describe("ProductCard variant: wishlist", () => {
     expect(screen.getByText("4.5")).toBeInTheDocument();
     expect(screen.getByText("(12)")).toBeInTheDocument();
     fireEvent.click(
-      screen.getByRole("button", { name: "Remove Simple Chair from wishlist" })
+      screen.getByRole("button", { name: "Remove Simple Chair from wishlist" }),
     );
     expect(onRemove).toHaveBeenCalledTimes(1);
     expect(onRemove).toHaveBeenCalledWith("p-simple");
@@ -161,7 +168,7 @@ describe("ProductCard variant: wishlist", () => {
   it("simple product: the cart button adds through the canonical guest path", () => {
     renderCard(simpleProduct, { variant: "wishlist", onRemove: vi.fn() });
     fireEvent.click(
-      screen.getByRole("button", { name: "Add Simple Chair to cart" })
+      screen.getByRole("button", { name: "Add Simple Chair to cart" }),
     );
     expect(mocks.guestAddItem).toHaveBeenCalledTimes(1);
     expect(mocks.guestAddItem).toHaveBeenCalledWith(simpleProduct, 1, {});
@@ -170,11 +177,13 @@ describe("ProductCard variant: wishlist", () => {
 
   it("variant product: renders a Select-options link and NO direct add (the Phase 5 guard)", () => {
     renderCard(variantProduct, { variant: "wishlist", onRemove: vi.fn() });
-    const cta = screen.getByRole("link", { name: "Select options for Variant Sofa" });
+    const cta = screen.getByRole("link", {
+      name: "Select options for Variant Sofa",
+    });
     expect(cta).toHaveAttribute("href", "/product/variant-sofa");
     expect(screen.getByText(/From\s+NPR\s18,000/)).toBeInTheDocument();
     expect(
-      screen.queryByRole("button", { name: /add .* to cart/i })
+      screen.queryByRole("button", { name: /add .* to cart/i }),
     ).not.toBeInTheDocument();
     expect(mocks.guestAddItem).not.toHaveBeenCalled();
     expect(mocks.addToCartMutate).not.toHaveBeenCalled();
@@ -206,7 +215,13 @@ describe("ProductCard variant: ar-thumb", () => {
     // No MemoryRouter needed: ar-thumb never renders a Link, and it
     // must stay hooks-free (AR hosts render it without the
     // storefront's providers) — this render has no providers at all.
-    render(<ProductCard product={simpleProduct} variant="ar-thumb" onSelect={onSelect} />);
+    render(
+      <ProductCard
+        product={simpleProduct}
+        variant="ar-thumb"
+        onSelect={onSelect}
+      />,
+    );
     const button = screen.getByRole("button", { name: /Simple Chair/ });
     expect(button).toHaveAttribute("aria-pressed", "false");
     expect(screen.getByText(/NPR\s12,000/)).toBeInTheDocument();
@@ -217,11 +232,15 @@ describe("ProductCard variant: ar-thumb", () => {
 
   it("selected state is exposed via aria-pressed", () => {
     render(
-      <ProductCard product={simpleProduct} variant="ar-thumb" selected onSelect={vi.fn()} />
+      <ProductCard
+        product={simpleProduct}
+        variant="ar-thumb"
+        selected
+        onSelect={vi.fn()}
+      />,
     );
-    expect(screen.getByRole("button", { name: /Simple Chair/ })).toHaveAttribute(
-      "aria-pressed",
-      "true"
-    );
+    expect(
+      screen.getByRole("button", { name: /Simple Chair/ }),
+    ).toHaveAttribute("aria-pressed", "true");
   });
 });

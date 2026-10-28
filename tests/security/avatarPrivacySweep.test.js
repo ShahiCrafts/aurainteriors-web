@@ -21,7 +21,7 @@ import { fileURLToPath } from "node:url";
 
 const SRC_ROOT = path.resolve(
   path.dirname(fileURLToPath(import.meta.url)),
-  "../../src"
+  "../../src",
 );
 
 function collectSourceFiles(dir) {
@@ -56,7 +56,7 @@ describe("FE-06 avatar privacy sweep (pen-test gate)", () => {
   it("the safeUrl media allowlist no longer contains the avatar service", () => {
     const safeUrlSource = readFileSync(
       path.join(SRC_ROOT, "utils/safeUrl.js"),
-      "utf8"
+      "utf8",
     );
     expect(safeUrlSource).not.toContain("ui-avatars.com");
   });
@@ -78,7 +78,9 @@ describe("FE-06 avatar privacy sweep (pen-test gate)", () => {
         .split("\n")
         .forEach((line, i) => {
           if (/api\/\?name=/.test(line)) {
-            hits.push(`${rel}:${i + 1} [name= URL construction] ${line.trim()}`);
+            hits.push(
+              `${rel}:${i + 1} [name= URL construction] ${line.trim()}`,
+            );
           }
           if (/seed=\$\{/.test(line)) {
             hits.push(`${rel}:${i + 1} [interpolated seed] ${line.trim()}`);

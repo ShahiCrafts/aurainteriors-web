@@ -30,7 +30,12 @@ beforeEach(() => {
 
 describe("getJob", () => {
   it("fetches /jobs/:id and unwraps data.job", async () => {
-    const job = { id: "j1", type: "promotion", status: "pending", progress: {} };
+    const job = {
+      id: "j1",
+      type: "promotion",
+      status: "pending",
+      progress: {},
+    };
     api.get.mockResolvedValue({ data: jobBody(job) });
     await expect(getJob("j1")).resolves.toEqual(job);
     expect(api.get).toHaveBeenCalledWith("/jobs/j1");
@@ -40,9 +45,15 @@ describe("getJob", () => {
 describe("pollJob", () => {
   it("resolves with the job once it completes", async () => {
     api.get
-      .mockResolvedValueOnce({ data: jobBody({ id: "j1", status: "processing", progress: {} }) })
       .mockResolvedValueOnce({
-        data: jobBody({ id: "j1", status: "completed", progress: { stage: "done", sent: 3, failed: 0 } }),
+        data: jobBody({ id: "j1", status: "processing", progress: {} }),
+      })
+      .mockResolvedValueOnce({
+        data: jobBody({
+          id: "j1",
+          status: "completed",
+          progress: { stage: "done", sent: 3, failed: 0 },
+        }),
       });
     const job = await pollJob("j1", fast);
     expect(job.status).toBe("completed");
@@ -52,21 +63,36 @@ describe("pollJob", () => {
 
   it("rejects on 'dead' and surfaces lastError", async () => {
     api.get.mockResolvedValue({
-      data: jobBody({ id: "j1", status: "dead", lastError: "SMTP connection refused", progress: {} }),
+      data: jobBody({
+        id: "j1",
+        status: "dead",
+        lastError: "SMTP connection refused",
+        progress: {},
+      }),
     });
-    await expect(pollJob("j1", fast)).rejects.toThrow(/SMTP connection refused/);
+    await expect(pollJob("j1", fast)).rejects.toThrow(
+      /SMTP connection refused/,
+    );
   });
 
   it("rejects on 'dead' even without a lastError", async () => {
     api.get.mockResolvedValue({
-      data: jobBody({ id: "j1", status: "dead", lastError: null, progress: {} }),
+      data: jobBody({
+        id: "j1",
+        status: "dead",
+        lastError: null,
+        progress: {},
+      }),
     });
     await expect(pollJob("j1", fast)).rejects.toThrow(/fail/i);
   });
 
   it("rejects honestly on 404 (job not found)", async () => {
     const err = new Error("Request failed with status code 404");
-    err.response = { status: 404, data: { success: false, message: "Job not found" } };
+    err.response = {
+      status: 404,
+      data: { success: false, message: "Job not found" },
+    };
     err.displayMessage = "Job not found";
     api.get.mockRejectedValue(err);
     await expect(pollJob("j1", fast)).rejects.toThrow(/not found/i);
@@ -77,7 +103,7 @@ describe("pollJob", () => {
       data: jobBody({ id: "j1", status: "processing", progress: {} }),
     });
     await expect(
-      pollJob("j1", { intervalMs: 10, timeoutMs: 25, sleep: noSleep })
+      pollJob("j1", { intervalMs: 10, timeoutMs: 25, sleep: noSleep }),
     ).rejects.toThrow(/timed out/i);
     // Bounded: it must have stopped polling.
     const callsAtReject = api.get.mock.calls.length;

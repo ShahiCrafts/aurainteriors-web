@@ -62,7 +62,9 @@ function expectNoGuestIdInUrl(url, config, id) {
 beforeEach(() => {
   vi.clearAllMocks();
   api.get.mockResolvedValue({ data: { success: true, data: {} } });
-  api.post.mockResolvedValue({ data: { data: { attachment: { fileUrl: "https://example.com/x.txt" } } } });
+  api.post.mockResolvedValue({
+    data: { data: { attachment: { fileUrl: "https://example.com/x.txt" } } },
+  });
   getGuestSessionId.mockReturnValue(GUEST_ID);
 });
 
@@ -112,7 +114,8 @@ describe("FE-40: no stored guest session -> no header", () => {
     await getChatDetails("chat-123");
     const { config } = lastGetCall();
     expect(config?.headers?.["x-guest-session-id"]).toBeUndefined();
-    if (config?.params) expect(JSON.stringify(config.params)).not.toContain("guestSessionId");
+    if (config?.params)
+      expect(JSON.stringify(config.params)).not.toContain("guestSessionId");
   });
 
   it("getChatMessages sends no header", async () => {
@@ -164,7 +167,9 @@ describe("VULN-001: uploads use the header, never the query param", () => {
     // FE-11: the upload path now content-sniffs first, so the fixture
     // is a genuine PDF (an allowed non-image type) instead of the
     // text/plain file the old advisory-only validation waved through.
-    const file = new File(["%PDF-1.7\nhello"], "doc.pdf", { type: "application/pdf" });
+    const file = new File(["%PDF-1.7\nhello"], "doc.pdf", {
+      type: "application/pdf",
+    });
     await uploadChatAttachment("chat-123", file);
     expect(api.post).toHaveBeenCalledTimes(1);
     const [url, , config] = api.post.mock.calls[0];
@@ -175,7 +180,9 @@ describe("VULN-001: uploads use the header, never the query param", () => {
 
   it("uploadChatAttachment with no guest session sends no header and no query param", async () => {
     getGuestSessionId.mockReturnValue(null);
-    const file = new File(["%PDF-1.7\nhello"], "doc.pdf", { type: "application/pdf" });
+    const file = new File(["%PDF-1.7\nhello"], "doc.pdf", {
+      type: "application/pdf",
+    });
     await uploadChatAttachment("chat-123", file);
     const [, , config] = api.post.mock.calls[0];
     expect(config?.headers?.["x-guest-session-id"]).toBeUndefined();

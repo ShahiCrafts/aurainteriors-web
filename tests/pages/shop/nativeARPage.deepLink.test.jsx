@@ -21,18 +21,37 @@ import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 const hoisted = vi.hoisted(() => ({ arProps: null }));
 
 vi.mock("../../../src/api/productApi.js", () => ({
-  default: { getAll: vi.fn(), getById: vi.fn(), getFeatured: vi.fn(), getNewArrivals: vi.fn(), getRelated: vi.fn() },
+  default: {
+    getAll: vi.fn(),
+    getById: vi.fn(),
+    getFeatured: vi.fn(),
+    getNewArrivals: vi.fn(),
+    getRelated: vi.fn(),
+  },
 }));
 vi.mock("../../../src/api/categoryApi.js", () => ({
-  default: { getAll: vi.fn(), getTree: vi.fn(), getById: vi.fn(), getProducts: vi.fn() },
+  default: {
+    getAll: vi.fn(),
+    getTree: vi.fn(),
+    getById: vi.fn(),
+    getProducts: vi.fn(),
+  },
 }));
 vi.mock("../../../src/api/cartApi.js", () => ({
-  default: { addToCart: vi.fn(), getCart: vi.fn(), updateCartItem: vi.fn(), removeFromCart: vi.fn(), clearCart: vi.fn() },
+  default: {
+    addToCart: vi.fn(),
+    getCart: vi.fn(),
+    updateCartItem: vi.fn(),
+    removeFromCart: vi.fn(),
+    clearCart: vi.fn(),
+  },
 }));
 vi.mock("../../../src/components/ar/NativeARView.jsx", () => ({
   default: (props) => {
     hoisted.arProps = props;
-    return <div data-testid="ar-view">{props.selectedProduct?.slug || "none"}</div>;
+    return (
+      <div data-testid="ar-view">{props.selectedProduct?.slug || "none"}</div>
+    );
   },
 }));
 
@@ -61,7 +80,9 @@ const other = {
 };
 
 function renderPage(entry) {
-  const client = new QueryClient({ defaultOptions: { queries: { retry: false } } });
+  const client = new QueryClient({
+    defaultOptions: { queries: { retry: false } },
+  });
   return render(
     <QueryClientProvider client={client}>
       <MemoryRouter initialEntries={[entry]}>
@@ -69,7 +90,7 @@ function renderPage(entry) {
           <Route path="/native-ar" element={<NativeARPage />} />
         </Routes>
       </MemoryRouter>
-    </QueryClientProvider>
+    </QueryClientProvider>,
   );
 }
 
@@ -79,7 +100,10 @@ beforeEach(() => {
   useGuestCartStore.setState({ items: [] });
   categoryApi.getAll.mockResolvedValue({ data: { categories: [] } });
   productApi.getAll.mockResolvedValue({
-    data: { products: [other], pagination: { page: 1, limit: 100, total: 1, pages: 1 } },
+    data: {
+      products: [other],
+      pagination: { page: 1, limit: 100, total: 1, pages: 1 },
+    },
   });
   productApi.getById.mockResolvedValue({ data: { product: linked } });
   cartApi.addToCart.mockResolvedValue({ data: {} });
@@ -88,36 +112,54 @@ beforeEach(() => {
 describe("NativeARPage deep links (FE-30)", () => {
   it("?select=<slug> selects the linked product, not the intro sofa", async () => {
     renderPage("/native-ar?select=linked-chair");
-    await waitFor(() => expect(screen.getByTestId("ar-view")).toHaveTextContent("linked-chair"));
+    await waitFor(() =>
+      expect(screen.getByTestId("ar-view")).toHaveTextContent("linked-chair"),
+    );
     expect(hoisted.arProps.selectedProduct._id).toBe("p-linked");
   });
 
   it("the linked product is selected even while the catalog fetch is still pending", async () => {
     productApi.getAll.mockReturnValue(new Promise(() => {}));
     renderPage("/native-ar?select=linked-chair");
-    await waitFor(() => expect(screen.getByTestId("ar-view")).toHaveTextContent("linked-chair"));
+    await waitFor(() =>
+      expect(screen.getByTestId("ar-view")).toHaveTextContent("linked-chair"),
+    );
     expect(hoisted.arProps.isLoading).toBe(false);
   });
 
   it("with no ?select=, the intro product is selected immediately without waiting for the catalog", async () => {
     productApi.getAll.mockReturnValue(new Promise(() => {}));
     renderPage("/native-ar");
-    await waitFor(() => expect(screen.getByTestId("ar-view")).toHaveTextContent("intro"));
+    await waitFor(() =>
+      expect(screen.getByTestId("ar-view")).toHaveTextContent("intro"),
+    );
     expect(hoisted.arProps.isLoading).toBe(false);
   });
 
   it("an unknown ?select= falls back to the intro product once the lookup settles", async () => {
     productApi.getById.mockRejectedValue(new Error("404"));
     renderPage("/native-ar?select=does-not-exist");
-    await waitFor(() => expect(screen.getByTestId("ar-view")).toHaveTextContent("intro"));
+    await waitFor(() =>
+      expect(screen.getByTestId("ar-view")).toHaveTextContent("intro"),
+    );
   });
 
   it("pen: a linked product with no AR model is not selected (falls back to intro)", async () => {
     productApi.getById.mockResolvedValue({
-      data: { product: { ...linked, _id: "p-nomodel", slug: "linked-chair", modelUrl: null, modelFiles: [] } },
+      data: {
+        product: {
+          ...linked,
+          _id: "p-nomodel",
+          slug: "linked-chair",
+          modelUrl: null,
+          modelFiles: [],
+        },
+      },
     });
     renderPage("/native-ar?select=linked-chair");
-    await waitFor(() => expect(screen.getByTestId("ar-view")).toHaveTextContent("intro"));
+    await waitFor(() =>
+      expect(screen.getByTestId("ar-view")).toHaveTextContent("intro"),
+    );
   });
 
   it("the picker catalog walks past the server's 100-item page cap (150 products reachable)", async () => {
@@ -143,18 +185,22 @@ describe("NativeARPage deep links (FE-30)", () => {
           products: page === 2 ? page2 : page1,
           pagination: { page: page || 1, limit: 100, total: 150, pages: 2 },
         },
-      })
+      }),
     );
     renderPage("/native-ar");
     await waitFor(() => expect(hoisted.arProps.products).toHaveLength(151)); // intro + 150
-    expect(productApi.getAll).toHaveBeenCalledWith(expect.objectContaining({ page: 2, limit: 100 }));
+    expect(productApi.getAll).toHaveBeenCalledWith(
+      expect.objectContaining({ page: 2, limit: 100 }),
+    );
   });
 });
 
 describe("NativeARPage add-to-cart (FE-30)", () => {
   it("a guest adds via the guest cart instead of being silently bounced to /shop", async () => {
     renderPage("/native-ar?select=linked-chair");
-    await waitFor(() => expect(hoisted.arProps.selectedProduct?._id).toBe("p-linked"));
+    await waitFor(() =>
+      expect(hoisted.arProps.selectedProduct?._id).toBe("p-linked"),
+    );
     act(() => {
       hoisted.arProps.onAddToCart(linked);
     });
@@ -166,7 +212,9 @@ describe("NativeARPage add-to-cart (FE-30)", () => {
   it("pen: the synthetic intro product can never be submitted to either cart", async () => {
     useAuthStore.setState({ isAuthenticated: true, user: { _id: "u-1" } });
     renderPage("/native-ar");
-    await waitFor(() => expect(hoisted.arProps.selectedProduct?.slug).toBe("intro"));
+    await waitFor(() =>
+      expect(hoisted.arProps.selectedProduct?.slug).toBe("intro"),
+    );
     const intro = hoisted.arProps.products[0];
     act(() => {
       hoisted.arProps.onAddToCart(intro);
@@ -179,7 +227,9 @@ describe("NativeARPage add-to-cart (FE-30)", () => {
     useAuthStore.setState({ isAuthenticated: true, user: { _id: "u-1" } });
     cartApi.addToCart.mockReturnValue(new Promise(() => {}));
     renderPage("/native-ar?select=linked-chair");
-    await waitFor(() => expect(hoisted.arProps.selectedProduct?._id).toBe("p-linked"));
+    await waitFor(() =>
+      expect(hoisted.arProps.selectedProduct?._id).toBe("p-linked"),
+    );
     act(() => {
       hoisted.arProps.onAddToCart(linked);
       hoisted.arProps.onAddToCart(linked);
@@ -189,6 +239,9 @@ describe("NativeARPage add-to-cart (FE-30)", () => {
     // Let any duplicate mutations dispatch, then assert exactly one went out.
     await new Promise((resolve) => setTimeout(resolve, 50));
     expect(cartApi.addToCart).toHaveBeenCalledTimes(1);
-    expect(cartApi.addToCart).toHaveBeenCalledWith({ productId: "p-linked", quantity: 1 });
+    expect(cartApi.addToCart).toHaveBeenCalledWith({
+      productId: "p-linked",
+      quantity: 1,
+    });
   });
 });

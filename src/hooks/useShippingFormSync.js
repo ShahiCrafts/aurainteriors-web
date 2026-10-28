@@ -70,10 +70,10 @@ export function useShippingFormSync({
 
     const hasSavedShippingData = Boolean(
       shippingAddress.addressLine1 ||
-        shippingAddress.city ||
-        shippingAddress.postalCode ||
-        shippingAddress.state ||
-        shippingAddress.phone,
+      shippingAddress.city ||
+      shippingAddress.postalCode ||
+      shippingAddress.state ||
+      shippingAddress.phone,
     );
 
     if (hasSavedShippingData) {

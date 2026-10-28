@@ -6,7 +6,7 @@ const labelFor = (key) => key.charAt(0).toUpperCase() + key.slice(1);
 
 export default function VariantLineSummary({ sku, options, className = "" }) {
   const entries = Object.entries(options || {}).filter(
-    ([, value]) => value !== undefined && value !== null && value !== ""
+    ([, value]) => value !== undefined && value !== null && value !== "",
   );
   if (!sku && entries.length === 0) return null;
   return (
@@ -14,7 +14,9 @@ export default function VariantLineSummary({ sku, options, className = "" }) {
       {sku && <p>SKU {sku}</p>}
       {entries.length > 0 && (
         <p>
-          {entries.map(([key, value]) => `${labelFor(key)}: ${value}`).join(" • ")}
+          {entries
+            .map(([key, value]) => `${labelFor(key)}: ${value}`)
+            .join(" • ")}
         </p>
       )}
     </div>

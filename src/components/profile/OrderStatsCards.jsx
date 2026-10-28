@@ -11,8 +11,10 @@ import { ShoppingBag, Clock, Truck, CheckCircle2 } from "lucide-react";
 export default function OrderStatsCards({ orders = [], totalCount }) {
   const stats = orders.reduce(
     (acc, o) => {
-      if (o.orderStatus === "pending" || o.orderStatus === "confirmed") acc.pending += 1;
-      if (o.orderStatus === "processing" || o.orderStatus === "shipped") acc.processing += 1;
+      if (o.orderStatus === "pending" || o.orderStatus === "confirmed")
+        acc.pending += 1;
+      if (o.orderStatus === "processing" || o.orderStatus === "shipped")
+        acc.processing += 1;
       if (o.orderStatus === "delivered") acc.delivered += 1;
       return acc;
     },
@@ -57,12 +59,18 @@ export default function OrderStatsCards({ orders = [], totalCount }) {
           key={card.label}
           className="flex items-center gap-3.5 p-4 bg-white border border-neutral-200 rounded-xl"
         >
-          <div className={`w-11 h-11 rounded-xl flex items-center justify-center shrink-0 ${card.bg}`}>
+          <div
+            className={`w-11 h-11 rounded-xl flex items-center justify-center shrink-0 ${card.bg}`}
+          >
             <card.icon size={19} className={card.color} />
           </div>
           <div>
-            <p className="text-[22px] font-semibold text-neutral-900 leading-none">{card.value}</p>
-            <p className="text-[14px] text-neutral-400 font-medium mt-1">{card.label}</p>
+            <p className="text-[22px] font-semibold text-neutral-900 leading-none">
+              {card.value}
+            </p>
+            <p className="text-[14px] text-neutral-400 font-medium mt-1">
+              {card.label}
+            </p>
           </div>
         </div>
       ))}

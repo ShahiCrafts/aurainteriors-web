@@ -1,4 +1,12 @@
-import { Home, Building2, Users, MapPin, Phone, Pencil, Trash2 } from "lucide-react";
+import {
+  Home,
+  Building2,
+  Users,
+  MapPin,
+  Phone,
+  Pencil,
+  Trash2,
+} from "lucide-react";
 
 /**
  * @typedef {Object} AddressCardProps
@@ -49,7 +57,8 @@ export default function AddressCard({
   isSettingDefault = false,
 }) {
   const Icon = labelIcons[address.label?.toLowerCase()] || MapPin;
-  const iconColor = labelColors[address.label?.toLowerCase()] || labelColors.other;
+  const iconColor =
+    labelColors[address.label?.toLowerCase()] || labelColors.other;
   const displayLabel =
     address.label === "other" && address.customLabel
       ? address.customLabel
@@ -91,10 +100,7 @@ export default function AddressCard({
             {address.fullName}
           </p>
           <div className="flex items-start gap-2.5 text-[14px] text-neutral-500 leading-snug">
-            <MapPin
-              size={13}
-              className="text-neutral-500 mt-0.5 shrink-0"
-            />
+            <MapPin size={13} className="text-neutral-500 mt-0.5 shrink-0" />
             <span>
               {address.addressLine1}
               {address.addressLine2 && `, ${address.addressLine2}`}

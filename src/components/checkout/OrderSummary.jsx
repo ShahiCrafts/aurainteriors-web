@@ -37,7 +37,6 @@ export default function OrderSummary({
     <div className="w-full lg:w-[380px] xl:w-[512px] shrink-0 bg-gray-100">
       <div className="lg:sticky lg:top-20 px-4 sm:px-6 lg:px-12 py-12">
         <div className="bg-white rounded-xl overflow-hidden">
-
           {/* Header */}
           <div className="px-6 py-5">
             <h2 className="text-[20px] font-semibold text-[#1A1714]">
@@ -79,7 +78,9 @@ export default function OrderSummary({
 
               <div className="flex justify-between items-center text-[16px]">
                 <span className="text-neutral-500">Shipping</span>
-                <span className={`font-medium ${shippingCost === 0 ? "text-emerald-600" : "text-[#1A1714]"}`}>
+                <span
+                  className={`font-medium ${shippingCost === 0 ? "text-emerald-600" : "text-[#1A1714]"}`}
+                >
                   {shippingCost === 0 ? "Free" : formatNPR(shippingCost)}
                 </span>
               </div>
@@ -87,12 +88,16 @@ export default function OrderSummary({
 
             <div className="h-px w-full bg-[repeating-linear-gradient(to_right,#d4d4d4_0_10px,transparent_10px_18px)]" />
             <div className="flex justify-between items-center">
-              <span className="text-[20px] font-semibold text-[#1A1714]">Total</span>
+              <span className="text-[20px] font-semibold text-[#1A1714]">
+                Total
+              </span>
               <div className="text-right">
                 <p className="text-[24px] font-semibold text-[#1A1714] leading-none">
                   {formatNPR(total)}
                 </p>
-                <p className="text-[13px] text-neutral-500 mt-3">VAT included</p>
+                <p className="text-[13px] text-neutral-500 mt-3">
+                  VAT included
+                </p>
               </div>
             </div>
 

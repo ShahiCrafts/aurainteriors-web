@@ -99,7 +99,9 @@ describe("ChatConversation header (FE-14)", () => {
 describe("ChatConversation dead controls (FE-38)", () => {
   it("renders no Transfer button", () => {
     render(<ChatConversation chat={chat} />);
-    expect(screen.queryByRole("button", { name: /transfer/i })).not.toBeInTheDocument();
+    expect(
+      screen.queryByRole("button", { name: /transfer/i }),
+    ).not.toBeInTheDocument();
     expect(screen.queryByText(/Transfer/)).not.toBeInTheDocument();
   });
 

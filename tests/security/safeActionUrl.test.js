@@ -25,28 +25,34 @@ describe("FE-04 safeActionUrl — the three string-surgery defects", () => {
   });
 
   it("merges highlight with & when a query already exists", () => {
-    expect(safeActionUrl("/admin/orders?status=open", { highlight: "ord1" })).toBe(
-      "/dashboard/orders?status=open&highlight=ord1"
-    );
+    expect(
+      safeActionUrl("/admin/orders?status=open", { highlight: "ord1" }),
+    ).toBe("/dashboard/orders?status=open&highlight=ord1");
   });
 
   it("adds highlight with ? when there is no query", () => {
     expect(safeActionUrl("/admin/orders", { highlight: "ord1" })).toBe(
-      "/dashboard/orders?highlight=ord1"
+      "/dashboard/orders?highlight=ord1",
     );
   });
 
   it("keeps an existing query untouched when no highlight is given", () => {
-    expect(safeActionUrl("/admin/orders?status=open")).toBe("/dashboard/orders?status=open");
+    expect(safeActionUrl("/admin/orders?status=open")).toBe(
+      "/dashboard/orders?status=open",
+    );
   });
 
   it("replaces an existing highlight param instead of duplicating it", () => {
-    const out = safeActionUrl("/admin/orders?highlight=old", { highlight: "new" });
+    const out = safeActionUrl("/admin/orders?highlight=old", {
+      highlight: "new",
+    });
     expect(out).toBe("/dashboard/orders?highlight=new");
   });
 
   it("encodes an orderId carrying &highlight=pwn into ONE param", () => {
-    const out = safeActionUrl("/admin/orders", { highlight: "a&highlight=pwn" });
+    const out = safeActionUrl("/admin/orders", {
+      highlight: "a&highlight=pwn",
+    });
     const params = new URLSearchParams(out.split("?")[1]);
     expect(params.getAll("highlight")).toEqual(["a&highlight=pwn"]);
   });
@@ -63,7 +69,7 @@ describe("FE-04 safeActionUrl — the three string-surgery defects", () => {
 
   it("preserves an existing fragment while merging highlight", () => {
     expect(safeActionUrl("/admin/orders#details", { highlight: "o1" })).toBe(
-      "/dashboard/orders?highlight=o1#details"
+      "/dashboard/orders?highlight=o1#details",
     );
   });
 });
@@ -91,7 +97,9 @@ describe("FE-04 safeActionUrl — hostile values return null", () => {
   for (const [name, payload] of HOSTILE) {
     it(`rejects: ${name}`, () => {
       expect(safeActionUrl(payload, { highlight: "o1" })).toBeNull();
-      expect(safeActionUrl(payload, { highlight: "o1", inAppOnly: true })).toBeNull();
+      expect(
+        safeActionUrl(payload, { highlight: "o1", inAppOnly: true }),
+      ).toBeNull();
     });
   }
 });
@@ -100,16 +108,19 @@ describe("FE-04 safeActionUrl — absolute URLs", () => {
   it("reduces an absolute app-origin URL to path+query and rewrites /admin", () => {
     const origin = window.location.origin; // jsdom app origin
     expect(
-      safeActionUrl(`${origin}/admin/orders?status=open`, { highlight: "o9" })
+      safeActionUrl(`${origin}/admin/orders?status=open`, { highlight: "o9" }),
     ).toBe("/dashboard/orders?status=open&highlight=o9");
   });
 
   it("reduces an absolute configured-origin (API host) URL to its path", () => {
-    expect(safeActionUrl("http://localhost:3001/admin/orders")).toBe("/dashboard/orders");
+    expect(safeActionUrl("http://localhost:3001/admin/orders")).toBe(
+      "/dashboard/orders",
+    );
   });
 
   it("accepts an allowlisted external https for link use, but not for in-app navigation", () => {
-    const url = "https://images.unsplash.com/photo-1555041469-a586c61ea9bc?w=800";
+    const url =
+      "https://images.unsplash.com/photo-1555041469-a586c61ea9bc?w=800";
     expect(safeActionUrl(url)).toBe(url);
     expect(safeActionUrl(url, { inAppOnly: true })).toBeNull();
   });

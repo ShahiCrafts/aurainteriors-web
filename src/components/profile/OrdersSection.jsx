@@ -37,7 +37,9 @@ export default function OrdersSection() {
   const [statusFilter, setStatusFilter] = useState("");
   const [sortBy, setSortBy] = useState("newest");
   const location = useLocation();
-  const [searchQuery, setSearchQuery] = useState(location.state?.searchQuery || "");
+  const [searchQuery, setSearchQuery] = useState(
+    location.state?.searchQuery || "",
+  );
 
   const { data, isLoading, isError, refetch } = useMyOrders(
     { page, limit: ITEMS_PER_PAGE, status: statusFilter || undefined },
@@ -91,7 +93,9 @@ export default function OrdersSection() {
         {/* Header */}
         <div className="flex flex-wrap items-start justify-between gap-4 shrink-0">
           <div>
-            <h2 className="text-[18px] font-semibold text-[#1A1714]">Order History</h2>
+            <h2 className="text-[18px] font-semibold text-[#1A1714]">
+              Order History
+            </h2>
             <p className="text-[14px] text-neutral-400 mt-1">
               View your orders, track deliveries, download invoices and more.
             </p>
@@ -102,7 +106,10 @@ export default function OrdersSection() {
         <div className="shrink-0">
           <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">
             {[0, 1, 2, 3].map((idx) => (
-              <div key={idx} className="bg-white rounded-2xl border border-neutral-200 p-4 space-y-2">
+              <div
+                key={idx}
+                className="bg-white rounded-2xl border border-neutral-200 p-4 space-y-2"
+              >
                 <Skeleton className="w-16 h-4 rounded" />
                 <Skeleton className="w-20 h-6 rounded" />
               </div>
@@ -136,9 +143,12 @@ export default function OrdersSection() {
           <AlertCircle size={22} className="text-red-500" />
         </div>
         <div className="text-center space-y-1">
-          <h3 className="text-[16px] font-bold text-[#1A1714]">Connection Error</h3>
+          <h3 className="text-[16px] font-bold text-[#1A1714]">
+            Connection Error
+          </h3>
           <p className="text-[13px] text-neutral-400 max-w-xs">
-            We couldn't retrieve your order information. Please refresh to try again.
+            We couldn't retrieve your order information. Please refresh to try
+            again.
           </p>
         </div>
       </div>
@@ -152,7 +162,9 @@ export default function OrdersSection() {
       {/* Header */}
       <div className="flex flex-wrap items-start justify-between gap-4 shrink-0">
         <div>
-          <h2 className="text-[18px] font-semibold text-[#1A1714]">Order History</h2>
+          <h2 className="text-[18px] font-semibold text-[#1A1714]">
+            Order History
+          </h2>
           <p className="text-[14px] text-neutral-400 mt-1">
             View your orders, track deliveries, download invoices and more.
           </p>
@@ -170,7 +182,10 @@ export default function OrdersSection() {
           {/* Controls */}
           <div className="flex flex-col sm:flex-row gap-3 items-stretch sm:items-center sm:justify-end shrink-0">
             <div className="relative w-full sm:w-auto sm:flex-none sm:max-w-xs">
-              <Search size={15} className="absolute left-3.5 top-1/2 -translate-y-1/2 text-neutral-400" />
+              <Search
+                size={15}
+                className="absolute left-3.5 top-1/2 -translate-y-1/2 text-neutral-400"
+              />
               <input
                 type="text"
                 placeholder="Search this page by order ID or product…"
@@ -203,7 +218,10 @@ export default function OrdersSection() {
                   </option>
                 ))}
               </select>
-              <ChevronDown size={13} className="absolute right-3 top-1/2 -translate-y-1/2 text-neutral-400 pointer-events-none" />
+              <ChevronDown
+                size={13}
+                className="absolute right-3 top-1/2 -translate-y-1/2 text-neutral-400 pointer-events-none"
+              />
             </div>
 
             <div className="relative min-w-[170px]">
@@ -218,7 +236,10 @@ export default function OrdersSection() {
                   </option>
                 ))}
               </select>
-              <ChevronDown size={13} className="absolute right-3 top-1/2 -translate-y-1/2 text-neutral-400 pointer-events-none" />
+              <ChevronDown
+                size={13}
+                className="absolute right-3 top-1/2 -translate-y-1/2 text-neutral-400 pointer-events-none"
+              />
             </div>
           </div>
 
@@ -232,16 +253,23 @@ export default function OrdersSection() {
           {filteredOrders.length === 0 ? (
             <div className="flex-1 min-h-0 flex flex-col items-center justify-center text-center bg-neutral-50 rounded-2xl">
               <SlidersHorizontal size={30} className="text-neutral-300 mb-4" />
-              <h3 className="text-[16px] font-semibold text-[#1A1714] mb-1">No Orders Match on This Page</h3>
+              <h3 className="text-[16px] font-semibold text-[#1A1714] mb-1">
+                No Orders Match on This Page
+              </h3>
               <p className="text-[14px] text-neutral-400 max-w-xs">
-                No orders on this page match your search. Try another page, or change your search query or status filter.
+                No orders on this page match your search. Try another page, or
+                change your search query or status filter.
               </p>
             </div>
           ) : (
             <div className="flex-1 min-h-0 overflow-y-auto space-y-5">
               <div className="border border-neutral-200 rounded-xl overflow-hidden divide-y divide-neutral-100">
                 {filteredOrders.map((order, idx) => (
-                  <OrderCard key={order._id} order={order} defaultExpanded={idx === 0} />
+                  <OrderCard
+                    key={order._id}
+                    order={order}
+                    defaultExpanded={idx === 0}
+                  />
                 ))}
               </div>
 
@@ -263,9 +291,12 @@ export default function OrdersSection() {
           <div className="w-16 h-16 rounded-2xl bg-white flex items-center justify-center mb-5 text-[#F27318]">
             <Package size={26} />
           </div>
-          <h3 className="text-[18px] font-semibold text-[#1A1714]">No orders placed yet</h3>
+          <h3 className="text-[18px] font-semibold text-[#1A1714]">
+            No orders placed yet
+          </h3>
           <p className="text-[14px] text-neutral-400 max-w-xs mt-1.5 mb-7 leading-relaxed">
-            You haven't made any purchases yet. Explore our selection of modern furniture pieces.
+            You haven't made any purchases yet. Explore our selection of modern
+            furniture pieces.
           </p>
           <Link
             to="/shop"

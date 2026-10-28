@@ -51,12 +51,13 @@ const TutorialOverlay = ({
             <div className="w-6 h-6 bg-teal-500 rounded-full flex items-center justify-center text-white text-xs font-bold">
               1
             </div>
-            <p className="text-teal-400 text-sm font-semibold">Rotate & Scale</p>
+            <p className="text-teal-400 text-sm font-semibold">
+              Rotate & Scale
+            </p>
           </div>
           <p className="text-white text-sm leading-relaxed">
-            Place{" "}
-            <span className="text-teal-400 font-medium">two fingers</span> on
-            screen
+            Place <span className="text-teal-400 font-medium">two fingers</span>{" "}
+            on screen
           </p>
           <p className="text-white/70 text-xs mt-1">
             Twist to rotate • Pinch to resize

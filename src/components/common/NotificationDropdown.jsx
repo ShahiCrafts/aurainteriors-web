@@ -1,16 +1,16 @@
 import React from "react";
-import { 
-  AlertCircle, 
-  BellOff, 
-  CheckCheck, 
-  Archive, 
+import {
+  AlertCircle,
+  BellOff,
+  CheckCheck,
+  Archive,
   ShoppingCart,
   XCircle,
   RotateCcw,
   Star,
   Mail,
   MessageSquare,
-  Bell
+  Bell,
 } from "lucide-react";
 import Skeleton from "./Skeleton";
 import { formatTime } from "../../utils/formatDate";
@@ -66,9 +66,8 @@ const NotificationDropdown = ({
 }) => {
   console.log(
     "🎨 [Dropdown Render] Notifications count:",
-    notifications.length
+    notifications.length,
   );
-
 
   return (
     <div className="w-full h-full flex flex-col bg-white">
@@ -125,21 +124,25 @@ const NotificationDropdown = ({
               return (
                 <div
                   key={id || index}
-                  className={`group relative flex items-start gap-3 px-4 py-3.5 border-b border-gray-50 cursor-pointer transition-all ${!isRead
-                    ? "bg-blue-50/20 border-l-4 border-l-teal-600"
-                    : "hover:bg-gray-50/80 border-l-4 border-l-transparent"
-                    }`}
+                  className={`group relative flex items-start gap-3 px-4 py-3.5 border-b border-gray-50 cursor-pointer transition-all ${
+                    !isRead
+                      ? "bg-blue-50/20 border-l-4 border-l-teal-600"
+                      : "hover:bg-gray-50/80 border-l-4 border-l-transparent"
+                  }`}
                   onClick={() => onNotificationClick(n)}
                 >
-                  <div className={`w-9 h-9 rounded-lg border flex items-center justify-center shrink-0 shadow-sm ${iconBox.bg}`}>
+                  <div
+                    className={`w-9 h-9 rounded-lg border flex items-center justify-center shrink-0 shadow-sm ${iconBox.bg}`}
+                  >
                     {iconBox.icon}
                   </div>
 
                   <div className="flex-1 min-w-0">
                     <div className="flex items-center justify-between gap-2">
                       <h4
-                        className={`text-sm ${!isRead ? "font-bold" : "font-semibold"
-                          } text-gray-900 truncate`}
+                        className={`text-sm ${
+                          !isRead ? "font-bold" : "font-semibold"
+                        } text-gray-900 truncate`}
                       >
                         {title}
                       </h4>

@@ -89,10 +89,10 @@ describe("addressMapper (Phase 6)", () => {
 
   it("formValuesToAddressPayload clears customLabel unless label is 'other'", () => {
     expect(
-      formValuesToAddressPayload({ label: "home", customLabel: "Villa" })
+      formValuesToAddressPayload({ label: "home", customLabel: "Villa" }),
     ).toEqual({ label: "home", customLabel: "" });
     expect(
-      formValuesToAddressPayload({ label: "other", customLabel: "Villa" })
+      formValuesToAddressPayload({ label: "other", customLabel: "Villa" }),
     ).toEqual({ label: "other", customLabel: "Villa" });
   });
 
@@ -116,7 +116,7 @@ describe("addressMapper (Phase 6)", () => {
 
   it("addressToShippingAddress falls back to the account phone, then ''", () => {
     expect(
-      addressToShippingAddress({ addressLine1: "X" }, "9800000000").phone
+      addressToShippingAddress({ addressLine1: "X" }, "9800000000").phone,
     ).toBe("9800000000");
     expect(addressToShippingAddress({}).phone).toBe("");
     expect(addressToShippingAddress({}).country).toBe("Nepal");

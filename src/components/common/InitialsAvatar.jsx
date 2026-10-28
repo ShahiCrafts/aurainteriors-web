@@ -61,7 +61,13 @@ export default function InitialsAvatar({
  * (explicit display-name override), `alt`, `className` (applied to
  * both the img and the initials circle: size/shape).
  */
-export function UserAvatar({ user, name, alt, className = "w-10 h-10 rounded-full", ...rest }) {
+export function UserAvatar({
+  user,
+  name,
+  alt,
+  className = "w-10 h-10 rounded-full",
+  ...rest
+}) {
   const avatarUrl = getAvatarUrl(user);
   const [erroredUrl, setErroredUrl] = useState(null);
   const errored = avatarUrl !== null && erroredUrl === avatarUrl;

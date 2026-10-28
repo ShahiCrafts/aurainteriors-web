@@ -18,8 +18,12 @@ vi.mock("../../src/api/index.js", () => ({
   default: {
     get: vi.fn(() => Promise.reject(new Error("mocked: no network in tests"))),
     post: vi.fn(() => Promise.reject(new Error("mocked: no network in tests"))),
-    patch: vi.fn(() => Promise.reject(new Error("mocked: no network in tests"))),
-    delete: vi.fn(() => Promise.reject(new Error("mocked: no network in tests"))),
+    patch: vi.fn(() =>
+      Promise.reject(new Error("mocked: no network in tests")),
+    ),
+    delete: vi.fn(() =>
+      Promise.reject(new Error("mocked: no network in tests")),
+    ),
   },
 }));
 
@@ -34,8 +38,14 @@ const { marker } = vi.hoisted(() => {
   return { marker: markerFn };
 });
 
-vi.mock("../../src/pages/admin/AdminLoginPage.jsx", marker("PAGE:AdminLoginPage"));
-vi.mock("../../src/layouts/admin/AdminLayout.jsx", marker("LAYOUT:AdminLayout"));
+vi.mock(
+  "../../src/pages/admin/AdminLoginPage.jsx",
+  marker("PAGE:AdminLoginPage"),
+);
+vi.mock(
+  "../../src/layouts/admin/AdminLayout.jsx",
+  marker("LAYOUT:AdminLayout"),
+);
 vi.mock("../../src/pages/admin/Dashboard.jsx", marker("PAGE:AdminDashboard"));
 vi.mock("../../src/pages/admin/Categories.jsx", marker("PAGE:AdminCategories"));
 vi.mock("../../src/pages/admin/Products.jsx", marker("PAGE:AdminProducts"));
@@ -43,9 +53,18 @@ vi.mock("../../src/pages/admin/Orders.jsx", marker("PAGE:AdminOrders"));
 vi.mock("../../src/pages/admin/Discounts.jsx", marker("PAGE:AdminDiscounts"));
 vi.mock("../../src/pages/admin/Reviews.jsx", marker("PAGE:AdminReviews"));
 vi.mock("../../src/pages/admin/Promotions.jsx", marker("PAGE:AdminPromotions"));
-vi.mock("../../src/pages/admin/Announcements.jsx", marker("PAGE:AdminAnnouncements"));
-vi.mock("../../src/pages/admin/SupportChats.jsx", marker("PAGE:AdminSupportChats"));
-vi.mock("../../src/pages/admin/KnowledgeBase.jsx", marker("PAGE:AdminKnowledgeBase"));
+vi.mock(
+  "../../src/pages/admin/Announcements.jsx",
+  marker("PAGE:AdminAnnouncements"),
+);
+vi.mock(
+  "../../src/pages/admin/SupportChats.jsx",
+  marker("PAGE:AdminSupportChats"),
+);
+vi.mock(
+  "../../src/pages/admin/KnowledgeBase.jsx",
+  marker("PAGE:AdminKnowledgeBase"),
+);
 vi.mock("../../src/pages/admin/Contacts.jsx", marker("PAGE:AdminContacts"));
 vi.mock("../../src/pages/admin/Users.jsx", marker("PAGE:AdminUsers"));
 vi.mock("../../src/pages/info/NotFoundPage.jsx", marker("PAGE:NotFoundPage"));
@@ -65,7 +84,7 @@ function renderAdminApp(path, auth) {
   return render(
     <MemoryRouter initialEntries={[path]}>
       <AdminApp />
-    </MemoryRouter>
+    </MemoryRouter>,
   );
 }
 

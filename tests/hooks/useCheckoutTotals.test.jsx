@@ -50,7 +50,7 @@ describe("computeCheckoutTotals — characterization", () => {
     const items = [{ _id: "i1", product: { price: 999 }, quantity: 1 }];
     // 999 * 15 / 100 = 149.85 -> 150
     expect(
-      computeCheckoutTotals(items, { code: "X", discountPercentage: 15 })
+      computeCheckoutTotals(items, { code: "X", discountPercentage: 15 }),
     ).toEqual({
       subtotal: 999,
       promoDiscount: 150,
@@ -77,10 +77,10 @@ describe("computeCheckoutTotals — characterization", () => {
   it("(c) promo: 100% discount zeroes the total; 0% changes nothing", () => {
     const items = [{ _id: "i1", product: { price: 500 }, quantity: 2 }];
     expect(
-      computeCheckoutTotals(items, { discountPercentage: 100 }).total
+      computeCheckoutTotals(items, { discountPercentage: 100 }).total,
     ).toBe(0);
     expect(
-      computeCheckoutTotals(items, { discountPercentage: 0 }).promoDiscount
+      computeCheckoutTotals(items, { discountPercentage: 0 }).promoDiscount,
     ).toBe(0);
   });
 
@@ -138,7 +138,7 @@ describe("useCheckoutTotals hook", () => {
   it("is memo-stable across rerenders with unchanged inputs", () => {
     const items = [{ _id: "i1", product: { price: 250 }, quantity: 4 }];
     const { result, rerender } = renderHook(() =>
-      useCheckoutTotals(items, null)
+      useCheckoutTotals(items, null),
     );
     const first = result.current;
     rerender();

@@ -88,7 +88,7 @@ describe("Dialog primitive (FE-64)", () => {
     const { rerender } = render(
       <div>
         <button type="button">Trigger</button>
-      </div>
+      </div>,
     );
     const trigger = screen.getByRole("button", { name: "Trigger" });
     trigger.focus();
@@ -98,13 +98,13 @@ describe("Dialog primitive (FE-64)", () => {
         <Dialog open onClose={vi.fn()} label="Test dialog">
           <button type="button">Inside</button>
         </Dialog>
-      </div>
+      </div>,
     );
     expect(document.activeElement).not.toBe(trigger);
     rerender(
       <div>
         <button type="button">Trigger</button>
-      </div>
+      </div>,
     );
     expect(document.activeElement).toBe(trigger);
   });
@@ -115,7 +115,7 @@ describe("Dialog primitive (FE-64)", () => {
     rerender(
       <div>
         <button type="button">Trigger</button>
-      </div>
+      </div>,
     );
     expect(document.body.style.overflow).toBe("");
   });
@@ -136,7 +136,7 @@ describe("Dialog primitive (FE-64)", () => {
         <Dialog open onClose={innerClose} label="Inner">
           <button type="button">Inner action</button>
         </Dialog>
-      </Dialog>
+      </Dialog>,
     );
     fireEvent.keyDown(document, { key: "Escape" });
     expect(innerClose).toHaveBeenCalledTimes(1);
@@ -144,7 +144,7 @@ describe("Dialog primitive (FE-64)", () => {
     rerender(
       <Dialog open onClose={outerClose} label="Outer">
         <button type="button">Outer action</button>
-      </Dialog>
+      </Dialog>,
     );
     expect(document.body.style.overflow).toBe("hidden");
     rerender(<div />);
@@ -165,7 +165,7 @@ describe("migrated customer modal — ConfirmationDialog (FE-64)", () => {
           onConfirm={vi.fn()}
           onCancel={onCancel}
         />
-      </div>
+      </div>,
     );
     const dialog = screen.getByRole("alertdialog");
     expect(dialog).toHaveAttribute("aria-modal", "true");
@@ -178,7 +178,9 @@ describe("migrated customer modal — ConfirmationDialog (FE-64)", () => {
 describe("migrated customer modal — AuthRequiredModal (FE-64)", () => {
   it("opens as a dialog and closes on Escape end-to-end", () => {
     const onClose = vi.fn();
-    render(<AuthRequiredModal isOpen onClose={onClose} message="Please sign in." />);
+    render(
+      <AuthRequiredModal isOpen onClose={onClose} message="Please sign in." />,
+    );
     expect(screen.getByRole("dialog")).toBeInTheDocument();
     fireEvent.keyDown(document, { key: "Escape" });
     expect(onClose).toHaveBeenCalledTimes(1);
@@ -194,7 +196,7 @@ describe("migrated admin modal — AdminLayout Help dialog (FE-64)", () => {
     render(
       <MemoryRouter>
         <AdminLayout />
-      </MemoryRouter>
+      </MemoryRouter>,
     );
     const profileButton = screen
       .getAllByRole("button")

@@ -62,7 +62,7 @@ function renderCard(product, viewMode) {
   return render(
     <MemoryRouter>
       <ProductCard product={product} viewMode={viewMode} />
-    </MemoryRouter>
+    </MemoryRouter>,
   );
 }
 
@@ -107,19 +107,16 @@ describe("ProductCard rating (FE-14)", () => {
   });
 
   it("FE-12: a hostile slug is encoded in list view too, and an ordinary slug is byte-identical", () => {
-    const hostile = renderCard(
-      { ...baseProduct, slug: "a/b?x=1#y" },
-      "list"
+    const hostile = renderCard({ ...baseProduct, slug: "a/b?x=1#y" }, "list");
+    expect(hostile.container.querySelector("a").getAttribute("href")).toBe(
+      "/product/a%2Fb%3Fx%3D1%23y",
     );
-    expect(
-      hostile.container.querySelector("a").getAttribute("href")
-    ).toBe("/product/a%2Fb%3Fx%3D1%23y");
     hostile.unmount();
 
     const ordinary = renderCard({ ...baseProduct, slug: "oak-chair" });
-    expect(
-      ordinary.container.querySelector("a").getAttribute("href")
-    ).toBe("/product/oak-chair");
+    expect(ordinary.container.querySelector("a").getAttribute("href")).toBe(
+      "/product/oak-chair",
+    );
   });
 
   it("FE-12: when there is no slug, the _id segment is encoded the same way", () => {
@@ -129,7 +126,7 @@ describe("ProductCard rating (FE-14)", () => {
       _id: "id/with?chars",
     });
     expect(container.querySelector("a").getAttribute("href")).toBe(
-      "/product/id%2Fwith%3Fchars"
+      "/product/id%2Fwith%3Fchars",
     );
   });
 
@@ -164,9 +161,9 @@ describe("ProductCard rating (FE-14)", () => {
     const source = readFileSync(
       path.resolve(
         path.dirname(fileURLToPath(import.meta.url)),
-        "../../../src/components/shop/ProductCard.jsx"
+        "../../../src/components/shop/ProductCard.jsx",
       ),
-      "utf8"
+      "utf8",
     );
     // FE-62 removed the original handler because no JSX referenced
     // it. The owner reversed that call: the handler and its hooks
@@ -178,7 +175,7 @@ describe("ProductCard rating (FE-14)", () => {
     expect(source).not.toContain("ShoppingBag");
     const { unmount } = renderCard({ ...baseProduct });
     expect(
-      screen.getByRole("button", { name: "Add Unrated Chair to cart" })
+      screen.getByRole("button", { name: "Add Unrated Chair to cart" }),
     ).toBeInTheDocument();
     unmount();
     renderCard({ ...baseProduct }, "list");
@@ -186,9 +183,15 @@ describe("ProductCard rating (FE-14)", () => {
   });
 
   it("clicking the grid cart button adds a guest item (legacy 3-argument call) and toasts", () => {
-    const product = { ...baseProduct, name: "Luna Modular Sofa", slug: "luna-modular-sofa" };
+    const product = {
+      ...baseProduct,
+      name: "Luna Modular Sofa",
+      slug: "luna-modular-sofa",
+    };
     renderCard(product);
-    fireEvent.click(screen.getByRole("button", { name: "Add Luna Modular Sofa to cart" }));
+    fireEvent.click(
+      screen.getByRole("button", { name: "Add Luna Modular Sofa to cart" }),
+    );
     expect(cartMocks.guestAddItem).toHaveBeenCalledTimes(1);
     expect(cartMocks.guestAddItem).toHaveBeenCalledWith(product, 1, {});
     expect(cartMocks.addToCartMutate).not.toHaveBeenCalled();
@@ -197,8 +200,14 @@ describe("ProductCard rating (FE-14)", () => {
 
   it("clicking the grid cart button as a signed-in user fires the cart mutation with the PDP payload", () => {
     cartMocks.auth.isAuthenticated = true;
-    renderCard({ ...baseProduct, name: "Luna Modular Sofa", slug: "luna-modular-sofa" });
-    fireEvent.click(screen.getByRole("button", { name: "Add Luna Modular Sofa to cart" }));
+    renderCard({
+      ...baseProduct,
+      name: "Luna Modular Sofa",
+      slug: "luna-modular-sofa",
+    });
+    fireEvent.click(
+      screen.getByRole("button", { name: "Add Luna Modular Sofa to cart" }),
+    );
     expect(cartMocks.guestAddItem).not.toHaveBeenCalled();
     expect(cartMocks.addToCartMutate).toHaveBeenCalledTimes(1);
     const [payload, options] = cartMocks.addToCartMutate.mock.calls[0];
@@ -241,7 +250,11 @@ describe("ProductCard reference design (grid)", () => {
   });
 
   it("shows New Arrival, then Featured, when there is no discount", () => {
-    const { unmount } = renderCard({ ...baseProduct, isNewArrival: true, isFeatured: true });
+    const { unmount } = renderCard({
+      ...baseProduct,
+      isNewArrival: true,
+      isFeatured: true,
+    });
     expect(screen.getByText("New Arrival")).toBeInTheDocument();
     unmount();
     renderCard({ ...baseProduct, isFeatured: true });
@@ -249,8 +262,13 @@ describe("ProductCard reference design (grid)", () => {
   });
 
   it("renders the short description line in grid view", () => {
-    renderCard({ ...baseProduct, shortDescription: "Premium fabric sectional sofa" });
-    expect(screen.getByText("Premium fabric sectional sofa")).toBeInTheDocument();
+    renderCard({
+      ...baseProduct,
+      shortDescription: "Premium fabric sectional sofa",
+    });
+    expect(
+      screen.getByText("Premium fabric sectional sofa"),
+    ).toBeInTheDocument();
   });
 
   it("renders up to four color dots with a +N overflow", () => {
@@ -265,8 +283,14 @@ describe("ProductCard reference design (grid)", () => {
   });
 
   it("the orange cart button is a real button for a simple product", () => {
-    renderCard({ ...baseProduct, name: "Luna Modular Sofa", slug: "luna-modular-sofa" });
-    const cta = screen.getByRole("button", { name: "Add Luna Modular Sofa to cart" });
+    renderCard({
+      ...baseProduct,
+      name: "Luna Modular Sofa",
+      slug: "luna-modular-sofa",
+    });
+    const cta = screen.getByRole("button", {
+      name: "Add Luna Modular Sofa to cart",
+    });
     expect(cta.querySelector("svg.lucide-shopping-cart")).not.toBeNull();
   });
 });

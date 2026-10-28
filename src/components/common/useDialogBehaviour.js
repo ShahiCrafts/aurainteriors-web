@@ -38,11 +38,16 @@ function getFocusable(container) {
   // worth filtering; CSS-hidden subtrees inside an open dialog are not
   // used by any consumer of this primitive.
   return Array.from(container.querySelectorAll(FOCUSABLE_SELECTOR)).filter(
-    (el) => el.getAttribute("type") !== "hidden"
+    (el) => el.getAttribute("type") !== "hidden",
   );
 }
 
-export function useDialogBehaviour({ open, onClose, containerRef, initialFocusRef }) {
+export function useDialogBehaviour({
+  open,
+  onClose,
+  containerRef,
+  initialFocusRef,
+}) {
   const onCloseRef = useRef(onClose);
   useEffect(() => {
     onCloseRef.current = onClose;
@@ -58,7 +63,7 @@ export function useDialogBehaviour({ open, onClose, containerRef, initialFocusRe
     // contains another entry's container is the ancestor (lower in
     // the stack); unrelated entries keep registration order.
     const ancestorIdx = dialogStack.findIndex(
-      (e) => container && e.container && container.contains(e.container)
+      (e) => container && e.container && container.contains(e.container),
     );
     if (ancestorIdx === -1) dialogStack.push(entry);
     else dialogStack.splice(ancestorIdx, 0, entry);
@@ -115,6 +120,5 @@ export function useDialogBehaviour({ open, onClose, containerRef, initialFocusRe
     };
     // containerRef / initialFocusRef are stable refs by contract.
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [open ]);
+  }, [open]);
 }
-

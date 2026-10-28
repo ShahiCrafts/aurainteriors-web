@@ -41,7 +41,13 @@ import { safeActionUrl } from "../../utils/safeUrl";
 export default function AdminLayout() {
   const location = useLocation();
   const navigate = useNavigate();
-  const { user, token, logout } = useAuthStore(useShallow((state) => ({ user: state.user, token: state.token, logout: state.logout })));
+  const { user, token, logout } = useAuthStore(
+    useShallow((state) => ({
+      user: state.user,
+      token: state.token,
+      logout: state.logout,
+    })),
+  );
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [logoutModalOpen, setLogoutModalOpen] = useState(false);
   const [policyModalOpen, setPolicyModalOpen] = useState(false);
@@ -68,8 +74,6 @@ export default function AdminLayout() {
     });
   };
 
-
-
   // Admin notification socket hook
   const {
     adminNotifications,
@@ -83,7 +87,9 @@ export default function AdminLayout() {
     if (adminNotifications.length > 0) {
       const latestNotification = adminNotifications[0];
       if (latestNotification.timestamp) {
-        const notificationTime = new Date(latestNotification.timestamp).getTime();
+        const notificationTime = new Date(
+          latestNotification.timestamp,
+        ).getTime();
         const now = Date.now();
         if (now - notificationTime < 5000) {
           addToast(latestNotification);
@@ -135,7 +141,11 @@ export default function AdminLayout() {
   };
 
   const handleSignOut = async () => {
-    try { await logout(); } catch { return; }
+    try {
+      await logout();
+    } catch {
+      return;
+    }
     setLogoutModalOpen(false);
     navigate("/");
   };
@@ -294,8 +304,9 @@ export default function AdminLayout() {
 
       {/* Main Content Area - no padding here, each page controls its own */}
       <div
-        className={`min-h-screen pt-20 transition-all duration-300 ease-in-out ${isCollapsed ? "lg:ml-20" : "lg:ml-72"
-          }`}
+        className={`min-h-screen pt-20 transition-all duration-300 ease-in-out ${
+          isCollapsed ? "lg:ml-20" : "lg:ml-72"
+        }`}
       >
         <main className="min-h-[calc(100vh-5rem)]">
           {/* Route-level boundary (FE-56/FE-17): wraps the Outlet so a
@@ -324,7 +335,14 @@ export default function AdminLayout() {
               {toast.type === "review:new" && "⭐"}
               {toast.type === "contact:new" && "✉️"}
               {toast.type === "chat:started" && "💬"}
-              {!["order:new", "order:cancelled", "return:requested", "review:new", "contact:new", "chat:started"].includes(toast.type) && "🔔"}
+              {![
+                "order:new",
+                "order:cancelled",
+                "return:requested",
+                "review:new",
+                "contact:new",
+                "chat:started",
+              ].includes(toast.type) && "🔔"}
             </div>
 
             <div className="flex-1 min-w-0">
@@ -369,7 +387,12 @@ export default function AdminLayout() {
       {/* Help Modal */}
       {helpModalOpen && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 p-4">
-          <Dialog open={helpModalOpen} onClose={() => setHelpModalOpen(false)} labelledBy="admin-help-title" className="bg-white rounded-2xl border border-gray-100 shadow-xl max-w-md w-full p-6 relative">
+          <Dialog
+            open={helpModalOpen}
+            onClose={() => setHelpModalOpen(false)}
+            labelledBy="admin-help-title"
+            className="bg-white rounded-2xl border border-gray-100 shadow-xl max-w-md w-full p-6 relative"
+          >
             <button
               onClick={() => setHelpModalOpen(false)}
               aria-label="Close dialog"
@@ -381,11 +404,26 @@ export default function AdminLayout() {
               <div className="w-10 h-10 rounded-xl bg-teal-50 flex items-center justify-center text-teal-600">
                 <HelpCircle size={20} />
               </div>
-              <h3 id="admin-help-title" className="text-lg font-bold text-gray-900">Help & Support</h3>
+              <h3
+                id="admin-help-title"
+                className="text-lg font-bold text-gray-900"
+              >
+                Help & Support
+              </h3>
             </div>
             <div className="space-y-3 text-sm text-gray-600 leading-relaxed">
-              <p>Welcome to Aura Interiors Admin Panel. Here you can manage products, coordinate orders, and interact with customer chats.</p>
-              <p>For technical inquiries or system configuration issues, please contact your systems administrator or write to <span className="font-semibold text-teal-600">admin-support@aurainteriors.com</span>.</p>
+              <p>
+                Welcome to Aura Interiors Admin Panel. Here you can manage
+                products, coordinate orders, and interact with customer chats.
+              </p>
+              <p>
+                For technical inquiries or system configuration issues, please
+                contact your systems administrator or write to{" "}
+                <span className="font-semibold text-teal-600">
+                  admin-support@aurainteriors.com
+                </span>
+                .
+              </p>
             </div>
             <button
               onClick={() => setHelpModalOpen(false)}
@@ -400,7 +438,12 @@ export default function AdminLayout() {
       {/* Privacy & Policy Terms Modal */}
       {policyModalOpen && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 p-4">
-          <Dialog open={policyModalOpen} onClose={() => setPolicyModalOpen(false)} labelledBy="admin-policy-title" className="bg-white rounded-2xl border border-gray-100 shadow-xl max-w-lg w-full p-6 relative">
+          <Dialog
+            open={policyModalOpen}
+            onClose={() => setPolicyModalOpen(false)}
+            labelledBy="admin-policy-title"
+            className="bg-white rounded-2xl border border-gray-100 shadow-xl max-w-lg w-full p-6 relative"
+          >
             <button
               onClick={() => setPolicyModalOpen(false)}
               aria-label="Close dialog"
@@ -412,20 +455,44 @@ export default function AdminLayout() {
               <div className="w-10 h-10 rounded-xl bg-teal-50 flex items-center justify-center text-teal-600">
                 <ShieldCheck size={20} />
               </div>
-              <h3 id="admin-policy-title" className="text-lg font-bold text-gray-900">Privacy & Policies</h3>
+              <h3
+                id="admin-policy-title"
+                className="text-lg font-bold text-gray-900"
+              >
+                Privacy & Policies
+              </h3>
             </div>
             <div className="space-y-4 text-xs text-gray-600 overflow-y-auto max-h-[300px] pr-2 leading-relaxed">
               <section>
-                <h4 className="font-bold text-gray-800 mb-1">1. Data Confidentiality</h4>
-                <p>All administrative credentials, customer information, transaction data, and conversation transcripts are strictly confidential. Staff members must secure their credentials at all times.</p>
+                <h4 className="font-bold text-gray-800 mb-1">
+                  1. Data Confidentiality
+                </h4>
+                <p>
+                  All administrative credentials, customer information,
+                  transaction data, and conversation transcripts are strictly
+                  confidential. Staff members must secure their credentials at
+                  all times.
+                </p>
               </section>
               <section>
-                <h4 className="font-bold text-gray-800 mb-1">2. AI Copilot Guidelines</h4>
-                <p>AI suggestions are meant to support support flows. Please review any generated replies or suggested text carefully before transmission to prevent incorrect policy advice.</p>
+                <h4 className="font-bold text-gray-800 mb-1">
+                  2. AI Copilot Guidelines
+                </h4>
+                <p>
+                  AI suggestions are meant to support support flows. Please
+                  review any generated replies or suggested text carefully
+                  before transmission to prevent incorrect policy advice.
+                </p>
               </section>
               <section>
-                <h4 className="font-bold text-gray-800 mb-1">3. Customer Information Protection</h4>
-                <p>Do not export personal details or order transcripts unless authorized by a senior systems manager for troubleshooting purposes.</p>
+                <h4 className="font-bold text-gray-800 mb-1">
+                  3. Customer Information Protection
+                </h4>
+                <p>
+                  Do not export personal details or order transcripts unless
+                  authorized by a senior systems manager for troubleshooting
+                  purposes.
+                </p>
               </section>
             </div>
             <button
@@ -450,4 +517,3 @@ export default function AdminLayout() {
     </div>
   );
 }
-

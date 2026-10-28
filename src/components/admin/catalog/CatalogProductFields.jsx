@@ -1,4 +1,7 @@
-import { useProductTypes, useRooms } from "../../../hooks/catalog/useCatalogTan";
+import {
+  useProductTypes,
+  useRooms,
+} from "../../../hooks/catalog/useCatalogTan";
 
 // Phase 6 (catalog) — productType select + rooms multi-select for
 // the admin product form's Basic tab. A child component (rather
@@ -18,7 +21,7 @@ export default function CatalogProductFields({
 
   const toggleRoom = (slug, checked) => {
     onRoomSlugsChange(
-      checked ? [...roomSlugs, slug] : roomSlugs.filter((s) => s !== slug)
+      checked ? [...roomSlugs, slug] : roomSlugs.filter((s) => s !== slug),
     );
   };
 
@@ -49,7 +52,9 @@ export default function CatalogProductFields({
         </p>
       </div>
       <div>
-        <span className="block text-sm font-medium text-gray-700 mb-2">Rooms</span>
+        <span className="block text-sm font-medium text-gray-700 mb-2">
+          Rooms
+        </span>
         {rooms.length === 0 ? (
           <p className="text-xs text-gray-400 pt-2">No rooms defined yet.</p>
         ) : (

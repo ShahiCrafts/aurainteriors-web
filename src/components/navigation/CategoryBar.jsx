@@ -1,5 +1,15 @@
-import { shopCategoryUrl, selectedCategorySlugs } from "../../utils/shopFilters";
-import { useState, useEffect, useLayoutEffect, useRef, Suspense, lazy } from "react";
+import {
+  shopCategoryUrl,
+  selectedCategorySlugs,
+} from "../../utils/shopFilters";
+import {
+  useState,
+  useEffect,
+  useLayoutEffect,
+  useRef,
+  Suspense,
+  lazy,
+} from "react";
 import { Link, useSearchParams, useLocation } from "react-router-dom";
 import {
   LayoutGrid,
@@ -58,27 +68,42 @@ export default function CategoryBar() {
   const rootRef = useRef(null);
   const triggers = useRef({});
   const [openSlug, setOpenSlug] = useState(null);
-  const [popupLayout, setPopupLayout] = useState({ left: 16, width: 260, columns: 1 });
+  const [popupLayout, setPopupLayout] = useState({
+    left: 16,
+    width: 260,
+    columns: 1,
+  });
   const [isArModalOpen, setIsArModalOpen] = useState(false);
   const { data: categoryTreeData, isLoading } = useCategoryTree();
   const categoryData = categoryTreeData?.data?.categories;
   const categories = Array.isArray(categoryData)
-    ? categoryData.filter((item) => item && typeof item.slug === "string" && item.slug)
+    ? categoryData.filter(
+        (item) => item && typeof item.slug === "string" && item.slug,
+      )
     : [];
   const { data: arCatalogData } = useArCatalogProducts();
   const products = arCatalogData?.data?.products;
-  const arProduct = (Array.isArray(products) ? products : []).find(hasArModel) || null;
+  const arProduct =
+    (Array.isArray(products) ? products : []).find(hasArModel) || null;
   const openCategory = categories.find((item) => item.slug === openSlug);
   // "All" is current only on the bare shop page (no category picked).
   const isAllActive =
     location.pathname === "/shop" && selectedCategories.length === 0;
   const childrenOf = (item) => {
-    const nested = Array.isArray(item?.subcategories) && item.subcategories.length
-      ? item.subcategories : item?.children;
-    return Array.isArray(nested) ? nested.filter((child) => child && typeof child.slug === "string" && child.slug) : [];
+    const nested =
+      Array.isArray(item?.subcategories) && item.subcategories.length
+        ? item.subcategories
+        : item?.children;
+    return Array.isArray(nested)
+      ? nested.filter(
+          (child) => child && typeof child.slug === "string" && child.slug,
+        )
+      : [];
   };
   const categoryPath = (item) => shopCategoryUrl(item.slug);
-  const containsActive = (item) => selectedCategories.includes(item.slug) || childrenOf(item).some(containsActive);
+  const containsActive = (item) =>
+    selectedCategories.includes(item.slug) ||
+    childrenOf(item).some(containsActive);
 
   const groups = childrenOf(openCategory);
   const isGrouped = groups.some((item) => childrenOf(item).length > 0);
@@ -89,12 +114,35 @@ export default function CategoryBar() {
   // an indented guide rail. Rendering only two levels here silently
   // hid the deepest categories from the menu.
   const renderDescendants = (items, nested = false) => (
-    <ul className={nested ? "ml-3 mt-1.5 space-y-1.5 border-l border-[#F0EFED] pl-3" : "space-y-2.5"}>
+    <ul
+      className={
+        nested
+          ? "ml-3 mt-1.5 space-y-1.5 border-l border-[#F0EFED] pl-3"
+          : "space-y-2.5"
+      }
+    >
       {items.map((item) => {
         const descendants = childrenOf(item);
         return (
           <li key={item._id || item.slug}>
-            <Link to={categoryPath(item)} onClick={() => setOpenSlug(null)} aria-current={selectedCategories.includes(item.slug) ? "page" : undefined} className={`block py-0.5 text-sm transition-colors hover:text-[#F27318] focus-visible:outline-2 focus-visible:outline-[#F27318] ${containsActive(item) ? "text-[#F27318]" : "text-[#7A7068]"}`}>{item.name}{typeof item.productCount === "number" && <span aria-hidden="true" className="ml-2 text-xs font-medium text-[#B8B4AE]">{item.productCount}</span>}</Link>
+            <Link
+              to={categoryPath(item)}
+              onClick={() => setOpenSlug(null)}
+              aria-current={
+                selectedCategories.includes(item.slug) ? "page" : undefined
+              }
+              className={`block py-0.5 text-sm transition-colors hover:text-[#F27318] focus-visible:outline-2 focus-visible:outline-[#F27318] ${containsActive(item) ? "text-[#F27318]" : "text-[#7A7068]"}`}
+            >
+              {item.name}
+              {typeof item.productCount === "number" && (
+                <span
+                  aria-hidden="true"
+                  className="ml-2 text-xs font-medium text-[#B8B4AE]"
+                >
+                  {item.productCount}
+                </span>
+              )}
+            </Link>
             {descendants.length > 0 && renderDescendants(descendants, true)}
           </li>
         );
@@ -106,15 +154,32 @@ export default function CategoryBar() {
     if (!openSlug) return;
     const measure = () => {
       const root = rootRef.current?.getBoundingClientRect();
-      const trigger = triggers.current[openSlug]?.parentElement?.getBoundingClientRect();
+      const trigger =
+        triggers.current[openSlug]?.parentElement?.getBoundingClientRect();
       if (!root || !trigger) return;
       const available = Math.max(0, root.width - 32);
-      const desiredColumns = isGrouped ? Math.min(Math.max(groups.length, 1), 4) : 1;
-      const desiredWidth = isGrouped ? desiredColumns * 200 + (desiredColumns - 1) * 24 + 40 : 260;
+      const desiredColumns = isGrouped
+        ? Math.min(Math.max(groups.length, 1), 4)
+        : 1;
+      const desiredWidth = isGrouped
+        ? desiredColumns * 200 + (desiredColumns - 1) * 24 + 40
+        : 260;
       const width = Math.min(desiredWidth, available);
-      const left = Math.max(16, Math.min(trigger.left - root.left, root.width - width - 16));
-      const columns = Math.min(desiredColumns, Math.max(1, Math.floor((width - 40 + 24) / 224)));
-      setPopupLayout((previous) => previous.left === left && previous.width === width && previous.columns === columns ? previous : { left, width, columns });
+      const left = Math.max(
+        16,
+        Math.min(trigger.left - root.left, root.width - width - 16),
+      );
+      const columns = Math.min(
+        desiredColumns,
+        Math.max(1, Math.floor((width - 40 + 24) / 224)),
+      );
+      setPopupLayout((previous) =>
+        previous.left === left &&
+        previous.width === width &&
+        previous.columns === columns
+          ? previous
+          : { left, width, columns },
+      );
     };
     measure();
     window.addEventListener("resize", measure);
@@ -126,7 +191,9 @@ export default function CategoryBar() {
     };
   }, [openSlug, isGrouped, groups.length]);
 
-  useEffect(() => { setOpenSlug(null); }, [location.pathname, location.search]);
+  useEffect(() => {
+    setOpenSlug(null);
+  }, [location.pathname, location.search]);
 
   useEffect(() => {
     if (!openSlug) return;
@@ -154,11 +221,15 @@ export default function CategoryBar() {
         className="sticky top-16 md:top-20 z-40 bg-white border-b border-[#F0EFED] font-dm-sans"
         onMouseLeave={() => setOpenSlug(null)}
         onBlur={(event) => {
-          if (!event.currentTarget.contains(event.relatedTarget)) setOpenSlug(null);
+          if (!event.currentTarget.contains(event.relatedTarget))
+            setOpenSlug(null);
         }}
       >
         <nav aria-label="Product categories" className="flex items-center">
-          <div className="flex flex-1 items-center overflow-x-auto no-scrollbar px-4 md:px-6 lg:px-8" aria-busy={isLoading}>
+          <div
+            className="flex flex-1 items-center overflow-x-auto no-scrollbar px-4 md:px-6 lg:px-8"
+            aria-busy={isLoading}
+          >
             {/* "All" — the whole shop, ahead of the departments.
                 Its right padding carries +10px over the department
                 items': a department's chevron sits left-aligned in
@@ -166,7 +237,10 @@ export default function CategoryBar() {
                 the arrow before the item's own padding — "All" has
                 no arrow, so the padding absorbs that space and the
                 gap after "All" matches the gap after each arrow. */}
-            <div className="flex shrink-0 items-center whitespace-nowrap pr-[26px] py-2.5 text-[14px] md:pr-[34px] md:py-3 md:text-[15px]" onMouseEnter={() => setOpenSlug(null)}>
+            <div
+              className="flex shrink-0 items-center whitespace-nowrap pr-[26px] py-2.5 text-[14px] md:pr-[34px] md:py-3 md:text-[15px]"
+              onMouseEnter={() => setOpenSlug(null)}
+            >
               <Link
                 to="/shop"
                 onClick={() => setOpenSlug(null)}
@@ -180,18 +254,28 @@ export default function CategoryBar() {
             {categories.map((category) => {
               const expanded = openSlug === category.slug;
               return (
-                <div key={category._id || category.slug} className="flex shrink-0 items-center whitespace-nowrap pr-4 py-2.5 text-[14px] md:pr-6 md:py-3 md:text-[15px]" onMouseEnter={() => setOpenSlug(category.slug)}>
+                <div
+                  key={category._id || category.slug}
+                  className="flex shrink-0 items-center whitespace-nowrap pr-4 py-2.5 text-[14px] md:pr-6 md:py-3 md:text-[15px]"
+                  onMouseEnter={() => setOpenSlug(category.slug)}
+                >
                   <Link
                     to={categoryPath(category)}
                     onClick={() => setOpenSlug(null)}
-                    aria-current={selectedCategories.includes(category.slug) ? "page" : undefined}
+                    aria-current={
+                      selectedCategories.includes(category.slug)
+                        ? "page"
+                        : undefined
+                    }
                     className={`flex items-center gap-1.5 md:gap-2 py-1 font-medium transition-colors duration-300 focus-visible:outline-2 focus-visible:outline-[#F27318] ${containsActive(category) || expanded ? "text-[#F27318]" : "text-[#7A7068] hover:text-[#1A1714]"}`}
                   >
                     {getCategoryIcon(category.name)}
                     <span>{category.name}</span>
                   </Link>
                   <button
-                    ref={(element) => { triggers.current[category.slug] = element; }}
+                    ref={(element) => {
+                      triggers.current[category.slug] = element;
+                    }}
                     type="button"
                     aria-label={`Show ${category.name} subcategories`}
                     aria-expanded={expanded}
@@ -201,7 +285,11 @@ export default function CategoryBar() {
                       if (event.key === "ArrowDown") {
                         event.preventDefault();
                         setOpenSlug(category.slug);
-                        requestAnimationFrame(() => rootRef.current?.querySelector("#category-subcategories a")?.focus());
+                        requestAnimationFrame(() =>
+                          rootRef.current
+                            ?.querySelector("#category-subcategories a")
+                            ?.focus(),
+                        );
                       }
                     }}
                     className={`relative ml-1 inline-flex h-8 w-6 shrink-0 items-center justify-start rounded cursor-pointer transition-colors duration-300 focus-visible:outline-2 focus-visible:outline-[#F27318] ${expanded ? "text-[#F27318]" : "text-[#7A7068] hover:text-[#1A1714]"}`}
@@ -215,35 +303,102 @@ export default function CategoryBar() {
                 </div>
               );
             })}
-            {isLoading && <>
-              <span className="sr-only" role="status">Loading categories</span>
-              {skeletonLabelWidths.map((width, index) => (
-                <div key={index} className={categoryItemClasses} aria-hidden="true">
-                  <span className="h-[15px] w-[15px] rounded bg-[#F0EFED] motion-safe:animate-pulse shrink-0" />
-                  <span style={{ width }} className="h-3 rounded bg-[#F0EFED] motion-safe:animate-pulse" />
-                </div>
-              ))}
-            </>}
+            {isLoading && (
+              <>
+                <span className="sr-only" role="status">
+                  Loading categories
+                </span>
+                {skeletonLabelWidths.map((width, index) => (
+                  <div
+                    key={index}
+                    className={categoryItemClasses}
+                    aria-hidden="true"
+                  >
+                    <span className="h-[15px] w-[15px] rounded bg-[#F0EFED] motion-safe:animate-pulse shrink-0" />
+                    <span
+                      style={{ width }}
+                      className="h-3 rounded bg-[#F0EFED] motion-safe:animate-pulse"
+                    />
+                  </div>
+                ))}
+              </>
+            )}
           </div>
-          {arProduct && <button type="button" onClick={() => { setOpenSlug(null); setIsArModalOpen(true); }} className="flex shrink-0 items-center gap-1.5 border-l border-[#F0EFED] px-4 py-2.5 text-xs font-semibold text-[#F27318] hover:text-[#D9620E] focus-visible:outline-2 focus-visible:outline-[#F27318]">
-            <Scan size={16} /><span className="hidden sm:inline">Try AR View</span><span className="sm:hidden">AR</span>
-          </button>}
+          {arProduct && (
+            <button
+              type="button"
+              onClick={() => {
+                setOpenSlug(null);
+                setIsArModalOpen(true);
+              }}
+              className="flex shrink-0 items-center gap-1.5 border-l border-[#F0EFED] px-4 py-2.5 text-xs font-semibold text-[#F27318] hover:text-[#D9620E] focus-visible:outline-2 focus-visible:outline-[#F27318]"
+            >
+              <Scan size={16} />
+              <span className="hidden sm:inline">Try AR View</span>
+              <span className="sm:hidden">AR</span>
+            </button>
+          )}
         </nav>
 
         {openCategory && (
-          <nav id="category-subcategories" aria-label={`${openCategory.name} subcategories`} style={{ left: popupLayout.left, width: popupLayout.width }} className="absolute top-full z-50 max-h-[min(70vh,560px)] overflow-y-auto rounded-b-xl border border-[#E5E2DE] bg-white p-5 shadow-[0_8px_20px_rgba(0,0,0,0.08)]">
+          <nav
+            id="category-subcategories"
+            aria-label={`${openCategory.name} subcategories`}
+            style={{ left: popupLayout.left, width: popupLayout.width }}
+            className="absolute top-full z-50 max-h-[min(70vh,560px)] overflow-y-auto rounded-b-xl border border-[#E5E2DE] bg-white p-5 shadow-[0_8px_20px_rgba(0,0,0,0.08)]"
+          >
             {childrenOf(openCategory).length > 0 ? (
-              <div className={isGrouped ? "grid gap-x-6 gap-y-5" : "flex flex-col gap-0.5"} style={isGrouped ? { gridTemplateColumns: `repeat(${popupLayout.columns}, minmax(0, 1fr))` } : undefined}>
-                {childrenOf(openCategory).map((child) => <div key={child._id || child.slug}>
-                  <Link to={categoryPath(child)} onClick={() => setOpenSlug(null)} className={`${isGrouped ? "mb-2 font-semibold" : "py-2 font-medium"} block text-sm hover:text-[#F27318] ${containsActive(child) ? "text-[#F27318]" : "text-[#1A1714]"}`}>{child.name}{typeof child.productCount === "number" && <span aria-hidden="true" className="ml-2 text-xs font-medium text-[#B8B4AE]">{child.productCount}</span>}</Link>
-                  {childrenOf(child).length > 0 && renderDescendants(childrenOf(child))}
-                </div>)}
+              <div
+                className={
+                  isGrouped ? "grid gap-x-6 gap-y-5" : "flex flex-col gap-0.5"
+                }
+                style={
+                  isGrouped
+                    ? {
+                        gridTemplateColumns: `repeat(${popupLayout.columns}, minmax(0, 1fr))`,
+                      }
+                    : undefined
+                }
+              >
+                {childrenOf(openCategory).map((child) => (
+                  <div key={child._id || child.slug}>
+                    <Link
+                      to={categoryPath(child)}
+                      onClick={() => setOpenSlug(null)}
+                      className={`${isGrouped ? "mb-2 font-semibold" : "py-2 font-medium"} block text-sm hover:text-[#F27318] ${containsActive(child) ? "text-[#F27318]" : "text-[#1A1714]"}`}
+                    >
+                      {child.name}
+                      {typeof child.productCount === "number" && (
+                        <span
+                          aria-hidden="true"
+                          className="ml-2 text-xs font-medium text-[#B8B4AE]"
+                        >
+                          {child.productCount}
+                        </span>
+                      )}
+                    </Link>
+                    {childrenOf(child).length > 0 &&
+                      renderDescendants(childrenOf(child))}
+                  </div>
+                ))}
               </div>
-            ) : <p className="text-sm text-[#7A7068]">Explore the full {openCategory.name} collection.</p>}
+            ) : (
+              <p className="text-sm text-[#7A7068]">
+                Explore the full {openCategory.name} collection.
+              </p>
+            )}
           </nav>
         )}
       </div>
-      {isArModalOpen && arProduct && <Suspense fallback={null}><ARViewModal isOpen={isArModalOpen} onClose={() => setIsArModalOpen(false)} product={arProduct} /></Suspense>}
+      {isArModalOpen && arProduct && (
+        <Suspense fallback={null}>
+          <ARViewModal
+            isOpen={isArModalOpen}
+            onClose={() => setIsArModalOpen(false)}
+            product={arProduct}
+          />
+        </Suspense>
+      )}
     </>
   );
 }

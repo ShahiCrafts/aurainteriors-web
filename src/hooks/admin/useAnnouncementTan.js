@@ -112,7 +112,8 @@ export const useScheduleAnnouncement = () => {
   const queryClient = useQueryClient();
 
   return useMutation({
-    mutationFn: ({ id, scheduledAt }) => announcementApi.schedule(id, scheduledAt),
+    mutationFn: ({ id, scheduledAt }) =>
+      announcementApi.schedule(id, scheduledAt),
     onSuccess: (_, { id }) => {
       queryClient.invalidateQueries({ queryKey: announcementListKey() });
       queryClient.invalidateQueries({ queryKey: ANNOUNCEMENT_KEYS.detail(id) });

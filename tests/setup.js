@@ -34,4 +34,5 @@ if (!window.IntersectionObserver) {
   };
 }
 if (!window.scrollTo) window.scrollTo = () => {};
-if (!Element.prototype.scrollIntoView) Element.prototype.scrollIntoView = () => {};
+if (!Element.prototype.scrollIntoView)
+  Element.prototype.scrollIntoView = () => {};

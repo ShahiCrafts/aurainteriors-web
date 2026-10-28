@@ -1,5 +1,13 @@
-export { default as FilterModal, PRICE_RANGES, SORT_OPTIONS } from "./FilterModal";
-export { default as CustomizeSheet, COLOR_HEX_MAP, getColorHex } from "./CustomizeSheet";
+export {
+  default as FilterModal,
+  PRICE_RANGES,
+  SORT_OPTIONS,
+} from "./FilterModal";
+export {
+  default as CustomizeSheet,
+  COLOR_HEX_MAP,
+  getColorHex,
+} from "./CustomizeSheet";
 export { default as ProductCatalog } from "./ProductCatalog";
 export { ScanningOverlay, PlacingIndicator } from "./ScanningOverlay";
 export { default as ActionMenu } from "./ActionMenu";

@@ -28,10 +28,10 @@ const useNotificationSocket = (token, userId, guestSessionId) => {
 
     try {
       // Create socket instance with authentication
-      const authPayload = token 
-        ? { ...(token !== "cookie" ? { token } : {}) } 
+      const authPayload = token
+        ? { ...(token !== "cookie" ? { token } : {}) }
         : { guestSessionId }; // Guests auth with guestSessionId instead
-      
+
       const ioSocket = io(SOCKET_URL, {
         auth: authPayload,
         withCredentials: true,
@@ -140,47 +140,62 @@ const useNotificationSocket = (token, userId, guestSessionId) => {
   /**
    * SUBSCRIBE TO TOPIC
    */
-  const subscribeTopic = useCallback((topic) => {
-    if (socket && socket.connected) {
-      socket.emit("subscribe:topic", { topic });
-    }
-  }, [socket]);
+  const subscribeTopic = useCallback(
+    (topic) => {
+      if (socket && socket.connected) {
+        socket.emit("subscribe:topic", { topic });
+      }
+    },
+    [socket],
+  );
 
   /**
    * UNSUBSCRIBE FROM TOPIC
    */
-  const unsubscribeTopic = useCallback((topic) => {
-    if (socket && socket.connected) {
-      socket.emit("unsubscribe:topic", { topic });
-    }
-  }, [socket]);
+  const unsubscribeTopic = useCallback(
+    (topic) => {
+      if (socket && socket.connected) {
+        socket.emit("unsubscribe:topic", { topic });
+      }
+    },
+    [socket],
+  );
 
   /**
    * MARK NOTIFICATION AS READ (via socket)
    */
-  const markAsReadSocket = useCallback((userNotificationId) => {
-    if (socket && socket.connected) {
-      socket.emit("notification:read", { userNotificationId });
-    }
-  }, [socket]);
+  const markAsReadSocket = useCallback(
+    (userNotificationId) => {
+      if (socket && socket.connected) {
+        socket.emit("notification:read", { userNotificationId });
+      }
+    },
+    [socket],
+  );
 
   /**
    * ARCHIVE NOTIFICATION (via socket)
    */
-  const archiveNotificationSocket = useCallback((userNotificationId) => {
-    if (socket && socket.connected) {
-      socket.emit("notification:archive", { userNotificationId });
-    }
-  }, [socket]);
+  const archiveNotificationSocket = useCallback(
+    (userNotificationId) => {
+      if (socket && socket.connected) {
+        socket.emit("notification:archive", { userNotificationId });
+      }
+    },
+    [socket],
+  );
 
   /**
    * REQUEST NOTIFICATIONS SYNC
    */
-  const requestNotificationsSync = useCallback((page = 1, limit = 10) => {
-    if (socket && socket.connected) {
-      socket.emit("request:notifications", { page, limit });
-    }
-  }, [socket]);
+  const requestNotificationsSync = useCallback(
+    (page = 1, limit = 10) => {
+      if (socket && socket.connected) {
+        socket.emit("request:notifications", { page, limit });
+      }
+    },
+    [socket],
+  );
 
   return {
     connected,

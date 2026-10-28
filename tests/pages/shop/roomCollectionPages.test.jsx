@@ -11,8 +11,12 @@ vi.mock("../../../src/api/index.js", () => ({
   default: {
     get: vi.fn(() => Promise.reject(new Error("mocked: no network in tests"))),
     post: vi.fn(() => Promise.reject(new Error("mocked: no network in tests"))),
-    patch: vi.fn(() => Promise.reject(new Error("mocked: no network in tests"))),
-    delete: vi.fn(() => Promise.reject(new Error("mocked: no network in tests"))),
+    patch: vi.fn(() =>
+      Promise.reject(new Error("mocked: no network in tests")),
+    ),
+    delete: vi.fn(() =>
+      Promise.reject(new Error("mocked: no network in tests")),
+    ),
   },
 }));
 
@@ -35,16 +39,25 @@ vi.mock("../../../src/api/categoryApi.js", () => ({
   },
 }));
 
-vi.mock("../../../src/layouts/customer/Navbar.jsx", () => ({ default: () => null }));
-vi.mock("../../../src/layouts/customer/Footer.jsx", () => ({ default: () => null }));
-vi.mock("../../../src/components/navigation/CategoryBar.jsx", () => ({ default: () => null }));
+vi.mock("../../../src/layouts/customer/Navbar.jsx", () => ({
+  default: () => null,
+}));
+vi.mock("../../../src/layouts/customer/Footer.jsx", () => ({
+  default: () => null,
+}));
+vi.mock("../../../src/components/navigation/CategoryBar.jsx", () => ({
+  default: () => null,
+}));
 vi.mock("../../../src/components/shop/ProductCard.jsx", () => ({
   default: ({ product }) => <div>{product.name}</div>,
 }));
 
 const catalogState = vi.hoisted(() => ({ rooms: [], collections: [] }));
 vi.mock("../../../src/hooks/catalog/useCatalogTan.js", () => ({
-  useRooms: () => ({ data: { data: { rooms: catalogState.rooms } }, isLoading: false }),
+  useRooms: () => ({
+    data: { data: { rooms: catalogState.rooms } },
+    isLoading: false,
+  }),
   useCollections: () => ({
     data: { data: { collections: catalogState.collections } },
     isLoading: false,
@@ -58,7 +71,9 @@ import RoomPage from "../../../src/pages/shop/RoomPage.jsx";
 import CollectionPage from "../../../src/pages/shop/CollectionPage.jsx";
 
 function renderAt(path, element) {
-  const client = new QueryClient({ defaultOptions: { queries: { retry: false } } });
+  const client = new QueryClient({
+    defaultOptions: { queries: { retry: false } },
+  });
   return render(
     <QueryClientProvider client={client}>
       <MemoryRouter initialEntries={[path]}>
@@ -67,17 +82,25 @@ function renderAt(path, element) {
           <Route path="/collections/:slug" element={element} />
         </Routes>
       </MemoryRouter>
-    </QueryClientProvider>
+    </QueryClientProvider>,
   );
 }
 
 beforeEach(() => {
   vi.clearAllMocks();
   catalogState.rooms = [
-    { slug: "living-room", label: "Living Room", description: "Pieces for the living room." },
+    {
+      slug: "living-room",
+      label: "Living Room",
+      description: "Pieces for the living room.",
+    },
   ];
   catalogState.collections = [
-    { slug: "new-arrivals", label: "New Arrivals", description: "Fresh in the studio." },
+    {
+      slug: "new-arrivals",
+      label: "New Arrivals",
+      description: "Fresh in the studio.",
+    },
   ];
   categoryApi.getTree.mockResolvedValue({ data: { categories: [] } });
   productApi.getAll.mockResolvedValue({
@@ -92,13 +115,17 @@ beforeEach(() => {
 describe("RoomPage (Phase 7)", () => {
   it("pins the room dimension and renders the registry hero", async () => {
     renderAt("/rooms/living-room", <RoomPage />);
-    expect(await screen.findByText("Pieces for the living room.")).toBeInTheDocument();
+    expect(
+      await screen.findByText("Pieces for the living room."),
+    ).toBeInTheDocument();
     expect(await screen.findByText("Scoped Product")).toBeInTheDocument();
-    expect(screen.getByRole("heading", { name: /Living Room/ })).toBeInTheDocument();
+    expect(
+      screen.getByRole("heading", { name: /Living Room/ }),
+    ).toBeInTheDocument();
     await waitFor(() =>
       expect(productApi.getAll).toHaveBeenCalledWith(
-        expect.objectContaining({ room: "living-room", facets: "1" })
-      )
+        expect.objectContaining({ room: "living-room", facets: "1" }),
+      ),
     );
   });
 
@@ -116,8 +143,8 @@ describe("CollectionPage (Phase 7)", () => {
     expect(await screen.findByText("Scoped Product")).toBeInTheDocument();
     await waitFor(() =>
       expect(productApi.getAll).toHaveBeenCalledWith(
-        expect.objectContaining({ collection: "new-arrivals", facets: "1" })
-      )
+        expect.objectContaining({ collection: "new-arrivals", facets: "1" }),
+      ),
     );
   });
 

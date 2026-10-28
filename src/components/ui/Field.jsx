@@ -66,7 +66,11 @@ export default function Field({
       )}
       <div className={label ? "mt-2" : undefined}>{control}</div>
       {error ? (
-        <p id={errorId} role="alert" className="text-[11.5px] text-red-500 font-medium mt-1">
+        <p
+          id={errorId}
+          role="alert"
+          className="text-[11.5px] text-red-500 font-medium mt-1"
+        >
           {error}
         </p>
       ) : hint ? (

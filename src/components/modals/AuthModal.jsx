@@ -14,12 +14,23 @@ import Dialog from "../common/Dialog";
 const ORANGE = "#F27318";
 
 export default function AuthModal() {
-  const { isAuthModalOpen,
+  const {
+    isAuthModalOpen,
     closeAuthModal,
     authModalView,
     setAuthModalView,
     setUser,
-    user, } = useAuthStore(useShallow((state) => ({ isAuthModalOpen: state.isAuthModalOpen, closeAuthModal: state.closeAuthModal, authModalView: state.authModalView, setAuthModalView: state.setAuthModalView, setUser: state.setUser, user: state.user })));
+    user,
+  } = useAuthStore(
+    useShallow((state) => ({
+      isAuthModalOpen: state.isAuthModalOpen,
+      closeAuthModal: state.closeAuthModal,
+      authModalView: state.authModalView,
+      setAuthModalView: state.setAuthModalView,
+      setUser: state.setUser,
+      user: state.user,
+    })),
+  );
 
   const reduceMotion = useReducedMotion();
   const [email, setEmail] = useState("");
@@ -33,7 +44,11 @@ export default function AuthModal() {
   useLayoutEffect(() => {
     if (isAuthModalOpen) {
       let lastEmail = null;
-      try { lastEmail = localStorage.getItem("lastUsedEmail"); } catch { /* Storage is optional. */ }
+      try {
+        lastEmail = localStorage.getItem("lastUsedEmail");
+      } catch {
+        /* Storage is optional. */
+      }
       if (lastEmail) {
         setEmail(lastEmail);
         setIsWelcomeBack(true);
@@ -45,7 +60,6 @@ export default function AuthModal() {
     }
   }, [isAuthModalOpen]);
 
-
   const handleEmailSubmit = (e) => {
     e.preventDefault();
     if (!email) return;
@@ -54,13 +68,20 @@ export default function AuthModal() {
       { email },
       {
         onSuccess: () => {
-          try { localStorage.setItem("lastUsedEmail", email); } catch { /* Storage is optional. */ }
+          try {
+            localStorage.setItem("lastUsedEmail", email);
+          } catch {
+            /* Storage is optional. */
+          }
           setAuthModalView("sent");
         },
         onError: (error) => {
-          toast.error(formatError(error) || "Failed to send magic link. Please try again.");
+          toast.error(
+            formatError(error) ||
+              "Failed to send magic link. Please try again.",
+          );
         },
-      }
+      },
     );
   };
 
@@ -80,7 +101,9 @@ export default function AuthModal() {
           const updatedUser = data?.data?.user || data?.user;
           if (updatedUser) {
             setUser(updatedUser);
-            toast.success(`Welcome to Aura Interiors, ${updatedUser.firstName}!`);
+            toast.success(
+              `Welcome to Aura Interiors, ${updatedUser.firstName}!`,
+            );
           } else {
             toast.success("Profile setup completed successfully!");
           }
@@ -89,7 +112,7 @@ export default function AuthModal() {
         onError: (error) => {
           toast.error(formatError(error) || "Failed to update profile name.");
         },
-      }
+      },
     );
   };
 
@@ -102,226 +125,271 @@ export default function AuthModal() {
 
   return (
     <AnimatePresence>
-      {isAuthModalOpen && <motion.div
-        key="auth-modal"
-        initial={{ opacity: 0 }}
-        animate={{ opacity: 1 }}
-        exit={{ opacity: 0 }}
-        transition={{ duration: reduceMotion ? 0 : 0.22, ease: "easeOut" }}
-        className="fixed inset-0 z-100 flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm"
-      >
+      {isAuthModalOpen && (
         <motion.div
-          initial={{ y: reduceMotion ? 0 : 14, scale: reduceMotion ? 1 : 0.98 }}
-          animate={{ y: 0, scale: 1 }}
-          exit={{ y: reduceMotion ? 0 : 8, scale: reduceMotion ? 1 : 0.98 }}
-          transition={{ duration: reduceMotion ? 0 : 0.22, ease: [0.22, 1, 0.36, 1] }}
-          className="w-full max-w-[840px] h-full max-h-[560px]"
+          key="auth-modal"
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
+          exit={{ opacity: 0 }}
+          transition={{ duration: reduceMotion ? 0 : 0.22, ease: "easeOut" }}
+          className="fixed inset-0 z-100 flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm"
         >
-         <Dialog open={isAuthModalOpen} onClose={showCloseButton ? closeAuthModal : undefined} label="Sign in or create an account" className="bg-white w-full h-full rounded-2xl overflow-hidden flex relative shadow-[0_24px_70px_rgba(0,0,0,0.35)] font-dm-sans">
-          {/* Close Button */}
-          {showCloseButton && (
-            <button
-              onClick={closeAuthModal}
-              aria-label="Close dialog"
-              className="absolute top-4 right-4 z-20 w-8 h-8 flex items-center justify-center bg-gray-100 text-gray-600 hover:bg-black hover:text-white transition-all duration-200 rounded-lg border-none cursor-pointer"
+          <motion.div
+            initial={{
+              y: reduceMotion ? 0 : 14,
+              scale: reduceMotion ? 1 : 0.98,
+            }}
+            animate={{ y: 0, scale: 1 }}
+            exit={{ y: reduceMotion ? 0 : 8, scale: reduceMotion ? 1 : 0.98 }}
+            transition={{
+              duration: reduceMotion ? 0 : 0.22,
+              ease: [0.22, 1, 0.36, 1],
+            }}
+            className="w-full max-w-[840px] h-full max-h-[560px]"
+          >
+            <Dialog
+              open={isAuthModalOpen}
+              onClose={showCloseButton ? closeAuthModal : undefined}
+              label="Sign in or create an account"
+              className="bg-white w-full h-full rounded-2xl overflow-hidden flex relative shadow-[0_24px_70px_rgba(0,0,0,0.35)] font-dm-sans"
             >
-              <X size={18} />
-            </button>
-          )}
+              {/* Close Button */}
+              {showCloseButton && (
+                <button
+                  onClick={closeAuthModal}
+                  aria-label="Close dialog"
+                  className="absolute top-4 right-4 z-20 w-8 h-8 flex items-center justify-center bg-gray-100 text-gray-600 hover:bg-black hover:text-white transition-all duration-200 rounded-lg border-none cursor-pointer"
+                >
+                  <X size={18} />
+                </button>
+              )}
 
-          {/* Left Side: Premium Visuals */}
-          <div className="hidden md:flex w-1/2 relative bg-[#1A1714]">
-            <img
-              src="https://images.unsplash.com/photo-1556228453-efd6c1ff04f6?q=80&w=2070&auto=format&fit=crop"
-              alt="Premium Interiors"
-              className="absolute inset-0 w-full h-full object-cover transition-transform duration-700 hover:scale-105"
-            />
-          </div>
+              {/* Left Side: Premium Visuals */}
+              <div className="hidden md:flex w-1/2 relative bg-[#1A1714]">
+                <img
+                  src="https://images.unsplash.com/photo-1556228453-efd6c1ff04f6?q=80&w=2070&auto=format&fit=crop"
+                  alt="Premium Interiors"
+                  className="absolute inset-0 w-full h-full object-cover transition-transform duration-700 hover:scale-105"
+                />
+              </div>
 
-          {/* Right Side: Identity-First State Machine Content */}
-          <div className="w-full md:w-1/2 p-8 md:p-12 flex flex-col justify-center bg-white relative">
-            <div className="w-full max-w-[340px] mx-auto">
-              <AnimatePresence mode="wait" initial={false}>
-                {/* 1. EMAIL ENTRY VIEW */}
-                {authModalView === "email" && (
-                  <motion.div
-                    key="email-view"
-                    initial={{ opacity: 0 }}
-                    animate={{ opacity: 1 }}
-                    exit={{ opacity: 0 }}
-                    transition={{ duration: 0.15 }}
-                  >
-                    <div className="mb-6">
-                      <h3 className="text-[24px] font-bold text-[#1A1714] mb-1">
-                        {isWelcomeBack ? "Welcome Back" : "Continue to Aura Interiors"}
-                      </h3>
-                      <p className="text-[#64748B] text-[14px]">
-                        {isWelcomeBack
-                          ? "Continue with your email to access your premium collection."
-                          : "Enter your email to sign in or create an account."}
-                      </p>
-                    </div>
-
-                    <form onSubmit={handleEmailSubmit} className="flex flex-col gap-4">
-                      <div className="flex flex-col gap-1.5">
-                        <label htmlFor="auth-email" className="text-[13px] font-semibold text-[#1A1714] tracking-wide uppercase">
-                          Email Address
-                        </label>
-                        <input
-                          id="auth-email"
-                          type="email"
-                          value={email}
-                          onChange={(e) => {
-                            setEmail(e.target.value);
-                            if (isWelcomeBack) setIsWelcomeBack(false);
-                          }}
-                          className="w-full h-[46px] px-4 border border-[#E2E8F0] rounded-lg focus:border-[#F27318] focus:ring-1 focus:ring-[#F27318] outline-none transition-all duration-200 text-[15px]"
-                          placeholder="e.g. name@example.com"
-                          required
-                        />
-                      </div>
-
-                      <button
-                        type="submit"
-                        disabled={isSending}
-                        className="w-full h-[46px] bg-[#F27318] hover:bg-[#D9620E] text-white font-semibold text-[14px] rounded-lg mt-1 transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed border-none cursor-pointer flex items-center justify-center gap-2 shadow-sm"
+              {/* Right Side: Identity-First State Machine Content */}
+              <div className="w-full md:w-1/2 p-8 md:p-12 flex flex-col justify-center bg-white relative">
+                <div className="w-full max-w-[340px] mx-auto">
+                  <AnimatePresence mode="wait" initial={false}>
+                    {/* 1. EMAIL ENTRY VIEW */}
+                    {authModalView === "email" && (
+                      <motion.div
+                        key="email-view"
+                        initial={{ opacity: 0 }}
+                        animate={{ opacity: 1 }}
+                        exit={{ opacity: 0 }}
+                        transition={{ duration: 0.15 }}
                       >
-                        {isSending ? "Sending Magic Link..." : "Send Magic Link"}
-                      </button>
-
-                      <div className="relative flex items-center justify-center my-2">
-                        <div className="absolute inset-0 flex items-center">
-                          <div className="w-full border-t border-[#F1F5F9]"></div>
+                        <div className="mb-6">
+                          <h3 className="text-[24px] font-bold text-[#1A1714] mb-1">
+                            {isWelcomeBack
+                              ? "Welcome Back"
+                              : "Continue to Aura Interiors"}
+                          </h3>
+                          <p className="text-[#64748B] text-[14px]">
+                            {isWelcomeBack
+                              ? "Continue with your email to access your premium collection."
+                              : "Enter your email to sign in or create an account."}
+                          </p>
                         </div>
-                        <span className="relative px-3 bg-white text-[10px] text-[#94A3B8] font-bold uppercase tracking-[0.15em]">
-                          or
-                        </span>
-                      </div>
 
-                      {/* Google Authentication */}
-                      <button
-                        onClick={handleGoogleAuth}
-                        type="button"
-                        className="w-full h-[46px] bg-white border border-[#E2E8F0] hover:bg-gray-50 rounded-lg flex items-center justify-center gap-3 transition-all duration-200 font-semibold text-[#1A1714] cursor-pointer shadow-sm"
-                      >
-                        <FcGoogle size={20} />
-                        <span className="text-[14px]">Continue with Google</span>
-                      </button>
-                    </form>
+                        <form
+                          onSubmit={handleEmailSubmit}
+                          className="flex flex-col gap-4"
+                        >
+                          <div className="flex flex-col gap-1.5">
+                            <label
+                              htmlFor="auth-email"
+                              className="text-[13px] font-semibold text-[#1A1714] tracking-wide uppercase"
+                            >
+                              Email Address
+                            </label>
+                            <input
+                              id="auth-email"
+                              type="email"
+                              value={email}
+                              onChange={(e) => {
+                                setEmail(e.target.value);
+                                if (isWelcomeBack) setIsWelcomeBack(false);
+                              }}
+                              className="w-full h-[46px] px-4 border border-[#E2E8F0] rounded-lg focus:border-[#F27318] focus:ring-1 focus:ring-[#F27318] outline-none transition-all duration-200 text-[15px]"
+                              placeholder="e.g. name@example.com"
+                              required
+                            />
+                          </div>
 
-                    <div className="mt-8 text-center">
-                      <p className="text-[11px] text-[#94A3B8] leading-relaxed">
-                        {/* FE-16: /terms and /privacy have no routes in
+                          <button
+                            type="submit"
+                            disabled={isSending}
+                            className="w-full h-[46px] bg-[#F27318] hover:bg-[#D9620E] text-white font-semibold text-[14px] rounded-lg mt-1 transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed border-none cursor-pointer flex items-center justify-center gap-2 shadow-sm"
+                          >
+                            {isSending
+                              ? "Sending Magic Link..."
+                              : "Send Magic Link"}
+                          </button>
+
+                          <div className="relative flex items-center justify-center my-2">
+                            <div className="absolute inset-0 flex items-center">
+                              <div className="w-full border-t border-[#F1F5F9]"></div>
+                            </div>
+                            <span className="relative px-3 bg-white text-[10px] text-[#94A3B8] font-bold uppercase tracking-[0.15em]">
+                              or
+                            </span>
+                          </div>
+
+                          {/* Google Authentication */}
+                          <button
+                            onClick={handleGoogleAuth}
+                            type="button"
+                            className="w-full h-[46px] bg-white border border-[#E2E8F0] hover:bg-gray-50 rounded-lg flex items-center justify-center gap-3 transition-all duration-200 font-semibold text-[#1A1714] cursor-pointer shadow-sm"
+                          >
+                            <FcGoogle size={20} />
+                            <span className="text-[14px]">
+                              Continue with Google
+                            </span>
+                          </button>
+                        </form>
+
+                        <div className="mt-8 text-center">
+                          <p className="text-[11px] text-[#94A3B8] leading-relaxed">
+                            {/* FE-16: /terms and /privacy have no routes in
                             either app; rendered as plain text until the
                             owner publishes those pages. */}
-                        By continuing, you agree to our{" "}
-                        <span className="text-[#64748B] font-medium">Terms</span>
-                        {" "}&{" "}
-                        <span className="text-[#64748B] font-medium">Privacy Policy</span>.
-                      </p>
-                    </div>
-                  </motion.div>
-                )}
-
-                {/* 2. SENT CONFIRMATION VIEW */}
-                {authModalView === "sent" && (
-                  <motion.div
-                    key="sent-view"
-                    initial={{ opacity: 0 }}
-                    animate={{ opacity: 1 }}
-                    exit={{ opacity: 0 }}
-                    transition={{ duration: 0.15 }}
-                    className="text-center flex flex-col items-center"
-                  >
-                    <div className="w-16 h-16 bg-[#F27318]/10 rounded-full flex items-center justify-center text-[#F27318] mb-6 animate-pulse">
-                      <Mail size={32} />
-                    </div>
-
-                    <h3 className="text-[22px] font-bold text-[#1A1714] mb-2">
-                      Check Your Email
-                    </h3>
-                    <p className="text-[#64748B] text-[14px] leading-relaxed mb-6">
-                      A secure sign-in link has been sent to <strong className="text-[#1A1714] font-semibold">{email}</strong>.<br />
-                      Click it to log in.
-                    </p>
-
-                    <div className="flex flex-col gap-3 w-full">
-                      <button
-                        onClick={() => window.open(`mailto:${email}`)}
-                        className="w-full h-[46px] bg-[#F27318] hover:bg-[#D9620E] text-white font-semibold text-[14px] rounded-lg transition-all duration-200 border-none cursor-pointer shadow-sm"
-                      >
-                        Open Mail App
-                      </button>
-
-                      <button
-                        onClick={() => setAuthModalView("email")}
-                        className="text-[#64748B] hover:text-[#1A1714] text-[13px] font-medium transition-all duration-200 bg-transparent border-none cursor-pointer flex items-center justify-center gap-1.5 mt-2"
-                      >
-                        <ArrowLeft size={14} />
-                        Change email address
-                      </button>
-                    </div>
-                  </motion.div>
-                )}
-
-                {/* 3. PROGRESSIVE PROFILE ONBOARDING VIEW */}
-                {authModalView === "onboarding" && (
-                  <motion.div
-                    key="onboarding-view"
-                    initial={{ opacity: 0 }}
-                    animate={{ opacity: 1 }}
-                    exit={{ opacity: 0 }}
-                    transition={{ duration: 0.15 }}
-                  >
-                    <div className="mb-6">
-                      <div className="w-12 h-12 bg-green-50 rounded-full flex items-center justify-center text-green-600 mb-4">
-                        <CheckSquare size={24} />
-                      </div>
-                      <h3 className="text-[24px] font-bold text-[#1A1714] mb-1">
-                        Welcome to Aura Interiors
-                      </h3>
-                      <p className="text-[#64748B] text-[14px]">
-                        Your email is verified! Tell us your full name to personalize your experience.
-                      </p>
-                    </div>
-
-                    <form onSubmit={handleOnboardingSubmit} className="flex flex-col gap-4">
-                      <div className="flex flex-col gap-1.5">
-                        <label htmlFor="auth-fullname" className="text-[13px] font-semibold text-[#1A1714] tracking-wide uppercase">
-                          Full Name
-                        </label>
-                        <div className="relative">
-                          <input
-                            id="auth-fullname"
-                            type="text"
-                            value={fullName}
-                            onChange={(e) => setFullName(e.target.value)}
-                            className="w-full h-[46px] pl-10 pr-4 border border-[#E2E8F0] rounded-lg focus:border-[#F27318] focus:ring-1 focus:ring-[#F27318] outline-none transition-all duration-200 text-[15px]"
-                            placeholder="e.g. John Doe"
-                            required
-                            autoFocus
-                          />
-                          <User className="absolute left-3.5 top-1/2 -translate-y-1/2 text-[#94A3B8]" size={16} />
+                            By continuing, you agree to our{" "}
+                            <span className="text-[#64748B] font-medium">
+                              Terms
+                            </span>{" "}
+                            &{" "}
+                            <span className="text-[#64748B] font-medium">
+                              Privacy Policy
+                            </span>
+                            .
+                          </p>
                         </div>
-                      </div>
+                      </motion.div>
+                    )}
 
-                      <button
-                        type="submit"
-                        disabled={isUpdating || !fullName.trim()}
-                        className="w-full h-[46px] bg-[#F27318] hover:bg-[#D9620E] text-white font-semibold text-[14px] rounded-lg mt-1 transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed border-none cursor-pointer flex items-center justify-center gap-2 shadow-sm"
+                    {/* 2. SENT CONFIRMATION VIEW */}
+                    {authModalView === "sent" && (
+                      <motion.div
+                        key="sent-view"
+                        initial={{ opacity: 0 }}
+                        animate={{ opacity: 1 }}
+                        exit={{ opacity: 0 }}
+                        transition={{ duration: 0.15 }}
+                        className="text-center flex flex-col items-center"
                       >
-                        {isUpdating ? "Completing Setup..." : "Complete Setup"}
-                      </button>
-                    </form>
-                  </motion.div>
-                )}
-              </AnimatePresence>
-            </div>
-          </div>
-         </Dialog>
+                        <div className="w-16 h-16 bg-[#F27318]/10 rounded-full flex items-center justify-center text-[#F27318] mb-6 animate-pulse">
+                          <Mail size={32} />
+                        </div>
+
+                        <h3 className="text-[22px] font-bold text-[#1A1714] mb-2">
+                          Check Your Email
+                        </h3>
+                        <p className="text-[#64748B] text-[14px] leading-relaxed mb-6">
+                          A secure sign-in link has been sent to{" "}
+                          <strong className="text-[#1A1714] font-semibold">
+                            {email}
+                          </strong>
+                          .<br />
+                          Click it to log in.
+                        </p>
+
+                        <div className="flex flex-col gap-3 w-full">
+                          <button
+                            onClick={() => window.open(`mailto:${email}`)}
+                            className="w-full h-[46px] bg-[#F27318] hover:bg-[#D9620E] text-white font-semibold text-[14px] rounded-lg transition-all duration-200 border-none cursor-pointer shadow-sm"
+                          >
+                            Open Mail App
+                          </button>
+
+                          <button
+                            onClick={() => setAuthModalView("email")}
+                            className="text-[#64748B] hover:text-[#1A1714] text-[13px] font-medium transition-all duration-200 bg-transparent border-none cursor-pointer flex items-center justify-center gap-1.5 mt-2"
+                          >
+                            <ArrowLeft size={14} />
+                            Change email address
+                          </button>
+                        </div>
+                      </motion.div>
+                    )}
+
+                    {/* 3. PROGRESSIVE PROFILE ONBOARDING VIEW */}
+                    {authModalView === "onboarding" && (
+                      <motion.div
+                        key="onboarding-view"
+                        initial={{ opacity: 0 }}
+                        animate={{ opacity: 1 }}
+                        exit={{ opacity: 0 }}
+                        transition={{ duration: 0.15 }}
+                      >
+                        <div className="mb-6">
+                          <div className="w-12 h-12 bg-green-50 rounded-full flex items-center justify-center text-green-600 mb-4">
+                            <CheckSquare size={24} />
+                          </div>
+                          <h3 className="text-[24px] font-bold text-[#1A1714] mb-1">
+                            Welcome to Aura Interiors
+                          </h3>
+                          <p className="text-[#64748B] text-[14px]">
+                            Your email is verified! Tell us your full name to
+                            personalize your experience.
+                          </p>
+                        </div>
+
+                        <form
+                          onSubmit={handleOnboardingSubmit}
+                          className="flex flex-col gap-4"
+                        >
+                          <div className="flex flex-col gap-1.5">
+                            <label
+                              htmlFor="auth-fullname"
+                              className="text-[13px] font-semibold text-[#1A1714] tracking-wide uppercase"
+                            >
+                              Full Name
+                            </label>
+                            <div className="relative">
+                              <input
+                                id="auth-fullname"
+                                type="text"
+                                value={fullName}
+                                onChange={(e) => setFullName(e.target.value)}
+                                className="w-full h-[46px] pl-10 pr-4 border border-[#E2E8F0] rounded-lg focus:border-[#F27318] focus:ring-1 focus:ring-[#F27318] outline-none transition-all duration-200 text-[15px]"
+                                placeholder="e.g. John Doe"
+                                required
+                                autoFocus
+                              />
+                              <User
+                                className="absolute left-3.5 top-1/2 -translate-y-1/2 text-[#94A3B8]"
+                                size={16}
+                              />
+                            </div>
+                          </div>
+
+                          <button
+                            type="submit"
+                            disabled={isUpdating || !fullName.trim()}
+                            className="w-full h-[46px] bg-[#F27318] hover:bg-[#D9620E] text-white font-semibold text-[14px] rounded-lg mt-1 transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed border-none cursor-pointer flex items-center justify-center gap-2 shadow-sm"
+                          >
+                            {isUpdating
+                              ? "Completing Setup..."
+                              : "Complete Setup"}
+                          </button>
+                        </form>
+                      </motion.div>
+                    )}
+                  </AnimatePresence>
+                </div>
+              </div>
+            </Dialog>
+          </motion.div>
         </motion.div>
-      </motion.div>}
+      )}
     </AnimatePresence>
   );
 }
-

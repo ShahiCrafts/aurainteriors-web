@@ -5,8 +5,12 @@
 import { describe, it, expect, vi, beforeEach } from "vitest";
 import { render, screen, fireEvent, waitFor } from "@testing-library/react";
 
-vi.mock("../../../src/layouts/customer/Navbar.jsx", () => ({ default: () => null }));
-vi.mock("../../../src/layouts/customer/Footer.jsx", () => ({ default: () => null }));
+vi.mock("../../../src/layouts/customer/Navbar.jsx", () => ({
+  default: () => null,
+}));
+vi.mock("../../../src/layouts/customer/Footer.jsx", () => ({
+  default: () => null,
+}));
 
 const submitContact = vi.fn();
 vi.mock("../../../src/hooks/admin/useContactTan.js", () => ({
@@ -23,7 +27,9 @@ describe("FE-44 ContactPage", () => {
   it("renders a category control with the server enum options", () => {
     render(<ContactPage />);
     const select = screen.getByLabelText(/category/i);
-    const values = Array.from(select.querySelectorAll("option")).map((o) => o.value);
+    const values = Array.from(select.querySelectorAll("option")).map(
+      (o) => o.value,
+    );
     expect(values).toEqual([
       "general",
       "support",
@@ -45,9 +51,12 @@ describe("FE-44 ContactPage", () => {
     fireEvent.change(screen.getByPlaceholderText("Inquiry Topic"), {
       target: { value: "Bulk order" },
     });
-    fireEvent.change(screen.getByPlaceholderText("How can we help you today?"), {
-      target: { value: "We need ten sofas." },
-    });
+    fireEvent.change(
+      screen.getByPlaceholderText("How can we help you today?"),
+      {
+        target: { value: "We need ten sofas." },
+      },
+    );
     fireEvent.change(screen.getByLabelText(/category/i), {
       target: { value: "sales" },
     });
@@ -56,7 +65,7 @@ describe("FE-44 ContactPage", () => {
     await waitFor(() => expect(submitContact).toHaveBeenCalledTimes(1));
     const payload = submitContact.mock.calls[0][0];
     expect(Object.keys(payload).sort()).toEqual(
-      ["category", "email", "message", "name", "phone", "subject"].sort()
+      ["category", "email", "message", "name", "phone", "subject"].sort(),
     );
     expect(payload).toMatchObject({
       name: "Jane Customer",

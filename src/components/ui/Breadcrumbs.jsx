@@ -31,18 +31,32 @@ export default function Breadcrumbs({ items = [], className = "" }) {
       <ol className="flex flex-wrap items-center gap-1.5 text-sm">
         {items.map((item, index) => {
           const isLast = index === items.length - 1;
-          const safeHref = !isLast && item.href ? safeActionUrl(item.href) : null;
+          const safeHref =
+            !isLast && item.href ? safeActionUrl(item.href) : null;
           return (
-            <li key={`${item.label}-${index}`} className="flex items-center gap-1.5">
+            <li
+              key={`${item.label}-${index}`}
+              className="flex items-center gap-1.5"
+            >
               {index > 0 && (
-                <ChevronRight size={14} aria-hidden="true" className="text-neutral-300" />
+                <ChevronRight
+                  size={14}
+                  aria-hidden="true"
+                  className="text-neutral-300"
+                />
               )}
               {isLast ? (
-                <span aria-current="page" className="font-semibold text-neutral-900">
+                <span
+                  aria-current="page"
+                  className="font-semibold text-neutral-900"
+                >
                   {item.label}
                 </span>
               ) : safeHref ? (
-                <a href={safeHref} className="text-neutral-500 transition-colors hover:text-brand">
+                <a
+                  href={safeHref}
+                  className="text-neutral-500 transition-colors hover:text-brand"
+                >
                   {item.label}
                 </a>
               ) : (

@@ -18,7 +18,10 @@ import { readdirSync, readFileSync, statSync, existsSync } from "node:fs";
 import path from "node:path";
 import { fileURLToPath } from "node:url";
 
-const ROOT = path.resolve(path.dirname(fileURLToPath(import.meta.url)), "../..");
+const ROOT = path.resolve(
+  path.dirname(fileURLToPath(import.meta.url)),
+  "../..",
+);
 const SRC_ROOT = path.join(ROOT, "src");
 const PUBLIC_ROOT = path.join(ROOT, "public");
 
@@ -37,11 +40,17 @@ describe("FE-57 service worker guard", () => {
     const hits = [];
     for (const file of collectSourceFiles(SRC_ROOT)) {
       const rel = path.relative(ROOT, file);
-      readFileSync(file, "utf8").split("\n").forEach((line, i) => {
-        if (/serviceWorker\s*\.\s*register|navigator\s*\.\s*serviceWorker/.test(line)) {
-          hits.push(`${rel}:${i + 1} ${line.trim()}`);
-        }
-      });
+      readFileSync(file, "utf8")
+        .split("\n")
+        .forEach((line, i) => {
+          if (
+            /serviceWorker\s*\.\s*register|navigator\s*\.\s*serviceWorker/.test(
+              line,
+            )
+          ) {
+            hits.push(`${rel}:${i + 1} ${line.trim()}`);
+          }
+        });
     }
     expect(hits).toEqual([]);
   });

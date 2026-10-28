@@ -11,5 +11,3 @@ export const adminLogin = (email, password) =>
 
 export const adminVerifyOtp = (email, otp, challengeId) =>
   api.post("/auth/admin/verify-otp", { email, otp, challengeId });
-
-

@@ -1,16 +1,16 @@
 import useAuthStore from "../../store/authStore";
-import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
+import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import {
   getProfile,
   updateProfile,
   updateAvatar,
   removeAvatar,
-} from '../../api/profileApi';
+} from "../../api/profileApi";
 
 export const useProfile = () => {
-  const userId = useAuthStore(state => state.user?._id);
+  const userId = useAuthStore((state) => state.user?._id);
   return useQuery({
-    queryKey: ['profile', userId || 'guest'],
+    queryKey: ["profile", userId || "guest"],
     enabled: !!userId,
     queryFn: async () => {
       const response = await getProfile();
@@ -22,7 +22,7 @@ export const useProfile = () => {
 export const useUpdateProfile = () => {
   const queryClient = useQueryClient();
   return useMutation({
-    mutationKey: ['updateProfile'],
+    mutationKey: ["updateProfile"],
     mutationFn: async (data) => {
       try {
         const response = await updateProfile(data);
@@ -32,7 +32,7 @@ export const useUpdateProfile = () => {
       }
     },
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['profile'] });
+      queryClient.invalidateQueries({ queryKey: ["profile"] });
     },
   });
 };
@@ -40,11 +40,11 @@ export const useUpdateProfile = () => {
 export const useUpdateAvatar = () => {
   const queryClient = useQueryClient();
   return useMutation({
-    mutationKey: ['updateAvatar'],
+    mutationKey: ["updateAvatar"],
     mutationFn: async (file) => {
       try {
         const formData = new FormData();
-        formData.append('avatar', file);
+        formData.append("avatar", file);
         const response = await updateAvatar(formData);
         return response.data;
       } catch (error) {
@@ -52,7 +52,7 @@ export const useUpdateAvatar = () => {
       }
     },
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['profile'] });
+      queryClient.invalidateQueries({ queryKey: ["profile"] });
     },
   });
 };
@@ -60,7 +60,7 @@ export const useUpdateAvatar = () => {
 export const useRemoveAvatar = () => {
   const queryClient = useQueryClient();
   return useMutation({
-    mutationKey: ['removeAvatar'],
+    mutationKey: ["removeAvatar"],
     mutationFn: async () => {
       try {
         const response = await removeAvatar();
@@ -70,7 +70,7 @@ export const useRemoveAvatar = () => {
       }
     },
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['profile'] });
+      queryClient.invalidateQueries({ queryKey: ["profile"] });
     },
   });
 };

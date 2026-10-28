@@ -1,5 +1,11 @@
 import { describe, it, expect, vi, beforeEach } from "vitest";
-import { render, screen, fireEvent, waitFor, act } from "@testing-library/react";
+import {
+  render,
+  screen,
+  fireEvent,
+  waitFor,
+  act,
+} from "@testing-library/react";
 
 // FE-37(b): AddEditAddressModal's guest/override path never wired a
 // pending flag — its sole override caller (ShippingStep) passed no
@@ -21,17 +27,32 @@ import AddEditAddressModal from "../../../src/components/modals/AddEditAddressMo
 
 function deferred() {
   let resolve, reject;
-  const promise = new Promise((res, rej) => { resolve = res; reject = rej; });
+  const promise = new Promise((res, rej) => {
+    resolve = res;
+    reject = rej;
+  });
   return { promise, resolve, reject };
 }
 
 async function fillValidGuestForm() {
-  fireEvent.change(screen.getByLabelText(/full name/i), { target: { value: "Guest User" } });
-  fireEvent.change(screen.getByLabelText(/phone number/i), { target: { value: "9812345678" } });
-  fireEvent.change(screen.getByLabelText(/email address/i), { target: { value: "guest@example.com" } });
-  fireEvent.change(screen.getByLabelText(/address line 1/i), { target: { value: "123 Thamel Street" } });
-  fireEvent.change(screen.getByLabelText(/^city/i), { target: { value: "Kathmandu" } });
-  fireEvent.change(screen.getByLabelText(/postal/i), { target: { value: "44600" } });
+  fireEvent.change(screen.getByLabelText(/full name/i), {
+    target: { value: "Guest User" },
+  });
+  fireEvent.change(screen.getByLabelText(/phone number/i), {
+    target: { value: "9812345678" },
+  });
+  fireEvent.change(screen.getByLabelText(/email address/i), {
+    target: { value: "guest@example.com" },
+  });
+  fireEvent.change(screen.getByLabelText(/address line 1/i), {
+    target: { value: "123 Thamel Street" },
+  });
+  fireEvent.change(screen.getByLabelText(/^city/i), {
+    target: { value: "Kathmandu" },
+  });
+  fireEvent.change(screen.getByLabelText(/postal/i), {
+    target: { value: "44600" },
+  });
   // country is prefilled with "Nepal".
 }
 
@@ -46,7 +67,12 @@ describe("AddEditAddressModal guest override double-submit (FE-37)", () => {
     const d = deferred();
     const onSubmitOverride = vi.fn(() => d.promise);
     render(
-      <AddEditAddressModal isOpen onClose={vi.fn()} isGuest onSubmitOverride={onSubmitOverride} />
+      <AddEditAddressModal
+        isOpen
+        onClose={vi.fn()}
+        isGuest
+        onSubmitOverride={onSubmitOverride}
+      />,
     );
     await fillValidGuestForm();
     // Hold the reference: while pending the button swaps its label
@@ -60,7 +86,9 @@ describe("AddEditAddressModal guest override double-submit (FE-37)", () => {
     fireEvent.click(btn);
     expect(onSubmitOverride).toHaveBeenCalledTimes(1);
 
-    await act(async () => { d.resolve(); });
+    await act(async () => {
+      d.resolve();
+    });
     await waitFor(() => expect(btn).not.toBeDisabled());
   });
 
@@ -68,7 +96,12 @@ describe("AddEditAddressModal guest override double-submit (FE-37)", () => {
     const d = deferred();
     const onSubmitOverride = vi.fn(() => d.promise);
     render(
-      <AddEditAddressModal isOpen onClose={vi.fn()} isGuest onSubmitOverride={onSubmitOverride} />
+      <AddEditAddressModal
+        isOpen
+        onClose={vi.fn()}
+        isGuest
+        onSubmitOverride={onSubmitOverride}
+      />,
     );
     await fillValidGuestForm();
     const btn = submitBtn();
@@ -77,7 +110,9 @@ describe("AddEditAddressModal guest override double-submit (FE-37)", () => {
     await waitFor(() => expect(onSubmitOverride).toHaveBeenCalledTimes(1));
     expect(btn).toBeDisabled();
 
-    await act(async () => { d.reject(new Error("save failed")); });
+    await act(async () => {
+      d.reject(new Error("save failed"));
+    });
     await waitFor(() => expect(btn).not.toBeDisabled());
   });
 });

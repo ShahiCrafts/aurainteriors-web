@@ -73,14 +73,14 @@ function renderUsers(client) {
   return render(
     <QueryClientProvider client={client}>
       <Users />
-    </QueryClientProvider>
+    </QueryClientProvider>,
   );
 }
 
 async function openResetModal() {
   fireEvent.click(await screen.findByTitle("Reset Password"));
   expect(
-    await screen.findByPlaceholderText(/at least 8 characters/i)
+    await screen.findByPlaceholderText(/at least 8 characters/i),
   ).toBeInTheDocument();
 }
 
@@ -128,7 +128,7 @@ describe("FE-09: admin password reset form", () => {
     clickResetSubmit();
     expect(userApi.resetPassword).not.toHaveBeenCalled();
     expect(toastMock.error).toHaveBeenCalledWith(
-      expect.stringMatching(/do not match/i)
+      expect.stringMatching(/do not match/i),
     );
   });
 
@@ -142,8 +142,8 @@ describe("FE-09: admin password reset form", () => {
     expect(userApi.resetPassword).toHaveBeenCalledWith("u1", PASSWORD);
     await waitFor(() =>
       expect(toastMock.success).toHaveBeenCalledWith(
-        expect.stringMatching(/password updated/i)
-      )
+        expect.stringMatching(/password updated/i),
+      ),
     );
     // Pen-test: scan every retained mutation state for the password.
     const states = client

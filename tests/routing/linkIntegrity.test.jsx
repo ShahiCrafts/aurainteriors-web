@@ -25,8 +25,12 @@ vi.mock("../../src/api/index.js", () => ({
   default: {
     get: vi.fn(() => Promise.reject(new Error("mocked: no network in tests"))),
     post: vi.fn(() => Promise.reject(new Error("mocked: no network in tests"))),
-    patch: vi.fn(() => Promise.reject(new Error("mocked: no network in tests"))),
-    delete: vi.fn(() => Promise.reject(new Error("mocked: no network in tests"))),
+    patch: vi.fn(() =>
+      Promise.reject(new Error("mocked: no network in tests")),
+    ),
+    delete: vi.fn(() =>
+      Promise.reject(new Error("mocked: no network in tests")),
+    ),
   },
 }));
 
@@ -89,7 +93,11 @@ function readSrc(rel) {
 function patternToRegex(pattern) {
   const escaped = pattern
     .split("/")
-    .map((seg) => (seg.startsWith(":") ? "[^/]+" : seg.replace(/[.*+?^${}()|[\]\\]/g, "\\$&")))
+    .map((seg) =>
+      seg.startsWith(":")
+        ? "[^/]+"
+        : seg.replace(/[.*+?^${}()|[\]\\]/g, "\\$&"),
+    )
     .join("/");
   return new RegExp(`^${escaped}/?$`);
 }
@@ -123,7 +131,7 @@ function internalHrefs(container) {
 function deadTargets(patterns, targets) {
   // Internal targets start with "/"; "#" is a placeholder dead end.
   return targets.filter(
-    (t) => (t.startsWith("/") || t === "#") && !matchesAny(patterns, t)
+    (t) => (t.startsWith("/") || t === "#") && !matchesAny(patterns, t),
   );
 }
 
@@ -153,7 +161,7 @@ function probeGuard(Guard, auth) {
         />
         <Route path="*" element={<div>AT-CATCHALL</div>} />
       </Routes>
-    </MemoryRouter>
+    </MemoryRouter>,
   );
   const redirected = !screen.queryByText("CHILD-SENTINEL");
   const target = redirected
@@ -190,7 +198,7 @@ describe("FE-16 link integrity — Footer (customer app)", () => {
     const { container } = render(
       <MemoryRouter>
         <Footer />
-      </MemoryRouter>
+      </MemoryRouter>,
     );
     const hrefs = internalHrefs(container);
     expect(hrefs.length).toBeGreaterThan(0);
@@ -201,7 +209,7 @@ describe("FE-16 link integrity — Footer (customer app)", () => {
     const { container } = render(
       <MemoryRouter>
         <Footer />
-      </MemoryRouter>
+      </MemoryRouter>,
     );
     expect(internalHrefs(container)).not.toContain("#");
   });
@@ -214,7 +222,7 @@ describe("FE-16 link integrity — MobileMenu (customer app)", () => {
     const { container } = render(
       <MemoryRouter>
         <MobileMenu isOpen onClose={() => {}} />
-      </MemoryRouter>
+      </MemoryRouter>,
     );
     const hrefs = internalHrefs(container);
     // All Categories + one link per mocked category.
@@ -275,13 +283,15 @@ describe("FE-16 link integrity — AuthRequiredModal opens the global AuthModal"
       <MemoryRouter initialEntries={["/track-order"]}>
         <LocationProbe />
         <AuthRequiredModal isOpen onClose={onClose} message="Login required" />
-      </MemoryRouter>
+      </MemoryRouter>,
     );
     fireEvent.click(screen.getByRole("button", { name: /sign in/i }));
     expect(onClose).toHaveBeenCalled();
     expect(useAuthStore.getState().isAuthModalOpen).toBe(true);
     expect(useAuthStore.getState().authModalView).toBe("email");
-    expect(screen.getByTestId("location-probe").textContent).toBe("/track-order");
+    expect(screen.getByTestId("location-probe").textContent).toBe(
+      "/track-order",
+    );
   });
 
   it("Sign Up opens the AuthModal (email view) without changing location", () => {
@@ -290,13 +300,15 @@ describe("FE-16 link integrity — AuthRequiredModal opens the global AuthModal"
       <MemoryRouter initialEntries={["/track-order"]}>
         <LocationProbe />
         <AuthRequiredModal isOpen onClose={onClose} message="Login required" />
-      </MemoryRouter>
+      </MemoryRouter>,
     );
     fireEvent.click(screen.getByRole("button", { name: /sign up/i }));
     expect(onClose).toHaveBeenCalled();
     expect(useAuthStore.getState().isAuthModalOpen).toBe(true);
     expect(useAuthStore.getState().authModalView).toBe("email");
-    expect(screen.getByTestId("location-probe").textContent).toBe("/track-order");
+    expect(screen.getByTestId("location-probe").textContent).toBe(
+      "/track-order",
+    );
   });
 });
 
@@ -318,7 +330,7 @@ describe("FE-16 link integrity — admin-app components", () => {
     const { container } = render(
       <MemoryRouter>
         <QuickActions />
-      </MemoryRouter>
+      </MemoryRouter>,
     );
     const hrefs = internalHrefs(container);
     expect(hrefs.length).toBeGreaterThan(0);
@@ -332,7 +344,7 @@ describe("FE-16 link integrity — admin-app components", () => {
         loading={false}
         unreadCount={0}
         onNotificationClick={() => {}}
-      />
+      />,
     );
     const hrefs = internalHrefs(container);
     expect(deadTargets(ADMIN_PATTERNS, hrefs)).toEqual([]);
@@ -348,7 +360,7 @@ describe("FE-16 link integrity — forbidden customer targets", () => {
     const footer = render(
       <MemoryRouter>
         <Footer />
-      </MemoryRouter>
+      </MemoryRouter>,
     );
     collected.push(...internalHrefs(footer.container));
     footer.unmount();
@@ -356,7 +368,7 @@ describe("FE-16 link integrity — forbidden customer targets", () => {
     const menu = render(
       <MemoryRouter>
         <MobileMenu isOpen onClose={() => {}} />
-      </MemoryRouter>
+      </MemoryRouter>,
     );
     collected.push(...internalHrefs(menu.container));
     menu.unmount();
@@ -370,7 +382,10 @@ describe("FE-16 link integrity — forbidden customer targets", () => {
 
     for (const forbidden of ["/admin", "/products", "/login", "/signup"]) {
       const hit = collected.find(
-        (t) => t === forbidden || t.startsWith(`${forbidden}?`) || t.startsWith(`${forbidden}/`)
+        (t) =>
+          t === forbidden ||
+          t.startsWith(`${forbidden}?`) ||
+          t.startsWith(`${forbidden}/`),
       );
       expect(hit, `forbidden target ${forbidden} was emitted`).toBeUndefined();
     }

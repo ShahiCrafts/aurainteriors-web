@@ -17,16 +17,22 @@ describe("QuantitySelector", () => {
   it("disables decrement at min and clamps at max (stock cap)", () => {
     const onChange = vi.fn();
     render(<QuantitySelector value={1} min={1} max={4} onChange={onChange} />);
-    expect(screen.getByRole("button", { name: "Decrease quantity" })).toBeDisabled();
+    expect(
+      screen.getByRole("button", { name: "Decrease quantity" }),
+    ).toBeDisabled();
 
-    fireEvent.change(screen.getByLabelText("Quantity"), { target: { value: "99" } });
+    fireEvent.change(screen.getByLabelText("Quantity"), {
+      target: { value: "99" },
+    });
     fireEvent.blur(screen.getByLabelText("Quantity"));
     expect(onChange).toHaveBeenCalledWith(4);
   });
 
   it("disables increment at max", () => {
     render(<QuantitySelector value={4} max={4} onChange={vi.fn()} />);
-    expect(screen.getByRole("button", { name: "Increase quantity" })).toBeDisabled();
+    expect(
+      screen.getByRole("button", { name: "Increase quantity" }),
+    ).toBeDisabled();
   });
 
   it("commits a typed value on Enter and ignores an emptied draft", () => {
@@ -45,8 +51,12 @@ describe("QuantitySelector", () => {
 
   it("disabled disables both steppers and the input", () => {
     render(<QuantitySelector value={2} onChange={vi.fn()} disabled />);
-    expect(screen.getByRole("button", { name: "Increase quantity" })).toBeDisabled();
-    expect(screen.getByRole("button", { name: "Decrease quantity" })).toBeDisabled();
+    expect(
+      screen.getByRole("button", { name: "Increase quantity" }),
+    ).toBeDisabled();
+    expect(
+      screen.getByRole("button", { name: "Decrease quantity" }),
+    ).toBeDisabled();
     expect(screen.getByLabelText("Quantity")).toBeDisabled();
   });
 });

@@ -60,11 +60,11 @@ export default function VariantEditor({ product }) {
   const { data: definitionsData } = useAttributeDefinitions();
   const definitions = useMemo(
     () => definitionsData?.data?.attributeDefinitions || [],
-    [definitionsData]
+    [definitionsData],
   );
   const definitionByKey = useMemo(
     () => new Map(definitions.map((d) => [d.key, d])),
-    [definitions]
+    [definitions],
   );
 
   const { data: variantsData, isLoading } = useProductVariants(product?._id);
@@ -91,9 +91,9 @@ export default function VariantEditor({ product }) {
         (d) =>
           (d.storage || "catalogAttributes") === "catalogAttributes" &&
           d.active !== false &&
-          isVariantOptionType(d.type)
+          isVariantOptionType(d.type),
       ),
-    [definitions]
+    [definitions],
   );
 
   const productImageUrls = useMemo(
@@ -101,14 +101,14 @@ export default function VariantEditor({ product }) {
       (product?.images || [])
         .map((img) => (typeof img === "string" ? img : img?.url))
         .filter(Boolean),
-    [product]
+    [product],
   );
 
   const set = (patch) => setForm((prev) => ({ ...prev, ...patch }));
 
   const toggleOptionKey = (key, checked) => {
     setOptionKeysDraft(
-      checked ? [...optionKeys, key] : optionKeys.filter((k) => k !== key)
+      checked ? [...optionKeys, key] : optionKeys.filter((k) => k !== key),
     );
   };
 
@@ -139,7 +139,7 @@ export default function VariantEditor({ product }) {
       const definition = definitionByKey.get(key);
       options[key] = definition
         ? optionValueFromStored(definition, variant.options?.[key])
-        : variant.options?.[key] ?? "";
+        : (variant.options?.[key] ?? "");
     }
     setEditingVariant(variant);
     setForm({
@@ -167,10 +167,16 @@ export default function VariantEditor({ product }) {
     e.preventDefault();
     const options = {};
     for (const key of optionKeys) {
-      const definition = definitionByKey.get(key) || { key, label: key, type: "string" };
+      const definition = definitionByKey.get(key) || {
+        key,
+        label: key,
+        type: "string",
+      };
       const raw = form.options[key];
       if (isEmptyAttributeValue(definition, raw)) {
-        setFormError(`Option "${definition.label}" is required for every variant.`);
+        setFormError(
+          `Option "${definition.label}" is required for every variant.`,
+        );
         return;
       }
       const result = validateAttributeValue(definition, raw);
@@ -180,7 +186,11 @@ export default function VariantEditor({ product }) {
       }
       options[key] = result.value;
     }
-    if (form.price === "" || Number.isNaN(Number(form.price)) || Number(form.price) < 0) {
+    if (
+      form.price === "" ||
+      Number.isNaN(Number(form.price)) ||
+      Number(form.price) < 0
+    ) {
       setFormError("Variant price must be a number of 0 or more.");
       return;
     }
@@ -191,10 +201,14 @@ export default function VariantEditor({ product }) {
       images: form.images,
     };
     if (!editingVariant) payload.sku = form.sku.trim();
-    if (form.compareAtPrice !== "") payload.compareAtPrice = Number(form.compareAtPrice);
+    if (form.compareAtPrice !== "")
+      payload.compareAtPrice = Number(form.compareAtPrice);
     if (form.stock !== "") payload.stock = Number(form.stock);
     if (form.weightValue !== "") {
-      payload.weight = { value: Number(form.weightValue), unit: form.weightUnit };
+      payload.weight = {
+        value: Number(form.weightValue),
+        unit: form.weightUnit,
+      };
     }
     if (form.dimWidth !== "" || form.dimHeight !== "" || form.dimDepth !== "") {
       payload.dimensions = {
@@ -216,7 +230,10 @@ export default function VariantEditor({ product }) {
         });
         toast.success("Variant updated");
       } else {
-        await createVariant.mutateAsync({ productId: product._id, data: payload });
+        await createVariant.mutateAsync({
+          productId: product._id,
+          data: payload,
+        });
         toast.success("Variant added");
       }
       setFormOpen(false);
@@ -244,14 +261,18 @@ export default function VariantEditor({ product }) {
 
   const optionSummary = (variant) =>
     Object.entries(variant.options || {})
-      .map(([key, value]) => `${definitionByKey.get(key)?.label || key}: ${value}`)
+      .map(
+        ([key, value]) => `${definitionByKey.get(key)?.label || key}: ${value}`,
+      )
       .join(" · ");
 
   return (
     <div className="space-y-5">
       {/* Option axes */}
       <div>
-        <h3 className="text-sm font-semibold text-gray-900 mb-1">Variant options</h3>
+        <h3 className="text-sm font-semibold text-gray-900 mb-1">
+          Variant options
+        </h3>
         {axesLocked ? (
           <div className="flex items-start gap-2 text-sm text-gray-600 bg-gray-50 border border-gray-100 rounded-lg px-3 py-2.5">
             <Lock className="w-4 h-4 mt-0.5 shrink-0 text-gray-400" />
@@ -262,14 +283,15 @@ export default function VariantEditor({ product }) {
                     .map((key) => definitionByKey.get(key)?.label || key)
                     .join(", ")
                 : "none"}
-              ). Delete all variants to change them — the server rejects the change otherwise.
+              ). Delete all variants to change them — the server rejects the
+              change otherwise.
             </p>
           </div>
         ) : (
           <>
             <p className="text-xs text-gray-400 mb-2">
-              Choose the attributes this product varies by. Only scalar types (text, list,
-              yes/no, number, money, color) can be variant options.
+              Choose the attributes this product varies by. Only scalar types
+              (text, list, yes/no, number, money, color) can be variant options.
             </p>
             <div className="flex flex-wrap gap-x-4 gap-y-2">
               {axisDefinitions.map((definition) => (
@@ -280,14 +302,18 @@ export default function VariantEditor({ product }) {
                   <input
                     type="checkbox"
                     checked={optionKeys.includes(definition.key)}
-                    onChange={(e) => toggleOptionKey(definition.key, e.target.checked)}
+                    onChange={(e) =>
+                      toggleOptionKey(definition.key, e.target.checked)
+                    }
                     className="w-4 h-4 rounded border-gray-300 text-[#025E5D] focus:ring-[#025E5D]"
                   />
                   {definition.label}
                 </label>
               ))}
               {axisDefinitions.length === 0 && (
-                <p className="text-xs text-gray-400">No scalar attribute definitions exist yet.</p>
+                <p className="text-xs text-gray-400">
+                  No scalar attribute definitions exist yet.
+                </p>
               )}
             </div>
             {optionKeysDraft !== null && (
@@ -326,7 +352,9 @@ export default function VariantEditor({ product }) {
         )}
         {isLoading ? (
           <div className="space-y-2 py-4" aria-busy="true">
-            <span role="status" className="sr-only">Loading variants…</span>
+            <span role="status" className="sr-only">
+              Loading variants…
+            </span>
             <Skeleton className="h-10 w-full rounded-lg" />
             <Skeleton className="h-10 w-full rounded-lg" />
             <Skeleton className="h-10 w-full rounded-lg" />
@@ -351,8 +379,12 @@ export default function VariantEditor({ product }) {
               <tbody className="divide-y divide-gray-50">
                 {variants.map((variant) => (
                   <tr key={variant._id}>
-                    <td className="px-3 py-2 font-mono text-xs text-gray-700">{variant.sku}</td>
-                    <td className="px-3 py-2 text-gray-600">{optionSummary(variant)}</td>
+                    <td className="px-3 py-2 font-mono text-xs text-gray-700">
+                      {variant.sku}
+                    </td>
+                    <td className="px-3 py-2 text-gray-600">
+                      {optionSummary(variant)}
+                    </td>
                     <td className="px-3 py-2 text-gray-700">
                       {variant.price}
                       {variant.compareAtPrice ? (
@@ -361,7 +393,9 @@ export default function VariantEditor({ product }) {
                         </span>
                       ) : null}
                     </td>
-                    <td className="px-3 py-2 text-gray-700">{variant.stock ?? 0}</td>
+                    <td className="px-3 py-2 text-gray-700">
+                      {variant.stock ?? 0}
+                    </td>
                     <td className="px-3 py-2">
                       <span
                         className={`inline-flex px-2 py-0.5 rounded-full text-[11px] font-semibold ${
@@ -421,7 +455,11 @@ export default function VariantEditor({ product }) {
               <Dialog
                 open
                 onClose={() => setFormOpen(false)}
-                label={editingVariant ? `Edit variant ${editingVariant.sku}` : "Add variant"}
+                label={
+                  editingVariant
+                    ? `Edit variant ${editingVariant.sku}`
+                    : "Add variant"
+                }
                 className="bg-white rounded-2xl w-full max-h-[90vh] overflow-y-auto relative"
               >
                 <div className="flex items-center justify-between p-5 border-b border-gray-100">
@@ -502,7 +540,9 @@ export default function VariantEditor({ product }) {
                         type="number"
                         min="0"
                         value={form.compareAtPrice}
-                        onChange={(e) => set({ compareAtPrice: e.target.value })}
+                        onChange={(e) =>
+                          set({ compareAtPrice: e.target.value })
+                        }
                         className={inputClass}
                       />
                     </div>
@@ -556,7 +596,9 @@ export default function VariantEditor({ product }) {
                               }
                               className="w-4 h-4 rounded border-gray-300 text-[#025E5D] focus:ring-[#025E5D]"
                             />
-                            <span className="truncate max-w-[220px]">{url}</span>
+                            <span className="truncate max-w-[220px]">
+                              {url}
+                            </span>
                           </label>
                         ))}
                       </div>
@@ -575,7 +617,10 @@ export default function VariantEditor({ product }) {
                         onClick={() => {
                           const url = form.imageDraft.trim();
                           if (url && !form.images.includes(url)) {
-                            set({ images: [...form.images, url], imageDraft: "" });
+                            set({
+                              images: [...form.images, url],
+                              imageDraft: "",
+                            });
                           }
                         }}
                         className="px-3 h-10 bg-gray-100 hover:bg-gray-200 text-gray-700 rounded-lg text-sm font-medium shrink-0"
@@ -595,7 +640,9 @@ export default function VariantEditor({ product }) {
                               type="button"
                               aria-label={`Remove image ${url}`}
                               onClick={() =>
-                                set({ images: form.images.filter((i) => i !== url) })
+                                set({
+                                  images: form.images.filter((i) => i !== url),
+                                })
                               }
                               className="text-gray-400 hover:text-red-500 shrink-0"
                             >
@@ -712,7 +759,9 @@ export default function VariantEditor({ product }) {
                     </button>
                     <button
                       type="submit"
-                      disabled={createVariant.isPending || updateVariant.isPending}
+                      disabled={
+                        createVariant.isPending || updateVariant.isPending
+                      }
                       className="flex-1 px-4 py-2 bg-teal-600 text-white rounded-lg font-medium hover:bg-teal-700 transition-colors disabled:opacity-50 text-sm"
                     >
                       {editingVariant ? "Save Variant" : "Add Variant"}

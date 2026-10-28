@@ -13,7 +13,12 @@ function Shell({ onClose = vi.fn() }) {
   return (
     <div>
       <button type="button">Trigger</button>
-      <button type="button" aria-label="Backdrop" data-testid="backdrop" onClick={onClose} />
+      <button
+        type="button"
+        aria-label="Backdrop"
+        data-testid="backdrop"
+        onClick={onClose}
+      />
       <Dialog open onClose={onClose} label="Example dialog">
         <button type="button">First action</button>
         <button type="button">Second action</button>
@@ -38,10 +43,10 @@ describe("ui/Dialog (Phase 6)", () => {
       <Dialog open onClose={vi.fn()} labelledBy="dlg-title">
         <h2 id="dlg-title">Delete address?</h2>
         <button type="button">Cancel</button>
-      </Dialog>
+      </Dialog>,
     );
     expect(
-      screen.getByRole("dialog", { name: "Delete address?" })
+      screen.getByRole("dialog", { name: "Delete address?" }),
     ).toBeInTheDocument();
   });
 
@@ -49,7 +54,7 @@ describe("ui/Dialog (Phase 6)", () => {
     render(
       <Dialog open={false} onClose={vi.fn()} label="Hidden">
         <button type="button">Nope</button>
-      </Dialog>
+      </Dialog>,
     );
     expect(screen.queryByRole("dialog")).not.toBeInTheDocument();
   });

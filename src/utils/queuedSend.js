@@ -64,7 +64,7 @@ const COMPLETION_SUCCESS = {
     if (sent !== null) {
       return withFailedSuffix(
         `Promotion sent to ${sent} recipients`,
-        finiteCount(progress.failed)
+        finiteCount(progress.failed),
       );
     }
     return "Promotion sent successfully";
@@ -76,7 +76,7 @@ const COMPLETION_SUCCESS = {
     if (sent !== null) {
       return withFailedSuffix(
         `Email sent successfully to ${sent} subscribers`,
-        finiteCount(progress.failed)
+        finiteCount(progress.failed),
       );
     }
     return "Trend emails sent successfully";
@@ -105,7 +105,10 @@ const DEAD_LABEL = {
  *                         pollOptions?: object }
  * @returns {Promise<{queued:boolean, tracked?:boolean, job?:object, error?:Error}>}
  */
-export async function reportSendOutcome(body, { kind, toast, pollJob, pollOptions = {} } = {}) {
+export async function reportSendOutcome(
+  body,
+  { kind, toast, pollJob, pollOptions = {} } = {},
+) {
   const poll = pollJob || defaultPollJob;
 
   if (!isQueuedResponse(body)) {
@@ -119,7 +122,7 @@ export async function reportSendOutcome(body, { kind, toast, pollJob, pollOption
     // Pen-test guard: a queued body without a jobId cannot be tracked.
     // Claiming success here would be a lie; polling nothing would hang.
     toast.error(
-      `The ${KIND_NOUN[kind]} send was queued, but the server returned no job reference, so delivery could not be confirmed. It has not been verified as sent.`
+      `The ${KIND_NOUN[kind]} send was queued, but the server returned no job reference, so delivery could not be confirmed. It has not been verified as sent.`,
     );
     return { queued: true, tracked: false };
   }
@@ -137,11 +140,11 @@ export async function reportSendOutcome(body, { kind, toast, pollJob, pollOption
       toast.error(
         lastError
           ? `${DEAD_LABEL[kind]}: ${lastError}`
-          : `${DEAD_LABEL[kind]}: ${error?.message || "the background job failed"}`
+          : `${DEAD_LABEL[kind]}: ${error?.message || "the background job failed"}`,
       );
     } else {
       toast.error(
-        `Could not confirm ${KIND_NOUN[kind]} delivery: ${error?.message || "job status unknown"}. The send was queued, but its final status is unknown.`
+        `Could not confirm ${KIND_NOUN[kind]} delivery: ${error?.message || "job status unknown"}. The send was queued, but its final status is unknown.`,
       );
     }
     return { queued: true, tracked: true, error };

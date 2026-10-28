@@ -1,6 +1,14 @@
 import { useEffect, useMemo, useRef, useState } from "react";
 import { useDialogBehaviour } from "../common/useDialogBehaviour";
-import { Truck, Check, MapPin, Home, Building2, Users, Edit3 } from "lucide-react";
+import {
+  Truck,
+  Check,
+  MapPin,
+  Home,
+  Building2,
+  Users,
+  Edit3,
+} from "lucide-react";
 import useCheckoutStore from "../../store/checkoutStore";
 import { useShallow } from "zustand/react/shallow";
 import useAuthStore from "../../store/authStore";
@@ -41,7 +49,8 @@ function AddressSkeletonCard() {
 }
 
 export default function ShippingStep() {
-  const { shippingMethod,
+  const {
+    shippingMethod,
     setShippingMethod,
     shippingAddress,
     shippingAddressId,
@@ -49,8 +58,23 @@ export default function ShippingStep() {
     setShippingAddressId,
     currentStep,
     guestInfo,
-    setGuestInfo, } = useCheckoutStore(useShallow((state) => ({ shippingMethod: state.shippingMethod, setShippingMethod: state.setShippingMethod, shippingAddress: state.shippingAddress, shippingAddressId: state.shippingAddressId, setShippingAddress: state.setShippingAddress, setShippingAddressId: state.setShippingAddressId, currentStep: state.currentStep, guestInfo: state.guestInfo, setGuestInfo: state.setGuestInfo })));
-  const { isAuthenticated } = useAuthStore(useShallow((state) => ({ isAuthenticated: state.isAuthenticated })));
+    setGuestInfo,
+  } = useCheckoutStore(
+    useShallow((state) => ({
+      shippingMethod: state.shippingMethod,
+      setShippingMethod: state.setShippingMethod,
+      shippingAddress: state.shippingAddress,
+      shippingAddressId: state.shippingAddressId,
+      setShippingAddress: state.setShippingAddress,
+      setShippingAddressId: state.setShippingAddressId,
+      currentStep: state.currentStep,
+      guestInfo: state.guestInfo,
+      setGuestInfo: state.setGuestInfo,
+    })),
+  );
+  const { isAuthenticated } = useAuthStore(
+    useShallow((state) => ({ isAuthenticated: state.isAuthenticated })),
+  );
   const {
     data: addresses = [],
     isLoading: isAddressesLoading,
@@ -59,7 +83,11 @@ export default function ShippingStep() {
   const [isAddressDrawerOpen, setIsAddressDrawerOpen] = useState(false);
   // FE-64: address drawer uses the shared dialog behaviour hook.
   const addressDrawerRef = useRef(null);
-  useDialogBehaviour({ open: isAddressDrawerOpen, onClose: () => handleCancelDrawer(), containerRef: addressDrawerRef });
+  useDialogBehaviour({
+    open: isAddressDrawerOpen,
+    onClose: () => handleCancelDrawer(),
+    containerRef: addressDrawerRef,
+  });
   const [isAddAddressModalOpen, setIsAddAddressModalOpen] = useState(false);
   const [drawerSelectedAddressId, setDrawerSelectedAddressId] = useState(null);
   const [drawerOriginalAddressId, setDrawerOriginalAddressId] = useState(null);
@@ -89,11 +117,23 @@ export default function ShippingStep() {
 
   // Sync shippingAddress store state with default address on first fetch
   useEffect(() => {
-    if (isAuthenticated && selectedAddress && (shippingAddressId !== selectedAddress._id || shippingAddress !== selectedAddress)) {
+    if (
+      isAuthenticated &&
+      selectedAddress &&
+      (shippingAddressId !== selectedAddress._id ||
+        shippingAddress !== selectedAddress)
+    ) {
       setShippingAddressId(selectedAddress._id);
       setShippingAddress(selectedAddress);
     }
-  }, [isAuthenticated, selectedAddress, shippingAddress, shippingAddressId, setShippingAddressId, setShippingAddress]);
+  }, [
+    isAuthenticated,
+    selectedAddress,
+    shippingAddress,
+    shippingAddressId,
+    setShippingAddressId,
+    setShippingAddress,
+  ]);
 
   const addressLabelIcons = {
     home: Home,
@@ -105,8 +145,12 @@ export default function ShippingStep() {
   useEffect(() => {
     if (!isAddressDrawerOpen) return;
 
-    setDrawerOriginalAddressId(shippingAddressId || selectedAddress?._id || null);
-    setDrawerSelectedAddressId(shippingAddressId || selectedAddress?._id || null);
+    setDrawerOriginalAddressId(
+      shippingAddressId || selectedAddress?._id || null,
+    );
+    setDrawerSelectedAddressId(
+      shippingAddressId || selectedAddress?._id || null,
+    );
   }, [isAddressDrawerOpen, selectedAddress, shippingAddressId]);
 
   const handleSelectAddress = (address) => {
@@ -202,7 +246,8 @@ export default function ShippingStep() {
                       {selectedAddress.fullName}
                     </p>
                     <span className="px-3 py-1 rounded-full bg-[#F27318] text-white text-[10px] font-black uppercase tracking-wider">
-                      {selectedAddress.label === "other" && selectedAddress.customLabel
+                      {selectedAddress.label === "other" &&
+                      selectedAddress.customLabel
                         ? selectedAddress.customLabel
                         : selectedAddress.label}
                     </span>
@@ -212,7 +257,11 @@ export default function ShippingStep() {
                   {currentStep === 1 && (
                     <button
                       type="button"
-                      onClick={isAuthenticated ? handleOpenDrawer : () => setIsAddAddressModalOpen(true)}
+                      onClick={
+                        isAuthenticated
+                          ? handleOpenDrawer
+                          : () => setIsAddAddressModalOpen(true)
+                      }
                       className="text-[13px] font-semibold text-[#F27318] hover:text-[#D9620E] transition-colors flex items-center gap-1.5"
                     >
                       <Edit3 size={14} />
@@ -227,11 +276,17 @@ export default function ShippingStep() {
 
                 <p className="mt-3 text-[15px] leading-relaxed text-neutral-600 max-w-4xl font-dm-sans">
                   {selectedAddress.addressLine1}
-                  {selectedAddress.addressLine2 ? `, ${selectedAddress.addressLine2}` : ""}
+                  {selectedAddress.addressLine2
+                    ? `, ${selectedAddress.addressLine2}`
+                    : ""}
                   {selectedAddress.city ? `, ${selectedAddress.city}` : ""}
                   {selectedAddress.state ? `, ${selectedAddress.state}` : ""}
-                  {selectedAddress.postalCode ? ` ${selectedAddress.postalCode}` : ""}
-                  {selectedAddress.country ? `, ${selectedAddress.country}` : ""}
+                  {selectedAddress.postalCode
+                    ? ` ${selectedAddress.postalCode}`
+                    : ""}
+                  {selectedAddress.country
+                    ? `, ${selectedAddress.country}`
+                    : ""}
                 </p>
               </div>
             </div>
@@ -244,7 +299,9 @@ export default function ShippingStep() {
           <div className="w-12 h-12 rounded-full bg-[#FFF8F2] text-[#F27318] flex items-center justify-center mx-auto mb-3">
             <MapPin size={20} />
           </div>
-          <p className="text-[16px] font-semibold text-[#1A1714]">No saved address yet</p>
+          <p className="text-[16px] font-semibold text-[#1A1714]">
+            No saved address yet
+          </p>
           <p className="text-[14px] text-neutral-500 mt-1 mb-4">
             Add a shipping address to continue with checkout.
           </p>
@@ -263,42 +320,56 @@ export default function ShippingStep() {
         <h3 className="text-[20px] font-semibold text-[#1A1714] font-dm-sans">
           {currentStep === 1 ? "Delivery Preference" : "Payment Options"}
         </h3>
-        
+
         {currentStep === 1 ? (
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-            {deliveryOptions.map(({ id, icon: Icon, title, subtitle, price }) => {
-              const selected = shippingMethod === id;
-              return (
-                <button
-                  key={id}
-                  type="button"
-                  onClick={() => setShippingMethod(id)}
-                  className={`relative flex items-center gap-4 p-5 rounded-xl border transition-all duration-300 text-left ${
-                    selected
-                      ? "border-[#F27318] bg-[#FFF8F2] ring-1 ring-[#F27318]/20"
-                      : "border-neutral-200 bg-white hover:border-neutral-300"
-                  }`}
-                >
-                  <div
-                    className={`w-11 h-11 rounded-full flex items-center justify-center shrink-0 transition-colors ${
-                      selected ? "bg-[#F27318] text-white" : "bg-neutral-100 text-neutral-400"
+            {deliveryOptions.map(
+              ({ id, icon: Icon, title, subtitle, price }) => {
+                const selected = shippingMethod === id;
+                return (
+                  <button
+                    key={id}
+                    type="button"
+                    onClick={() => setShippingMethod(id)}
+                    className={`relative flex items-center gap-4 p-5 rounded-xl border transition-all duration-300 text-left ${
+                      selected
+                        ? "border-[#F27318] bg-[#FFF8F2] ring-1 ring-[#F27318]/20"
+                        : "border-neutral-200 bg-white hover:border-neutral-300"
                     }`}
                   >
-                    <Icon size={18} />
-                  </div>
-                  <div className="flex-1 min-w-0">
-                    <p className="text-[16px] font-semibold text-[#1A1714]">{title}</p>
-                    <p className="text-[14px] text-neutral-400 font-medium mt-0.5">{subtitle}</p>
-                  </div>
-                  <p className="text-[14px] font-bold text-[#F27318] shrink-0">{price}</p>
-                  {selected && (
-                    <div className="absolute -top-2 -right-2 w-5 h-5 rounded-full bg-[#F27318] flex items-center justify-center shadow-sm">
-                      <Check size={11} className="text-white" strokeWidth={4} />
+                    <div
+                      className={`w-11 h-11 rounded-full flex items-center justify-center shrink-0 transition-colors ${
+                        selected
+                          ? "bg-[#F27318] text-white"
+                          : "bg-neutral-100 text-neutral-400"
+                      }`}
+                    >
+                      <Icon size={18} />
                     </div>
-                  )}
-                </button>
-              );
-            })}
+                    <div className="flex-1 min-w-0">
+                      <p className="text-[16px] font-semibold text-[#1A1714]">
+                        {title}
+                      </p>
+                      <p className="text-[14px] text-neutral-400 font-medium mt-0.5">
+                        {subtitle}
+                      </p>
+                    </div>
+                    <p className="text-[14px] font-bold text-[#F27318] shrink-0">
+                      {price}
+                    </p>
+                    {selected && (
+                      <div className="absolute -top-2 -right-2 w-5 h-5 rounded-full bg-[#F27318] flex items-center justify-center shadow-sm">
+                        <Check
+                          size={11}
+                          className="text-white"
+                          strokeWidth={4}
+                        />
+                      </div>
+                    )}
+                  </button>
+                );
+              },
+            )}
           </div>
         ) : (
           <PaymentStep />
@@ -378,8 +449,7 @@ export default function ShippingStep() {
                         <div className="flex items-center justify-between gap-3">
                           <div className="min-w-0">
                             <p className="text-[16px] font-semibold text-[#1A1714] truncate capitalize">
-                              {address.label === "other" &&
-                              address.customLabel
+                              {address.label === "other" && address.customLabel
                                 ? address.customLabel
                                 : address.label}
                             </p>

@@ -16,7 +16,11 @@ const formatShortDate = (date) => {
   return formatDate(date, { month: "short", day: "numeric" });
 };
 
-export default function OrderTrackingTimeline({ status, dates = {}, compact = false }) {
+export default function OrderTrackingTimeline({
+  status,
+  dates = {},
+  compact = false,
+}) {
   const currentIdx = STEPS.indexOf(status);
   const isCancelled = status === "cancelled";
 
@@ -55,7 +59,10 @@ export default function OrderTrackingTimeline({ status, dates = {}, compact = fa
           const isReached = isActive || isPast;
 
           return (
-            <div key={stepId} className="flex flex-col items-center flex-1 relative z-10">
+            <div
+              key={stepId}
+              className="flex flex-col items-center flex-1 relative z-10"
+            >
               <div
                 className={`w-9 h-9 rounded-full flex items-center justify-center border-1 transition-all duration-500 ${
                   isActive
@@ -69,7 +76,11 @@ export default function OrderTrackingTimeline({ status, dates = {}, compact = fa
               </div>
               <span
                 className={`text-[12px] font-semibold uppercase tracking-wide mt-2 text-center ${
-                  isActive ? "text-[#F27318]" : isPast ? "text-neutral-900" : "text-neutral-400"
+                  isActive
+                    ? "text-[#F27318]"
+                    : isPast
+                      ? "text-neutral-900"
+                      : "text-neutral-400"
                 }`}
               >
                 {step.label}

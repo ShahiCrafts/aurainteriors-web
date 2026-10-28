@@ -1,6 +1,12 @@
 export const MAX_ATTACHMENTS = 3;
 export const MAX_ATTACHMENT_BYTES = 10 * 1024 * 1024;
-export const ATTACHMENT_MIME_TYPES = ["image/jpeg", "image/png", "image/webp", "image/gif", "application/pdf"];
+export const ATTACHMENT_MIME_TYPES = [
+  "image/jpeg",
+  "image/png",
+  "image/webp",
+  "image/gif",
+  "application/pdf",
+];
 
 const COUNT_ERROR = "Attach at most 3 files per message";
 const TYPE_ERROR = "Choose JPEG, PNG, WebP, GIF or PDF files";
@@ -32,15 +38,18 @@ const MAGIC_SIGNATURES = [
   { type: "image/jpeg", test: (b) => startsWith(b, [0xff, 0xd8, 0xff]) },
   {
     type: "image/png",
-    test: (b) => startsWith(b, [0x89, 0x50, 0x4e, 0x47, 0x0d, 0x0a, 0x1a, 0x0a]),
+    test: (b) =>
+      startsWith(b, [0x89, 0x50, 0x4e, 0x47, 0x0d, 0x0a, 0x1a, 0x0a]),
   },
   {
     type: "image/gif",
-    test: (b) => startsWith(b, ascii("GIF87a")) || startsWith(b, ascii("GIF89a")),
+    test: (b) =>
+      startsWith(b, ascii("GIF87a")) || startsWith(b, ascii("GIF89a")),
   },
   {
     type: "image/webp",
-    test: (b) => startsWith(b, ascii("RIFF")) && startsWith(b, ascii("WEBP"), 8),
+    test: (b) =>
+      startsWith(b, ascii("RIFF")) && startsWith(b, ascii("WEBP"), 8),
   },
   { type: "application/pdf", test: (b) => startsWith(b, ascii("%PDF-")) },
 ];

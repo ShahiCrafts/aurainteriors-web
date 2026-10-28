@@ -33,10 +33,18 @@ describe("BrandMarquee (FE-06)", () => {
   it("covers all five brands (logo img or wordmark) in the marquee", () => {
     const { container } = render(<BrandMarquee />);
     const alts = new Set(
-      [...container.querySelectorAll("img")].map((img) => img.getAttribute("alt"))
+      [...container.querySelectorAll("img")].map((img) =>
+        img.getAttribute("alt"),
+      ),
     );
     const text = container.textContent;
-    for (const brand of ["Kantipur", "Onlinekhabar", "Techpana", "Codavatar", "Setopati"]) {
+    for (const brand of [
+      "Kantipur",
+      "Onlinekhabar",
+      "Techpana",
+      "Codavatar",
+      "Setopati",
+    ]) {
       expect(alts.has(brand) || text.includes(brand)).toBe(true);
     }
   });

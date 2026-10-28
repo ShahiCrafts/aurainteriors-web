@@ -16,14 +16,15 @@ import { MemoryRouter, Route, Routes, useNavigate } from "react-router-dom";
 // FE-22 regression tests (purchase defects) live in the second describe
 // block below.
 
-const { productState, cartState, guestState, authState, navState } =
-  vi.hoisted(() => ({
+const { productState, cartState, guestState, authState, navState } = vi.hoisted(
+  () => ({
     productState: { product: null, error: null, refetch: vi.fn() },
     cartState: { mutate: vi.fn() },
     guestState: { addItem: vi.fn() },
     authState: { isAuthenticated: false },
     navState: { navigate: null },
-  }));
+  }),
+);
 
 vi.mock("../../../src/hooks/product/useProductTan", () => ({
   useProduct: () => ({
@@ -133,7 +134,7 @@ function renderPage(product, slug = "details-sofa") {
         <Route path="/product/:productSlug" element={<ProductDetailsPage />} />
         <Route path="/checkout" element={<div>CHECKOUT PAGE</div>} />
       </Routes>
-    </MemoryRouter>
+    </MemoryRouter>,
   );
 }
 
@@ -149,7 +150,9 @@ describe("ProductDetailsPage sold count (FE-14)", () => {
   it("renders no 'bought in last month' line when soldCount is absent", () => {
     const { container } = renderPage({ ...baseProduct });
 
-    expect(screen.getByRole("heading", { name: "Details Sofa", level: 1 })).toBeInTheDocument();
+    expect(
+      screen.getByRole("heading", { name: "Details Sofa", level: 1 }),
+    ).toBeInTheDocument();
     expect(screen.queryByText(/bought in last month/)).not.toBeInTheDocument();
     expect(container.textContent).not.toContain("200+");
   });
@@ -185,7 +188,7 @@ describe("ProductDetailsPage purchase defects (FE-22)", () => {
   it("Buy Now does not navigate when the cart mutation fails (signed-in)", () => {
     authState.isAuthenticated = true;
     cartState.mutate = vi.fn((vars, opts) =>
-      opts?.onError?.(new Error("boom"))
+      opts?.onError?.(new Error("boom")),
     );
     renderPage({ ...baseProduct });
 
@@ -198,16 +201,14 @@ describe("ProductDetailsPage purchase defects (FE-22)", () => {
     renderPage({ ...baseProduct, stock: 0 });
 
     expect(
-      screen.getByRole("button", { name: /out of stock/i })
+      screen.getByRole("button", { name: /out of stock/i }),
     ).toBeInTheDocument();
     expect(screen.getByRole("button", { name: "Buy Now" })).toBeDisabled();
     expect(
-      screen.getByRole("button", { name: "Increase quantity" })
+      screen.getByRole("button", { name: "Increase quantity" }),
     ).toBeDisabled();
 
-    fireEvent.click(
-      screen.getByRole("button", { name: "Increase quantity" })
-    );
+    fireEvent.click(screen.getByRole("button", { name: "Increase quantity" }));
     // Quantity can never be stepped up from 1 and nothing can be added.
     expect(guestState.addItem).not.toHaveBeenCalled();
   });
@@ -224,7 +225,7 @@ describe("ProductDetailsPage purchase defects (FE-22)", () => {
     expect(guestState.addItem).toHaveBeenCalledWith(
       expect.objectContaining({ _id: baseProduct._id }),
       2,
-      expect.anything()
+      expect.anything(),
     );
   });
 
@@ -270,7 +271,9 @@ describe("ProductDetailsPage purchase defects (FE-22)", () => {
       navState.navigate("/product/sofa-b");
     });
 
-    expect(screen.getByRole("heading", { name: "Sofa B", level: 1 })).toBeInTheDocument();
+    expect(
+      screen.getByRole("heading", { name: "Sofa B", level: 1 }),
+    ).toBeInTheDocument();
     // B's own first colour is selected — never A's "Blue".
     expect(screen.queryByText("Blue")).not.toBeInTheDocument();
 
@@ -278,11 +281,10 @@ describe("ProductDetailsPage purchase defects (FE-22)", () => {
     expect(guestState.addItem).toHaveBeenCalledWith(
       expect.objectContaining({ _id: "prod-b" }),
       1,
-      { color: "Green" }
+      { color: "Green" },
     );
   });
 });
-
 
 describe("Product detail error states", () => {
   it("shows retry for a server error instead of claiming the product is missing", () => {

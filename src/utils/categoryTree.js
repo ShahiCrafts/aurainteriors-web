@@ -14,7 +14,8 @@ export const categoryParentId = (category) => {
 };
 
 const bySortOrderThenName = (a, b) =>
-  (a.sortOrder || 0) - (b.sortOrder || 0) || String(a.name || "").localeCompare(String(b.name || ""));
+  (a.sortOrder || 0) - (b.sortOrder || 0) ||
+  String(a.name || "").localeCompare(String(b.name || ""));
 
 // Builds root nodes with `children` arrays (arbitrary depth).
 // Categories whose parent is missing from the list (orphans — e.g.
@@ -22,7 +23,10 @@ const bySortOrderThenName = (a, b) =>
 // being dropped: an admin must be able to see and fix them.
 export function buildCategoryTree(categories = []) {
   const nodes = new Map(
-    categories.map((category) => [String(category._id), { ...category, children: [] }])
+    categories.map((category) => [
+      String(category._id),
+      { ...category, children: [] },
+    ]),
   );
   const roots = [];
   for (const category of categories) {
@@ -48,7 +52,13 @@ export function buildCategoryTree(categories = []) {
 // the same rollup server-side).
 export function subtreeProductCount(node) {
   if (!node) return 0;
-  return (node.productCount || 0) + (node.children || []).reduce((sum, child) => sum + subtreeProductCount(child), 0);
+  return (
+    (node.productCount || 0) +
+    (node.children || []).reduce(
+      (sum, child) => sum + subtreeProductCount(child),
+      0,
+    )
+  );
 }
 
 // Ids of every category strictly below `id` in the hierarchy —

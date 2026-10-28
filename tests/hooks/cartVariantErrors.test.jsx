@@ -41,12 +41,20 @@ beforeEach(() => {
 describe("cart variant error surfacing (Phase 7)", () => {
   it("a 409 with a VARIANT_ code surfaces the server's message", async () => {
     cartApi.addToCart.mockRejectedValue(
-      serverError(409, { code: "VARIANT_UNAVAILABLE", message: "This variant is unavailable" })
+      serverError(409, {
+        code: "VARIANT_UNAVAILABLE",
+        message: "This variant is unavailable",
+      }),
     );
     const { result } = renderHook(() => useAddToCart(), { wrapper });
     await act(async () => {
       await result.current
-        .mutateAsync({ productId: "p1", quantity: 1, variant: {}, variantId: "v1" })
+        .mutateAsync({
+          productId: "p1",
+          quantity: 1,
+          variant: {},
+          variantId: "v1",
+        })
         .catch(() => {});
     });
     expect(toastMock.error).toHaveBeenCalledWith("This variant is unavailable");
@@ -55,21 +63,28 @@ describe("cart variant error surfacing (Phase 7)", () => {
 
   it("a 409 variant message without a code (production body) still surfaces specifically", async () => {
     cartApi.addToCart.mockRejectedValue(
-      serverError(409, { message: "This variant is out of stock" })
+      serverError(409, { message: "This variant is out of stock" }),
     );
     const { result } = renderHook(() => useAddToCart(), { wrapper });
     await act(async () => {
       await result.current
-        .mutateAsync({ productId: "p1", quantity: 1, variant: {}, variantId: "v1" })
+        .mutateAsync({
+          productId: "p1",
+          quantity: 1,
+          variant: {},
+          variantId: "v1",
+        })
         .catch(() => {});
     });
-    expect(toastMock.error).toHaveBeenCalledWith("This variant is out of stock");
+    expect(toastMock.error).toHaveBeenCalledWith(
+      "This variant is out of stock",
+    );
     expect(toastMock.error).not.toHaveBeenCalledWith("cart changed, refreshed");
   });
 
   it("a non-variant 409 keeps the AR-26 refreshed handling", async () => {
     cartApi.addToCart.mockRejectedValue(
-      serverError(409, { message: "Cart conflict" })
+      serverError(409, { message: "Cart conflict" }),
     );
     const { result } = renderHook(() => useAddToCart(), { wrapper });
     await act(async () => {
@@ -82,7 +97,10 @@ describe("cart variant error surfacing (Phase 7)", () => {
 
   it("a 400 VARIANT_REQUIRED surfaces its message, not a generic toast", async () => {
     cartApi.addToCart.mockRejectedValue(
-      serverError(400, { code: "VARIANT_REQUIRED", message: "Please choose a variant" })
+      serverError(400, {
+        code: "VARIANT_REQUIRED",
+        message: "Please choose a variant",
+      }),
     );
     const { result } = renderHook(() => useAddToCart(), { wrapper });
     await act(async () => {

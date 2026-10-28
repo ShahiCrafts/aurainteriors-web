@@ -38,7 +38,9 @@ describe("AddressCard (Phase 6 extraction)", () => {
     expect(screen.getByText("· delivery")).toBeInTheDocument();
     expect(screen.getByText("Ada Sharma")).toBeInTheDocument();
     expect(
-      screen.getByText(/Durbar Marg 12, Suite 4, Kathmandu, 44600, Bagmati, Nepal/)
+      screen.getByText(
+        /Durbar Marg 12, Suite 4, Kathmandu, 44600, Bagmati, Nepal/,
+      ),
     ).toBeInTheDocument();
     expect(screen.getByText("9841234567")).toBeInTheDocument();
   });
@@ -63,7 +65,7 @@ describe("AddressCard (Phase 6 extraction)", () => {
     const handlers = renderCard();
     fireEvent.click(screen.getByRole("button", { name: /Edit/ }));
     expect(handlers.onEdit).toHaveBeenCalledWith(
-      expect.objectContaining({ _id: "addr-1" })
+      expect.objectContaining({ _id: "addr-1" }),
     );
     fireEvent.click(screen.getByRole("button", { name: /Delete/ }));
     expect(handlers.onDelete).toHaveBeenCalledWith("addr-1");

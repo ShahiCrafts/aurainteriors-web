@@ -1,7 +1,17 @@
 import React from "react";
-import { IoColorPaletteOutline, IoCameraOutline, IoTrashOutline } from "react-icons/io5";
+import {
+  IoColorPaletteOutline,
+  IoCameraOutline,
+  IoTrashOutline,
+} from "react-icons/io5";
 
-const ActionMenu = ({ show, hasPlacedModel, onCustomize, onCapture, onRemove }) => {
+const ActionMenu = ({
+  show,
+  hasPlacedModel,
+  onCustomize,
+  onCapture,
+  onRemove,
+}) => {
   if (!show || !hasPlacedModel) return null;
 
   const actions = [
@@ -11,7 +21,10 @@ const ActionMenu = ({ show, hasPlacedModel, onCustomize, onCapture, onRemove }) 
   ];
 
   return (
-    <div className="absolute right-4 top-1/2 z-50 -translate-y-1/2" data-hide-on-capture>
+    <div
+      className="absolute right-4 top-1/2 z-50 -translate-y-1/2"
+      data-hide-on-capture
+    >
       <div className="flex flex-col gap-2 rounded-[22px] border border-white/10 bg-black/55 p-2 shadow-2xl backdrop-blur-2xl">
         {actions.map(({ icon: Icon, label, onClick, danger }) => (
           <button
@@ -21,7 +34,9 @@ const ActionMenu = ({ show, hasPlacedModel, onCustomize, onCapture, onRemove }) 
             aria-label={label}
           >
             <Icon size={20} />
-            <span className="text-[9px] font-medium text-white/60 group-hover:text-current">{label}</span>
+            <span className="text-[9px] font-medium text-white/60 group-hover:text-current">
+              {label}
+            </span>
           </button>
         ))}
       </div>

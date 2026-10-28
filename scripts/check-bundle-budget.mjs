@@ -55,11 +55,15 @@ const sizeOf = (name) => statSync(join(assetsDir, name)).size;
 // Entry chunk: the module script referenced by index.html.
 const html = readFileSync(join(distDir, "index.html"), "utf8");
 const entryMatch = html.match(/<script[^>]+src="[^"]*\/assets\/([^"]+\.js)"/);
-if (!entryMatch) fail("could not find the entry <script> in dist/customer/index.html.");
+if (!entryMatch)
+  fail("could not find the entry <script> in dist/customer/index.html.");
 const entryName = entryMatch[1];
-if (!files.includes(entryName)) fail(`entry chunk ${entryName} missing from dist/customer/assets.`);
+if (!files.includes(entryName))
+  fail(`entry chunk ${entryName} missing from dist/customer/assets.`);
 
-const actual = new Map([["entry index", { name: entryName, size: sizeOf(entryName) }]]);
+const actual = new Map([
+  ["entry index", { name: entryName, size: sizeOf(entryName) }],
+]);
 for (const key of ["vendor-react", "vendor-three"]) {
   const name = files.find((f) => f.startsWith(`${key}-`));
   if (!name) fail(`chunk ${key}-*.js missing from dist/customer/assets.`);
@@ -73,10 +77,14 @@ for (const { key, budget } of BUDGETS) {
   const budgetKb = (budget / 1000).toFixed(0);
   const status = size <= budget ? "ok" : "OVER BUDGET";
   if (size > budget) over += 1;
-  console.log(`${key.padEnd(12)} ${name.padEnd(28)} ${kb.padStart(8)} kB / ${budgetKb} kB  ${status}`);
+  console.log(
+    `${key.padEnd(12)} ${name.padEnd(28)} ${kb.padStart(8)} kB / ${budgetKb} kB  ${status}`,
+  );
 }
 
 if (over > 0) {
-  fail(`${over} chunk(s) exceed the bundle budget. Either shrink the chunk or raise the budget in scripts/check-bundle-budget.mjs with a justification in the same commit.`);
+  fail(
+    `${over} chunk(s) exceed the bundle budget. Either shrink the chunk or raise the budget in scripts/check-bundle-budget.mjs with a justification in the same commit.`,
+  );
 }
 console.log("check-bundle-budget: all guarded chunks within budget.");

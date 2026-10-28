@@ -9,14 +9,19 @@ import { describe, expect, it, vi, beforeEach } from "vitest";
 const h = vi.hoisted(() => ({ sendError: null }));
 
 vi.mock("../../src/hooks/chat/useChatTan.js", () => ({
-  useSendMessage: () => ({ mutateAsync: vi.fn(async () => { throw h.sendError; }) }),
+  useSendMessage: () => ({
+    mutateAsync: vi.fn(async () => {
+      throw h.sendError;
+    }),
+  }),
 }));
 vi.mock("../../src/api/chatApi.js", () => ({ uploadChatAttachment: vi.fn() }));
 vi.mock("../../src/store/authStore.js", () => {
   // AuthRequiredModal calls useAuthStore((state) => state.openAuthModal);
   // honour the selector so the modal renders.
   const state = { openAuthModal: vi.fn(), user: null };
-  const store = (selector) => (typeof selector === "function" ? selector(state) : state);
+  const store = (selector) =>
+    typeof selector === "function" ? selector(state) : state;
   store.getState = () => state;
   return { default: store };
 });
@@ -27,7 +32,9 @@ async function typeAndSend() {
   render(<ChatInput chatId="c1" onTyping={vi.fn()} />);
   const textarea = screen.getByPlaceholderText(/type your message/i);
   fireEvent.change(textarea, { target: { value: "hello" } });
-  const sendBtn = textarea.closest("div").parentElement.querySelectorAll("button");
+  const sendBtn = textarea
+    .closest("div")
+    .parentElement.querySelectorAll("button");
   // Send is the last button in the composer row.
   fireEvent.click(sendBtn[sendBtn.length - 1]);
 }
@@ -39,7 +46,12 @@ beforeEach(() => {
 
 describe("ChatInput send-error mapping (FE-19)", () => {
   it("status-only 429 (no body code) opens the rate-limit modal with the body retryAfter", async () => {
-    h.sendError = { response: { status: 429, data: { message: "Too many requests", retryAfter: 60 } } };
+    h.sendError = {
+      response: {
+        status: 429,
+        data: { message: "Too many requests", retryAfter: 60 },
+      },
+    };
     await typeAndSend();
     expect(await screen.findByText(/slow down/i)).toBeInTheDocument();
     // The exact countdown value (01:00, synced from retryAfter) is
@@ -48,7 +60,12 @@ describe("ChatInput send-error mapping (FE-19)", () => {
   });
 
   it("body-code RATE_LIMIT_EXCEEDED still opens the rate-limit modal", async () => {
-    h.sendError = { response: { status: 200, data: { code: "RATE_LIMIT_EXCEEDED", retryAfter: 120 } } };
+    h.sendError = {
+      response: {
+        status: 200,
+        data: { code: "RATE_LIMIT_EXCEEDED", retryAfter: 120 },
+      },
+    };
     // status 200 is artificial; the code path is what is pinned here.
     await typeAndSend();
     expect(await screen.findByText(/slow down/i)).toBeInTheDocument();

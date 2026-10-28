@@ -45,12 +45,12 @@ describe("OrderSummary (Phase 6 extraction)", () => {
     render(
       <OrderSummary {...base}>
         <button type="button">Place Order</button>
-      </OrderSummary>
+      </OrderSummary>,
     );
     const total = screen.getByText("Total");
     const cta = screen.getByRole("button", { name: "Place Order" });
     expect(
-      total.compareDocumentPosition(cta) & Node.DOCUMENT_POSITION_FOLLOWING
+      total.compareDocumentPosition(cta) & Node.DOCUMENT_POSITION_FOLLOWING,
     ).toBeTruthy();
   });
 });

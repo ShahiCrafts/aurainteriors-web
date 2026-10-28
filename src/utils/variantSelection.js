@@ -79,7 +79,7 @@ export function optionValueStates(product, selection = {}) {
           (other) =>
             other === key ||
             selection[other] === undefined ||
-            options[other] === String(selection[other])
+            options[other] === String(selection[other]),
         );
       });
       return {
@@ -166,12 +166,15 @@ export function groupSpecifications(product, definitions = {}) {
   for (const [key, rawValue] of Object.entries(stored)) {
     const definition = definitions[key];
     if (!definition) continue;
-    if ((definition.storage || "catalogAttributes") !== "catalogAttributes") continue;
+    if ((definition.storage || "catalogAttributes") !== "catalogAttributes")
+      continue;
     const formatted = formatSpecValue(definition, rawValue);
     if (formatted === null) continue;
     const group = definition.displayGroup || "Specifications";
     if (!groups.has(group)) groups.set(group, []);
-    groups.get(group).push({ key, label: definition.label || key, value: formatted });
+    groups
+      .get(group)
+      .push({ key, label: definition.label || key, value: formatted });
   }
   return [...groups.entries()].map(([group, items]) => ({ group, items }));
 }

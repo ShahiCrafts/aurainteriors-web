@@ -25,7 +25,10 @@ const state = vi.hoisted(() => ({
 
 vi.mock("../../../src/hooks/cart/useWishlistTan", () => ({
   useWishlist: () => ({ data: state.data, isLoading: false, error: null }),
-  useRemoveFromWishlist: () => ({ mutate: state.removeMutate, isPending: false }),
+  useRemoveFromWishlist: () => ({
+    mutate: state.removeMutate,
+    isPending: false,
+  }),
   useAddToWishlist: () => ({ mutate: vi.fn(), isPending: false }),
 }));
 
@@ -70,7 +73,14 @@ const variantProduct = {
   images: [],
   category: { name: "Sofas" },
   catalogVariants: [
-    { _id: "v1", sku: "SOFA-A", price: 18000, stock: 2, reservedStock: 0, enabled: true },
+    {
+      _id: "v1",
+      sku: "SOFA-A",
+      price: 18000,
+      stock: 2,
+      reservedStock: 0,
+      enabled: true,
+    },
   ],
 };
 
@@ -91,7 +101,7 @@ function renderWishlistWith(product) {
   return render(
     <MemoryRouter>
       <Wishlist />
-    </MemoryRouter>
+    </MemoryRouter>,
   );
 }
 
@@ -104,12 +114,14 @@ describe("Wishlist canonical add-to-cart (Phase 5)", () => {
   it("variant product: 'Select options' links to the PDP and nothing is added directly", () => {
     renderWishlistWith(variantProduct);
 
-    const cta = screen.getByRole("link", { name: "Select options for Variant Sofa" });
+    const cta = screen.getByRole("link", {
+      name: "Select options for Variant Sofa",
+    });
     expect(cta).toHaveAttribute("href", "/product/variant-sofa");
     // No per-item add button for this product (the page's separate
     // "Add All to Cart" bulk button is page chrome, not the card).
     expect(
-      screen.queryByRole("button", { name: "Add Variant Sofa to cart" })
+      screen.queryByRole("button", { name: "Add Variant Sofa to cart" }),
     ).not.toBeInTheDocument();
     expect(state.addToCartMutate).not.toHaveBeenCalled();
     expect(state.guestAddItem).not.toHaveBeenCalled();
@@ -119,7 +131,7 @@ describe("Wishlist canonical add-to-cart (Phase 5)", () => {
     renderWishlistWith(simpleProduct);
 
     fireEvent.click(
-      screen.getByRole("button", { name: "Add Simple Chair to cart" })
+      screen.getByRole("button", { name: "Add Simple Chair to cart" }),
     );
     expect(state.guestAddItem).not.toHaveBeenCalled();
     expect(state.addToCartMutate).toHaveBeenCalledTimes(1);
@@ -137,7 +149,7 @@ describe("Wishlist canonical add-to-cart (Phase 5)", () => {
     renderWishlistWith(simpleProduct);
 
     fireEvent.click(
-      screen.getByRole("button", { name: "Add Simple Chair to cart" })
+      screen.getByRole("button", { name: "Add Simple Chair to cart" }),
     );
     expect(state.addToCartMutate).not.toHaveBeenCalled();
     expect(state.guestAddItem).toHaveBeenCalledTimes(1);
@@ -148,7 +160,7 @@ describe("Wishlist canonical add-to-cart (Phase 5)", () => {
     renderWishlistWith(simpleProduct);
 
     fireEvent.click(
-      screen.getByRole("button", { name: "Remove Simple Chair from wishlist" })
+      screen.getByRole("button", { name: "Remove Simple Chair from wishlist" }),
     );
     expect(state.removeMutate).toHaveBeenCalledTimes(1);
     expect(state.removeMutate.mock.calls[0][0]).toBe("prod-simple");

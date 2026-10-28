@@ -10,7 +10,8 @@ import Price from "../../../src/components/ui/Price.jsx";
 import { formatNPR } from "../../../src/utils/formatCurrency";
 
 const squash = (text) => text.replace(/\s+/g, " ");
-const formatted = (value) => (content) => squash(content) === squash(formatNPR(value));
+const formatted = (value) => (content) =>
+  squash(content) === squash(formatNPR(value));
 
 describe("Price", () => {
   it("renders the amount through formatNPR", () => {
@@ -27,7 +28,9 @@ describe("Price", () => {
 
   it("does not render compare-at when it is not greater than the amount", () => {
     render(<Price amount={9999} compareAt={9999} />);
-    expect(screen.queryByText(formatted(9999), { selector: ".line-through" })).toBeNull();
+    expect(
+      screen.queryByText(formatted(9999), { selector: ".line-through" }),
+    ).toBeNull();
     expect(screen.getAllByText(formatted(9999))).toHaveLength(1);
   });
 

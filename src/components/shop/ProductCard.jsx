@@ -11,7 +11,10 @@ import useGuestCartStore from "../../store/guestCartStore";
 import { useShallow } from "zustand/react/shallow";
 import useAuthStore from "../../store/authStore";
 import { toast } from "../../lib/toast";
-import { getProductImageUrl, getProductImageSrcSet } from "../../utils/imageUrl";
+import {
+  getProductImageUrl,
+  getProductImageSrcSet,
+} from "../../utils/imageUrl";
 import formatError from "../../utils/errorHandler";
 import { formatNPR } from "../../utils/formatCurrency";
 import { productHasPurchasableVariant } from "../../utils/variantSelection";
@@ -40,10 +43,11 @@ function ProductCardThumb({ product, selected = false, onSelect }) {
       className="group shrink-0 w-20 snap-start flex flex-col items-center p-2 rounded-2xl transition-all hover:bg-white/10"
     >
       <div
-        className={`relative w-16 h-16 rounded-xl overflow-hidden transition-all ${selected
+        className={`relative w-16 h-16 rounded-xl overflow-hidden transition-all ${
+          selected
             ? "ring-2 ring-teal-400 ring-offset-2 ring-offset-black/70"
             : "border border-white/20 group-hover:border-teal-400/50"
-          }`}
+        }`}
       >
         {imageUrl ? (
           <ImageWithFallback
@@ -71,8 +75,9 @@ function ProductCardThumb({ product, selected = false, onSelect }) {
         {product.name}
       </span>
       <span
-        className={`text-[10px] font-semibold ${selected ? "text-teal-400" : "text-white/50"
-          }`}
+        className={`text-[10px] font-semibold ${
+          selected ? "text-teal-400" : "text-white/50"
+        }`}
       >
         {formatNPR(product.price)}
       </span>
@@ -162,14 +167,14 @@ function ProductCardMain({
     shortDescription,
   } = product;
 
-  const { isAuthenticated } = useAuthStore(useShallow((state) => ({ isAuthenticated: state.isAuthenticated })));
+  const { isAuthenticated } = useAuthStore(
+    useShallow((state) => ({ isAuthenticated: state.isAuthenticated })),
+  );
 
   const { data: wishlistData } = useWishlist({ enabled: isAuthenticated });
   const isInWishlist = useMemo(() => {
     const items = wishlistData?.data?.wishlist?.items || [];
-    return items.some(
-      (item) => (item.product?._id ?? item.product) === _id
-    );
+    return items.some((item) => (item.product?._id ?? item.product) === _id);
   }, [wishlistData, _id]);
 
   const { mutate: addToWishlist, isPending: isAdding } = useAddToWishlist();
@@ -178,7 +183,9 @@ function ProductCardMain({
   const isWishlistLoading = isAdding || isRemoving;
 
   const { mutate: addToCart, isPending: isAddingToCart } = useAddToCart();
-  const { addItem: addToGuestCart } = useGuestCartStore(useShallow((state) => ({ addItem: state.addItem })));
+  const { addItem: addToGuestCart } = useGuestCartStore(
+    useShallow((state) => ({ addItem: state.addItem })),
+  );
 
   const handleWishlistToggle = useCallback(
     (e) => {
@@ -202,18 +209,18 @@ function ProductCardMain({
         });
       }
     },
-    [isAuthenticated, isInWishlist, _id, addToWishlist, removeFromWishlist]
+    [isAuthenticated, isInWishlist, _id, addToWishlist, removeFromWishlist],
   );
 
   const imageUrl = useMemo(() => getProductImageUrl(product), [product]);
   const imageSrcSet = useMemo(
     () => getProductImageSrcSet(product, [600, 1200, 1920]),
-    [product]
+    [product],
   );
   const isVariantProduct = product.hasVariants === true;
   const formattedFromPrice = useMemo(
     () => formatNPR(product.priceFrom ?? price ?? 0),
-    [product.priceFrom, price]
+    [product.priceFrom, price],
   );
   const variantOutOfStock =
     isVariantProduct &&
@@ -232,10 +239,10 @@ function ProductCardMain({
       }
       addToCart(
         { productId: _id, quantity: 1, variant: {} },
-        { onSuccess: () => toast.success("Added to cart") }
+        { onSuccess: () => toast.success("Added to cart") },
       );
     },
-    [isAuthenticated, product, _id, addToCart, addToGuestCart]
+    [isAuthenticated, product, _id, addToCart, addToGuestCart],
   );
 
   const ratingAverage = rating?.average || 0;
@@ -246,7 +253,10 @@ function ProductCardMain({
 
   const badge =
     !isVariantProduct && discountPercentage > 0
-      ? { label: `${discountPercentage}% OFF`, className: "bg-[#FDE8E8] text-[#D92D20]" }
+      ? {
+          label: `${discountPercentage}% OFF`,
+          className: "bg-[#FDE8E8] text-[#D92D20]",
+        }
       : product.isNewArrival
         ? { label: "New Arrival", className: "bg-[#DFF5E5] text-[#157347]" }
         : product.isFeatured
@@ -349,10 +359,11 @@ function ProductCardMain({
             <button
               onClick={handleWishlistToggle}
               disabled={isWishlistLoading}
-              className={`absolute top-2 right-2 sm:top-2.5 sm:right-2.5 w-7 h-7 sm:w-8 sm:h-8 rounded-full flex items-center justify-center transition-all duration-300 shadow-sm backdrop-blur-sm z-10 ${isInWishlist
+              className={`absolute top-2 right-2 sm:top-2.5 sm:right-2.5 w-7 h-7 sm:w-8 sm:h-8 rounded-full flex items-center justify-center transition-all duration-300 shadow-sm backdrop-blur-sm z-10 ${
+                isInWishlist
                   ? "bg-brand text-white"
                   : "bg-white/90 text-black/40 hover:text-red-500"
-                }`}
+              }`}
             >
               <Heart
                 size={14}
@@ -453,11 +464,16 @@ function ProductCardMain({
             <button
               onClick={handleWishlistToggle}
               disabled={isWishlistLoading}
-              aria-label={isInWishlist ? `Remove ${name} from wishlist` : `Add ${name} to wishlist`}
-              className={`absolute right-3 top-3 z-20 flex h-9 w-9 items-center justify-center rounded-full shadow-sm backdrop-blur-sm transition-all duration-300 ${isInWishlist
+              aria-label={
+                isInWishlist
+                  ? `Remove ${name} from wishlist`
+                  : `Add ${name} to wishlist`
+              }
+              className={`absolute right-3 top-3 z-20 flex h-9 w-9 items-center justify-center rounded-full shadow-sm backdrop-blur-sm transition-all duration-300 ${
+                isInWishlist
                   ? "bg-brand text-white"
                   : "bg-white/95 text-black/50 hover:text-red-500"
-                }`}
+              }`}
             >
               <Heart size={16} className={isInWishlist ? "fill-white" : ""} />
             </button>

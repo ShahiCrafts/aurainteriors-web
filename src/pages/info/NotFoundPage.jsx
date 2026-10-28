@@ -27,7 +27,9 @@ const NotFoundPage = () => {
       <Navbar />
       <div className="py-20 flex flex-col items-center justify-center px-4 bg-neutral-50 font-dm-sans">
         <div className="w-full max-w-xs mb-3">
-          {animationData && <Lottie animationData={animationData} loop={true} />}
+          {animationData && (
+            <Lottie animationData={animationData} loop={true} />
+          )}
         </div>
 
         <h1 className="text-2xl md:text-3xl font-playfair font-semibold text-neutral-900 mb-4 text-center">
@@ -35,7 +37,8 @@ const NotFoundPage = () => {
         </h1>
 
         <p className="text-neutral-500 text-lg mb-5 text-center max-w-md">
-          Oops! The page you are looking for seems to have vanished into thin air.
+          Oops! The page you are looking for seems to have vanished into thin
+          air.
         </p>
 
         <Link

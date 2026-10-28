@@ -1,9 +1,32 @@
 import React, { useState } from "react";
-import { 
-  Sparkles, X, ChevronDown, ChevronLeft, ChevronRight, ThumbsUp, ThumbsDown, 
-  BookOpen, Bot, CheckCircle2, MessageSquare, Edit2, Zap, User, ShoppingBag, 
-  Mail, Calendar, Tag, DollarSign, Package, Compass, Copy, ArrowUpRight,
-  Shield, Check, UserCheck, ShieldAlert
+import {
+  Sparkles,
+  X,
+  ChevronDown,
+  ChevronLeft,
+  ChevronRight,
+  ThumbsUp,
+  ThumbsDown,
+  BookOpen,
+  Bot,
+  CheckCircle2,
+  MessageSquare,
+  Edit2,
+  Zap,
+  User,
+  ShoppingBag,
+  Mail,
+  Calendar,
+  Tag,
+  DollarSign,
+  Package,
+  Compass,
+  Copy,
+  ArrowUpRight,
+  Shield,
+  Check,
+  UserCheck,
+  ShieldAlert,
 } from "lucide-react";
 import Skeleton from "../../common/Skeleton";
 import { UserAvatar } from "../../common/InitialsAvatar";
@@ -23,7 +46,7 @@ const AiAssistantPanel = ({ chat, onClose, onUseReply, onEditReply }) => {
   // Query actual orders matching this customer's email from store DB
   const { data: ordersData, isLoading: isLoadingOrders } = useAllOrders(
     { search: chat?.customer?.email, limit: 5 },
-    { enabled: !!chat?.customer?.email }
+    { enabled: !!chat?.customer?.email },
   );
 
   const customerOrders = ordersData?.data?.orders || [];
@@ -43,13 +66,13 @@ const AiAssistantPanel = ({ chat, onClose, onUseReply, onEditReply }) => {
   const handleToggleBot = () => {
     toggleBotMutation.mutate({
       chatId: chat._id,
-      botActive: !isBotActive
+      botActive: !isBotActive,
     });
   };
 
   return (
     <div
-      className={`rounded-xl border border-gray-100 flex flex-col h-full shrink-0 overflow-hidden transition-all duration-300 ease-in-out ${isExpanded ? 'bg-white shadow-sm' : 'bg-gray-50'}`}
+      className={`rounded-xl border border-gray-100 flex flex-col h-full shrink-0 overflow-hidden transition-all duration-300 ease-in-out ${isExpanded ? "bg-white shadow-sm" : "bg-gray-50"}`}
       style={{ width: isExpanded ? "340px" : "48px" }}
     >
       {/* Header (expanded) */}
@@ -59,9 +82,11 @@ const AiAssistantPanel = ({ chat, onClose, onUseReply, onEditReply }) => {
             <div className="w-8 h-8 rounded-lg bg-teal-50 flex items-center justify-center shrink-0">
               <Sparkles className="w-4 h-4 text-teal-600" />
             </div>
-            <span className="font-bold text-gray-900 text-sm whitespace-nowrap">AI Copilot & Details</span>
+            <span className="font-bold text-gray-900 text-sm whitespace-nowrap">
+              AI Copilot & Details
+            </span>
           </div>
-          <button 
+          <button
             onClick={() => setIsExpanded(false)}
             className="p-1.5 text-gray-400 hover:text-gray-600 hover:bg-gray-100 rounded-md shrink-0 transition-colors"
             title="Collapse Panel"
@@ -74,7 +99,7 @@ const AiAssistantPanel = ({ chat, onClose, onUseReply, onEditReply }) => {
       {/* Collapsed toggle — centered vertically */}
       {!isExpanded && (
         <div className="flex-1 flex flex-col items-center justify-center">
-          <button 
+          <button
             onClick={() => setIsExpanded(true)}
             className="p-2 hover:bg-gray-200 rounded-lg text-teal-600 transition-colors"
             title="Expand AI Assistant"
@@ -87,18 +112,23 @@ const AiAssistantPanel = ({ chat, onClose, onUseReply, onEditReply }) => {
       {/* Content */}
       {isExpanded && (
         <div className="flex-1 overflow-y-auto p-4 space-y-5 bg-gray-50/20">
-          
           {/* 1. Chat Control: Bot Status Toggle */}
           <div className="bg-white rounded-xl border border-gray-100 p-3.5 space-y-2.5">
             <div className="flex items-center justify-between">
-              <span className="text-[11px] font-bold text-gray-400 uppercase tracking-wider">Chat Mode</span>
-              <span className={`text-[10px] px-2 py-0.5 rounded-full font-bold uppercase tracking-wider ${
-                isBotActive ? "bg-teal-50 text-teal-700" : "bg-amber-50 text-amber-700"
-              }`}>
+              <span className="text-[11px] font-bold text-gray-400 uppercase tracking-wider">
+                Chat Mode
+              </span>
+              <span
+                className={`text-[10px] px-2 py-0.5 rounded-full font-bold uppercase tracking-wider ${
+                  isBotActive
+                    ? "bg-teal-50 text-teal-700"
+                    : "bg-amber-50 text-amber-700"
+                }`}
+              >
                 {isBotActive ? "Bot Active" : "Human Agent"}
               </span>
             </div>
-            
+
             <button
               onClick={handleToggleBot}
               disabled={toggleBotMutation.isPending}
@@ -110,11 +140,13 @@ const AiAssistantPanel = ({ chat, onClose, onUseReply, onEditReply }) => {
             >
               {isBotActive ? (
                 <>
-                  <UserCheck className="w-3.5 h-3.5" /> Handover to Human (Stop Bot)
+                  <UserCheck className="w-3.5 h-3.5" /> Handover to Human (Stop
+                  Bot)
                 </>
               ) : (
                 <>
-                  <Bot className="w-3.5 h-3.5" /> Enable AI Auto-Reply (Start Bot)
+                  <Bot className="w-3.5 h-3.5" /> Enable AI Auto-Reply (Start
+                  Bot)
                 </>
               )}
             </button>
@@ -122,32 +154,38 @@ const AiAssistantPanel = ({ chat, onClose, onUseReply, onEditReply }) => {
 
           {/* 2. Suggested Response — only when the API actually provided one */}
           {suggestedReply && (
-          <div className="bg-linear-to-b from-teal-50/20 to-white rounded-xl border border-teal-100 p-4 space-y-3">
-            <div className="flex items-center justify-between">
-              <div className="flex items-center gap-1.5 text-[11px] font-bold text-teal-700 uppercase tracking-wider">
-                <Zap className="w-3.5 h-3.5 text-teal-600" />
-                Suggested Response
+            <div className="bg-linear-to-b from-teal-50/20 to-white rounded-xl border border-teal-100 p-4 space-y-3">
+              <div className="flex items-center justify-between">
+                <div className="flex items-center gap-1.5 text-[11px] font-bold text-teal-700 uppercase tracking-wider">
+                  <Zap className="w-3.5 h-3.5 text-teal-600" />
+                  Suggested Response
+                </div>
+                <button
+                  onClick={handleCopy}
+                  className="text-gray-400 hover:text-gray-600 p-1 rounded-md transition-colors"
+                  title="Copy suggested response"
+                >
+                  {copied ? (
+                    <span className="text-[10px] text-teal-600 font-bold">
+                      Copied!
+                    </span>
+                  ) : (
+                    <Copy className="w-3.5 h-3.5" />
+                  )}
+                </button>
               </div>
-              <button 
-                onClick={handleCopy}
-                className="text-gray-400 hover:text-gray-600 p-1 rounded-md transition-colors"
-                title="Copy suggested response"
-              >
-                {copied ? <span className="text-[10px] text-teal-600 font-bold">Copied!</span> : <Copy className="w-3.5 h-3.5" />}
-              </button>
+              <div className="bg-white border border-teal-50 rounded-lg p-3 text-xs text-gray-700 leading-relaxed italic">
+                "{suggestedReply}"
+              </div>
+              <div className="flex items-center gap-2">
+                <button
+                  onClick={() => onUseReply?.(suggestedReply)}
+                  className="flex-1 bg-teal-600 hover:bg-teal-700 text-white text-xs font-bold py-2 px-3 rounded-lg transition-colors flex items-center justify-center gap-1.5 shadow-sm"
+                >
+                  <CheckCircle2 className="w-3.5 h-3.5" /> Send to Input
+                </button>
+              </div>
             </div>
-            <div className="bg-white border border-teal-50 rounded-lg p-3 text-xs text-gray-700 leading-relaxed italic">
-              "{suggestedReply}"
-            </div>
-            <div className="flex items-center gap-2">
-              <button 
-                onClick={() => onUseReply?.(suggestedReply)}
-                className="flex-1 bg-teal-600 hover:bg-teal-700 text-white text-xs font-bold py-2 px-3 rounded-lg transition-colors flex items-center justify-center gap-1.5 shadow-sm"
-              >
-                <CheckCircle2 className="w-3.5 h-3.5" /> Send to Input
-              </button>
-            </div>
-          </div>
           )}
 
           {/* 3. Conversation Summary */}
@@ -176,14 +214,19 @@ const AiAssistantPanel = ({ chat, onClose, onUseReply, onEditReply }) => {
                 <h4 className="font-bold text-gray-900 text-xs truncate">
                   {chat?.customer?.firstName} {chat?.customer?.lastName}
                 </h4>
-                <p className="text-[10px] text-gray-400 truncate">{chat?.customer?.email}</p>
+                <p className="text-[10px] text-gray-400 truncate">
+                  {chat?.customer?.email}
+                </p>
               </div>
             </div>
-            
+
             <div className="border-t border-gray-50 pt-2 flex justify-between text-[11px] text-gray-500">
               <span>Customer since:</span>
               <span className="font-semibold text-gray-800">
-                {formatDate(chat?.customer?.createdAt || Date.now(), { month: 'short', year: 'numeric' })}
+                {formatDate(chat?.customer?.createdAt || Date.now(), {
+                  month: "short",
+                  year: "numeric",
+                })}
               </span>
             </div>
           </div>
@@ -191,7 +234,9 @@ const AiAssistantPanel = ({ chat, onClose, onUseReply, onEditReply }) => {
           {/* 5. Live Customer Order History from Store DB */}
           <div className="space-y-2">
             <div className="flex items-center justify-between px-1">
-              <span className="text-[11px] font-bold text-gray-400 uppercase tracking-wider">Live Store Orders</span>
+              <span className="text-[11px] font-bold text-gray-400 uppercase tracking-wider">
+                Live Store Orders
+              </span>
               <span className="text-[10px] text-teal-600 font-bold flex items-center">
                 Real-Time DB
               </span>
@@ -209,37 +254,52 @@ const AiAssistantPanel = ({ chat, onClose, onUseReply, onEditReply }) => {
             ) : (
               <div className="space-y-2.5">
                 {customerOrders.map((order) => (
-                  <div key={order._id} className="bg-white rounded-xl border border-gray-100 p-3 space-y-2 text-xs">
+                  <div
+                    key={order._id}
+                    className="bg-white rounded-xl border border-gray-100 p-3 space-y-2 text-xs"
+                  >
                     <div className="flex items-center justify-between">
-                      <span className="font-bold text-gray-900">#{order.orderId}</span>
-                      <span className={`px-2 py-0.5 rounded-full text-[9px] font-bold uppercase tracking-wider ${
-                        order.orderStatus === "delivered" ? "bg-emerald-50 text-emerald-700" :
-                        order.orderStatus === "cancelled" ? "bg-rose-50 text-rose-700" :
-                        "bg-blue-50 text-blue-700"
-                      }`}>
+                      <span className="font-bold text-gray-900">
+                        #{order.orderId}
+                      </span>
+                      <span
+                        className={`px-2 py-0.5 rounded-full text-[9px] font-bold uppercase tracking-wider ${
+                          order.orderStatus === "delivered"
+                            ? "bg-emerald-50 text-emerald-700"
+                            : order.orderStatus === "cancelled"
+                              ? "bg-rose-50 text-rose-700"
+                              : "bg-blue-50 text-blue-700"
+                        }`}
+                      >
                         {order.orderStatus}
                       </span>
                     </div>
-                    
+
                     <div className="space-y-0.5 text-gray-600">
                       {order.items?.map((item, idx) => (
-                        <p key={idx} className="truncate font-medium text-gray-800">
+                        <p
+                          key={idx}
+                          className="truncate font-medium text-gray-800"
+                        >
                           {item.quantity}x {item.product?.name || "Product"}
                         </p>
                       ))}
-                      <p className="text-[10px] text-gray-400">Ordered: {formatDate(order.createdAt)}</p>
+                      <p className="text-[10px] text-gray-400">
+                        Ordered: {formatDate(order.createdAt)}
+                      </p>
                     </div>
 
                     <div className="flex justify-between items-center border-t border-gray-50 pt-2 text-[11px]">
                       <span className="text-gray-400">Total Price</span>
-                      <span className="font-bold text-gray-900">{formatNPR(order.total)}</span>
+                      <span className="font-bold text-gray-900">
+                        {formatNPR(order.total)}
+                      </span>
                     </div>
                   </div>
                 ))}
               </div>
             )}
           </div>
-
         </div>
       )}
     </div>

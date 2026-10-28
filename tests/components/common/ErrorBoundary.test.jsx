@@ -25,7 +25,7 @@ describe("ErrorBoundary (FE-56)", () => {
         <ErrorBoundary>
           <Thrower />
         </ErrorBoundary>
-      </div>
+      </div>,
     );
     expect(screen.getByText("outside-survives")).toBeInTheDocument();
     expect(screen.getByText(/Something went wrong/)).toBeInTheDocument();
@@ -37,9 +37,11 @@ describe("ErrorBoundary (FE-56)", () => {
     const { container } = render(
       <ErrorBoundary>
         <Thrower />
-      </ErrorBoundary>
+      </ErrorBoundary>,
     );
-    expect(container.textContent).not.toContain("SECRET_ERROR_TEXT_SHOULD_NOT_RENDER");
+    expect(container.textContent).not.toContain(
+      "SECRET_ERROR_TEXT_SHOULD_NOT_RENDER",
+    );
     expect(container.textContent).not.toMatch(/at Thrower|stack/i);
   });
 
@@ -52,14 +54,14 @@ describe("ErrorBoundary (FE-56)", () => {
     const { rerender } = render(
       <ErrorBoundary resetKey="/a">
         <MaybeThrow />
-      </ErrorBoundary>
+      </ErrorBoundary>,
     );
     expect(screen.getByText(/Something went wrong/)).toBeInTheDocument();
     shouldThrow = false;
     rerender(
       <ErrorBoundary resetKey="/b">
         <MaybeThrow />
-      </ErrorBoundary>
+      </ErrorBoundary>,
     );
     expect(screen.getByText("recovered-child")).toBeInTheDocument();
     expect(screen.queryByText(/Something went wrong/)).not.toBeInTheDocument();

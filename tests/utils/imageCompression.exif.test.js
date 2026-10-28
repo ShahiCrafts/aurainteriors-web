@@ -25,12 +25,16 @@ import {
 // --- Minimal JPEG fixture with an APP1 'Exif\0\0' segment + GPS data --
 function makeExifJpegFile(name = "photo.jpg", totalSize = 2048) {
   const header = [
-    0xff, 0xd8, // SOI
-    0xff, 0xe1, 0x00, 0x10, // APP1 + length
-    ...[... "Exif\0\0"].map((c) => c.charCodeAt(0)),
+    0xff,
+    0xd8, // SOI
+    0xff,
+    0xe1,
+    0x00,
+    0x10, // APP1 + length
+    ...[..."Exif\0\0"].map((c) => c.charCodeAt(0)),
     // Fake GPS payload: the markers the assertions hunt for.
-    ...[... "GPSLatitude 37.7749 GPSLongitude -122.4194"].map((c) =>
-      c.charCodeAt(0)
+    ...[..."GPSLatitude 37.7749 GPSLongitude -122.4194"].map((c) =>
+      c.charCodeAt(0),
     ),
   ];
   const bytes = new Uint8Array(totalSize);
@@ -172,7 +176,7 @@ describe("FE-05: decode failure rejects — the original is never resolved", () 
     imageMode = "error";
     const original = makeExifJpegFile();
     await expect(compressImage(original)).rejects.toThrow(
-      /image|compress|decode|load/i
+      /image|compress|decode|load/i,
     );
   });
 
@@ -180,7 +184,7 @@ describe("FE-05: decode failure rejects — the original is never resolved", () 
     imageMode = "error";
     const original = makeExifJpegFile();
     await expect(compressFileIfNeeded(original)).rejects.toThrow(
-      /image|compress|decode|load/i
+      /image|compress|decode|load/i,
     );
   });
 });
@@ -191,9 +195,11 @@ describe("FE-05 pen-test: a file that can never be re-encoded must reject", () =
       throw new Error("encoder exploded");
     };
     const original = makeExifJpegFile();
-    await expect(compressImage(original)).rejects.toThrow(/encoder|image|compress/i);
+    await expect(compressImage(original)).rejects.toThrow(
+      /encoder|image|compress/i,
+    );
     await expect(compressFileIfNeeded(original)).rejects.toThrow(
-      /encoder|image|compress/i
+      /encoder|image|compress/i,
     );
   });
 
@@ -201,7 +207,7 @@ describe("FE-05 pen-test: a file that can never be re-encoded must reject", () =
     getContextImpl = () => null;
     const original = makeExifJpegFile();
     await expect(compressFileIfNeeded(original)).rejects.toThrow(
-      /image|compress|canvas|context/i
+      /image|compress|canvas|context/i,
     );
   });
 
@@ -209,7 +215,7 @@ describe("FE-05 pen-test: a file that can never be re-encoded must reject", () =
     toBlobImpl = (cb) => cb(null);
     const original = makeExifJpegFile();
     await expect(compressFileIfNeeded(original)).rejects.toThrow(
-      /image|compress|re-encod/i
+      /image|compress|re-encod/i,
     );
   });
 });

@@ -4,21 +4,27 @@ import { useDialogBehaviour } from "../common/useDialogBehaviour";
 import { Link } from "react-router-dom";
 import { FiX, FiGrid, FiChevronRight, FiChevronDown } from "react-icons/fi";
 import { TbSofa, TbBed, TbLamp2 } from "react-icons/tb";
-import { MdTableRestaurant, MdKitchen, MdOutlineBedroomParent, MdOutlineLiving, MdOutlineYard } from "react-icons/md";
+import {
+  MdTableRestaurant,
+  MdKitchen,
+  MdOutlineBedroomParent,
+  MdOutlineLiving,
+  MdOutlineYard,
+} from "react-icons/md";
 import { PiDesk } from "react-icons/pi";
 import { useCategoryTree } from "../../hooks/product/useCategoryTan";
 import { useRooms, useCollections } from "../../hooks/catalog/useCatalogTan";
 
 const iconMap = {
-  "sofas": <TbSofa size={18} />,
-  "beds": <TbBed size={18} />,
-  "dining": <MdTableRestaurant size={18} />,
-  "living": <MdOutlineLiving size={18} />,
-  "bedroom": <MdOutlineBedroomParent size={18} />,
-  "kitchen": <MdKitchen size={18} />,
-  "desks": <PiDesk size={18} />,
-  "outdoor": <MdOutlineYard size={18} />,
-  "lighting": <TbLamp2 size={18} />,
+  sofas: <TbSofa size={18} />,
+  beds: <TbBed size={18} />,
+  dining: <MdTableRestaurant size={18} />,
+  living: <MdOutlineLiving size={18} />,
+  bedroom: <MdOutlineBedroomParent size={18} />,
+  kitchen: <MdKitchen size={18} />,
+  desks: <PiDesk size={18} />,
+  outdoor: <MdOutlineYard size={18} />,
+  lighting: <TbLamp2 size={18} />,
 };
 
 const getCategoryIcon = (categoryName) => {
@@ -31,10 +37,13 @@ const getCategoryIcon = (categoryName) => {
 };
 
 const childrenOf = (category) => {
-  const nested = Array.isArray(category?.subcategories) && category.subcategories.length
-    ? category.subcategories
-    : category?.children;
-  return Array.isArray(nested) ? nested.filter((child) => child && child.slug) : [];
+  const nested =
+    Array.isArray(category?.subcategories) && category.subcategories.length
+      ? category.subcategories
+      : category?.children;
+  return Array.isArray(nested)
+    ? nested.filter((child) => child && child.slug)
+    : [];
 };
 
 // Phase 7 (catalog): one category row — link plus an expand
@@ -54,10 +63,17 @@ function CategoryRow({ category, depth, expanded, onToggle, onClose }) {
           onClick={onClose}
           className="flex flex-1 items-center gap-3 no-underline text-[#1A1714]"
         >
-          <span className="text-[#6A6058] bg-[#F6F6F6] p-2 rounded-lg group-hover:bg-[#F27318] group-hover:text-white transition-colors">{getCategoryIcon(category.name)}</span>
+          <span className="text-[#6A6058] bg-[#F6F6F6] p-2 rounded-lg group-hover:bg-[#F27318] group-hover:text-white transition-colors">
+            {getCategoryIcon(category.name)}
+          </span>
           <span>{category.name}</span>
           {typeof category.productCount === "number" && (
-            <span aria-hidden="true" className="text-[11px] font-bold text-black/25">{category.productCount}</span>
+            <span
+              aria-hidden="true"
+              className="text-[11px] font-bold text-black/25"
+            >
+              {category.productCount}
+            </span>
           )}
         </Link>
         {children.length > 0 ? (
@@ -68,10 +84,17 @@ function CategoryRow({ category, depth, expanded, onToggle, onClose }) {
             aria-label={`${isExpanded ? "Collapse" : "Expand"} ${category.name} subcategories`}
             className="p-1.5 text-[#B8B4AE] hover:text-[#F27318] transition-colors"
           >
-            {isExpanded ? <FiChevronDown size={16} /> : <FiChevronRight size={16} />}
+            {isExpanded ? (
+              <FiChevronDown size={16} />
+            ) : (
+              <FiChevronRight size={16} />
+            )}
           </button>
         ) : (
-          <FiChevronRight size={16} className="text-[#DCDAD6] group-hover:text-[#F27318] transition-colors" />
+          <FiChevronRight
+            size={16}
+            className="text-[#DCDAD6] group-hover:text-[#F27318] transition-colors"
+          />
         )}
       </div>
       {isExpanded &&
@@ -103,7 +126,8 @@ export default function MobileMenu({ isOpen, onClose }) {
   const { data: roomsData } = useRooms();
   const rooms = roomsData?.data?.rooms || roomsData?.data || [];
   const { data: collectionsData } = useCollections();
-  const collections = collectionsData?.data?.collections || collectionsData?.data || [];
+  const collections =
+    collectionsData?.data?.collections || collectionsData?.data || [];
   const [expanded, setExpanded] = useState(() => new Set());
   const toggleExpanded = (slug) =>
     setExpanded((previous) => {
@@ -117,12 +141,12 @@ export default function MobileMenu({ isOpen, onClose }) {
     <>
       {/* Overlay */}
       {isOpen && (
-        <div 
-          className="fixed inset-0 bg-black/50 z-[60] backdrop-blur-sm transition-all duration-300" 
+        <div
+          className="fixed inset-0 bg-black/50 z-[60] backdrop-blur-sm transition-all duration-300"
           onClick={onClose}
         />
       )}
-      
+
       {/* Drawer */}
       <div
         ref={panelRef}
@@ -140,23 +164,38 @@ export default function MobileMenu({ isOpen, onClose }) {
           <div className="text-[20px] font-bold text-[#1A1714] tracking-[-0.03em]">
             Decor<em className="text-[#F27318] not-italic">X</em>
           </div>
-          <button onClick={onClose} aria-label="Close menu" className="p-2 -mr-2 text-[#B8B4AE] hover:text-[#1A1714] transition-colors rounded-full hover:bg-[#F9F8F6]">
+          <button
+            onClick={onClose}
+            aria-label="Close menu"
+            className="p-2 -mr-2 text-[#B8B4AE] hover:text-[#1A1714] transition-colors rounded-full hover:bg-[#F9F8F6]"
+          >
             <FiX size={22} />
           </button>
         </div>
 
         <div className="flex-1 overflow-y-auto py-5">
           <div className="px-4 mb-2">
-            <h3 className="text-[11px] font-extrabold text-[#B8B4AE] tracking-[0.1em] uppercase mb-4 px-2">Categories</h3>
+            <h3 className="text-[11px] font-extrabold text-[#B8B4AE] tracking-[0.1em] uppercase mb-4 px-2">
+              Categories
+            </h3>
             <div className="space-y-1">
-              <Link to="/shop" onClick={onClose} className="flex items-center justify-between p-3 rounded-xl hover:bg-[#F9F8F6] transition-colors text-[#1A1714] font-medium group no-underline">
+              <Link
+                to="/shop"
+                onClick={onClose}
+                className="flex items-center justify-between p-3 rounded-xl hover:bg-[#F9F8F6] transition-colors text-[#1A1714] font-medium group no-underline"
+              >
                 <div className="flex items-center gap-3">
-                  <span className="text-[#F27318] bg-[#FFF3EB] p-2 rounded-lg group-hover:bg-[#F27318] group-hover:text-white transition-colors"><FiGrid size={18} /></span>
+                  <span className="text-[#F27318] bg-[#FFF3EB] p-2 rounded-lg group-hover:bg-[#F27318] group-hover:text-white transition-colors">
+                    <FiGrid size={18} />
+                  </span>
                   <span>All Categories</span>
                 </div>
-                <FiChevronRight size={16} className="text-[#DCDAD6] group-hover:text-[#F27318] transition-colors" />
+                <FiChevronRight
+                  size={16}
+                  className="text-[#DCDAD6] group-hover:text-[#F27318] transition-colors"
+                />
               </Link>
-              
+
               {fetchedCategories.map((cat) => (
                 <CategoryRow
                   key={cat._id || cat.slug || cat.name}
@@ -172,12 +211,22 @@ export default function MobileMenu({ isOpen, onClose }) {
 
           {rooms.length > 0 && (
             <div className="px-4 mb-2 mt-6">
-              <h3 className="text-[11px] font-extrabold text-[#B8B4AE] tracking-[0.1em] uppercase mb-4 px-2">Rooms</h3>
+              <h3 className="text-[11px] font-extrabold text-[#B8B4AE] tracking-[0.1em] uppercase mb-4 px-2">
+                Rooms
+              </h3>
               <div className="space-y-1">
                 {rooms.map((room) => (
-                  <Link key={room.slug} to={`/rooms/${encodeURIComponent(room.slug)}`} onClick={onClose} className="flex items-center justify-between p-3 rounded-xl hover:bg-[#F9F8F6] transition-colors text-[#1A1714] font-medium group no-underline">
+                  <Link
+                    key={room.slug}
+                    to={`/rooms/${encodeURIComponent(room.slug)}`}
+                    onClick={onClose}
+                    className="flex items-center justify-between p-3 rounded-xl hover:bg-[#F9F8F6] transition-colors text-[#1A1714] font-medium group no-underline"
+                  >
                     <span>{room.label}</span>
-                    <FiChevronRight size={16} className="text-[#DCDAD6] group-hover:text-[#F27318] transition-colors" />
+                    <FiChevronRight
+                      size={16}
+                      className="text-[#DCDAD6] group-hover:text-[#F27318] transition-colors"
+                    />
                   </Link>
                 ))}
               </div>
@@ -186,12 +235,22 @@ export default function MobileMenu({ isOpen, onClose }) {
 
           {collections.length > 0 && (
             <div className="px-4 mb-2 mt-6">
-              <h3 className="text-[11px] font-extrabold text-[#B8B4AE] tracking-[0.1em] uppercase mb-4 px-2">Collections</h3>
+              <h3 className="text-[11px] font-extrabold text-[#B8B4AE] tracking-[0.1em] uppercase mb-4 px-2">
+                Collections
+              </h3>
               <div className="space-y-1">
                 {collections.map((collection) => (
-                  <Link key={collection.slug} to={`/collections/${encodeURIComponent(collection.slug)}`} onClick={onClose} className="flex items-center justify-between p-3 rounded-xl hover:bg-[#F9F8F6] transition-colors text-[#1A1714] font-medium group no-underline">
+                  <Link
+                    key={collection.slug}
+                    to={`/collections/${encodeURIComponent(collection.slug)}`}
+                    onClick={onClose}
+                    className="flex items-center justify-between p-3 rounded-xl hover:bg-[#F9F8F6] transition-colors text-[#1A1714] font-medium group no-underline"
+                  >
                     <span>{collection.label}</span>
-                    <FiChevronRight size={16} className="text-[#DCDAD6] group-hover:text-[#F27318] transition-colors" />
+                    <FiChevronRight
+                      size={16}
+                      className="text-[#DCDAD6] group-hover:text-[#F27318] transition-colors"
+                    />
                   </Link>
                 ))}
               </div>

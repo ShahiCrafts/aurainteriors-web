@@ -92,7 +92,7 @@ const OWNED_FILES = [
 describe("FE-63 owned-file sweep", () => {
   const root = path.resolve(
     path.dirname(fileURLToPath(import.meta.url)),
-    "../.."
+    "../..",
   );
   for (const rel of OWNED_FILES) {
     it(`${rel}: no ₹ / NRs. / Nrs. / toLocaleString money formatting`, () => {

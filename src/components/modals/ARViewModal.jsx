@@ -6,7 +6,10 @@ import { MdViewInAr } from "react-icons/md";
 
 export default function ARViewModal({ isOpen, onClose, product }) {
   const [isMobile, setIsMobile] = useState(false);
-  const [deviceInfo, setDeviceInfo] = useState({ isIOS: false, isAndroid: false });
+  const [deviceInfo, setDeviceInfo] = useState({
+    isIOS: false,
+    isAndroid: false,
+  });
 
   // FE-46: the former DEV "LAN IP" lookup fetched
   // `${VITE_API_BASE_URL || "http://localhost:8080"}/api/v1/system/info`
@@ -35,15 +38,20 @@ export default function ARViewModal({ isOpen, onClose, product }) {
   const modelAvailability = useMemo(() => {
     if (!product) return { hasGlb: false, hasUsdz: false, hasAny: false };
 
-    const hasGlb = product.modelFiles?.some(m => m.format === "glb" || m.format === "gltf") ||
-      product.modelUrl?.includes(".glb") || product.modelUrl?.includes(".gltf");
-    const hasUsdz = product.modelFiles?.some(m => m.format === "usdz") ||
+    const hasGlb =
+      product.modelFiles?.some(
+        (m) => m.format === "glb" || m.format === "gltf",
+      ) ||
+      product.modelUrl?.includes(".glb") ||
+      product.modelUrl?.includes(".gltf");
+    const hasUsdz =
+      product.modelFiles?.some((m) => m.format === "usdz") ||
       product.modelUrl?.includes(".usdz");
 
     return {
       hasGlb,
       hasUsdz,
-      hasAny: hasGlb || hasUsdz
+      hasAny: hasGlb || hasUsdz,
     };
   }, [product]);
 
@@ -59,7 +67,9 @@ export default function ARViewModal({ isOpen, onClose, product }) {
   // FE-46: QR base comes from existing config only — VITE_APP_URL when
   // configured, otherwise the origin the app is actually served from.
   // No server round-trip, no hardcoded host/port.
-  const baseUrl = (import.meta.env.VITE_APP_URL || window.location.origin).replace(/\/+$/, "");
+  const baseUrl = (
+    import.meta.env.VITE_APP_URL || window.location.origin
+  ).replace(/\/+$/, "");
 
   const arViewUrl = `${baseUrl}/ar/${encodeURIComponent(product.slug || product._id)}`;
 
@@ -102,7 +112,10 @@ export default function ARViewModal({ isOpen, onClose, product }) {
             <X size={18} strokeWidth={2} />
           </button>
 
-          <h3 id="ar-view-title" className="text-2xl font-bold text-gray-900 mb-2 text-center">
+          <h3
+            id="ar-view-title"
+            className="text-2xl font-bold text-gray-900 mb-2 text-center"
+          >
             View in Your Space
           </h3>
 
@@ -111,7 +124,8 @@ export default function ARViewModal({ isOpen, onClose, product }) {
               {!isMobile ? (
                 <>
                   <p className="text-[14px] text-gray-500 text-center mb-8 max-w-[280px]">
-                    Scan this QR code with your mobile device camera to launch the AR view.
+                    Scan this QR code with your mobile device camera to launch
+                    the AR view.
                   </p>
                   <div className="p-4 border border-gray-200 mb-6 bg-white shadow-sm">
                     <QRCodeSVG
@@ -125,7 +139,9 @@ export default function ARViewModal({ isOpen, onClose, product }) {
                   </div>
                   <p className="text-[14px] font-medium text-gray-400 text-center">
                     Supported: {modelAvailability.hasUsdz && "iOS"}
-                    {modelAvailability.hasUsdz && modelAvailability.hasGlb && " • "}
+                    {modelAvailability.hasUsdz &&
+                      modelAvailability.hasGlb &&
+                      " • "}
                     {modelAvailability.hasGlb && "Android"}
                   </p>
                 </>

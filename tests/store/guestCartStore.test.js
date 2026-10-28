@@ -227,9 +227,17 @@ describe("load path (module creation reads localStorage)", () => {
   it("filters out malformed entries and keeps the valid ones", async () => {
     const malformed = [
       { ...validLine, _id: 42 }, // non-string line id
-      { ...validLine, _id: "guest_x", product: { name: "No product id", price: 10 } }, // missing product._id
+      {
+        ...validLine,
+        _id: "guest_x",
+        product: { name: "No product id", price: 10 },
+      }, // missing product._id
       { ...validLine, _id: "guest_x", product: { _id: "p", price: -1 } }, // negative price
-      { ...validLine, _id: "guest_x", product: { _id: "p", price: Number.NaN } }, // NaN price (serializes to null)
+      {
+        ...validLine,
+        _id: "guest_x",
+        product: { _id: "p", price: Number.NaN },
+      }, // NaN price (serializes to null)
       { ...validLine, _id: "guest_x", quantity: 0 }, // non-positive quantity
       { ...validLine, _id: "guest_x", quantity: -1 },
       { ...validLine, _id: "guest_x", quantity: 1.5 }, // non-integer quantity

@@ -57,8 +57,19 @@ const deliveredOrder = {
   orderStatus: "delivered",
   total: 38000,
   items: [
-    { name: "Sofa", price: 15000, quantity: 2, product: "prod-1", variant: { color: "Red" } },
-    { name: "Oak Table", price: 8000, quantity: 1, product: { _id: "prod-2", slug: "oak-table" } },
+    {
+      name: "Sofa",
+      price: 15000,
+      quantity: 2,
+      product: "prod-1",
+      variant: { color: "Red" },
+    },
+    {
+      name: "Oak Table",
+      price: 8000,
+      quantity: 1,
+      product: { _id: "prod-2", slug: "oak-table" },
+    },
   ],
 };
 
@@ -73,7 +84,7 @@ function renderCard(order) {
   return render(
     <MemoryRouter>
       <OrderCard order={order} defaultExpanded />
-    </MemoryRouter>
+    </MemoryRouter>,
   );
 }
 
@@ -94,11 +105,11 @@ describe("OrderCard controls (FE-38)", () => {
     expect(mocks.addToCart).toHaveBeenCalledTimes(2);
     expect(mocks.addToCart).toHaveBeenCalledWith(
       { productId: "prod-1", quantity: 2, variant: { color: "Red" } },
-      expect.anything()
+      expect.anything(),
     );
     expect(mocks.addToCart).toHaveBeenCalledWith(
       { productId: "prod-2", quantity: 1, variant: {} },
-      expect.anything()
+      expect.anything(),
     );
     expect(mocks.guestAddItem).not.toHaveBeenCalled();
   });
@@ -111,7 +122,7 @@ describe("OrderCard controls (FE-38)", () => {
     expect(mocks.guestAddItem).toHaveBeenCalledWith(
       expect.objectContaining({ _id: "prod-1", name: "Sofa", price: 15000 }),
       2,
-      { color: "Red" }
+      { color: "Red" },
     );
     expect(mocks.addToCart).not.toHaveBeenCalled();
   });
@@ -160,7 +171,7 @@ describe("OrderCard controls (FE-38)", () => {
     fireEvent.click(submit);
     expect(mocks.requestReturn).toHaveBeenCalledWith(
       { id: "mongo-1", data: { reason: "Damaged on arrival" } },
-      expect.anything()
+      expect.anything(),
     );
   });
 

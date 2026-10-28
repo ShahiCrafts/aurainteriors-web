@@ -15,12 +15,19 @@ import { MemoryRouter } from "react-router-dom";
 // cards label their page-derived counts as page counts while the total
 // keeps coming from the server pagination.
 
-const { orderState } = vi.hoisted(() => ({ orderState: { data: null, params: null } }));
+const { orderState } = vi.hoisted(() => ({
+  orderState: { data: null, params: null },
+}));
 
 vi.mock("../../../src/hooks/order/useOrderTan", () => ({
   useMyOrders: (params) => {
     orderState.params = params;
-    return { data: orderState.data, isLoading: false, isError: false, refetch: vi.fn() };
+    return {
+      data: orderState.data,
+      isLoading: false,
+      isError: false,
+      refetch: vi.fn(),
+    };
   },
 }));
 
@@ -65,7 +72,7 @@ function renderSection() {
   return render(
     <MemoryRouter>
       <OrdersSection />
-    </MemoryRouter>
+    </MemoryRouter>,
   );
 }
 
@@ -74,10 +81,12 @@ describe("OrdersSection search/sort scope (FE-28)", () => {
     renderSection();
 
     expect(
-      screen.getByPlaceholderText(/search this page by order id or product/i)
+      screen.getByPlaceholderText(/search this page by order id or product/i),
     ).toBeInTheDocument();
     expect(
-      screen.getByText(/search and sort apply only to the orders loaded on this page/i)
+      screen.getByText(
+        /search and sort apply only to the orders loaded on this page/i,
+      ),
     ).toBeInTheDocument();
   });
 
@@ -95,7 +104,7 @@ describe("OrdersSection search/sort scope (FE-28)", () => {
 
     fireEvent.change(
       screen.getByPlaceholderText(/search this page by order id or product/i),
-      { target: { value: "Walnut" } }
+      { target: { value: "Walnut" } },
     );
 
     expect(screen.getByText(/ORD-001/)).toBeInTheDocument();
@@ -107,7 +116,7 @@ describe("OrdersSection search/sort scope (FE-28)", () => {
 
     fireEvent.change(
       screen.getByPlaceholderText(/search this page by order id or product/i),
-      { target: { value: "ORD-002" } }
+      { target: { value: "ORD-002" } },
     );
 
     expect(screen.getByText(/ORD-002/)).toBeInTheDocument();
@@ -119,9 +128,11 @@ describe("OrdersSection search/sort scope (FE-28)", () => {
 
     fireEvent.change(
       screen.getByPlaceholderText(/search this page by order id or product/i),
-      { target: { value: "no-such-thing" } }
+      { target: { value: "no-such-thing" } },
     );
 
-    expect(screen.getByText(/no orders match on this page/i)).toBeInTheDocument();
+    expect(
+      screen.getByText(/no orders match on this page/i),
+    ).toBeInTheDocument();
   });
 });

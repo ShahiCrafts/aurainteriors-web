@@ -60,7 +60,7 @@ function renderPage() {
       <Routes>
         <Route path="/blog/:slug" element={<BlogDetailsPage />} />
       </Routes>
-    </MemoryRouter>
+    </MemoryRouter>,
   );
 }
 
@@ -72,7 +72,7 @@ function tocLinks(container) {
 describe("buildBlogContent (FE-67 unit)", () => {
   it("assigns page-generated ids to sanitized headings in order", () => {
     const { html, sections } = buildBlogContent(
-      '<h2 id="author-chosen">First</h2><p>x</p><h2>Second</h2>'
+      '<h2 id="author-chosen">First</h2><p>x</p><h2>Second</h2>',
     );
     expect(sections).toEqual([
       { id: "section-1", title: "First" },
@@ -85,7 +85,7 @@ describe("buildBlogContent (FE-67 unit)", () => {
 
   it("strips hostile heading attributes before assigning ids", () => {
     const { html, sections } = buildBlogContent(
-      '<h2 id="__proto__" onclick="window.__pwned=1">Safe Text</h2>'
+      '<h2 id="__proto__" onclick="window.__pwned=1">Safe Text</h2>',
     );
     expect(sections).toEqual([{ id: "section-1", title: "Safe Text" }]);
     expect(html).not.toContain("__proto__");
@@ -162,7 +162,7 @@ describe("BlogDetailsPage TOC (FE-67)", () => {
     expect(links[1].textContent.trim()).toBe("Duplicate");
     expect(links[2].textContent.trim()).toBe("Duplicate");
     expect(links[1].getAttribute("href")).not.toBe(
-      links[2].getAttribute("href")
+      links[2].getAttribute("href"),
     );
     expect(links[3].textContent).toContain(longTitle);
 

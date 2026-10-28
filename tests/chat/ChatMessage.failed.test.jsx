@@ -24,7 +24,11 @@ const failedMessage = {
 describe("ChatMessage failed state (FE-19)", () => {
   it("marks a failed own message as failed with its error, not delivered", () => {
     const { container } = render(
-      <ChatMessage message={failedMessage} isOwnMessage={true} onRetry={vi.fn()} />,
+      <ChatMessage
+        message={failedMessage}
+        isOwnMessage={true}
+        onRetry={vi.fn()}
+      />,
     );
     expect(screen.getByText(/failed/i)).toBeInTheDocument();
     expect(screen.getByText(/network error/i)).toBeInTheDocument();
@@ -35,23 +39,50 @@ describe("ChatMessage failed state (FE-19)", () => {
 
   it("offers a retry button that calls onRetry with the message", () => {
     const onRetry = vi.fn();
-    render(<ChatMessage message={failedMessage} isOwnMessage={true} onRetry={onRetry} />);
+    render(
+      <ChatMessage
+        message={failedMessage}
+        isOwnMessage={true}
+        onRetry={onRetry}
+      />,
+    );
     fireEvent.click(screen.getByRole("button", { name: /retry/i }));
     expect(onRetry).toHaveBeenCalledTimes(1);
-    expect(onRetry.mock.calls[0][0]).toMatchObject({ _id: "opt-1", clientMessageId: "cm-1" });
+    expect(onRetry.mock.calls[0][0]).toMatchObject({
+      _id: "opt-1",
+      clientMessageId: "cm-1",
+    });
   });
 
   it("a pending message is not shown as failed", () => {
-    const pending = { ...failedMessage, _id: "opt-2", isPending: true, isFailed: false, sendError: undefined };
-    render(<ChatMessage message={pending} isOwnMessage={true} onRetry={vi.fn()} />);
+    const pending = {
+      ...failedMessage,
+      _id: "opt-2",
+      isPending: true,
+      isFailed: false,
+      sendError: undefined,
+    };
+    render(
+      <ChatMessage message={pending} isOwnMessage={true} onRetry={vi.fn()} />,
+    );
     expect(screen.queryByText(/failed to send/i)).not.toBeInTheDocument();
-    expect(screen.queryByRole("button", { name: /retry/i })).not.toBeInTheDocument();
+    expect(
+      screen.queryByRole("button", { name: /retry/i }),
+    ).not.toBeInTheDocument();
   });
 
   it("a delivered message shows no failed affordance", () => {
-    const ok = { ...failedMessage, _id: "m-ok", isFailed: false, sendError: undefined, deliveredAt: "2026-01-01T10:31:00.000Z" };
+    const ok = {
+      ...failedMessage,
+      _id: "m-ok",
+      isFailed: false,
+      sendError: undefined,
+      deliveredAt: "2026-01-01T10:31:00.000Z",
+    };
     render(<ChatMessage message={ok} isOwnMessage={true} onRetry={vi.fn()} />);
     expect(screen.queryByText(/failed to send/i)).not.toBeInTheDocument();
-    expect(screen.queryByRole("button", { name: /retry/i })).not.toBeInTheDocument();
+    expect(
+      screen.queryByRole("button", { name: /retry/i }),
+    ).not.toBeInTheDocument();
   });
 });

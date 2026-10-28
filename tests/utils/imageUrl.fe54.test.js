@@ -20,16 +20,15 @@ import {
 
 const CLOUDINARY =
   "https://res.cloudinary.com/demo/image/upload/v1234/sofa.jpg";
-const S3 =
-  "https://fabritor.s3.ap-southeast-1.amazonaws.com/models/chair.jpg";
+const S3 = "https://fabritor.s3.ap-southeast-1.amazonaws.com/models/chair.jpg";
 
 describe("getSizedImageUrl (FE-54)", () => {
   it("a Cloudinary URL gains the standard width + auto quality/format segment", () => {
     expect(getSizedImageUrl(CLOUDINARY, 400)).toBe(
-      "https://res.cloudinary.com/demo/image/upload/w_400,q_auto,f_webp/v1234/sofa.jpg"
+      "https://res.cloudinary.com/demo/image/upload/w_400,q_auto,f_webp/v1234/sofa.jpg",
     );
     expect(getSizedImageUrl(CLOUDINARY, 1200)).toBe(
-      "https://res.cloudinary.com/demo/image/upload/w_1200,q_auto,f_webp/v1234/sofa.jpg"
+      "https://res.cloudinary.com/demo/image/upload/w_1200,q_auto,f_webp/v1234/sofa.jpg",
     );
   });
 
@@ -37,10 +36,10 @@ describe("getSizedImageUrl (FE-54)", () => {
     expect(
       getSizedImageUrl(
         "https://res.cloudinary.com/demo/image/upload/sofa.jpg",
-        320
-      )
+        320,
+      ),
     ).toBe(
-      "https://res.cloudinary.com/demo/image/upload/w_320,q_auto,f_webp/sofa.jpg"
+      "https://res.cloudinary.com/demo/image/upload/w_320,q_auto,f_webp/sofa.jpg",
     );
   });
 
@@ -48,7 +47,7 @@ describe("getSizedImageUrl (FE-54)", () => {
     const already =
       "https://res.cloudinary.com/demo/image/upload/w_800,q_auto,f_webp/v1/sofa.jpg";
     expect(getSizedImageUrl(already, 400)).toBe(
-      "https://res.cloudinary.com/demo/image/upload/w_400,q_auto,f_webp/v1/sofa.jpg"
+      "https://res.cloudinary.com/demo/image/upload/w_400,q_auto,f_webp/v1/sofa.jpg",
     );
   });
 
@@ -56,10 +55,10 @@ describe("getSizedImageUrl (FE-54)", () => {
     expect(
       getSizedImageUrl(
         "https://res.cloudinary.com/demo/image/upload/c_fill,g_auto,w_800/v1/sofa.jpg",
-        600
-      )
+        600,
+      ),
     ).toBe(
-      "https://res.cloudinary.com/demo/image/upload/w_600,q_auto,f_webp,c_fill,g_auto/v1/sofa.jpg"
+      "https://res.cloudinary.com/demo/image/upload/w_600,q_auto,f_webp,c_fill,g_auto/v1/sofa.jpg",
     );
   });
 
@@ -78,7 +77,7 @@ describe("getSizedImageUrl (FE-54)", () => {
   it("an Unsplash URL is forced to WebP (fm=webp) at the requested width", () => {
     const sized = getSizedImageUrl(
       "https://images.unsplash.com/photo-123?w=800&auto=format&fit=crop",
-      1200
+      1200,
     );
     expect(sized).toContain("w=1200");
     expect(sized).toContain("fm=webp");
@@ -100,7 +99,7 @@ describe("getSizedImageUrl (FE-54)", () => {
   it("an Unsplash URL gets its width param set to the requested size", () => {
     const sized = getSizedImageUrl(
       "https://images.unsplash.com/photo-123?w=800&auto=format&fit=crop",
-      400
+      400,
     );
     expect(sized).toContain("w=400");
     expect(sized).not.toContain("w=800");
@@ -125,9 +124,9 @@ describe("getSizedImageUrl (FE-54)", () => {
       expect(resolved).toContain("w=400");
       expect(resolved).not.toContain("javascript:");
       expect(resolved).not.toContain("evil");
-      expect(FALLBACK_IMAGES.product.startsWith("https://images.unsplash.com/")).toBe(
-        true
-      );
+      expect(
+        FALLBACK_IMAGES.product.startsWith("https://images.unsplash.com/"),
+      ).toBe(true);
     }
   });
 });
@@ -136,7 +135,7 @@ describe("buildImageSrcSet (FE-54)", () => {
   it("builds width-descriptor entries from the sized Cloudinary variants", () => {
     expect(buildImageSrcSet(CLOUDINARY, [400, 800])).toBe(
       "https://res.cloudinary.com/demo/image/upload/w_400,q_auto,f_webp/v1234/sofa.jpg 400w, " +
-        "https://res.cloudinary.com/demo/image/upload/w_800,q_auto,f_webp/v1234/sofa.jpg 800w"
+        "https://res.cloudinary.com/demo/image/upload/w_800,q_auto,f_webp/v1234/sofa.jpg 800w",
     );
   });
 

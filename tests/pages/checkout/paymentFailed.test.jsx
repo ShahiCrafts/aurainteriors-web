@@ -40,7 +40,7 @@ function renderPage(entry) {
   return render(
     <MemoryRouter initialEntries={[entry]}>
       <PaymentFailedPage />
-    </MemoryRouter>
+    </MemoryRouter>,
   );
 }
 
@@ -82,9 +82,7 @@ describe("FE-43: all 8 server error codes render a specific message", () => {
 
   it("error=payment_reconciliation_required renders the verification-pending message, not the generic one", () => {
     renderCode("payment_reconciliation_required");
-    expect(
-      screen.getByText(/still being verified/i)
-    ).toBeInTheDocument();
+    expect(screen.getByText(/still being verified/i)).toBeInTheDocument();
     expect(screen.queryByText(GENERIC)).toBeNull();
   });
 });
@@ -104,17 +102,13 @@ describe("FE-43: payment_reconciliation_required never offers a retry payment", 
   it("renders NO Try Again control and NO link to /checkout", () => {
     const { container } = renderCode("payment_reconciliation_required");
     expect(screen.queryByText("Try Again")).toBeNull();
-    expect(
-      screen.queryByRole("link", { name: /try again/i })
-    ).toBeNull();
+    expect(screen.queryByRole("link", { name: /try again/i })).toBeNull();
     expect(container.querySelector('a[href="/checkout"]')).toBeNull();
     // Non-payment actions remain available.
     expect(
-      screen.getByRole("link", { name: /contact support/i })
+      screen.getByRole("link", { name: /contact support/i }),
     ).toBeInTheDocument();
-    expect(
-      screen.getByRole("link", { name: /go home/i })
-    ).toBeInTheDocument();
+    expect(screen.getByRole("link", { name: /go home/i })).toBeInTheDocument();
   });
 });
 
@@ -144,17 +138,19 @@ describe("FE-43: Try Again to /checkout is present for non-reconciliation states
   it("an unknown error code keeps the generic message WITH Try Again", () => {
     renderCode("some_future_code");
     expect(screen.getByText(GENERIC)).toBeInTheDocument();
-    expect(
-      screen.getByRole("link", { name: /try again/i })
-    ).toHaveAttribute("href", "/checkout");
+    expect(screen.getByRole("link", { name: /try again/i })).toHaveAttribute(
+      "href",
+      "/checkout",
+    );
   });
 
   it("a missing error param keeps the generic message WITH Try Again", () => {
     renderPage("/checkout/payment-failed");
     expect(screen.getByText(GENERIC)).toBeInTheDocument();
-    expect(
-      screen.getByRole("link", { name: /try again/i })
-    ).toHaveAttribute("href", "/checkout");
+    expect(screen.getByRole("link", { name: /try again/i })).toHaveAttribute(
+      "href",
+      "/checkout",
+    );
   });
 });
 
@@ -166,14 +162,16 @@ describe("FE-43: Try Again to /checkout is present for non-reconciliation states
 describe("FE-43 PEN-TEST: the orderId param is never rendered", () => {
   it("no 'Order Reference' renders even when ?orderId=XYZ is supplied", () => {
     renderPage("/checkout/payment-failed?error=missing_data&orderId=XYZ");
-    expect(screen.getByText("Payment data was not received properly.")).toBeInTheDocument();
+    expect(
+      screen.getByText("Payment data was not received properly."),
+    ).toBeInTheDocument();
     expect(screen.queryByText(/Order Reference/)).toBeNull();
     expect(screen.queryByText(/XYZ/)).toBeNull();
   });
 
   it("no 'Order Reference' renders for the reconciliation state either", () => {
     renderPage(
-      "/checkout/payment-failed?error=payment_reconciliation_required&orderId=XYZ"
+      "/checkout/payment-failed?error=payment_reconciliation_required&orderId=XYZ",
     );
     expect(screen.queryByText(/Order Reference/)).toBeNull();
     expect(screen.queryByText(/XYZ/)).toBeNull();
@@ -188,39 +186,42 @@ describe("FE-43 PEN-TEST: the orderId param is never rendered", () => {
 
 describe("FE-43 PEN-TEST: hostile and near-miss error values stay inert", () => {
   it("a script payload in ?error= falls back to the generic message and injects no markup", () => {
-    const payload = '<script>alert(1)</script>';
+    const payload = "<script>alert(1)</script>";
     const { container } = renderPage(
-      `/checkout/payment-failed?error=${encodeURIComponent(payload)}`
+      `/checkout/payment-failed?error=${encodeURIComponent(payload)}`,
     );
     expect(screen.getByText(GENERIC)).toBeInTheDocument();
     expect(container.innerHTML).not.toContain(payload);
     expect(container.innerHTML).not.toContain("alert(1)");
     expect(container.querySelector("script")).toBeNull();
     // Generic state keeps Try Again (it is NOT the reconciliation state).
-    expect(
-      screen.getByRole("link", { name: /try again/i })
-    ).toHaveAttribute("href", "/checkout");
+    expect(screen.getByRole("link", { name: /try again/i })).toHaveAttribute(
+      "href",
+      "/checkout",
+    );
   });
 
   it("a trailing-space near-miss does NOT trigger the reconciliation state", () => {
     renderPage(
       `/checkout/payment-failed?error=${encodeURIComponent(
-        "payment_reconciliation_required "
-      )}`
+        "payment_reconciliation_required ",
+      )}`,
     );
     expect(screen.getByText(GENERIC)).toBeInTheDocument();
     expect(screen.queryByText(/do not pay again/i)).toBeNull();
-    expect(
-      screen.getByRole("link", { name: /try again/i })
-    ).toHaveAttribute("href", "/checkout");
+    expect(screen.getByRole("link", { name: /try again/i })).toHaveAttribute(
+      "href",
+      "/checkout",
+    );
   });
 
   it("an uppercase near-miss does NOT trigger the reconciliation state", () => {
     renderCode("PAYMENT_RECONCILIATION_REQUIRED");
     expect(screen.getByText(GENERIC)).toBeInTheDocument();
     expect(screen.queryByText(/do not pay again/i)).toBeNull();
-    expect(
-      screen.getByRole("link", { name: /try again/i })
-    ).toHaveAttribute("href", "/checkout");
+    expect(screen.getByRole("link", { name: /try again/i })).toHaveAttribute(
+      "href",
+      "/checkout",
+    );
   });
 });

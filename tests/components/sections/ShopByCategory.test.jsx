@@ -41,12 +41,14 @@ describe("FE-62: ShopByCategory renders every category", () => {
     render(
       <MemoryRouter>
         <ShopByCategory />
-      </MemoryRouter>
+      </MemoryRouter>,
     );
 
     for (const category of CATEGORIES) {
       expect(screen.getByText(category.name)).toBeInTheDocument();
-      const link = screen.getByRole("link", { name: new RegExp(category.name) });
+      const link = screen.getByRole("link", {
+        name: new RegExp(category.name),
+      });
       // Phase 0.5: category links use the owner's canonical unified
       // scheme — shopCategoryUrl(slug) -> /shop?categories=<slug>
       // (src/utils/shopFilters.js), the same form the link-integrity
@@ -58,7 +60,7 @@ describe("FE-62: ShopByCategory renders every category", () => {
     // Exactly one link per category — no hidden/duplicated carousel
     // track rendering a second copy.
     expect(screen.getAllByRole("link")).toHaveLength(
-      CATEGORIES.length + 2 // + "View All Categories" header link + the New Arrivals PromoCard link
+      CATEGORIES.length + 2, // + "View All Categories" header link + the New Arrivals PromoCard link
     );
   });
 
@@ -71,12 +73,16 @@ describe("FE-62: ShopByCategory renders every category", () => {
     render(
       <MemoryRouter>
         <ShopByCategory />
-      </MemoryRouter>
+      </MemoryRouter>,
     );
 
-    expect(screen.getByText("Shop by Category", { selector: "p" })).toBeInTheDocument();
+    expect(
+      screen.getByText("Shop by Category", { selector: "p" }),
+    ).toBeInTheDocument();
     expect(screen.getByText("Explore Our Categories")).toBeInTheDocument();
-    expect(screen.getByRole("link", { name: /View All Categories/ })).toHaveAttribute("href", "/shop");
+    expect(
+      screen.getByRole("link", { name: /View All Categories/ }),
+    ).toHaveAttribute("href", "/shop");
     // Uploaded variant's grid: 2 -> 5 -> 8 across, square cards.
     const firstCard = screen.getByRole("link", { name: /Category 1/ });
     expect(firstCard.parentElement.className).toContain("lg:grid-cols-8");
@@ -87,11 +93,10 @@ describe("FE-62: ShopByCategory renders every category", () => {
     expect(screen.getByText("3 items")).toBeInTheDocument();
     // PromoCard: the shop's newest sort is the live route to new stock.
     expect(
-      screen.getByRole("heading", { name: /Fresh Pieces for a Better Home/ })
+      screen.getByRole("heading", { name: /Fresh Pieces for a Better Home/ }),
     ).toBeInTheDocument();
-    expect(screen.getByRole("link", { name: /Shop New Arrivals/ })).toHaveAttribute(
-      "href",
-      "/shop?sort=newest"
-    );
+    expect(
+      screen.getByRole("link", { name: /Shop New Arrivals/ }),
+    ).toHaveAttribute("href", "/shop?sort=newest");
   });
 });

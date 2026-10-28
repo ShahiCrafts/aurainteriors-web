@@ -15,10 +15,23 @@ const ROOM = {
 };
 
 vi.mock("../../../src/hooks/catalog/useCatalogTan", () => ({
-  useRooms: () => ({ data: { data: { rooms: [ROOM] } }, isLoading: false, error: null }),
-  useCreateRoom: () => ({ mutateAsync: vi.fn().mockResolvedValue({}), isPending: false }),
-  useUpdateRoom: () => ({ mutateAsync: vi.fn().mockResolvedValue({}), isPending: false }),
-  useDeleteRoom: () => ({ mutateAsync: vi.fn().mockResolvedValue({}), isPending: false }),
+  useRooms: () => ({
+    data: { data: { rooms: [ROOM] } },
+    isLoading: false,
+    error: null,
+  }),
+  useCreateRoom: () => ({
+    mutateAsync: vi.fn().mockResolvedValue({}),
+    isPending: false,
+  }),
+  useUpdateRoom: () => ({
+    mutateAsync: vi.fn().mockResolvedValue({}),
+    isPending: false,
+  }),
+  useDeleteRoom: () => ({
+    mutateAsync: vi.fn().mockResolvedValue({}),
+    isPending: false,
+  }),
 }));
 
 vi.mock("../../../src/components/modals/ConfirmationDialog", () => ({

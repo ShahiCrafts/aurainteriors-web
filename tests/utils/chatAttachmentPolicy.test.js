@@ -42,7 +42,11 @@ describe("validateChatFiles", () => {
   it("accepts up to 3 valid files", () => {
     expect(validateChatFiles([file()])).toBeNull();
     expect(
-      validateChatFiles([file("image/jpeg"), file("image/gif"), file("application/pdf")]),
+      validateChatFiles([
+        file("image/jpeg"),
+        file("image/gif"),
+        file("application/pdf"),
+      ]),
     ).toBeNull();
   });
 
@@ -57,7 +61,12 @@ describe("validateChatFiles", () => {
     expect(validateChatFiles(files)).toBe(COUNT_ERROR);
 
     // Even when the extra files are also invalid by type, count wins.
-    const badFiles = [file("text/plain"), file("text/plain"), file("text/plain"), file("text/plain")];
+    const badFiles = [
+      file("text/plain"),
+      file("text/plain"),
+      file("text/plain"),
+      file("text/plain"),
+    ];
     expect(validateChatFiles(badFiles)).toBe(COUNT_ERROR);
   });
 
@@ -74,19 +83,27 @@ describe("validateChatFiles", () => {
   });
 
   it("rejects files over 10 MB but accepts exactly 10 MB and 1 byte", () => {
-    expect(validateChatFiles([file("image/png", MAX_ATTACHMENT_BYTES + 1)])).toBe(SIZE_ERROR);
-    expect(validateChatFiles([file("image/png", MAX_ATTACHMENT_BYTES)])).toBeNull();
+    expect(
+      validateChatFiles([file("image/png", MAX_ATTACHMENT_BYTES + 1)]),
+    ).toBe(SIZE_ERROR);
+    expect(
+      validateChatFiles([file("image/png", MAX_ATTACHMENT_BYTES)]),
+    ).toBeNull();
     expect(validateChatFiles([file("image/png", 1)])).toBeNull();
   });
 
   it("checks type before size for the same file", () => {
-    expect(validateChatFiles([file("text/plain", MAX_ATTACHMENT_BYTES + 1)])).toBe(TYPE_ERROR);
+    expect(
+      validateChatFiles([file("text/plain", MAX_ATTACHMENT_BYTES + 1)]),
+    ).toBe(TYPE_ERROR);
   });
 
   it("reports the first offending file in list order", () => {
     // First file has a size problem, second a type problem: size wins
     // because validation walks the files in order.
-    expect(validateChatFiles([file("image/png", 0), file("text/plain")])).toBe(SIZE_ERROR);
+    expect(validateChatFiles([file("image/png", 0), file("text/plain")])).toBe(
+      SIZE_ERROR,
+    );
     expect(validateChatFiles([file(), file("text/plain")])).toBe(TYPE_ERROR);
   });
 });

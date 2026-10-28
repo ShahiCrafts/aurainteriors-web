@@ -18,7 +18,7 @@ describe("StatCard (FE-14)", () => {
         trendUp={true}
         trendLabel="vs last month"
         icon={DollarSign}
-      />
+      />,
     );
 
     expect(screen.getByText("Net Revenue")).toBeInTheDocument();

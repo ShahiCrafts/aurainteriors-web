@@ -21,7 +21,7 @@ function renderDialog(onConfirm, extra = {}) {
       onCancel={vi.fn()}
       confirmText="Delete"
       {...extra}
-    />
+    />,
   );
 }
 
@@ -30,7 +30,10 @@ const cancelBtn = () => screen.getByRole("button", { name: /cancel/i });
 
 function deferred() {
   let resolve, reject;
-  const promise = new Promise((res, rej) => { resolve = res; reject = rej; });
+  const promise = new Promise((res, rej) => {
+    resolve = res;
+    reject = rej;
+  });
   return { promise, resolve, reject };
 }
 
@@ -51,7 +54,9 @@ describe("ConfirmationDialog double-submit protection (FE-37)", () => {
     expect(btn).toBeDisabled();
     expect(cancel).toBeDisabled();
 
-    await act(async () => { d.resolve(); });
+    await act(async () => {
+      d.resolve();
+    });
 
     expect(btn).not.toBeDisabled();
     expect(cancel).not.toBeDisabled();
@@ -90,7 +95,9 @@ describe("ConfirmationDialog double-submit protection (FE-37)", () => {
     expect(onConfirm).toHaveBeenCalledTimes(1);
     expect(btn).toBeDisabled();
 
-    await act(async () => { d.reject(new Error("delete failed")); });
+    await act(async () => {
+      d.reject(new Error("delete failed"));
+    });
 
     expect(btn).not.toBeDisabled();
     expect(cancel).not.toBeDisabled();

@@ -1,5 +1,9 @@
-import { API_V1_URL, SOCKET_URL } from '../config/constants';
-import { validateMediaUrl, isAbsoluteUrlCandidate, cleanUrlValue } from './safeUrl';
+import { API_V1_URL, SOCKET_URL } from "../config/constants";
+import {
+  validateMediaUrl,
+  isAbsoluteUrlCandidate,
+  cleanUrlValue,
+} from "./safeUrl";
 
 /**
  * Centralized image URL construction utility
@@ -16,11 +20,13 @@ const UNSPLASH_BASE_URL = "https://images.unsplash.com";
 
 // Default fallback images
 export const FALLBACK_IMAGES = {
-  product: "https://images.unsplash.com/photo-1555041469-a586c61ea9bc?w=800&auto=format&fit=crop",
+  product:
+    "https://images.unsplash.com/photo-1555041469-a586c61ea9bc?w=800&auto=format&fit=crop",
   avatar: null, // FE-06: no placeholder service — InitialsAvatar renders locally
   blog: "https://images.unsplash.com/photo-1618221195710-dd6b41faaea6?w=800&q=80",
-  category: "https://images.unsplash.com/photo-1555041469-a586c61ea9bc?w=400&auto=format&fit=crop",
-  chat: null
+  category:
+    "https://images.unsplash.com/photo-1555041469-a586c61ea9bc?w=400&auto=format&fit=crop",
+  chat: null,
 };
 
 /**
@@ -39,7 +45,9 @@ const isUnsplashPhotoId = (url) => {
  */
 export const getImageUrl = (path, type = "products", fallback = null) => {
   const resolveFallback = () =>
-    fallback || FALLBACK_IMAGES[type.replace(/s$/, "")] || FALLBACK_IMAGES.product;
+    fallback ||
+    FALLBACK_IMAGES[type.replace(/s$/, "")] ||
+    FALLBACK_IMAGES.product;
 
   // Return fallback if no path
   if (typeof path !== "string" || !path.trim()) {
@@ -60,8 +68,10 @@ export const getImageUrl = (path, type = "products", fallback = null) => {
   // attacker host ending in that label, or a path segment on another
   // host) is validated as the absolute URL it actually is and
   // rejected to the fallback.
-  if (path.includes('res.cloudinary.com')) {
-    const candidate = path.startsWith('//') ? `https:${path}` : `https://${path}`;
+  if (path.includes("res.cloudinary.com")) {
+    const candidate = path.startsWith("//")
+      ? `https:${path}`
+      : `https://${path}`;
     return validateMediaUrl(candidate, { fallback: resolveFallback() });
   }
 
@@ -74,7 +84,7 @@ export const getImageUrl = (path, type = "products", fallback = null) => {
   }
 
   // Remove potential leading slashes
-  let cleanPath = path.startsWith('/') ? path.slice(1) : path;
+  let cleanPath = path.startsWith("/") ? path.slice(1) : path;
 
   // If the path already includes 'uploads/', assume it's a full path from root
   if (cleanPath.startsWith("uploads/")) {
@@ -121,7 +131,8 @@ export const IMAGE_VARIANT_WIDTHS = [600, 1200, 1920];
  * caller's fallback BEFORE any transform is considered, and a
  * transform is only ever applied to a validated URL.
  */
-const CLOUDINARY_TRANSFORM_SEGMENT = /^([a-z]{1,3}_[^,/]+)(,[a-z]{1,3}_[^,/]+)*$/;
+const CLOUDINARY_TRANSFORM_SEGMENT =
+  /^([a-z]{1,3}_[^,/]+)(,[a-z]{1,3}_[^,/]+)*$/;
 
 function applySizeTransform(resolvedUrl, width) {
   let url;
@@ -149,10 +160,14 @@ function applySizeTransform(resolvedUrl, width) {
     if (looksLikeTransform) {
       keptParams = firstSegment
         .split(",")
-        .filter((param) => !["w", "q", "f", "dpr"].includes(param.split("_")[0]));
+        .filter(
+          (param) => !["w", "q", "f", "dpr"].includes(param.split("_")[0]),
+        );
       segments.shift();
     }
-    const transform = [`w_${width}`, "q_auto", "f_webp", ...keptParams].join(",");
+    const transform = [`w_${width}`, "q_auto", "f_webp", ...keptParams].join(
+      ",",
+    );
     url.pathname =
       url.pathname.slice(0, markerIndex + marker.length) +
       transform +
@@ -161,7 +176,10 @@ function applySizeTransform(resolvedUrl, width) {
     return url.href;
   }
 
-  if (url.hostname === "images.unsplash.com" || url.hostname === "plus.unsplash.com") {
+  if (
+    url.hostname === "images.unsplash.com" ||
+    url.hostname === "plus.unsplash.com"
+  ) {
     url.searchParams.set("w", String(width));
     url.searchParams.set("fm", "webp");
     url.searchParams.delete("auto");
@@ -222,14 +240,22 @@ const primaryImagePath = (product) =>
 export const getProductImageUrl = (product, fallback = null) => {
   // FE-03: no external-URL short-circuit — getImageUrl validates
   // absolute values through validateMediaUrl and joins relative ones.
-  return getImageUrl(primaryImagePath(product), "products", fallback || FALLBACK_IMAGES.product);
+  return getImageUrl(
+    primaryImagePath(product),
+    "products",
+    fallback || FALLBACK_IMAGES.product,
+  );
 };
 
 /**
  * FE-54: srcSet for a product's primary image (see buildImageSrcSet —
  * undefined when the image's host has no transform scheme).
  */
-export const getProductImageSrcSet = (product, widths = IMAGE_VARIANT_WIDTHS, fallback = null) => {
+export const getProductImageSrcSet = (
+  product,
+  widths = IMAGE_VARIANT_WIDTHS,
+  fallback = null,
+) => {
   return buildImageSrcSet(primaryImagePath(product), widths, {
     type: "products",
     fallback: fallback || FALLBACK_IMAGES.product,
@@ -299,8 +325,10 @@ const resolveModelUrl = (rawUrl) => {
   if (isAbsoluteUrlCandidate(rawUrl)) {
     return validateMediaUrl(rawUrl, { fallback: null });
   }
-  if (cleanUrlValue(rawUrl)?.includes('res.cloudinary.com')) {
-    return validateMediaUrl(`https://${cleanUrlValue(rawUrl)}`, { fallback: null });
+  if (cleanUrlValue(rawUrl)?.includes("res.cloudinary.com")) {
+    return validateMediaUrl(`https://${cleanUrlValue(rawUrl)}`, {
+      fallback: null,
+    });
   }
   return getImageUrl(rawUrl, "models");
 };
@@ -312,9 +340,11 @@ export const getModelUrl = (product, format = null) => {
   if (product?.modelFiles?.length > 0) {
     let model;
     if (format) {
-      model = product.modelFiles.find(m => m.format === format);
+      model = product.modelFiles.find((m) => m.format === format);
     } else {
-      model = product.modelFiles.find(m => m.format === "glb" || m.format === "gltf");
+      model = product.modelFiles.find(
+        (m) => m.format === "glb" || m.format === "gltf",
+      );
     }
 
     if (model) {

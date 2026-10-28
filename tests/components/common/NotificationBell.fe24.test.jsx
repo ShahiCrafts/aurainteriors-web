@@ -10,7 +10,13 @@
 //     fetch response never overwrites a newer one.
 
 import { describe, it, expect, vi, beforeEach } from "vitest";
-import { render, screen, fireEvent, waitFor, act } from "@testing-library/react";
+import {
+  render,
+  screen,
+  fireEvent,
+  waitFor,
+  act,
+} from "@testing-library/react";
 
 const hoisted = vi.hoisted(() => ({
   navigate: vi.fn(),
@@ -66,8 +72,12 @@ import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 // (useNotificationsTan), so renders need a provider. retry:false keeps
 // the deferred/rejected fetch tests deterministic.
 const renderBell = (ui) => {
-  const client = new QueryClient({ defaultOptions: { queries: { retry: false }, mutations: { retry: false } } });
-  return render(<QueryClientProvider client={client}>{ui}</QueryClientProvider>);
+  const client = new QueryClient({
+    defaultOptions: { queries: { retry: false }, mutations: { retry: false } },
+  });
+  return render(
+    <QueryClientProvider client={client}>{ui}</QueryClientProvider>,
+  );
 };
 
 const USER = { _id: "admin-1", role: "admin" };
@@ -93,7 +103,9 @@ function deferred() {
 beforeEach(() => {
   vi.clearAllMocks();
   hoisted.api = {
-    getNotifications: vi.fn(async () => ({ data: { notifications: [], total: 0, totalPages: 1 } })),
+    getNotifications: vi.fn(async () => ({
+      data: { notifications: [], total: 0, totalPages: 1 },
+    })),
     getUnreadCount: vi.fn(async () => ({ data: { unreadCount: 0 } })),
     markAsRead: vi.fn(async () => ({})),
     markMultipleAsRead: vi.fn(async () => ({})),
@@ -108,7 +120,9 @@ describe("FE-24 NotificationBell", () => {
       data: { notifications: page, total: 25, totalPages: 3 },
     });
 
-    const { container } = renderBell(<NotificationBell user={USER} token="t" />);
+    const { container } = renderBell(
+      <NotificationBell user={USER} token="t" />,
+    );
 
     const badge = await screen.findByText("25");
     expect(badge).toBeInTheDocument();
@@ -120,40 +134,48 @@ describe("FE-24 NotificationBell", () => {
   it("'Mark all read' calls the API for ALL unread (not just the visible page) and zeroes the badge", async () => {
     hoisted.api.getUnreadCount.mockResolvedValue({ data: { unreadCount: 3 } });
     const visible = [notif("a"), notif("b"), notif("c", { isRead: true })];
-    hoisted.api.getNotifications.mockImplementation(async (page, limit, filters) => {
-      if (filters?.isRead === false) {
-        return {
-          data: {
-            notifications: [notif("a"), notif("b"), notif("d")],
-            total: 3,
-            totalPages: 1,
-          },
-        };
-      }
-      return { data: { notifications: visible, total: 4, totalPages: 1 } };
-    });
+    hoisted.api.getNotifications.mockImplementation(
+      async (page, limit, filters) => {
+        if (filters?.isRead === false) {
+          return {
+            data: {
+              notifications: [notif("a"), notif("b"), notif("d")],
+              total: 3,
+              totalPages: 1,
+            },
+          };
+        }
+        return { data: { notifications: visible, total: 4, totalPages: 1 } };
+      },
+    );
 
-    const { container } = renderBell(<NotificationBell user={USER} token="t" />);
+    const { container } = renderBell(
+      <NotificationBell user={USER} token="t" />,
+    );
     await screen.findByText("3");
     fireEvent.click(container.querySelector("button"));
     const markAll = await screen.findByText("Mark all read");
     fireEvent.click(markAll);
 
     await waitFor(() =>
-      expect(hoisted.api.markMultipleAsRead).toHaveBeenCalledTimes(1)
+      expect(hoisted.api.markMultipleAsRead).toHaveBeenCalledTimes(1),
     );
     // Includes "d", which was never on the visible first page.
     expect(hoisted.api.markMultipleAsRead).toHaveBeenCalledWith(
-      expect.arrayContaining(["a", "b", "d"])
+      expect.arrayContaining(["a", "b", "d"]),
     );
-    await waitFor(() => expect(screen.queryByText("3")).not.toBeInTheDocument());
+    await waitFor(() =>
+      expect(screen.queryByText("3")).not.toBeInTheDocument(),
+    );
   });
 
   it("a socket notification arriving during a slow fetch survives the fetch resolving", async () => {
     const slow = deferred();
     hoisted.api.getNotifications.mockReturnValue(slow.promise);
 
-    const { container } = renderBell(<NotificationBell user={USER} token="t" />);
+    const { container } = renderBell(
+      <NotificationBell user={USER} token="t" />,
+    );
     fireEvent.click(container.querySelector("button")); // open -> fetch starts
 
     act(() => {
@@ -162,7 +184,9 @@ describe("FE-24 NotificationBell", () => {
     await screen.findByText("Realtime arrival");
 
     await act(async () => {
-      slow.resolve({ data: { notifications: [notif("rest-1")], total: 1, totalPages: 1 } });
+      slow.resolve({
+        data: { notifications: [notif("rest-1")], total: 1, totalPages: 1 },
+      });
     });
 
     // Both the realtime item and the REST item are present.
@@ -177,19 +201,25 @@ describe("FE-24 NotificationBell", () => {
       .mockReturnValueOnce(first.promise)
       .mockReturnValueOnce(second.promise);
 
-    const { container } = renderBell(<NotificationBell user={USER} token="t" />);
+    const { container } = renderBell(
+      <NotificationBell user={USER} token="t" />,
+    );
     const bell = container.querySelector("button");
     fireEvent.click(bell); // open -> fetch #1 (slow)
     fireEvent.click(bell); // close
     fireEvent.click(bell); // reopen -> fetch #2
 
     await act(async () => {
-      second.resolve({ data: { notifications: [notif("newer")], total: 1, totalPages: 1 } });
+      second.resolve({
+        data: { notifications: [notif("newer")], total: 1, totalPages: 1 },
+      });
     });
     expect(await screen.findByText("Notice newer")).toBeInTheDocument();
 
     await act(async () => {
-      first.resolve({ data: { notifications: [notif("stale")], total: 1, totalPages: 1 } });
+      first.resolve({
+        data: { notifications: [notif("stale")], total: 1, totalPages: 1 },
+      });
     });
     expect(screen.queryByText("Notice stale")).not.toBeInTheDocument();
     expect(screen.getByText("Notice newer")).toBeInTheDocument();
@@ -199,7 +229,9 @@ describe("FE-24 NotificationBell", () => {
     const slow = deferred();
     hoisted.api.getNotifications.mockReturnValue(slow.promise);
 
-    const { container } = renderBell(<NotificationBell user={USER} token="t" />);
+    const { container } = renderBell(
+      <NotificationBell user={USER} token="t" />,
+    );
     fireEvent.click(container.querySelector("button"));
 
     act(() => {
@@ -208,7 +240,10 @@ describe("FE-24 NotificationBell", () => {
     await act(async () => {
       slow.resolve({
         data: {
-          notifications: [notif("dup-1", { title: "Duplicated arrival" }), notif("other")],
+          notifications: [
+            notif("dup-1", { title: "Duplicated arrival" }),
+            notif("other"),
+          ],
           total: 2,
           totalPages: 1,
         },
@@ -222,12 +257,16 @@ describe("FE-24 NotificationBell", () => {
   it("a failed fetch shows an error state, not 'No notifications found'", async () => {
     hoisted.api.getNotifications.mockRejectedValue(new Error("500"));
 
-    const { container } = renderBell(<NotificationBell user={USER} token="t" />);
+    const { container } = renderBell(
+      <NotificationBell user={USER} token="t" />,
+    );
     fireEvent.click(container.querySelector("button"));
 
     expect(
-      await screen.findByText(/couldn't load notifications/i)
+      await screen.findByText(/couldn't load notifications/i),
     ).toBeInTheDocument();
-    expect(screen.queryByText("No notifications found.")).not.toBeInTheDocument();
+    expect(
+      screen.queryByText("No notifications found."),
+    ).not.toBeInTheDocument();
   });
 });

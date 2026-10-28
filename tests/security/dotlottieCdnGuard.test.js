@@ -18,7 +18,10 @@ import { readdirSync, readFileSync, statSync } from "node:fs";
 import path from "node:path";
 import { fileURLToPath } from "node:url";
 
-const SRC_ROOT = path.resolve(path.dirname(fileURLToPath(import.meta.url)), "../../src");
+const SRC_ROOT = path.resolve(
+  path.dirname(fileURLToPath(import.meta.url)),
+  "../../src",
+);
 
 function collectSourceFiles(dir) {
   const out = [];
@@ -37,11 +40,17 @@ describe("FE-07 dotlottie CDN guard", () => {
   it("no src file imports a @lottiefiles package", () => {
     const hits = [];
     for (const file of files) {
-      readFileSync(file, "utf8").split("\n").forEach((line, i) => {
-        if (/from\s+["']@lottiefiles\/|import\(\s*["']@lottiefiles\/|require\(\s*["']@lottiefiles\//.test(line)) {
-          hits.push(`${rel(file)}:${i + 1} ${line.trim()}`);
-        }
-      });
+      readFileSync(file, "utf8")
+        .split("\n")
+        .forEach((line, i) => {
+          if (
+            /from\s+["']@lottiefiles\/|import\(\s*["']@lottiefiles\/|require\(\s*["']@lottiefiles\//.test(
+              line,
+            )
+          ) {
+            hits.push(`${rel(file)}:${i + 1} ${line.trim()}`);
+          }
+        });
     }
     expect(hits).toEqual([]);
   });
@@ -49,9 +58,12 @@ describe("FE-07 dotlottie CDN guard", () => {
   it("no src file references the unpkg CDN domain", () => {
     const hits = [];
     for (const file of files) {
-      readFileSync(file, "utf8").split("\n").forEach((line, i) => {
-        if (/unpkg\.com/.test(line)) hits.push(`${rel(file)}:${i + 1} ${line.trim()}`);
-      });
+      readFileSync(file, "utf8")
+        .split("\n")
+        .forEach((line, i) => {
+          if (/unpkg\.com/.test(line))
+            hits.push(`${rel(file)}:${i + 1} ${line.trim()}`);
+        });
     }
     expect(hits).toEqual([]);
   });

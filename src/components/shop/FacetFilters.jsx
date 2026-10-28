@@ -9,7 +9,10 @@
 import { useMemo, useState } from "react";
 import { Search, Star, X } from "lucide-react";
 import { FilterCheckbox } from "./FilterSidebar";
-import { LEGACY_FACET_KEYS, facetGroupVisible } from "../../utils/catalogListing";
+import {
+  LEGACY_FACET_KEYS,
+  facetGroupVisible,
+} from "../../utils/catalogListing";
 
 // Post-delivery fix (catalog): options the payload carries PLUS
 // any selected values it no longer lists (a group kept visible
@@ -38,7 +41,7 @@ const optionCount = (option) =>
 // option with value true/"true"; the URL selection is "true").
 function BooleanFacet({ facet, entry, onToggle }) {
   const option = (facet.options || []).find(
-    (item) => String(item.value) === "true"
+    (item) => String(item.value) === "true",
   );
   const checked = (entry?.values || []).includes("true");
   // No "true" option and nothing applied: nothing to offer. An
@@ -78,7 +81,11 @@ function ColorFacet({ facet, entry, onToggle }) {
               type="button"
               onClick={() => onToggle(facet.key, value)}
               aria-pressed={active}
-              title={option.count === undefined ? value : `${value} (${option.count})`}
+              title={
+                option.count === undefined
+                  ? value
+                  : `${value} (${option.count})`
+              }
               className={`flex items-center gap-1.5 rounded-full border py-1 pl-1 pr-2.5 text-xs font-dm-sans transition-all ${
                 active
                   ? "border-[#F27318] bg-[#F27318]/10 text-[#1A1714]"
@@ -123,7 +130,10 @@ function RangeFacet({ facet, entry, onRange }) {
     min: entry?.min ?? null,
     max: entry?.max ?? null,
   });
-  if (prevEntry.min !== (entry?.min ?? null) || prevEntry.max !== (entry?.max ?? null)) {
+  if (
+    prevEntry.min !== (entry?.min ?? null) ||
+    prevEntry.max !== (entry?.max ?? null)
+  ) {
     setPrevEntry({ min: entry?.min ?? null, max: entry?.max ?? null });
     setMin(entry?.min ?? "");
     setMax(entry?.max ?? "");
@@ -170,13 +180,13 @@ function CheckboxFacet({ facet, entry, onToggle }) {
   const [query, setQuery] = useState("");
   const options = useMemo(
     () => withSelectedOptions(facet, entry),
-    [facet, entry]
+    [facet, entry],
   );
   const visible = useMemo(() => {
     const needle = query.trim().toLowerCase();
     if (!needle) return options;
     return options.filter((option) =>
-      String(option.value).toLowerCase().includes(needle)
+      String(option.value).toLowerCase().includes(needle),
     );
   }, [options, query]);
   const selected = new Set(entry?.values || []);
@@ -258,12 +268,12 @@ export default function FacetSections({
   if (!facets) return null;
   const roomOptions = facets.room?.options || [];
   const availability = (facets.availability?.options || []).find(
-    (option) => option.value === "inStock"
+    (option) => option.value === "inStock",
   );
   const attributes = (facets.attributes || []).filter(
     (facet) =>
       !LEGACY_FACET_KEYS.has(facet.key) &&
-      facetGroupVisible(facet, selection[facet.key])
+      facetGroupVisible(facet, selection[facet.key]),
   );
   const showRoom = !hideRoom && roomOptions.length > 0;
   if (!showRoom && !availability && attributes.length === 0) return null;

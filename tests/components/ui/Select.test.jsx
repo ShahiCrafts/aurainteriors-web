@@ -30,7 +30,9 @@ describe("Select", () => {
     }
     render(<Harness />);
     const select = screen.getByLabelText("Sort by");
-    expect(screen.getByRole("option", { name: "Newest first" })).toBeInTheDocument();
+    expect(
+      screen.getByRole("option", { name: "Newest first" }),
+    ).toBeInTheDocument();
     expect(screen.getByRole("option", { name: "Archived" })).toBeDisabled();
     expect(select).toHaveValue("newest");
 

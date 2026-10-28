@@ -1,22 +1,20 @@
 import { chronologicalMessages } from "../../utils/chatMessages";
-import { Suspense, lazy, useEffect, useMemo, useCallback } from 'react';
+import { Suspense, lazy, useEffect, useMemo, useCallback } from "react";
+import { Plus, Headset, Package, Sofa, ArrowRight } from "lucide-react";
+import Skeleton, { ChatMessageSkeleton } from "../common/Skeleton";
+import { motion, AnimatePresence } from "framer-motion";
 import {
-  Plus,
-  Headset,
-  Package,
-  Sofa,
-  ArrowRight,
-} from "lucide-react";
-import Skeleton, { ChatMessageSkeleton } from '../common/Skeleton';
-import { motion, AnimatePresence } from 'framer-motion';
-import { useChatMessages, useMarkMessagesRead, useSendMessage } from '../../hooks/chat/useChatTan';
-import useChatSocket from '../../hooks/chat/useChatSocket';
-import useNotificationSocket from '../../hooks/notification/useNotificationSocket';
-import useAuthStore from '../../store/authStore';
+  useChatMessages,
+  useMarkMessagesRead,
+  useSendMessage,
+} from "../../hooks/chat/useChatTan";
+import useChatSocket from "../../hooks/chat/useChatSocket";
+import useNotificationSocket from "../../hooks/notification/useNotificationSocket";
+import useAuthStore from "../../store/authStore";
 import { useShallow } from "zustand/react/shallow";
-import { getGuestSessionId } from '../../utils/guestSessionStorage';
-import ChatMessageList from './ChatMessageList';
-import ChatInput from './ChatInput';
+import { getGuestSessionId } from "../../utils/guestSessionStorage";
+import ChatMessageList from "./ChatMessageList";
+import ChatInput from "./ChatInput";
 
 // FE-49/FE-07: the empty-state animation lives in
 // DotLottieAnimation.jsx (a CSS/SVG animation since the FE-07
@@ -24,12 +22,24 @@ import ChatInput from './ChatInput';
 // loaded only when the empty state mounts. The Suspense fallback is
 // a static placeholder with the same footprint (the wrapping
 // w-40 h-40 box is unchanged), so the layout does not jump.
-const EmptyStateAnimation = lazy(() => import('./DotLottieAnimation'));
+const EmptyStateAnimation = lazy(() => import("./DotLottieAnimation"));
 
-const ChatWindow = ({ chat, onClose, onStartNew, onResetView, isCreatingChat }) => {
-  const { user, token } = useAuthStore(useShallow((state) => ({ user: state.user, token: state.token })));
+const ChatWindow = ({
+  chat,
+  onClose,
+  onStartNew,
+  onResetView,
+  isCreatingChat,
+}) => {
+  const { user, token } = useAuthStore(
+    useShallow((state) => ({ user: state.user, token: state.token })),
+  );
   const guestSessionId = getGuestSessionId();
-  const { socket, error: socketError } = useNotificationSocket(token, user?._id, guestSessionId);
+  const { socket, error: socketError } = useNotificationSocket(
+    token,
+    user?._id,
+    guestSessionId,
+  );
 
   const {
     data: messagesData,
@@ -48,36 +58,52 @@ const ChatWindow = ({ chat, onClose, onStartNew, onResetView, isCreatingChat }) 
   // instead of forking a second copy of the message.
   // FE-52: useCallback — a stable retry prop is what lets the
   // memoised message rows skip re-renders.
-  const handleRetryMessage = useCallback((failedMessage) => {
-    if (!chatId || !failedMessage) return;
-    sendMessageMutate({
-      chatId,
-      content: failedMessage.content,
-      attachments: failedMessage.attachments || [],
-      clientMessageId: failedMessage.clientMessageId,
-    });
-  }, [chatId, sendMessageMutate]);
+  const handleRetryMessage = useCallback(
+    (failedMessage) => {
+      if (!chatId || !failedMessage) return;
+      sendMessageMutate({
+        chatId,
+        content: failedMessage.content,
+        attachments: failedMessage.attachments || [],
+        clientMessageId: failedMessage.clientMessageId,
+      });
+    },
+    [chatId, sendMessageMutate],
+  );
 
   const markAsReadMutation = useMarkMessagesRead();
-  const { typingStatus, sendTypingIndicator, broadcastRead } = useChatSocket(socket, chat?._id);
+  const { typingStatus, sendTypingIndicator, broadcastRead } = useChatSocket(
+    socket,
+    chat?._id,
+  );
 
   // Derived message list — must be declared before any useEffect that depends on its length
   // FE-52: memoised on the query data — typing-state re-renders of
   // this window previously rebuilt the array (and, through it,
   // re-rendered every message row) on every keystroke.
-  const allMessages = useMemo(() => chronologicalMessages(messagesData?.pages), [messagesData]);
+  const allMessages = useMemo(
+    () => chronologicalMessages(messagesData?.pages),
+    [messagesData],
+  );
   const messageCount = allMessages.length;
 
   // Persist read state only when there is actually an unread incoming message.
   // The previous messageCount effect fired a /read write for the user's own optimistic
   // sends and duplicated the initial read request, creating avoidable DB contention.
   const unreadIncomingKey = allMessages
-    .filter((m) => (m.senderRole === 'admin' || m.senderRole === 'bot') && !m.isRead)
+    .filter(
+      (m) => (m.senderRole === "admin" || m.senderRole === "bot") && !m.isRead,
+    )
     .map((m) => m._id)
-    .join('|');
+    .join("|");
 
   useEffect(() => {
-    if (!chat?._id || !unreadIncomingKey || document.visibilityState !== 'visible') return;
+    if (
+      !chat?._id ||
+      !unreadIncomingKey ||
+      document.visibilityState !== "visible"
+    )
+      return;
     markAsReadMutation.mutate(chat._id);
     broadcastRead();
   }, [chat?._id, unreadIncomingKey]);
@@ -85,13 +111,13 @@ const ChatWindow = ({ chat, onClose, onStartNew, onResetView, isCreatingChat }) 
   useEffect(() => {
     if (!chat?._id) return undefined;
     const onVisibility = () => {
-      if (document.visibilityState === 'visible' && unreadIncomingKey) {
+      if (document.visibilityState === "visible" && unreadIncomingKey) {
         markAsReadMutation.mutate(chat._id);
         broadcastRead();
       }
     };
-    document.addEventListener('visibilitychange', onVisibility);
-    return () => document.removeEventListener('visibilitychange', onVisibility);
+    document.addEventListener("visibilitychange", onVisibility);
+    return () => document.removeEventListener("visibilitychange", onVisibility);
   }, [chat?._id, unreadIncomingKey]);
 
   return (
@@ -106,8 +132,12 @@ const ChatWindow = ({ chat, onClose, onStartNew, onResetView, isCreatingChat }) 
               <Headset size={18} sm:size={20} strokeWidth={2.5} />
             </div>
             <div>
-              <h3 className="text-gray-900 font-semibold text-[15px] sm:text-base tracking-tight leading-none">Aura Assistant</h3>
-              <p className="text-[10px] sm:text-[13px] text-gray-500 mt-0.5">Expert help for your home</p>
+              <h3 className="text-gray-900 font-semibold text-[15px] sm:text-base tracking-tight leading-none">
+                Aura Assistant
+              </h3>
+              <p className="text-[10px] sm:text-[13px] text-gray-500 mt-0.5">
+                Expert help for your home
+              </p>
             </div>
           </div>
 
@@ -129,8 +159,12 @@ const ChatWindow = ({ chat, onClose, onStartNew, onResetView, isCreatingChat }) 
                 state no component read. Surface them so a dead
                 realtime channel is visible instead of silent. */}
             {socketError ? (
-              <div role="alert" className="mx-3 mt-3 rounded-lg border border-amber-200 bg-amber-50 px-3 py-2 text-[12px] font-medium text-amber-800">
-                Connection issue — live updates may be delayed. Your messages are still saved.
+              <div
+                role="alert"
+                className="mx-3 mt-3 rounded-lg border border-amber-200 bg-amber-50 px-3 py-2 text-[12px] font-medium text-amber-800"
+              >
+                Connection issue — live updates may be delayed. Your messages
+                are still saved.
               </div>
             ) : null}
             <div className="flex-1 overflow-hidden relative">
@@ -142,10 +176,16 @@ const ChatWindow = ({ chat, onClose, onStartNew, onResetView, isCreatingChat }) 
               ) : isMessagesError ? (
                 /* FE-19: a failed history load is NOT an empty
                    conversation. Distinct error state with retry. */
-                <div role="alert" className="flex h-full flex-col items-center justify-center gap-3 p-6 text-center">
-                  <p className="text-sm font-semibold text-gray-800">Could not load messages</p>
+                <div
+                  role="alert"
+                  className="flex h-full flex-col items-center justify-center gap-3 p-6 text-center"
+                >
+                  <p className="text-sm font-semibold text-gray-800">
+                    Could not load messages
+                  </p>
                   <p className="max-w-[260px] text-xs text-gray-500">
-                    We couldn&apos;t fetch this conversation. It may still exist — please try again.
+                    We couldn&apos;t fetch this conversation. It may still exist
+                    — please try again.
                   </p>
                   <button
                     type="button"
@@ -160,7 +200,9 @@ const ChatWindow = ({ chat, onClose, onStartNew, onResetView, isCreatingChat }) 
                   key={chat?._id}
                   messages={allMessages}
                   isLoading={isLoading}
-                  onLoadMore={() => hasNextPage && !isFetchingNextPage && fetchNextPage()}
+                  onLoadMore={() =>
+                    hasNextPage && !isFetchingNextPage && fetchNextPage()
+                  }
                   hasMore={hasNextPage}
                   isFetchingMore={isFetchingNextPage}
                   currentUserId={user?._id}
@@ -181,13 +223,18 @@ const ChatWindow = ({ chat, onClose, onStartNew, onResetView, isCreatingChat }) 
               <div className="absolute inset-0 flex flex-col justify-between bg-gray-50/30">
                 <div className="flex-1 flex flex-col items-center justify-center text-center">
                   <div className="w-40 h-40 flex items-center justify-center overflow-hidden">
-                    <Suspense fallback={<div className="w-full h-full" aria-hidden="true" />}>
+                    <Suspense
+                      fallback={
+                        <div className="w-full h-full" aria-hidden="true" />
+                      }
+                    >
                       <EmptyStateAnimation />
                     </Suspense>
                   </div>
 
                   <h2 className="text-[#1A1714] text-lg sm:text-xl font-black tracking-tight leading-tight max-w-[280px]">
-                    Hi{user?.firstName ? ` ${user.firstName}` : ''} 👋, I'm here to help.
+                    Hi{user?.firstName ? ` ${user.firstName}` : ""} 👋, I'm here
+                    to help.
                   </h2>
                   <p className="text-gray-500 text-xs sm:text-sm mt-2 max-w-[260px] leading-normal">
                     Ask me anything about our products, orders, or policies.
@@ -262,14 +309,15 @@ const ChatWindow = ({ chat, onClose, onStartNew, onResetView, isCreatingChat }) 
       </div>
 
       <div className="shrink-0 bg-white">
-
-
-        {chat && ['ai_handling', 'escalated', 'agent_handling'].includes(chat.status) && (
-          <ChatInput
-            chatId={chat._id}
-            onTyping={(isTyping) => sendTypingIndicator(isTyping)}
-          />
-        )}
+        {chat &&
+          ["ai_handling", "escalated", "agent_handling"].includes(
+            chat.status,
+          ) && (
+            <ChatInput
+              chatId={chat._id}
+              onTyping={(isTyping) => sendTypingIndicator(isTyping)}
+            />
+          )}
       </div>
     </div>
   );

@@ -13,7 +13,7 @@ const renderInsights = (props) =>
   render(
     <MemoryRouter>
       <AIInsights {...props} />
-    </MemoryRouter>
+    </MemoryRouter>,
   );
 
 describe("AIInsights (FE-14)", () => {
@@ -22,7 +22,9 @@ describe("AIInsights (FE-14)", () => {
 
     expect(screen.getByText("No insights available")).toBeInTheDocument();
     // None of the previously fabricated values may appear.
-    expect(screen.queryByText(/Payment issues increased by 23%/)).not.toBeInTheDocument();
+    expect(
+      screen.queryByText(/Payment issues increased by 23%/),
+    ).not.toBeInTheDocument();
     expect(screen.queryByText(/Payment Failure/)).not.toBeInTheDocument();
     expect(screen.queryByText(/23 conversations/)).not.toBeInTheDocument();
     expect(screen.queryByText("88%")).not.toBeInTheDocument();
@@ -47,7 +49,9 @@ describe("AIInsights (FE-14)", () => {
       },
     });
 
-    expect(screen.getByText(/Payment issues increased by 7%/)).toBeInTheDocument();
+    expect(
+      screen.getByText(/Payment issues increased by 7%/),
+    ).toBeInTheDocument();
     expect(screen.getByText(/Top issue: Delivery Delay/)).toBeInTheDocument();
     expect(screen.getByText(/4 conversations/)).toBeInTheDocument();
     expect(screen.getByText("91%")).toBeInTheDocument();

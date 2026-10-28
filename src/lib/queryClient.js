@@ -44,7 +44,12 @@ import { formatError } from "../utils/errorHandler.js";
  *      (useSubmitContact is the worked example: ContactPage passes a
  *      per-call onError, so the hook carries the meta flag.)
  */
-export function handleGlobalMutationError(error, _variables, _context, mutation) {
+export function handleGlobalMutationError(
+  error,
+  _variables,
+  _context,
+  mutation,
+) {
   if (mutation?.meta?.suppressGlobalErrorToast) return;
   toast.error(formatError(error));
 }

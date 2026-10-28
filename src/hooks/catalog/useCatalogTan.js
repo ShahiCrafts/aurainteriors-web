@@ -41,8 +41,12 @@ export const useCatalogSchema = (options = {}) =>
   });
 
 const invalidateResolutions = (queryClient) => {
-  queryClient.invalidateQueries({ queryKey: ["catalog", "category-attributes"] });
-  queryClient.invalidateQueries({ queryKey: ["catalog", "product-type-attributes"] });
+  queryClient.invalidateQueries({
+    queryKey: ["catalog", "category-attributes"],
+  });
+  queryClient.invalidateQueries({
+    queryKey: ["catalog", "product-type-attributes"],
+  });
 };
 
 // ── Product types ────────────────────────────────────────────────
@@ -70,7 +74,9 @@ export const useUpdateProductType = () => {
     mutationFn: ({ key, data }) => catalogApi.updateProductType(key, data),
     onSuccess: (_, { key }) => {
       queryClient.invalidateQueries({ queryKey: CATALOG_KEYS.productTypes });
-      queryClient.invalidateQueries({ queryKey: CATALOG_KEYS.productType(key) });
+      queryClient.invalidateQueries({
+        queryKey: CATALOG_KEYS.productType(key),
+      });
       // A type's attributeKeys/assignments feed resolution.
       invalidateResolutions(queryClient);
     },
@@ -100,7 +106,8 @@ export const useCreateRoom = () => {
   const queryClient = useQueryClient();
   return useMutation({
     mutationFn: (data) => catalogApi.createRoom(data),
-    onSuccess: () => queryClient.invalidateQueries({ queryKey: CATALOG_KEYS.rooms }),
+    onSuccess: () =>
+      queryClient.invalidateQueries({ queryKey: CATALOG_KEYS.rooms }),
   });
 };
 
@@ -108,7 +115,8 @@ export const useUpdateRoom = () => {
   const queryClient = useQueryClient();
   return useMutation({
     mutationFn: ({ slug, data }) => catalogApi.updateRoom(slug, data),
-    onSuccess: () => queryClient.invalidateQueries({ queryKey: CATALOG_KEYS.rooms }),
+    onSuccess: () =>
+      queryClient.invalidateQueries({ queryKey: CATALOG_KEYS.rooms }),
   });
 };
 
@@ -116,7 +124,8 @@ export const useDeleteRoom = () => {
   const queryClient = useQueryClient();
   return useMutation({
     mutationFn: (slug) => catalogApi.deleteRoom(slug),
-    onSuccess: () => queryClient.invalidateQueries({ queryKey: CATALOG_KEYS.rooms }),
+    onSuccess: () =>
+      queryClient.invalidateQueries({ queryKey: CATALOG_KEYS.rooms }),
   });
 };
 
@@ -141,7 +150,8 @@ export const useCreateCollection = () => {
   const queryClient = useQueryClient();
   return useMutation({
     mutationFn: (data) => catalogApi.createCollection(data),
-    onSuccess: () => queryClient.invalidateQueries({ queryKey: CATALOG_KEYS.collections }),
+    onSuccess: () =>
+      queryClient.invalidateQueries({ queryKey: CATALOG_KEYS.collections }),
   });
 };
 
@@ -151,7 +161,9 @@ export const useUpdateCollection = () => {
     mutationFn: ({ slug, data }) => catalogApi.updateCollection(slug, data),
     onSuccess: (_, { slug }) => {
       queryClient.invalidateQueries({ queryKey: CATALOG_KEYS.collections });
-      queryClient.invalidateQueries({ queryKey: CATALOG_KEYS.collection(slug) });
+      queryClient.invalidateQueries({
+        queryKey: CATALOG_KEYS.collection(slug),
+      });
     },
   });
 };
@@ -160,7 +172,8 @@ export const useDeleteCollection = () => {
   const queryClient = useQueryClient();
   return useMutation({
     mutationFn: (slug) => catalogApi.deleteCollection(slug),
-    onSuccess: () => queryClient.invalidateQueries({ queryKey: CATALOG_KEYS.collections }),
+    onSuccess: () =>
+      queryClient.invalidateQueries({ queryKey: CATALOG_KEYS.collections }),
   });
 };
 
@@ -178,7 +191,9 @@ export const useCreateAttributeDefinition = () => {
   return useMutation({
     mutationFn: (data) => catalogApi.createAttributeDefinition(data),
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: CATALOG_KEYS.attributeDefinitions });
+      queryClient.invalidateQueries({
+        queryKey: CATALOG_KEYS.attributeDefinitions,
+      });
       invalidateResolutions(queryClient);
     },
   });
@@ -187,9 +202,12 @@ export const useCreateAttributeDefinition = () => {
 export const useUpdateAttributeDefinition = () => {
   const queryClient = useQueryClient();
   return useMutation({
-    mutationFn: ({ key, data }) => catalogApi.updateAttributeDefinition(key, data),
+    mutationFn: ({ key, data }) =>
+      catalogApi.updateAttributeDefinition(key, data),
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: CATALOG_KEYS.attributeDefinitions });
+      queryClient.invalidateQueries({
+        queryKey: CATALOG_KEYS.attributeDefinitions,
+      });
       invalidateResolutions(queryClient);
     },
   });
@@ -198,9 +216,12 @@ export const useUpdateAttributeDefinition = () => {
 export const useDeleteAttributeDefinition = () => {
   const queryClient = useQueryClient();
   return useMutation({
-    mutationFn: ({ key, hard }) => catalogApi.deleteAttributeDefinition(key, { hard }),
+    mutationFn: ({ key, hard }) =>
+      catalogApi.deleteAttributeDefinition(key, { hard }),
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: CATALOG_KEYS.attributeDefinitions });
+      queryClient.invalidateQueries({
+        queryKey: CATALOG_KEYS.attributeDefinitions,
+      });
       invalidateResolutions(queryClient);
     },
   });
@@ -237,10 +258,15 @@ export const useCategoryAssignments = (categoryId, options = {}) =>
 export const useSetCategoryAssignments = () => {
   const queryClient = useQueryClient();
   return useMutation({
-    mutationFn: ({ id, assignments }) => categoryApi.setAttributeAssignments(id, assignments),
+    mutationFn: ({ id, assignments }) =>
+      categoryApi.setAttributeAssignments(id, assignments),
     onSuccess: (_, { id }) => {
-      queryClient.invalidateQueries({ queryKey: CATALOG_KEYS.categoryAssignments(id) });
-      queryClient.invalidateQueries({ queryKey: CATALOG_KEYS.categoryAttributes(id) });
+      queryClient.invalidateQueries({
+        queryKey: CATALOG_KEYS.categoryAssignments(id),
+      });
+      queryClient.invalidateQueries({
+        queryKey: CATALOG_KEYS.categoryAttributes(id),
+      });
     },
   });
 };
@@ -269,16 +295,21 @@ export const useProductVariants = (productId, options = {}) =>
   });
 
 const invalidateVariants = (queryClient, productId) => {
-  queryClient.invalidateQueries({ queryKey: CATALOG_KEYS.productVariants(productId) });
+  queryClient.invalidateQueries({
+    queryKey: CATALOG_KEYS.productVariants(productId),
+  });
   // The product's hasVariants/priceFrom ride the product payloads.
   queryClient.invalidateQueries({ queryKey: ["products", "list"] });
-  queryClient.invalidateQueries({ queryKey: ["products", "detail", productId] });
+  queryClient.invalidateQueries({
+    queryKey: ["products", "detail", productId],
+  });
 };
 
 export const useCreateVariant = () => {
   const queryClient = useQueryClient();
   return useMutation({
-    mutationFn: ({ productId, data }) => productApi.createVariant(productId, data),
+    mutationFn: ({ productId, data }) =>
+      productApi.createVariant(productId, data),
     onSuccess: (_, { productId }) => invalidateVariants(queryClient, productId),
   });
 };
@@ -286,7 +317,8 @@ export const useCreateVariant = () => {
 export const useUpdateVariant = () => {
   const queryClient = useQueryClient();
   return useMutation({
-    mutationFn: ({ productId, variantId, data }) => productApi.updateVariant(productId, variantId, data),
+    mutationFn: ({ productId, variantId, data }) =>
+      productApi.updateVariant(productId, variantId, data),
     onSuccess: (_, { productId }) => invalidateVariants(queryClient, productId),
   });
 };
@@ -294,7 +326,8 @@ export const useUpdateVariant = () => {
 export const useDeleteVariant = () => {
   const queryClient = useQueryClient();
   return useMutation({
-    mutationFn: ({ productId, variantId }) => productApi.deleteVariant(productId, variantId),
+    mutationFn: ({ productId, variantId }) =>
+      productApi.deleteVariant(productId, variantId),
     onSuccess: (_, { productId }) => invalidateVariants(queryClient, productId),
   });
 };

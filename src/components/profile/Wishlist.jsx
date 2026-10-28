@@ -30,16 +30,18 @@ export default function Wishlist() {
 
   const wishlistItems = useMemo(
     () => data?.data?.wishlist?.items || [],
-    [data]
+    [data],
   );
 
   const categories = useMemo(
     () => [
       ...new Set(
-        wishlistItems.map((item) => item.product?.category?.name).filter(Boolean),
+        wishlistItems
+          .map((item) => item.product?.category?.name)
+          .filter(Boolean),
       ),
     ],
-    [wishlistItems]
+    [wishlistItems],
   );
 
   const filteredItems = useMemo(
@@ -52,11 +54,13 @@ export default function Wishlist() {
             searchQuery === "" ||
             product.name?.toLowerCase().includes(searchQuery.toLowerCase());
           const matchesCategory =
-            categoryFilter === "all" || product.category?.name === categoryFilter;
+            categoryFilter === "all" ||
+            product.category?.name === categoryFilter;
           return matchesSearch && matchesCategory;
         })
         .sort((a, b) => {
-          if (sortBy === "recent") return new Date(b.addedAt) - new Date(a.addedAt);
+          if (sortBy === "recent")
+            return new Date(b.addedAt) - new Date(a.addedAt);
           if (sortBy === "price-low")
             return (a.product?.price || 0) - (b.product?.price || 0);
           if (sortBy === "price-high")
@@ -65,7 +69,7 @@ export default function Wishlist() {
             return (a.product?.name || "").localeCompare(b.product?.name || "");
           return 0;
         }),
-    [wishlistItems, searchQuery, categoryFilter, sortBy]
+    [wishlistItems, searchQuery, categoryFilter, sortBy],
   );
 
   const totalPages = Math.ceil(filteredItems.length / ITEMS_PER_PAGE);
@@ -118,7 +122,9 @@ export default function Wishlist() {
           <X size={22} className="text-red-500" />
         </div>
         <div className="text-center space-y-1">
-          <h3 className="text-[16px] font-bold text-[#1A1714]">Unable to Load Wishlist</h3>
+          <h3 className="text-[16px] font-bold text-[#1A1714]">
+            Unable to Load Wishlist
+          </h3>
           <p className="text-[13px] text-neutral-400 max-w-xs">
             We encountered a network error while retrieving your saved items.
           </p>
@@ -133,14 +139,17 @@ export default function Wishlist() {
     <div className="h-full flex flex-col space-y-8">
       <div className="flex items-center justify-between shrink-0">
         <div>
-          <h2 className="text-[18px] font-semibold text-[#1A1714]">Your Wishlist</h2>
+          <h2 className="text-[18px] font-semibold text-[#1A1714]">
+            Your Wishlist
+          </h2>
           <p className="text-[14px] text-neutral-400 mt-1">
             Keep track of items you love and add them to your cart anytime.
           </p>
         </div>
         {!isEmpty && (
           <span className="bg-neutral-100 text-[#1A1714] text-[12px] font-bold px-3 py-1.5 rounded-full">
-            {wishlistItems.length} {wishlistItems.length === 1 ? "Item" : "Items"}
+            {wishlistItems.length}{" "}
+            {wishlistItems.length === 1 ? "Item" : "Items"}
           </span>
         )}
       </div>
@@ -230,9 +239,12 @@ export default function Wishlist() {
           {filteredItems.length === 0 ? (
             <div className="flex-1 min-h-0 flex flex-col items-center justify-center text-center bg-neutral-50 rounded-2xl">
               <Filter size={32} className="text-neutral-300 mb-4" />
-              <h3 className="text-[16px] font-semibold text-[#1A1714] mb-1">No Matching Items</h3>
+              <h3 className="text-[16px] font-semibold text-[#1A1714] mb-1">
+                No Matching Items
+              </h3>
               <p className="text-[14px] text-neutral-400 max-w-xs">
-                We couldn't find any saved items matching your current filters. Try resetting search query.
+                We couldn't find any saved items matching your current filters.
+                Try resetting search query.
               </p>
             </div>
           ) : (
@@ -265,7 +277,8 @@ export default function Wishlist() {
 
               {totalPages > 1 && (
                 <p className="text-[11px] text-neutral-400 text-center tracking-wide">
-                  Showing page {page} of {totalPages || 1} · {filteredItems.length} total items
+                  Showing page {page} of {totalPages || 1} ·{" "}
+                  {filteredItems.length} total items
                 </p>
               )}
             </div>
@@ -276,9 +289,12 @@ export default function Wishlist() {
           <div className="w-16 h-16 rounded-2xl bg-white flex items-center justify-center mb-5 text-brand">
             <Heart size={26} className="fill-[#FFF8F2]" />
           </div>
-          <h3 className="text-[18px] font-semibold text-[#1A1714]">Your wishlist is empty</h3>
+          <h3 className="text-[18px] font-semibold text-[#1A1714]">
+            Your wishlist is empty
+          </h3>
           <p className="text-[14px] text-neutral-400 max-w-xs mt-1.5 mb-7 leading-relaxed">
-            Start saving items you love to keep track of pricing and checkout whenever you are ready.
+            Start saving items you love to keep track of pricing and checkout
+            whenever you are ready.
           </p>
           <Link
             to="/shop"

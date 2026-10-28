@@ -34,26 +34,26 @@ describe("guestAddressSchema (Phase 6 consolidation)", () => {
       guestAddressSchema.validate({
         ...validAddress,
         email: "ada@example.com",
-      })
+      }),
     ).resolves.toBeTruthy();
   });
 
   it("requires the email for guests", async () => {
     await expect(
-      guestAddressSchema.validate({ ...validAddress, email: "" })
+      guestAddressSchema.validate({ ...validAddress, email: "" }),
     ).rejects.toThrow("Email is required");
   });
 
   it("rejects a malformed email", async () => {
     await expect(
-      guestAddressSchema.validate({ ...validAddress, email: "not-an-email" })
+      guestAddressSchema.validate({ ...validAddress, email: "not-an-email" }),
     ).rejects.toThrow("Invalid email");
   });
 
   it("caps the email at 254 chars (the shared house rule)", async () => {
     const longEmail = `${"a".repeat(245)}@example.com`; // 257 chars
     await expect(
-      guestAddressSchema.validate({ ...validAddress, email: longEmail })
+      guestAddressSchema.validate({ ...validAddress, email: longEmail }),
     ).rejects.toThrow("Maximum 254 characters");
   });
 

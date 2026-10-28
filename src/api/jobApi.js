@@ -35,7 +35,7 @@ const defaultSleep = (ms) => new Promise((resolve) => setTimeout(resolve, ms));
  */
 export const pollJob = async (
   id,
-  { intervalMs = 2000, timeoutMs = 5 * 60 * 1000, sleep = defaultSleep } = {}
+  { intervalMs = 2000, timeoutMs = 5 * 60 * 1000, sleep = defaultSleep } = {},
 ) => {
   if (!id) {
     throw new Error("Cannot poll a background job without a job id");
@@ -51,13 +51,16 @@ export const pollJob = async (
       // 404 and transport failures are terminal for polling purposes:
       // the send's outcome cannot be confirmed from here.
       const notFound =
-        error?.response?.status === 404 || error?.response?.data?.success === false;
+        error?.response?.status === 404 ||
+        error?.response?.data?.success === false;
       const detail =
-        error?.displayMessage || error?.response?.data?.message || error?.message;
+        error?.displayMessage ||
+        error?.response?.data?.message ||
+        error?.message;
       const wrapped = new Error(
         notFound
           ? `Job not found (job ${id} could not be tracked)`
-          : `Could not check the background job status: ${detail || "request failed"}`
+          : `Could not check the background job status: ${detail || "request failed"}`,
       );
       wrapped.code = notFound ? "JOB_NOT_FOUND" : "JOB_POLL_FAILED";
       wrapped.cause = error;
@@ -65,7 +68,9 @@ export const pollJob = async (
     }
 
     if (!job || typeof job !== "object") {
-      const wrapped = new Error(`Job status response carried no job data (job ${id})`);
+      const wrapped = new Error(
+        `Job status response carried no job data (job ${id})`,
+      );
       wrapped.code = "JOB_POLL_FAILED";
       throw wrapped;
     }
@@ -78,7 +83,7 @@ export const pollJob = async (
       const wrapped = new Error(
         job.lastError
           ? `Background job failed: ${job.lastError}`
-          : "Background job failed without a recorded error"
+          : "Background job failed without a recorded error",
       );
       wrapped.code = "JOB_DEAD";
       wrapped.job = job;
@@ -93,7 +98,7 @@ export const pollJob = async (
   }
 
   const wrapped = new Error(
-    "Timed out waiting for the background job to finish"
+    "Timed out waiting for the background job to finish",
   );
   wrapped.code = "JOB_POLL_TIMEOUT";
   throw wrapped;

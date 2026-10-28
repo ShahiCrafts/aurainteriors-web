@@ -43,7 +43,9 @@ export default function RoomPage() {
         {!isLoading && !room ? (
           <div className="max-w-[1440px] mx-auto px-4 sm:px-5 md:px-6 lg:px-4">
             <div className="text-center py-16 sm:py-24 bg-[#F9F8F6] rounded-2xl px-4">
-              <h1 className="text-[18px] font-bold text-[#1A1714]">Room not found</h1>
+              <h1 className="text-[18px] font-bold text-[#1A1714]">
+                Room not found
+              </h1>
               <p className="text-black/40 text-[14px] mt-1">
                 This room is not part of the current collection.
               </p>

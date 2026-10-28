@@ -23,7 +23,10 @@ import {
   SORT_OPTIONS,
 } from "./components";
 
-import { getProductImageUrl, getModelUrl as getModelUrlUtil } from "../../utils/imageUrl";
+import {
+  getProductImageUrl,
+  getModelUrl as getModelUrlUtil,
+} from "../../utils/imageUrl";
 
 // FE-53: background prefetch of the non-selected catalog models.
 // The library's preloadModels is Promise.all over the given URLs, so
@@ -54,7 +57,7 @@ const prefetchModelsInBackground = (view, urls) => {
   };
   const workers = Array.from(
     { length: Math.min(PREFETCH_CONCURRENCY, urls.length) },
-    () => worker()
+    () => worker(),
   );
   // Never awaited; allSettled documents that no outcome is fatal.
   void Promise.allSettled(workers);
@@ -64,7 +67,6 @@ const getProductImage = (product) => getProductImageUrl(product);
 
 const getModelUrl = (product) => getModelUrlUtil(product);
 
-
 // arcore-react currently flips the WebXR camera texture once in its capture
 // shader and once again while composing GL readbacks. Patch only the camera
 // readback on this ARView instance so screenshots match the live camera view.
@@ -72,7 +74,12 @@ const fixScreenshotCameraOrientation = (view) => {
   const engine = view?.engine;
   if (!engine || engine.__auraScreenshotOrientationFixed) return;
 
-  engine._readCameraTexture = function readCameraTexture(gl, cameraTexture, width, height) {
+  engine._readCameraTexture = function readCameraTexture(
+    gl,
+    cameraTexture,
+    width,
+    height,
+  ) {
     const vs = `attribute vec2 p; varying vec2 uv; void main(){uv=(p+1.0)*.5; gl_Position=vec4(p,0.,1.);}`;
     // Do not flip Y here. _composeScreenshot() already converts the GL
     // bottom-left origin to the canvas top-left origin for both layers.
@@ -94,7 +101,9 @@ const fixScreenshotCameraOrientation = (view) => {
     gl.attachShader(program, fragment);
     gl.linkProgram(program);
     if (!gl.getProgramParameter(program, gl.LINK_STATUS)) {
-      throw new Error(gl.getProgramInfoLog(program) || "Camera capture program failed");
+      throw new Error(
+        gl.getProgramInfoLog(program) || "Camera capture program failed",
+      );
     }
 
     const outputTexture = gl.createTexture();
@@ -106,13 +115,33 @@ const fixScreenshotCameraOrientation = (view) => {
       gl.bindTexture(gl.TEXTURE_2D, outputTexture);
       gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.LINEAR);
       gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, gl.LINEAR);
-      gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGBA, width, height, 0, gl.RGBA, gl.UNSIGNED_BYTE, null);
+      gl.texImage2D(
+        gl.TEXTURE_2D,
+        0,
+        gl.RGBA,
+        width,
+        height,
+        0,
+        gl.RGBA,
+        gl.UNSIGNED_BYTE,
+        null,
+      );
       gl.bindFramebuffer(gl.FRAMEBUFFER, framebuffer);
-      gl.framebufferTexture2D(gl.FRAMEBUFFER, gl.COLOR_ATTACHMENT0, gl.TEXTURE_2D, outputTexture, 0);
+      gl.framebufferTexture2D(
+        gl.FRAMEBUFFER,
+        gl.COLOR_ATTACHMENT0,
+        gl.TEXTURE_2D,
+        outputTexture,
+        0,
+      );
       gl.viewport(0, 0, width, height);
       gl.useProgram(program);
       gl.bindBuffer(gl.ARRAY_BUFFER, buffer);
-      gl.bufferData(gl.ARRAY_BUFFER, new Float32Array([-1, -1, 1, -1, -1, 1, 1, 1]), gl.STATIC_DRAW);
+      gl.bufferData(
+        gl.ARRAY_BUFFER,
+        new Float32Array([-1, -1, 1, -1, -1, 1, 1, 1]),
+        gl.STATIC_DRAW,
+      );
       const location = gl.getAttribLocation(program, "p");
       gl.enableVertexAttribArray(location);
       gl.vertexAttribPointer(location, 2, gl.FLOAT, false, 0, 0);
@@ -174,7 +203,11 @@ const NativeARView = ({
   const [isCapturing, setIsCapturing] = useState(false);
   const [screenshotError, setScreenshotError] = useState(null);
   const [tutorialStep, setTutorialStep] = useState(() => {
-    try { return localStorage.getItem("aura-ar-tutorial-dismissed") === "1" ? 2 : 0; } catch { return 0; }
+    try {
+      return localStorage.getItem("aura-ar-tutorial-dismissed") === "1" ? 2 : 0;
+    } catch {
+      return 0;
+    }
   });
   const defaultAppearanceRef = useRef(new Map());
 
@@ -207,7 +240,7 @@ const NativeARView = ({
     result = result.filter(
       (p) =>
         (p.price || 0) >= filterPriceRange.min &&
-        (p.price || 0) <= filterPriceRange.max
+        (p.price || 0) <= filterPriceRange.max,
     );
 
     if (filterSort.value === "price_asc")
@@ -238,7 +271,8 @@ const NativeARView = ({
     const view = createARView({ overlay: overlayRef.current });
     fixScreenshotCameraOrientation(view);
     arViewRef.current = view;
-    view.checkSupport()
+    view
+      .checkSupport()
       .then(({ supported, reason }) => {
         if (!cancelled) {
           setIsSupported(supported);
@@ -332,8 +366,12 @@ const NativeARView = ({
         // could never advance and obstructed the first session until
         // Skip. A rotate/scale gesture therefore COMPLETES the
         // tutorial (step 2 is the existing "done" sentinel).
-        onScale: () => { if (tutorialStepRef.current === 0) setTutorialStep(2); },
-        onRotate: () => { if (tutorialStepRef.current === 0) setTutorialStep(2); },
+        onScale: () => {
+          if (tutorialStepRef.current === 0) setTutorialStep(2);
+        },
+        onRotate: () => {
+          if (tutorialStepRef.current === 0) setTutorialStep(2);
+        },
       });
       setIsSessionActive(true);
       setNeedsResume(false);
@@ -341,8 +379,9 @@ const NativeARView = ({
       // FE-53: the session is live — prefetch the remaining catalog
       // models lazily in the background (deduped, selected model
       // excluded, per-model failure isolation, concurrency-capped).
-      const backgroundModelUrls = [...new Set(products.map(getModelUrl).filter(Boolean))]
-        .filter((url) => url !== selectedModelUrl);
+      const backgroundModelUrls = [
+        ...new Set(products.map(getModelUrl).filter(Boolean)),
+      ].filter((url) => url !== selectedModelUrl);
       prefetchModelsInBackground(view, backgroundModelUrls);
     } catch (err) {
       // FE-21: view.create() has already started the camera/session by
@@ -418,7 +457,9 @@ const NativeARView = ({
       if (!view || !modelUrl || !hasPlacedModel) return;
       setIsPlacing(true);
       try {
-        const result = await view.switchModel(modelUrl, { preserveMaterial: false });
+        const result = await view.switchModel(modelUrl, {
+          preserveMaterial: false,
+        });
         defaultAppearanceRef.current.delete(view.activeModelId);
         setCurrentAnchor(result.modelId || view.activeModelId);
         triggerHaptic("success");
@@ -432,7 +473,7 @@ const NativeARView = ({
         setIsPlacing(false);
       }
     },
-    [hasPlacedModel, onProductSelect, triggerHaptic]
+    [hasPlacedModel, onProductSelect, triggerHaptic],
   );
 
   const setModelColor = useCallback(async (_anchorId, color) => {
@@ -445,18 +486,27 @@ const NativeARView = ({
         const originals = [];
         model.traverse((child) => {
           if (!child.isMesh || !child.material) return;
-          const materials = Array.isArray(child.material) ? child.material : [child.material];
-          materials.forEach((material) => originals.push({
-            material,
-            color: material.color?.clone?.(),
-            map: material.map || null,
-          }));
+          const materials = Array.isArray(child.material)
+            ? child.material
+            : [child.material];
+          materials.forEach((material) =>
+            originals.push({
+              material,
+              color: material.color?.clone?.(),
+              map: material.map || null,
+            }),
+          );
         });
         defaultAppearanceRef.current.set(anchorId, originals);
       }
       if (!color) {
-        for (const { material, color: originalColor, map } of defaultAppearanceRef.current.get(anchorId) || []) {
-          if (originalColor && material.color) material.color.copy(originalColor);
+        for (const {
+          material,
+          color: originalColor,
+          map,
+        } of defaultAppearanceRef.current.get(anchorId) || []) {
+          if (originalColor && material.color)
+            material.color.copy(originalColor);
           material.map = map;
           material.needsUpdate = true;
         }
@@ -486,19 +536,29 @@ const NativeARView = ({
     try {
       // Ensure all GLTF maps/materials are resident and flagged before the
       // package renders the transparent virtual layer used for capture.
-      const activeModel = view.activeModelId ? view.engine?.loadedModels?.get(view.activeModelId) : null;
+      const activeModel = view.activeModelId
+        ? view.engine?.loadedModels?.get(view.activeModelId)
+        : null;
       activeModel?.traverse?.((child) => {
         if (!child.isMesh || !child.material) return;
-        const materials = Array.isArray(child.material) ? child.material : [child.material];
+        const materials = Array.isArray(child.material)
+          ? child.material
+          : [child.material];
         materials.forEach((material) => {
           if (material.map) material.map.needsUpdate = true;
           material.needsUpdate = true;
         });
       });
-      await new Promise((resolve) => requestAnimationFrame(() => requestAnimationFrame(resolve)));
-      const result = await view.takeScreenshot({ format: "png", includeReticle: false });
+      await new Promise((resolve) =>
+        requestAnimationFrame(() => requestAnimationFrame(resolve)),
+      );
+      const result = await view.takeScreenshot({
+        format: "png",
+        includeReticle: false,
+      });
       const dataUrl = result?.dataUrl || result?.data;
-      if (result?.success === false || !dataUrl) throw new Error(result?.error || "Could not capture AR view");
+      if (result?.success === false || !dataUrl)
+        throw new Error(result?.error || "Could not capture AR view");
       const link = document.createElement("a");
       link.download = `Aura-AR-${selectedProduct?.name || "capture"}-${Date.now()}.png`;
       link.href = dataUrl;
@@ -519,7 +579,9 @@ const NativeARView = ({
 
   const dismissTutorial = useCallback(() => {
     setTutorialStep(2);
-    try { localStorage.setItem("aura-ar-tutorial-dismissed", "1"); } catch {}
+    try {
+      localStorage.setItem("aura-ar-tutorial-dismissed", "1");
+    } catch {}
   }, []);
 
   if (isSupported === null || isLoading) {
@@ -531,7 +593,9 @@ const NativeARView = ({
           </div>
           <div className="w-3/4 h-5 rounded bg-zinc-800 relative overflow-hidden shimmer-element mx-auto" />
           <div className="w-1/2 h-3 rounded bg-zinc-800 relative overflow-hidden shimmer-element mx-auto" />
-          <p className="text-gray-400 text-xs mt-2">Initializing AR Environment...</p>
+          <p className="text-gray-400 text-xs mt-2">
+            Initializing AR Environment...
+          </p>
         </div>
       </div>
     );
@@ -561,7 +625,7 @@ const NativeARView = ({
           </p>
         </div>
         <button
-            data-ui="true"
+          data-ui="true"
           onClick={onClose}
           className="mt-2 px-8 py-3 bg-teal-600 hover:bg-teal-700 text-white rounded-full font-medium transition-all duration-200 active:scale-95"
         >
@@ -589,7 +653,7 @@ const NativeARView = ({
           </p>
         </div>
         <button
-            data-ui="true"
+          data-ui="true"
           onClick={onClose}
           className="mt-2 px-8 py-3 bg-teal-600 hover:bg-teal-700 text-white rounded-full font-medium transition-all duration-200 active:scale-95"
         >
@@ -620,7 +684,7 @@ const NativeARView = ({
               augmented reality.
             </p>
             <button
-            data-ui="true"
+              data-ui="true"
               onClick={handleStartAR}
               className="w-full py-3.5 bg-teal-600 hover:bg-teal-700 text-white rounded-xl font-medium transition-all duration-200 active:scale-[0.98]"
             >
@@ -639,12 +703,14 @@ const NativeARView = ({
       <div
         ref={overlayRef}
         className="absolute inset-0 pointer-events-none *:pointer-events-auto"
-        style={{ touchAction: "none", userSelect: "none", WebkitUserSelect: "none" }}
+        style={{
+          touchAction: "none",
+          userSelect: "none",
+          WebkitUserSelect: "none",
+        }}
       >
         {isSessionActive && (
-          <div
-            className="absolute inset-0 z-1"
-          >
+          <div className="absolute inset-0 z-1">
             <ScanningOverlay
               hasPlacedModel={hasPlacedModel}
               surfaceDetected={surfaceDetected}
@@ -682,19 +748,19 @@ const NativeARView = ({
         </div>
 
         <div data-ui="true">
-        <ActionMenu
-          show={showActions}
-          hasPlacedModel={hasPlacedModel}
-          onCustomize={() => {
-            setShowCustomize(true);
-            setShowActions(false);
-          }}
-          onCapture={() => {
-            setShowActions(false);
-            captureScreenshot();
-          }}
-          onRemove={handleRemoveModel}
-        />
+          <ActionMenu
+            show={showActions}
+            hasPlacedModel={hasPlacedModel}
+            onCustomize={() => {
+              setShowCustomize(true);
+              setShowActions(false);
+            }}
+            onCapture={() => {
+              setShowActions(false);
+              captureScreenshot();
+            }}
+            onRemove={handleRemoveModel}
+          />
         </div>
 
         <TutorialOverlay
@@ -707,67 +773,86 @@ const NativeARView = ({
 
         {isSessionActive && !showCustomize && (
           <div data-ui="true">
-          <ProductCatalog
-            products={filteredProducts}
-            selectedProduct={selectedProduct}
-            onProductSelect={handleChangeProduct}
-            onFilterClick={() => setShowFilter(true)}
-            hasActiveFilters={hasActiveFilters}
-            getProductImage={getProductImage}
-          />
+            <ProductCatalog
+              products={filteredProducts}
+              selectedProduct={selectedProduct}
+              onProductSelect={handleChangeProduct}
+              onFilterClick={() => setShowFilter(true)}
+              hasActiveFilters={hasActiveFilters}
+              getProductImage={getProductImage}
+            />
           </div>
         )}
 
         <div data-ui="true">
-        <FilterModal
-          show={showFilter}
-          onClose={() => setShowFilter(false)}
-          categoryNames={categoryNames}
-          filterCategory={filterCategory}
-          setFilterCategory={setFilterCategory}
-          filterPriceRange={filterPriceRange}
-          setFilterPriceRange={setFilterPriceRange}
-          filterSort={filterSort}
-          setFilterSort={setFilterSort}
-        />
+          <FilterModal
+            show={showFilter}
+            onClose={() => setShowFilter(false)}
+            categoryNames={categoryNames}
+            filterCategory={filterCategory}
+            setFilterCategory={setFilterCategory}
+            filterPriceRange={filterPriceRange}
+            setFilterPriceRange={setFilterPriceRange}
+            filterSort={filterSort}
+            setFilterSort={setFilterSort}
+          />
 
-        <CustomizeSheet
-          show={showCustomize}
-          onClose={() => setShowCustomize(false)}
-          selectedProduct={selectedProduct}
-          customization={customization}
-          onCustomize={onCustomize}
-          currentAnchor={currentAnchor}
-          setModelColor={setModelColor}
-          triggerHaptic={triggerHaptic}
-          getProductImage={getProductImage}
-          calculateTotalPrice={calculateTotalPrice}
-        />
+          <CustomizeSheet
+            show={showCustomize}
+            onClose={() => setShowCustomize(false)}
+            selectedProduct={selectedProduct}
+            customization={customization}
+            onCustomize={onCustomize}
+            currentAnchor={currentAnchor}
+            setModelColor={setModelColor}
+            triggerHaptic={triggerHaptic}
+            getProductImage={getProductImage}
+            calculateTotalPrice={calculateTotalPrice}
+          />
 
-        <InfoModal show={showInfo} onClose={() => setShowInfo(false)} />
-
-
+          <InfoModal show={showInfo} onClose={() => setShowInfo(false)} />
         </div>
 
         {captureNotice && (
-          <div data-ui="true" className="absolute top-24 left-1/2 -translate-x-1/2 z-300 rounded-full bg-black/75 backdrop-blur-xl border border-white/10 px-4 py-2 text-sm font-medium text-white">
+          <div
+            data-ui="true"
+            className="absolute top-24 left-1/2 -translate-x-1/2 z-300 rounded-full bg-black/75 backdrop-blur-xl border border-white/10 px-4 py-2 text-sm font-medium text-white"
+          >
             {captureNotice}
           </div>
         )}
 
         {needsResume && (
-          <div data-ui="true" className="absolute inset-0 z-250 flex items-center justify-center bg-black/70 backdrop-blur-md px-6">
+          <div
+            data-ui="true"
+            className="absolute inset-0 z-250 flex items-center justify-center bg-black/70 backdrop-blur-md px-6"
+          >
             <div className="w-full max-w-sm rounded-3xl border border-white/10 bg-zinc-950/95 p-6 text-center shadow-2xl">
-              <div className="mx-auto mb-4 flex h-12 w-12 items-center justify-center rounded-2xl bg-teal-400/10 text-teal-300"><MdOutlineViewInAr size={24}/></div>
-              <h3 className="text-lg font-semibold text-white">Resume AR view</h3>
-              <p className="mt-2 text-sm leading-6 text-white/55">The browser paused the immersive camera session while you were viewing another app or download.</p>
-              <button onClick={handleStartAR} className="mt-5 w-full rounded-2xl bg-teal-500 py-3.5 text-sm font-semibold text-white active:scale-[.98]">Resume camera</button>
+              <div className="mx-auto mb-4 flex h-12 w-12 items-center justify-center rounded-2xl bg-teal-400/10 text-teal-300">
+                <MdOutlineViewInAr size={24} />
+              </div>
+              <h3 className="text-lg font-semibold text-white">
+                Resume AR view
+              </h3>
+              <p className="mt-2 text-sm leading-6 text-white/55">
+                The browser paused the immersive camera session while you were
+                viewing another app or download.
+              </p>
+              <button
+                onClick={handleStartAR}
+                className="mt-5 w-full rounded-2xl bg-teal-500 py-3.5 text-sm font-semibold text-white active:scale-[.98]"
+              >
+                Resume camera
+              </button>
             </div>
           </div>
         )}
 
         {arError && (
-          <div data-ui="true" className="absolute top-20 left-1/2 -translate-x-1/2 flex items-center gap-3 bg-rose-500/90 backdrop-blur-xl text-white px-5 py-3 rounded-full z-300 animate-[toast-in_0.3s_ease]">
+          <div
+            data-ui="true"
+            className="absolute top-20 left-1/2 -translate-x-1/2 flex items-center gap-3 bg-rose-500/90 backdrop-blur-xl text-white px-5 py-3 rounded-full z-300 animate-[toast-in_0.3s_ease]"
+          >
             <span className="text-sm font-medium">{arError}</span>
             <button
               onClick={() => setArError(null)}
@@ -780,7 +865,10 @@ const NativeARView = ({
         )}
 
         {screenshotError && (
-          <div data-ui="true" className="absolute top-20 left-1/2 -translate-x-1/2 flex items-center gap-3 bg-rose-500/90 backdrop-blur-xl text-white px-5 py-3 rounded-full z-300 animate-[toast-in_0.3s_ease]">
+          <div
+            data-ui="true"
+            className="absolute top-20 left-1/2 -translate-x-1/2 flex items-center gap-3 bg-rose-500/90 backdrop-blur-xl text-white px-5 py-3 rounded-full z-300 animate-[toast-in_0.3s_ease]"
+          >
             <IoCamera size={16} />
             <span className="text-sm font-medium">{screenshotError}</span>
             <button

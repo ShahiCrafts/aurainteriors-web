@@ -17,8 +17,12 @@ vi.mock("../../src/api/index.js", () => ({
   default: {
     get: vi.fn(() => Promise.reject(new Error("mocked: no network in tests"))),
     post: vi.fn(() => Promise.reject(new Error("mocked: no network in tests"))),
-    patch: vi.fn(() => Promise.reject(new Error("mocked: no network in tests"))),
-    delete: vi.fn(() => Promise.reject(new Error("mocked: no network in tests"))),
+    patch: vi.fn(() =>
+      Promise.reject(new Error("mocked: no network in tests")),
+    ),
+    delete: vi.fn(() =>
+      Promise.reject(new Error("mocked: no network in tests")),
+    ),
   },
 }));
 
@@ -33,28 +37,61 @@ const { marker } = vi.hoisted(() => {
   return { marker: markerFn };
 });
 
-vi.mock("../../src/pages/NewsletterActionPage.jsx", marker("PAGE:NewsletterActionPage"));
+vi.mock(
+  "../../src/pages/NewsletterActionPage.jsx",
+  marker("PAGE:NewsletterActionPage"),
+);
 vi.mock("../../src/pages/HomePage.jsx", marker("PAGE:HomePage"));
 vi.mock("../../src/components/modals/AuthModal.jsx", marker("PAGE:AuthModal"));
 vi.mock("../../src/components/chat/ChatWidget.jsx", marker("PAGE:ChatWidget"));
-vi.mock("../../src/pages/auth/VerifyMagicLinkPage.jsx", marker("PAGE:VerifyMagicLinkPage"));
+vi.mock(
+  "../../src/pages/auth/VerifyMagicLinkPage.jsx",
+  marker("PAGE:VerifyMagicLinkPage"),
+);
 vi.mock("../../src/pages/customer/ProfilePage.jsx", marker("PAGE:ProfilePage"));
-vi.mock("../../src/pages/customer/NotificationsPage.jsx", marker("PAGE:NotificationsPage"));
+vi.mock(
+  "../../src/pages/customer/NotificationsPage.jsx",
+  marker("PAGE:NotificationsPage"),
+);
 vi.mock("../../src/pages/shop/ShopPage.jsx", marker("PAGE:ShopPage"));
 vi.mock("../../src/pages/blog/BlogsPage.jsx", marker("PAGE:BlogsPage"));
-vi.mock("../../src/pages/blog/BlogDetailsPage.jsx", marker("PAGE:BlogDetailsPage"));
-vi.mock("../../src/pages/shop/ProductDetailsPage.jsx", marker("PAGE:ProductDetailsPage"));
+vi.mock(
+  "../../src/pages/blog/BlogDetailsPage.jsx",
+  marker("PAGE:BlogDetailsPage"),
+);
+vi.mock(
+  "../../src/pages/shop/ProductDetailsPage.jsx",
+  marker("PAGE:ProductDetailsPage"),
+);
 vi.mock("../../src/pages/shop/ARViewPage.jsx", marker("PAGE:ARViewPage"));
 vi.mock("../../src/pages/shop/NativeARPage.jsx", marker("PAGE:NativeARPage"));
-vi.mock("../../src/pages/checkout/CheckoutPage.jsx", marker("PAGE:CheckoutPage"));
-vi.mock("../../src/pages/customer/OrderConfirmationPage.jsx", marker("PAGE:OrderConfirmationPage"));
-vi.mock("../../src/pages/checkout/PaymentFailedPage.jsx", marker("PAGE:PaymentFailedPage"));
-vi.mock("../../src/pages/customer/TrackOrderPage.jsx", marker("PAGE:TrackOrderPage"));
+vi.mock(
+  "../../src/pages/checkout/CheckoutPage.jsx",
+  marker("PAGE:CheckoutPage"),
+);
+vi.mock(
+  "../../src/pages/customer/OrderConfirmationPage.jsx",
+  marker("PAGE:OrderConfirmationPage"),
+);
+vi.mock(
+  "../../src/pages/checkout/PaymentFailedPage.jsx",
+  marker("PAGE:PaymentFailedPage"),
+);
+vi.mock(
+  "../../src/pages/customer/TrackOrderPage.jsx",
+  marker("PAGE:TrackOrderPage"),
+);
 vi.mock("../../src/pages/info/ContactPage.jsx", marker("PAGE:ContactPage"));
 vi.mock("../../src/pages/info/FAQPage.jsx", marker("PAGE:FAQPage"));
 vi.mock("../../src/pages/info/NotFoundPage.jsx", marker("PAGE:NotFoundPage"));
-vi.mock("../../src/pages/info/AnnouncementsPage.jsx", marker("PAGE:AnnouncementsPage"));
-vi.mock("../../src/components/auth/AuthCallback.jsx", marker("PAGE:AuthCallback"));
+vi.mock(
+  "../../src/pages/info/AnnouncementsPage.jsx",
+  marker("PAGE:AnnouncementsPage"),
+);
+vi.mock(
+  "../../src/components/auth/AuthCallback.jsx",
+  marker("PAGE:AuthCallback"),
+);
 
 import useAuthStore from "../../src/store/authStore";
 import App from "../../src/App.jsx";
@@ -71,7 +108,7 @@ function renderApp(path, auth) {
   return render(
     <MemoryRouter initialEntries={[path]}>
       <App />
-    </MemoryRouter>
+    </MemoryRouter>,
   );
 }
 

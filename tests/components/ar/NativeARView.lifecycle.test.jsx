@@ -13,7 +13,13 @@
 // capacitor-arcore cannot run in jsdom, so the plugin is mocked with a
 // fake view whose methods are spies; the REAL NativeARView executes.
 import { describe, it, expect, vi, beforeEach } from "vitest";
-import { render, screen, fireEvent, waitFor, act } from "@testing-library/react";
+import {
+  render,
+  screen,
+  fireEvent,
+  waitFor,
+  act,
+} from "@testing-library/react";
 
 const hoisted = vi.hoisted(() => ({ view: null, gestureOptions: null }));
 
@@ -54,8 +60,12 @@ function makeView(overrides = {}) {
       hoisted.gestureOptions = options;
       return vi.fn();
     }),
-    placeModel: vi.fn().mockResolvedValue({ success: true, modelId: "anchor-1" }),
-    switchModel: vi.fn().mockResolvedValue({ success: true, modelId: "anchor-1" }),
+    placeModel: vi
+      .fn()
+      .mockResolvedValue({ success: true, modelId: "anchor-1" }),
+    switchModel: vi
+      .fn()
+      .mockResolvedValue({ success: true, modelId: "anchor-1" }),
     removeModel: vi.fn().mockResolvedValue(undefined),
     setColor: vi.fn().mockResolvedValue(undefined),
     takeScreenshot: vi.fn(),
@@ -76,12 +86,14 @@ function renderView(props = {}) {
       onClose={vi.fn()}
       onAddToCart={vi.fn()}
       {...props}
-    />
+    />,
   );
 }
 
 async function startAR() {
-  const button = await screen.findByRole("button", { name: "Allow Camera Access" });
+  const button = await screen.findByRole("button", {
+    name: "Allow Camera Access",
+  });
   fireEvent.click(button);
 }
 
@@ -100,7 +112,9 @@ describe("NativeARView failed start (FE-21)", () => {
 
     await waitFor(() => expect(hoisted.view.destroy).toHaveBeenCalledTimes(1));
     // UI reflects reality: session is off, start prompt is back.
-    expect(await screen.findByRole("button", { name: "Allow Camera Access" })).toBeInTheDocument();
+    expect(
+      await screen.findByRole("button", { name: "Allow Camera Access" }),
+    ).toBeInTheDocument();
     expect(screen.getByText("model 404")).toBeInTheDocument();
     expect(screen.queryByText("Collection")).not.toBeInTheDocument();
   });
@@ -113,7 +127,9 @@ describe("NativeARView failed start (FE-21)", () => {
     await startAR();
 
     await waitFor(() => expect(hoisted.view.destroy).toHaveBeenCalledTimes(1));
-    expect(await screen.findByRole("button", { name: "Allow Camera Access" })).toBeInTheDocument();
+    expect(
+      await screen.findByRole("button", { name: "Allow Camera Access" }),
+    ).toBeInTheDocument();
   });
 
   it("an enableCustomization failure also destroys the view", async () => {
@@ -126,7 +142,9 @@ describe("NativeARView failed start (FE-21)", () => {
     await startAR();
 
     await waitFor(() => expect(hoisted.view.destroy).toHaveBeenCalledTimes(1));
-    expect(await screen.findByRole("button", { name: "Allow Camera Access" })).toBeInTheDocument();
+    expect(
+      await screen.findByRole("button", { name: "Allow Camera Access" }),
+    ).toBeInTheDocument();
   });
 
   it("pen: destroy() itself rejecting during cleanup still resets the UI to off", async () => {
@@ -138,7 +156,9 @@ describe("NativeARView failed start (FE-21)", () => {
     await startAR();
 
     await waitFor(() => expect(hoisted.view.destroy).toHaveBeenCalledTimes(1));
-    expect(await screen.findByRole("button", { name: "Allow Camera Access" })).toBeInTheDocument();
+    expect(
+      await screen.findByRole("button", { name: "Allow Camera Access" }),
+    ).toBeInTheDocument();
     expect(screen.getByText("model 404")).toBeInTheDocument();
   });
 
@@ -153,7 +173,9 @@ describe("NativeARView failed start (FE-21)", () => {
     await waitFor(() => expect(hoisted.view.destroy).toHaveBeenCalledTimes(1));
 
     await startAR();
-    await waitFor(() => expect(screen.getByText("Collection")).toBeInTheDocument());
+    await waitFor(() =>
+      expect(screen.getByText("Collection")).toBeInTheDocument(),
+    );
     expect(hoisted.view.create).toHaveBeenCalledTimes(2);
     // destroy happened between the two creates, not after the success.
     expect(hoisted.view.destroy).toHaveBeenCalledTimes(1);
@@ -162,7 +184,9 @@ describe("NativeARView failed start (FE-21)", () => {
   it("a successful start does NOT destroy the view and shows the live session UI", async () => {
     renderView();
     await startAR();
-    await waitFor(() => expect(screen.getByText("Collection")).toBeInTheDocument());
+    await waitFor(() =>
+      expect(screen.getByText("Collection")).toBeInTheDocument(),
+    );
     expect(hoisted.view.destroy).not.toHaveBeenCalled();
   });
 });
@@ -171,7 +195,9 @@ describe("NativeARView product switch rollback (FE-21)", () => {
   async function startAndPlace() {
     renderView(arguments[0] || {});
     await startAR();
-    await waitFor(() => expect(screen.getByText("Collection")).toBeInTheDocument());
+    await waitFor(() =>
+      expect(screen.getByText("Collection")).toBeInTheDocument(),
+    );
     hoisted.view.activeModelId = "anchor-1";
     act(() => {
       hoisted.gestureOptions.onTap();
@@ -187,10 +213,15 @@ describe("NativeARView product switch rollback (FE-21)", () => {
 
     fireEvent.click(screen.getByRole("button", { name: /Table B/ }));
 
-    await waitFor(() => expect(hoisted.view.switchModel).toHaveBeenCalledTimes(1));
+    await waitFor(() =>
+      expect(hoisted.view.switchModel).toHaveBeenCalledTimes(1),
+    );
     // Optimistic B, then rollback to A — never left showing B.
     await waitFor(() =>
-      expect(onProductSelect.mock.calls.map((c) => c[0]._id)).toEqual(["prod-b", "prod-a"])
+      expect(onProductSelect.mock.calls.map((c) => c[0]._id)).toEqual([
+        "prod-b",
+        "prod-a",
+      ]),
     );
     expect(screen.getByText("switch failed")).toBeInTheDocument();
   });
@@ -201,9 +232,13 @@ describe("NativeARView product switch rollback (FE-21)", () => {
 
     fireEvent.click(screen.getByRole("button", { name: /Table B/ }));
 
-    await waitFor(() => expect(hoisted.view.switchModel).toHaveBeenCalledTimes(1));
     await waitFor(() =>
-      expect(onProductSelect.mock.calls.map((c) => c[0]._id)).toEqual(["prod-b"])
+      expect(hoisted.view.switchModel).toHaveBeenCalledTimes(1),
+    );
+    await waitFor(() =>
+      expect(onProductSelect.mock.calls.map((c) => c[0]._id)).toEqual([
+        "prod-b",
+      ]),
     );
   });
 });
@@ -212,7 +247,9 @@ describe("NativeARView tutorial (FE-21)", () => {
   it("rotate/scale completes the tutorial — the un-advanceable Move step is gone and never obstructs", async () => {
     renderView();
     await startAR();
-    await waitFor(() => expect(screen.getByText("Collection")).toBeInTheDocument());
+    await waitFor(() =>
+      expect(screen.getByText("Collection")).toBeInTheDocument(),
+    );
     hoisted.view.activeModelId = "anchor-1";
     act(() => {
       hoisted.gestureOptions.onTap();

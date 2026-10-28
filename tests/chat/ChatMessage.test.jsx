@@ -26,7 +26,11 @@ const baseMessage = {
 
 const expectedTime = (iso) =>
   new Date(iso)
-    .toLocaleTimeString([], { hour: "2-digit", minute: "2-digit", hour12: true })
+    .toLocaleTimeString([], {
+      hour: "2-digit",
+      minute: "2-digit",
+      hour12: true,
+    })
     .toLowerCase();
 
 describe("ChatMessage", () => {
@@ -35,7 +39,9 @@ describe("ChatMessage", () => {
 
     expect(screen.getByText("Asha")).toBeInTheDocument();
     expect(screen.getByText("Hello there")).toBeInTheDocument();
-    expect(screen.getByText(expectedTime(baseMessage.createdAt))).toBeInTheDocument();
+    expect(
+      screen.getByText(expectedTime(baseMessage.createdAt)),
+    ).toBeInTheDocument();
   });
 
   it("labels the viewer's own message 'You'", () => {
@@ -63,7 +69,12 @@ describe("ChatMessage", () => {
   });
 
   it("also treats isAiGenerated messages as bot messages", () => {
-    const aiMessage = { ...baseMessage, _id: "m3", isAiGenerated: true, senderRole: "admin" };
+    const aiMessage = {
+      ...baseMessage,
+      _id: "m3",
+      isAiGenerated: true,
+      senderRole: "admin",
+    };
     render(<ChatMessage message={aiMessage} isOwnMessage={false} />);
 
     expect(screen.getByText("AI Assistant")).toBeInTheDocument();
@@ -78,13 +89,20 @@ describe("ChatMessage", () => {
     };
     render(<ChatMessage message={systemMessage} isOwnMessage={false} />);
 
-    expect(screen.getByText("Conversation assigned to support")).toBeInTheDocument();
+    expect(
+      screen.getByText("Conversation assigned to support"),
+    ).toBeInTheDocument();
     expect(screen.queryByText("Asha")).not.toBeInTheDocument();
     expect(screen.queryByText("You")).not.toBeInTheDocument();
   });
 
   it("treats messageType 'system' as a system message regardless of senderRole", () => {
-    const systemMessage = { ...baseMessage, _id: "m5", messageType: "system", content: "Chat ended" };
+    const systemMessage = {
+      ...baseMessage,
+      _id: "m5",
+      messageType: "system",
+      content: "Chat ended",
+    };
     render(<ChatMessage message={systemMessage} isOwnMessage={false} />);
 
     expect(screen.getByText("Chat ended")).toBeInTheDocument();
@@ -92,16 +110,30 @@ describe("ChatMessage", () => {
   });
 
   it("hides internal notes from the non-admin view", () => {
-    const note = { ...baseMessage, _id: "m6", content: "Internal: check stock", isInternalNote: true };
-    const { container } = render(<ChatMessage message={note} isOwnMessage={false} isAdminView={false} />);
+    const note = {
+      ...baseMessage,
+      _id: "m6",
+      content: "Internal: check stock",
+      isInternalNote: true,
+    };
+    const { container } = render(
+      <ChatMessage message={note} isOwnMessage={false} isAdminView={false} />,
+    );
 
     expect(container.firstChild).toBeNull();
     expect(screen.queryByText("Internal: check stock")).not.toBeInTheDocument();
   });
 
   it("shows internal notes in the admin view", () => {
-    const note = { ...baseMessage, _id: "m7", content: "Internal: check stock", isInternalNote: true };
-    render(<ChatMessage message={note} isOwnMessage={false} isAdminView={true} />);
+    const note = {
+      ...baseMessage,
+      _id: "m7",
+      content: "Internal: check stock",
+      isInternalNote: true,
+    };
+    render(
+      <ChatMessage message={note} isOwnMessage={false} isAdminView={true} />,
+    );
 
     expect(screen.getByText("Internal: check stock")).toBeInTheDocument();
   });
@@ -145,7 +177,9 @@ describe("ChatMessage lazy markdown (FE-49)", () => {
       content: "**not bold** [click](https://example.com/page)",
       senderRole: "user",
     };
-    const { container } = render(<ChatMessage message={userMessage} isOwnMessage={false} />);
+    const { container } = render(
+      <ChatMessage message={userMessage} isOwnMessage={false} />,
+    );
 
     // The literal source is the rendered text; no markdown machinery
     // output (no <strong>, no <a>) may appear for user messages.
@@ -164,7 +198,9 @@ describe("ChatMessage lazy markdown (FE-49)", () => {
       senderRole: "bot",
       sender: undefined,
     };
-    const { container } = render(<ChatMessage message={botMessage} isOwnMessage={false} />);
+    const { container } = render(
+      <ChatMessage message={botMessage} isOwnMessage={false} />,
+    );
 
     // Synchronously after render the bubble is never blank: either the
     // Suspense fallback's plain text or the rendered markdown is there.

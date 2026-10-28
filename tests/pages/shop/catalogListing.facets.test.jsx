@@ -12,8 +12,12 @@ vi.mock("../../../src/api/index.js", () => ({
   default: {
     get: vi.fn(() => Promise.reject(new Error("mocked: no network in tests"))),
     post: vi.fn(() => Promise.reject(new Error("mocked: no network in tests"))),
-    patch: vi.fn(() => Promise.reject(new Error("mocked: no network in tests"))),
-    delete: vi.fn(() => Promise.reject(new Error("mocked: no network in tests"))),
+    patch: vi.fn(() =>
+      Promise.reject(new Error("mocked: no network in tests")),
+    ),
+    delete: vi.fn(() =>
+      Promise.reject(new Error("mocked: no network in tests")),
+    ),
   },
 }));
 
@@ -58,7 +62,13 @@ const TREE = [
         description: "Sofas and couches for every living room.",
         productCount: 5,
         subcategories: [
-          { _id: "c-corner", name: "Corner Sofas", slug: "corner-sofas", productCount: 3, subcategories: [] },
+          {
+            _id: "c-corner",
+            name: "Corner Sofas",
+            slug: "corner-sofas",
+            productCount: 3,
+            subcategories: [],
+          },
         ],
       },
     ],
@@ -71,24 +81,50 @@ const FACETS = {
     label: "Category",
     type: "category",
     options: [
-      { value: "sofas", id: "c-sofas", name: "Sofas", count: 5, selected: true },
-      { value: "corner-sofas", id: "c-corner", name: "Corner Sofas", count: 3, selected: false },
+      {
+        value: "sofas",
+        id: "c-sofas",
+        name: "Sofas",
+        count: 5,
+        selected: true,
+      },
+      {
+        value: "corner-sofas",
+        id: "c-corner",
+        name: "Corner Sofas",
+        count: 3,
+        selected: false,
+      },
     ],
   },
   room: {
     key: "room",
     label: "Room",
     type: "enum",
-    options: [{ value: "living-room", label: "Living Room", count: 4, selected: false }],
+    options: [
+      { value: "living-room", label: "Living Room", count: 4, selected: false },
+    ],
   },
-  price: { key: "price", label: "Price", type: "money", min: 5000, max: 200000, selected: { min: null, max: null } },
+  price: {
+    key: "price",
+    label: "Price",
+    type: "money",
+    min: 5000,
+    max: 200000,
+    selected: { min: null, max: null },
+  },
   availability: {
     key: "availability",
     label: "Availability",
     type: "boolean",
     options: [{ value: "inStock", count: 4, selected: false }],
   },
-  rating: { key: "rating", label: "Rating", type: "rating", options: [{ value: 4, count: 2, selected: false }] },
+  rating: {
+    key: "rating",
+    label: "Rating",
+    type: "rating",
+    options: [{ value: 4, count: 2, selected: false }],
+  },
   attributes: [
     {
       key: "frameMaterial",
@@ -115,7 +151,9 @@ function LocationProbe({ onChange }) {
 }
 
 function renderListing(initialEntry, probe) {
-  const client = new QueryClient({ defaultOptions: { queries: { retry: false } } });
+  const client = new QueryClient({
+    defaultOptions: { queries: { retry: false } },
+  });
   return render(
     <QueryClientProvider client={client}>
       <MemoryRouter initialEntries={[initialEntry]}>
@@ -124,14 +162,16 @@ function renderListing(initialEntry, probe) {
             path="/shop"
             element={
               <>
-                <CatalogListing crumbPrefix={[{ name: "Shop", path: "/shop" }]} />
+                <CatalogListing
+                  crumbPrefix={[{ name: "Shop", path: "/shop" }]}
+                />
                 <LocationProbe onChange={probe} />
               </>
             }
           />
         </Routes>
       </MemoryRouter>
-    </QueryClientProvider>
+    </QueryClientProvider>,
   );
 }
 
@@ -158,43 +198,60 @@ describe("CatalogListing facet engine (Phase 7)", () => {
           "attr.color": "red",
           page: 1,
           status: "active",
-        })
-      )
+        }),
+      ),
     );
     expect(await screen.findByText("Facet Sofa")).toBeInTheDocument();
   });
 
   it("category context: intro description and ancestor breadcrumbs, no subcategory pills", async () => {
     renderListing("/shop?categories=sofas", () => {});
-    expect(await screen.findByText("Sofas and couches for every living room.")).toBeInTheDocument();
+    expect(
+      await screen.findByText("Sofas and couches for every living room."),
+    ).toBeInTheDocument();
     // No subcategory tag pills under the intro — the filter sidebar
     // already carries the subcategory navigation.
-    expect(screen.queryByRole("link", { name: /Corner Sofas/ })).not.toBeInTheDocument();
+    expect(
+      screen.queryByRole("link", { name: /Corner Sofas/ }),
+    ).not.toBeInTheDocument();
     // Breadcrumbs: Home / Shop / Living Room / Sofas.
-    expect(screen.getAllByRole("link", { name: "Living Room" }).length).toBeGreaterThan(0);
-    expect(screen.getAllByRole("link", { name: "Sofas" }).length).toBeGreaterThan(0);
+    expect(
+      screen.getAllByRole("link", { name: "Living Room" }).length,
+    ).toBeGreaterThan(0);
+    expect(
+      screen.getAllByRole("link", { name: "Sofas" }).length,
+    ).toBeGreaterThan(0);
   });
 
   it("toggling a facet checkbox writes the attr grammar into the URL", async () => {
     let search = "";
-    renderListing("/shop?categories=sofas", (value) => { search = value; });
+    renderListing("/shop?categories=sofas", (value) => {
+      search = value;
+    });
     const oak = await screen.findByRole("checkbox", { name: /oak/ });
     fireEvent.click(oak);
     await waitFor(() =>
-      expect(new URLSearchParams(search).get("attr.frameMaterial")).toBe("oak")
+      expect(new URLSearchParams(search).get("attr.frameMaterial")).toBe("oak"),
     );
     // …and the next request carries it.
     await waitFor(() =>
       expect(productApi.getAll).toHaveBeenCalledWith(
-        expect.objectContaining({ "attr.frameMaterial": "oak" })
-      )
+        expect.objectContaining({ "attr.frameMaterial": "oak" }),
+      ),
     );
   });
 
   it("chips: removing the color chip clears only attr.color; clear-all resets filters", async () => {
     let search = "";
-    renderListing("/shop?categories=sofas&attr.color=red&attr.frameMaterial=oak", (value) => { search = value; });
-    const remove = await screen.findByRole("button", { name: "Remove filter Color: red" });
+    renderListing(
+      "/shop?categories=sofas&attr.color=red&attr.frameMaterial=oak",
+      (value) => {
+        search = value;
+      },
+    );
+    const remove = await screen.findByRole("button", {
+      name: "Remove filter Color: red",
+    });
     fireEvent.click(remove);
     await waitFor(() => {
       const params = new URLSearchParams(search);
@@ -219,7 +276,9 @@ describe("CatalogListing facet engine (Phase 7)", () => {
       },
     });
     let search = "";
-    renderListing("/shop?attr.frameMaterial=oak", (value) => { search = value; });
+    renderListing("/shop?attr.frameMaterial=oak", (value) => {
+      search = value;
+    });
     const next = await screen.findByRole("button", { name: "Next page" });
     fireEvent.click(next);
     await waitFor(() => {
@@ -239,9 +298,27 @@ describe("CatalogListing facet engine (Phase 7)", () => {
             slug: "living-room",
             productCount: 35,
             subcategories: [
-              { _id: "c-usofas", name: "Upholstered Sofas", slug: "upholstered-sofas", productCount: 11, subcategories: [] },
-              { _id: "c-accent", name: "Accent Seating", slug: "accent-seating", productCount: 12, subcategories: [] },
-              { _id: "c-lrtables", name: "Living Room Tables", slug: "living-room-tables", productCount: 12, subcategories: [] },
+              {
+                _id: "c-usofas",
+                name: "Upholstered Sofas",
+                slug: "upholstered-sofas",
+                productCount: 11,
+                subcategories: [],
+              },
+              {
+                _id: "c-accent",
+                name: "Accent Seating",
+                slug: "accent-seating",
+                productCount: 12,
+                subcategories: [],
+              },
+              {
+                _id: "c-lrtables",
+                name: "Living Room Tables",
+                slug: "living-room-tables",
+                productCount: 12,
+                subcategories: [],
+              },
             ],
           },
           {
@@ -250,7 +327,13 @@ describe("CatalogListing facet engine (Phase 7)", () => {
             slug: "bedroom",
             productCount: 36,
             subcategories: [
-              { _id: "c-frames", name: "Bed Frames", slug: "bed-frames", productCount: 12, subcategories: [] },
+              {
+                _id: "c-frames",
+                name: "Bed Frames",
+                slug: "bed-frames",
+                productCount: 12,
+                subcategories: [],
+              },
             ],
           },
         ],
@@ -259,13 +342,21 @@ describe("CatalogListing facet engine (Phase 7)", () => {
     renderListing("/shop?categories=living-room", () => {});
     // Only Living Room's children are offered as category filters…
     expect(
-      await screen.findByRole("checkbox", { name: /Upholstered Sofas/ })
+      await screen.findByRole("checkbox", { name: /Upholstered Sofas/ }),
     ).toBeInTheDocument();
-    expect(screen.getByRole("checkbox", { name: /Accent Seating/ })).toBeInTheDocument();
-    expect(screen.getByRole("checkbox", { name: /Living Room Tables/ })).toBeInTheDocument();
+    expect(
+      screen.getByRole("checkbox", { name: /Accent Seating/ }),
+    ).toBeInTheDocument();
+    expect(
+      screen.getByRole("checkbox", { name: /Living Room Tables/ }),
+    ).toBeInTheDocument();
     // …not the other department, its children, or the whole tree.
-    expect(screen.queryByRole("checkbox", { name: /Bed Frames/ })).not.toBeInTheDocument();
-    expect(screen.queryByRole("checkbox", { name: /^Bedroom/ })).not.toBeInTheDocument();
+    expect(
+      screen.queryByRole("checkbox", { name: /Bed Frames/ }),
+    ).not.toBeInTheDocument();
+    expect(
+      screen.queryByRole("checkbox", { name: /^Bedroom/ }),
+    ).not.toBeInTheDocument();
   });
 
   it("honest empty state offers a filter reset", async () => {
@@ -278,6 +369,8 @@ describe("CatalogListing facet engine (Phase 7)", () => {
     });
     renderListing("/shop?attr.frameMaterial=oak", () => {});
     expect(await screen.findByText("No products found")).toBeInTheDocument();
-    expect(screen.getByRole("button", { name: "Reset Filters" })).toBeInTheDocument();
+    expect(
+      screen.getByRole("button", { name: "Reset Filters" }),
+    ).toBeInTheDocument();
   });
 });

@@ -15,16 +15,41 @@ const TYPE = {
 };
 
 vi.mock("../../../src/hooks/catalog/useCatalogTan", () => ({
-  useProductTypes: () => ({ data: { data: { productTypes: [TYPE] } }, isLoading: false, error: null }),
-  useCreateProductType: () => ({ mutateAsync: vi.fn().mockResolvedValue({}), isPending: false }),
-  useUpdateProductType: () => ({ mutateAsync: vi.fn().mockResolvedValue({}), isPending: false }),
-  useDeleteProductType: () => ({ mutateAsync: vi.fn().mockResolvedValue({}), isPending: false }),
+  useProductTypes: () => ({
+    data: { data: { productTypes: [TYPE] } },
+    isLoading: false,
+    error: null,
+  }),
+  useCreateProductType: () => ({
+    mutateAsync: vi.fn().mockResolvedValue({}),
+    isPending: false,
+  }),
+  useUpdateProductType: () => ({
+    mutateAsync: vi.fn().mockResolvedValue({}),
+    isPending: false,
+  }),
+  useDeleteProductType: () => ({
+    mutateAsync: vi.fn().mockResolvedValue({}),
+    isPending: false,
+  }),
   useAttributeDefinitions: () => ({
     data: {
       data: {
         attributeDefinitions: [
-          { key: "frameMaterial", label: "Frame Material", type: "enum", storage: "catalogAttributes", active: true },
-          { key: "seatCount", label: "Seat Count", type: "integer", storage: "catalogAttributes", active: true },
+          {
+            key: "frameMaterial",
+            label: "Frame Material",
+            type: "enum",
+            storage: "catalogAttributes",
+            active: true,
+          },
+          {
+            key: "seatCount",
+            label: "Seat Count",
+            type: "integer",
+            storage: "catalogAttributes",
+            active: true,
+          },
         ],
       },
     },

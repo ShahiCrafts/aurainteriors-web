@@ -35,7 +35,11 @@ const botMsg = (id, content) => ({
   attachments: [],
 });
 
-const messages = [botMsg("b1", "first bot answer"), botMsg("b2", "second bot answer"), botMsg("b3", "third bot answer")];
+const messages = [
+  botMsg("b1", "first bot answer"),
+  botMsg("b2", "second bot answer"),
+  botMsg("b3", "third bot answer"),
+];
 
 // Stable callbacks mirror the production wiring (ChatWindow passes a
 // useCallback retry handler); a fresh closure per render would defeat
@@ -54,7 +58,9 @@ const listProps = (overrides = {}) => ({
   ...overrides,
 });
 
-beforeEach(() => { h.botRenders = 0; });
+beforeEach(() => {
+  h.botRenders = 0;
+});
 
 // Bot content renders through React.lazy: the Suspense fallback shows
 // the raw text first, so findByText alone can resolve BEFORE the
@@ -63,7 +69,9 @@ beforeEach(() => { h.botRenders = 0; });
 // markdown elements and flush the lazy resolution before counting.
 async function settledRenderCount() {
   await screen.findAllByTestId("bot-md");
-  await act(async () => { await new Promise((r) => setTimeout(r, 50)); });
+  await act(async () => {
+    await new Promise((r) => setTimeout(r, 50));
+  });
   return h.botRenders;
 }
 
@@ -75,8 +83,16 @@ describe("ChatMessageList memoization (FE-52)", () => {
 
     // Typing starts and stops in the parent — the list re-renders
     // (typing bubble), but existing rows must skip entirely.
-    rerender(<ChatMessageList {...listProps({ typingStatus: { isTyping: true, userRole: "admin" } })} />);
-    rerender(<ChatMessageList {...listProps({ typingStatus: { isTyping: false, userRole: null } })} />);
+    rerender(
+      <ChatMessageList
+        {...listProps({ typingStatus: { isTyping: true, userRole: "admin" } })}
+      />,
+    );
+    rerender(
+      <ChatMessageList
+        {...listProps({ typingStatus: { isTyping: false, userRole: null } })}
+      />,
+    );
     expect(h.botRenders).toBe(afterMount);
   });
 
@@ -90,7 +106,11 @@ describe("ChatMessageList memoization (FE-52)", () => {
   it("changing one message re-renders only that message's markdown", async () => {
     const { rerender } = render(<ChatMessageList {...listProps()} />);
     const afterMount = await settledRenderCount();
-    const changed = [messages[0], botMsg("b2", "second bot answer — edited"), messages[2]];
+    const changed = [
+      messages[0],
+      botMsg("b2", "second bot answer — edited"),
+      messages[2],
+    ];
     rerender(<ChatMessageList {...listProps({ messages: changed })} />);
     await screen.findByText("second bot answer — edited");
     expect(h.botRenders).toBe(afterMount + 1);

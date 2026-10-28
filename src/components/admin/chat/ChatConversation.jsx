@@ -1,6 +1,23 @@
 import { chronologicalMessages } from "../../../utils/chatMessages";
 import { useState, useEffect } from "react";
-import { User, Mail, Info, MoreVertical, X, FileText, Clock, Diamond, Paperclip, Smile, Bookmark, Zap, Send, ChevronDown, Check, Tag } from "lucide-react";
+import {
+  User,
+  Mail,
+  Info,
+  MoreVertical,
+  X,
+  FileText,
+  Clock,
+  Diamond,
+  Paperclip,
+  Smile,
+  Bookmark,
+  Zap,
+  Send,
+  ChevronDown,
+  Check,
+  Tag,
+} from "lucide-react";
 import {
   useChatMessages,
   useMarkMessagesRead,
@@ -16,9 +33,10 @@ import ChatInput from "../../chat/ChatInput";
 import TypingIndicator from "../../chat/TypingIndicator";
 
 const ChatConversation = ({ chat, onClose, onChatUpdated, draftReply }) => {
-  const { user, token } = useAuthStore(useShallow((state) => ({ user: state.user, token: state.token })));
+  const { user, token } = useAuthStore(
+    useShallow((state) => ({ user: state.user, token: state.token })),
+  );
   const { socket } = useNotificationSocket(token, user?._id);
-
 
   const {
     data: messagesData,
@@ -32,7 +50,7 @@ const ChatConversation = ({ chat, onClose, onChatUpdated, draftReply }) => {
   const resolveChatMutation = useResolveChat();
   const { typingStatus, sendTypingIndicator, broadcastRead } = useChatSocket(
     socket,
-    chat?._id
+    chat?._id,
   );
 
   useEffect(() => {
@@ -42,19 +60,21 @@ const ChatConversation = ({ chat, onClose, onChatUpdated, draftReply }) => {
     }
   }, [chat?._id]);
 
-  const allMessages =
-    chronologicalMessages(messagesData?.pages);
+  const allMessages = chronologicalMessages(messagesData?.pages);
 
   const isBotActive = chat?.status === "ai_handling";
 
   // Helpers for urgency tag color
   const getUrgencyColor = (priority) => {
-    if (priority === "urgent" || priority === "high") return "bg-red-50 text-red-500";
+    if (priority === "urgent" || priority === "high")
+      return "bg-red-50 text-red-500";
     if (priority === "low") return "bg-blue-50 text-blue-500";
     return "bg-amber-50 text-amber-500";
   };
-  
-  const priorityText = chat?.priority ? chat.priority.charAt(0).toUpperCase() + chat.priority.slice(1) : "High";
+
+  const priorityText = chat?.priority
+    ? chat.priority.charAt(0).toUpperCase() + chat.priority.slice(1)
+    : "High";
 
   return (
     <div className="flex flex-col h-full w-full bg-white relative">
@@ -74,23 +94,25 @@ const ChatConversation = ({ chat, onClose, onChatUpdated, draftReply }) => {
                 <h2 className="text-[18px] font-bold text-gray-900 leading-tight">
                   {chat?.customer?.firstName} {chat?.customer?.lastName}
                 </h2>
-                <span className={`px-2 py-1.5 rounded-full text-[11px] font-bold tracking-wide ${getUrgencyColor(chat?.priority)}`}>
+                <span
+                  className={`px-2 py-1.5 rounded-full text-[11px] font-bold tracking-wide ${getUrgencyColor(chat?.priority)}`}
+                >
                   {priorityText}
                 </span>
               </div>
             </div>
           </div>
-          <div className="flex items-center gap-2">
-          </div>
+          <div className="flex items-center gap-2"></div>
         </div>
-        
+
         {/* Header Row 2 — FE-14: the chat object carries no order
             reference (the server Chat schema has no order field), so no
             order element is rendered here. */}
         <div className="flex items-center gap-4 text-[13px] text-gray-500 font-medium">
           <span className="flex items-center gap-1.5">
-            <User className="w-4 h-4" /> 
-            Customer since {new Date(chat?.customer?.createdAt || Date.now()).getFullYear()}
+            <User className="w-4 h-4" />
+            Customer since{" "}
+            {new Date(chat?.customer?.createdAt || Date.now()).getFullYear()}
           </span>
         </div>
       </div>
@@ -100,7 +122,7 @@ const ChatConversation = ({ chat, onClose, onChatUpdated, draftReply }) => {
         <div className="flex-1 overflow-hidden">
           <ChatMessageList
             key={chat?._id}
-                  messages={allMessages}
+            messages={allMessages}
             isLoading={isLoading}
             onLoadMore={() =>
               hasNextPage && !isFetchingNextPage && fetchNextPage()
@@ -108,7 +130,7 @@ const ChatConversation = ({ chat, onClose, onChatUpdated, draftReply }) => {
             hasMore={hasNextPage}
             isFetchingMore={isFetchingNextPage}
             currentUserId={user?._id}
-            isAdminView={true} 
+            isAdminView={true}
             typingStatus={typingStatus}
           />
         </div>
@@ -116,14 +138,13 @@ const ChatConversation = ({ chat, onClose, onChatUpdated, draftReply }) => {
 
       {/* Input Area */}
       <div className="shrink-0 flex flex-col pt-2 bg-white">
-
         {chat?.status === "resolved" || chat?.status === "closed" ? (
-           <div className="p-4 bg-gray-50 flex justify-center border-t border-gray-100">
-             <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-white border border-gray-200 text-gray-400 text-xs font-bold uppercase tracking-widest shadow-sm">
-               <span className="w-1.5 h-1.5 rounded-full bg-gray-300 animate-pulse" />
-               Chat {chat?.status}
-             </div>
-           </div>
+          <div className="p-4 bg-gray-50 flex justify-center border-t border-gray-100">
+            <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-white border border-gray-200 text-gray-400 text-xs font-bold uppercase tracking-widest shadow-sm">
+              <span className="w-1.5 h-1.5 rounded-full bg-gray-300 animate-pulse" />
+              Chat {chat?.status}
+            </div>
+          </div>
         ) : (
           <div className="flex flex-col bg-white">
             <ChatInput
@@ -132,8 +153,12 @@ const ChatConversation = ({ chat, onClose, onChatUpdated, draftReply }) => {
               draftReply={draftReply}
             />
             <div className="flex items-center gap-2.5 px-4 pb-3 pt-1 border-t border-gray-50 bg-white">
-              <button 
-                onClick={() => resolveChatMutation.mutate(chat?._id, { onSuccess: () => onChatUpdated?.() })}
+              <button
+                onClick={() =>
+                  resolveChatMutation.mutate(chat?._id, {
+                    onSuccess: () => onChatUpdated?.(),
+                  })
+                }
                 disabled={resolveChatMutation.isPending}
                 className="flex items-center gap-1.5 px-3 py-1.5 text-xs font-semibold text-gray-600 hover:text-gray-900 hover:bg-gray-100 rounded-lg transition-colors border border-gray-200"
               >

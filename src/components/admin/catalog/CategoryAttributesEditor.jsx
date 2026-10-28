@@ -44,7 +44,10 @@ function toOwnEntry(assignment) {
           : "optional",
     defaultValue: assignment.defaultValue,
     displayGroup: assignment.displayGroup || "",
-    sortOrder: assignment.sortOrder === undefined || assignment.sortOrder === null ? "" : String(assignment.sortOrder),
+    sortOrder:
+      assignment.sortOrder === undefined || assignment.sortOrder === null
+        ? ""
+        : String(assignment.sortOrder),
     active: assignment.active !== false,
   };
 }
@@ -64,7 +67,9 @@ function sourceLabel(entry, categoryNameById) {
   if (entry.source === "global") return "Global default";
   if (entry.source === "type") return "From product type";
   if (entry.source === "category") {
-    const name = entry.sourceCategoryId ? categoryNameById.get(String(entry.sourceCategoryId)) : null;
+    const name = entry.sourceCategoryId
+      ? categoryNameById.get(String(entry.sourceCategoryId))
+      : null;
     return name ? `Inherited from ${name}` : "Inherited from an ancestor";
   }
   return entry.source || "";
@@ -74,18 +79,27 @@ function describeValue(definition, value) {
   if (value === undefined || value === null || value === "") return "—";
   if (Array.isArray(value)) return value.join(", ");
   if (typeof value === "object") {
-    if ("value" in value && "unit" in value) return `${value.value} ${value.unit}`;
-    if ("length" in value) return `${value.length}×${value.width}×${value.height} ${value.unit || ""}`.trim();
+    if ("value" in value && "unit" in value)
+      return `${value.value} ${value.unit}`;
+    if ("length" in value)
+      return `${value.length}×${value.width}×${value.height} ${value.unit || ""}`.trim();
     return JSON.stringify(value);
   }
   return String(value);
 }
 
-export default function CategoryAttributesEditor({ category, categories = [], onClose }) {
+export default function CategoryAttributesEditor({
+  category,
+  categories = [],
+  onClose,
+}) {
   const categoryId = category?._id;
-  const { data: definitionsData, isLoading: definitionsLoading } = useAttributeDefinitions();
-  const { data: assignmentsData, isLoading: assignmentsLoading } = useCategoryAssignments(categoryId);
-  const { data: resolutionData, isLoading: resolutionLoading } = useCategoryAttributes(categoryId);
+  const { data: definitionsData, isLoading: definitionsLoading } =
+    useAttributeDefinitions();
+  const { data: assignmentsData, isLoading: assignmentsLoading } =
+    useCategoryAssignments(categoryId);
+  const { data: resolutionData, isLoading: resolutionLoading } =
+    useCategoryAttributes(categoryId);
   const setAssignments = useSetCategoryAssignments();
 
   const [ownEntries, setOwnEntries] = useState([]);
@@ -96,7 +110,7 @@ export default function CategoryAttributesEditor({ category, categories = [], on
 
   const serverAssignments = useMemo(
     () => assignmentsData?.data?.assignments || [],
-    [assignmentsData]
+    [assignmentsData],
   );
 
   // Initialize the editable own-list from the server's list once
@@ -112,21 +126,24 @@ export default function CategoryAttributesEditor({ category, categories = [], on
 
   const definitions = useMemo(
     () => definitionsData?.data?.attributeDefinitions || [],
-    [definitionsData]
+    [definitionsData],
   );
   const definitionByKey = useMemo(
     () => new Map(definitions.map((d) => [d.key, d])),
-    [definitions]
+    [definitions],
   );
-  const resolved = useMemo(() => resolutionData?.data?.attributes || [], [resolutionData]);
+  const resolved = useMemo(
+    () => resolutionData?.data?.attributes || [],
+    [resolutionData],
+  );
   const categoryNameById = useMemo(
     () => new Map(categories.map((c) => [String(c._id), c.name])),
-    [categories]
+    [categories],
   );
 
   const ownByKey = useMemo(
     () => new Map(ownEntries.map((entry) => [entry.attributeKey, entry])),
-    [ownEntries]
+    [ownEntries],
   );
 
   // Rows: resolved entries first (in resolution order), then own
@@ -146,26 +163,34 @@ export default function CategoryAttributesEditor({ category, categories = [], on
         (d) =>
           (d.storage || "catalogAttributes") === "catalogAttributes" &&
           d.active !== false &&
-          !ownByKey.has(d.key)
+          !ownByKey.has(d.key),
       ),
-    [definitions, ownByKey]
+    [definitions, ownByKey],
   );
 
-  const isLoading = definitionsLoading || assignmentsLoading || resolutionLoading;
+  const isLoading =
+    definitionsLoading || assignmentsLoading || resolutionLoading;
 
   const updateOwn = (attributeKey, patch) => {
     setOwnEntries((prev) =>
-      prev.map((entry) => (entry.attributeKey === attributeKey ? { ...entry, ...patch } : entry))
+      prev.map((entry) =>
+        entry.attributeKey === attributeKey ? { ...entry, ...patch } : entry,
+      ),
     );
   };
 
   const addOwn = (attributeKey, seed = {}) => {
     if (!attributeKey || ownByKey.has(attributeKey)) return;
-    setOwnEntries((prev) => [...prev, { ...newOwnEntry(attributeKey), ...seed }]);
+    setOwnEntries((prev) => [
+      ...prev,
+      { ...newOwnEntry(attributeKey), ...seed },
+    ]);
   };
 
   const removeOwn = (attributeKey) => {
-    setOwnEntries((prev) => prev.filter((entry) => entry.attributeKey !== attributeKey));
+    setOwnEntries((prev) =>
+      prev.filter((entry) => entry.attributeKey !== attributeKey),
+    );
   };
 
   const handleSave = async () => {
@@ -176,7 +201,10 @@ export default function CategoryAttributesEditor({ category, categories = [], on
       const out = { attributeKey: entry.attributeKey, active: entry.active };
       if (entry.requiredMode === "required") out.required = true;
       if (entry.requiredMode === "optional") out.required = false;
-      if (definition && !isEmptyAttributeValue(definition, entry.defaultValue)) {
+      if (
+        definition &&
+        !isEmptyAttributeValue(definition, entry.defaultValue)
+      ) {
         const result = validateAttributeValue(definition, entry.defaultValue);
         if (!result.ok) {
           errors[entry.attributeKey] = `Default value: ${result.error}`;
@@ -184,7 +212,8 @@ export default function CategoryAttributesEditor({ category, categories = [], on
           out.defaultValue = result.value;
         }
       }
-      if (entry.displayGroup.trim()) out.displayGroup = entry.displayGroup.trim();
+      if (entry.displayGroup.trim())
+        out.displayGroup = entry.displayGroup.trim();
       if (entry.sortOrder !== "") {
         const sortOrder = Number(entry.sortOrder);
         if (!Number.isInteger(sortOrder)) {
@@ -237,13 +266,20 @@ export default function CategoryAttributesEditor({ category, categories = [], on
         >
           <div className="flex items-center justify-between p-5 border-b border-gray-100">
             <div>
-              <h2 className="text-lg font-semibold text-gray-900">Attributes — {category.name}</h2>
+              <h2 className="text-lg font-semibold text-gray-900">
+                Attributes — {category.name}
+              </h2>
               <p className="text-xs text-gray-500 mt-0.5">
-                Inherited attributes apply from global defaults, the product type and ancestor
-                categories. Overrides set here win for this category and its subcategories.
+                Inherited attributes apply from global defaults, the product
+                type and ancestor categories. Overrides set here win for this
+                category and its subcategories.
               </p>
             </div>
-            <button onClick={onClose} className="p-2 hover:bg-gray-100 rounded-lg transition-colors" aria-label="Close">
+            <button
+              onClick={onClose}
+              className="p-2 hover:bg-gray-100 rounded-lg transition-colors"
+              aria-label="Close"
+            >
               <X className="w-5 h-5 text-gray-500" />
             </button>
           </div>
@@ -251,7 +287,9 @@ export default function CategoryAttributesEditor({ category, categories = [], on
           <div className="p-5 space-y-3 text-sm">
             {isLoading ? (
               <div className="space-y-3 py-6" aria-busy="true">
-                <span role="status" className="sr-only">Loading attributes…</span>
+                <span role="status" className="sr-only">
+                  Loading attributes…
+                </span>
                 <Skeleton className="h-10 w-full rounded-lg" />
                 <Skeleton className="h-10 w-full rounded-lg" />
                 <Skeleton className="h-10 w-full rounded-lg" />
@@ -260,7 +298,8 @@ export default function CategoryAttributesEditor({ category, categories = [], on
               <>
                 {rows.length === 0 && (
                   <p className="text-gray-500 py-4 text-center">
-                    No attributes apply to this category yet. Add an assignment below.
+                    No attributes apply to this category yet. Add an assignment
+                    below.
                   </p>
                 )}
                 {rows.map((row) => {
@@ -274,10 +313,17 @@ export default function CategoryAttributesEditor({ category, categories = [], on
                   // resolution still lists it.
                   const deactivatedHere = isOwn && own.active === false;
                   return (
-                    <div key={key} className="border border-gray-100 rounded-xl p-4 bg-gray-50/40">
+                    <div
+                      key={key}
+                      className="border border-gray-100 rounded-xl p-4 bg-gray-50/40"
+                    >
                       <div className="flex flex-wrap items-center gap-2">
-                        <span className="font-semibold text-gray-900">{definition.label || key}</span>
-                        <span className="font-mono text-xs text-gray-400">{key}</span>
+                        <span className="font-semibold text-gray-900">
+                          {definition.label || key}
+                        </span>
+                        <span className="font-mono text-xs text-gray-400">
+                          {key}
+                        </span>
                         <span className="px-2 py-0.5 rounded-full text-[10px] font-bold uppercase tracking-wider bg-slate-100 text-slate-600">
                           {definition.type}
                         </span>
@@ -300,13 +346,20 @@ export default function CategoryAttributesEditor({ category, categories = [], on
                         <div className="mt-3 space-y-3">
                           <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
                             <div>
-                              <label htmlFor={`assign-required-${key}`} className={smallLabelClass}>
+                              <label
+                                htmlFor={`assign-required-${key}`}
+                                className={smallLabelClass}
+                              >
                                 Required
                               </label>
                               <select
                                 id={`assign-required-${key}`}
                                 value={own.requiredMode}
-                                onChange={(e) => updateOwn(key, { requiredMode: e.target.value })}
+                                onChange={(e) =>
+                                  updateOwn(key, {
+                                    requiredMode: e.target.value,
+                                  })
+                                }
                                 className={inputClass}
                               >
                                 <option value="inherit">Inherit</option>
@@ -315,48 +368,68 @@ export default function CategoryAttributesEditor({ category, categories = [], on
                               </select>
                             </div>
                             <div>
-                              <label htmlFor={`assign-group-${key}`} className={smallLabelClass}>
+                              <label
+                                htmlFor={`assign-group-${key}`}
+                                className={smallLabelClass}
+                              >
                                 Display group
                               </label>
                               <input
                                 id={`assign-group-${key}`}
                                 type="text"
                                 value={own.displayGroup}
-                                onChange={(e) => updateOwn(key, { displayGroup: e.target.value })}
+                                onChange={(e) =>
+                                  updateOwn(key, {
+                                    displayGroup: e.target.value,
+                                  })
+                                }
                                 className={inputClass}
                                 placeholder="Inherit"
                               />
                             </div>
                             <div>
-                              <label htmlFor={`assign-sort-${key}`} className={smallLabelClass}>
+                              <label
+                                htmlFor={`assign-sort-${key}`}
+                                className={smallLabelClass}
+                              >
                                 Sort order
                               </label>
                               <input
                                 id={`assign-sort-${key}`}
                                 type="number"
                                 value={own.sortOrder}
-                                onChange={(e) => updateOwn(key, { sortOrder: e.target.value })}
+                                onChange={(e) =>
+                                  updateOwn(key, { sortOrder: e.target.value })
+                                }
                                 className={inputClass}
                                 placeholder="Inherit"
                               />
                             </div>
                             <div>
-                              <span className={smallLabelClass}>Applies here</span>
+                              <span className={smallLabelClass}>
+                                Applies here
+                              </span>
                               <label className="flex items-center gap-2 h-10 cursor-pointer">
                                 <input
                                   type="checkbox"
                                   checked={own.active}
-                                  onChange={(e) => updateOwn(key, { active: e.target.checked })}
+                                  onChange={(e) =>
+                                    updateOwn(key, { active: e.target.checked })
+                                  }
                                   className="w-4 h-4 rounded border-gray-300 text-[#025E5D] focus:ring-[#025E5D]"
                                 />
-                                <span className="text-sm text-gray-700">{own.active ? "Active" : "Deactivated"}</span>
+                                <span className="text-sm text-gray-700">
+                                  {own.active ? "Active" : "Deactivated"}
+                                </span>
                               </label>
                             </div>
                           </div>
                           <AttributeValueInput
                             definition={definition}
                             value={own.defaultValue}
-                            onChange={(value) => updateOwn(key, { defaultValue: value })}
+                            onChange={(value) =>
+                              updateOwn(key, { defaultValue: value })
+                            }
                             error={fieldErrors[key]}
                             id={`assign-default-${key}`}
                             labelText="Default value (blank = no override)"
@@ -374,7 +447,8 @@ export default function CategoryAttributesEditor({ category, categories = [], on
                       ) : (
                         <div className="mt-2 flex flex-wrap items-center justify-between gap-2">
                           <p className="text-xs text-gray-500">
-                            Required: {row.required ? "yes" : "no"} · Default: {describeValue(definition, row.defaultValue)} ·
+                            Required: {row.required ? "yes" : "no"} · Default:{" "}
+                            {describeValue(definition, row.defaultValue)} ·
                             Group: {row.displayGroup || "Specifications"}
                           </p>
                           <div className="flex gap-2">

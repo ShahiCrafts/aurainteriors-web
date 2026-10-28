@@ -63,18 +63,18 @@ describe("FE-44 contact payload contract", () => {
   });
 
   it("a chosen category is sent (server no longer forced to default it)", () => {
-    expect(buildContactPayload({ ...VALID, category: "support" }).category).toBe(
-      "support"
-    );
+    expect(
+      buildContactPayload({ ...VALID, category: "support" }).category,
+    ).toBe("support");
   });
 
   it("an unknown category falls back to the schema default 'general'", () => {
     expect(buildContactPayload({ ...VALID, category: "bogus" }).category).toBe(
-      "general"
+      "general",
     );
-    expect(buildContactPayload({ ...VALID, category: undefined }).category).toBe(
-      "general"
-    );
+    expect(
+      buildContactPayload({ ...VALID, category: undefined }).category,
+    ).toBe("general");
   });
 });
 
@@ -82,7 +82,11 @@ describe("FE-44 contactSchema bounds match the server schema at the edges", () =
   const cases = [
     // [field, at-limit value (passes), limit+1 value (fails)]
     ["name", "n".repeat(100), "n".repeat(101)],
-    ["email", `${"a".repeat(242)}@example.com`, `${"a".repeat(243)}@example.com`], // 254 / 255 chars
+    [
+      "email",
+      `${"a".repeat(242)}@example.com`,
+      `${"a".repeat(243)}@example.com`,
+    ], // 254 / 255 chars
     ["phone", "1".repeat(20), "1".repeat(21)],
     ["subject", "s".repeat(200), "s".repeat(201)],
     ["message", "m".repeat(5000), "m".repeat(5001)],
@@ -91,28 +95,41 @@ describe("FE-44 contactSchema bounds match the server schema at the edges", () =
   for (const [field, atLimit, overLimit] of cases) {
     it(`${field}: at-limit passes, limit+1 fails`, async () => {
       await expect(
-        contactSchema.isValid({ ...VALID, [field]: atLimit })
+        contactSchema.isValid({ ...VALID, [field]: atLimit }),
       ).resolves.toBe(true);
       await expect(
-        contactSchema.isValid({ ...VALID, [field]: overLimit })
+        contactSchema.isValid({ ...VALID, [field]: overLimit }),
       ).resolves.toBe(false);
     });
   }
 
   it("server minimums are 1: a 1-char subject and message pass (old client demanded 5/10)", async () => {
     await expect(
-      contactSchema.isValid({ ...VALID, subject: "Hi", message: "Ok" })
+      contactSchema.isValid({ ...VALID, subject: "Hi", message: "Ok" }),
     ).resolves.toBe(true);
   });
 
   it("category must be one of the server enum values", async () => {
-    for (const c of ["general", "support", "sales", "partnership", "feedback", "other"]) {
-      await expect(contactSchema.isValid({ ...VALID, category: c })).resolves.toBe(true);
+    for (const c of [
+      "general",
+      "support",
+      "sales",
+      "partnership",
+      "feedback",
+      "other",
+    ]) {
+      await expect(
+        contactSchema.isValid({ ...VALID, category: c }),
+      ).resolves.toBe(true);
     }
-    await expect(contactSchema.isValid({ ...VALID, category: "bogus" })).resolves.toBe(false);
+    await expect(
+      contactSchema.isValid({ ...VALID, category: "bogus" }),
+    ).resolves.toBe(false);
   });
 
   it("empty phone is allowed (server allow(''))", async () => {
-    await expect(contactSchema.isValid({ ...VALID, phone: "" })).resolves.toBe(true);
+    await expect(contactSchema.isValid({ ...VALID, phone: "" })).resolves.toBe(
+      true,
+    );
   });
 });

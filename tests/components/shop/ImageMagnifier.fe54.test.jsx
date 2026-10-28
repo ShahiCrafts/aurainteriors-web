@@ -52,7 +52,7 @@ beforeEach(() => {
     () => {
       rectReads += 1;
       return { ...RECT };
-    }
+    },
   );
 });
 
@@ -71,7 +71,7 @@ function flushFrame() {
 
 function renderMagnifier() {
   const utils = render(
-    <ImageMagnifier src={SRC} alt="Sofa" magnifierSize={100} zoomLevel={2.5} />
+    <ImageMagnifier src={SRC} alt="Sofa" magnifierSize={100} zoomLevel={2.5} />,
   );
   const img = utils.container.querySelector("img");
   const containerEl = img.parentElement;

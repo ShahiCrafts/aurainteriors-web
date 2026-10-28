@@ -44,7 +44,10 @@ const baseBlog = {
   likes: 0,
   tags: [],
   author: { name: "Test Author" },
-  source: { name: "Example Publisher", logo: "https://cdn.publisher.example/logo.png" },
+  source: {
+    name: "Example Publisher",
+    logo: "https://cdn.publisher.example/logo.png",
+  },
   originalUrl: "https://www.publisher.example/original-article",
 };
 
@@ -54,7 +57,7 @@ function renderPage() {
       <Routes>
         <Route path="/blog/:slug" element={<BlogDetailsPage />} />
       </Routes>
-    </MemoryRouter>
+    </MemoryRouter>,
   );
 }
 
@@ -66,7 +69,7 @@ describe("BlogDetailsPage external attribution (FE-04 sibling)", () => {
     const link = screen.getByRole("link", { name: "Read Original" });
     expect(link).toHaveAttribute(
       "href",
-      "https://www.publisher.example/original-article"
+      "https://www.publisher.example/original-article",
     );
     expect(link).toHaveAttribute("target", "_blank");
     expect(link).toHaveAttribute("rel", "noopener noreferrer");
@@ -74,7 +77,7 @@ describe("BlogDetailsPage external attribution (FE-04 sibling)", () => {
     const logo = screen.getByAltText("Example Publisher");
     expect(logo).toHaveAttribute(
       "src",
-      "https://cdn.publisher.example/logo.png"
+      "https://cdn.publisher.example/logo.png",
     );
   });
 

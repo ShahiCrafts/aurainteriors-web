@@ -42,7 +42,7 @@ export function colorSwatchHex(value) {
   const trimmed = value.trim();
   if (HEX_PATTERN.test(trimmed)) return trimmed;
   const hit = COLOR_SWATCHES.find(
-    (entry) => entry.name.toLowerCase() === trimmed.toLowerCase()
+    (entry) => entry.name.toLowerCase() === trimmed.toLowerCase(),
   );
   return hit ? hit.hex : null;
 }

@@ -32,12 +32,18 @@ vi.mock("../../../src/store/authStore.js", () => ({
 vi.mock("../../../src/components/admin/dashboard/RevenueChart.jsx", () => ({
   default: () => null,
 }));
-vi.mock("../../../src/components/admin/dashboard/CategorySalesChart.jsx", () => ({
-  default: () => null,
-}));
-vi.mock("../../../src/components/admin/dashboard/RecentOrdersTable.jsx", () => ({
-  default: () => null,
-}));
+vi.mock(
+  "../../../src/components/admin/dashboard/CategorySalesChart.jsx",
+  () => ({
+    default: () => null,
+  }),
+);
+vi.mock(
+  "../../../src/components/admin/dashboard/RecentOrdersTable.jsx",
+  () => ({
+    default: () => null,
+  }),
+);
 vi.mock("../../../src/components/admin/dashboard/QuickActions.jsx", () => ({
   default: () => null,
 }));
@@ -62,8 +68,13 @@ const loaded = (value) => ({ data: value, isLoading: false });
 beforeEach(() => {
   useDashboardStats.mockReturnValue(
     loaded({
-      data: { totalRevenue: 250000, totalOrders: 42, totalProducts: 17, totalUsers: 9 },
-    })
+      data: {
+        totalRevenue: 250000,
+        totalOrders: 42,
+        totalProducts: 17,
+        totalUsers: 9,
+      },
+    }),
   );
   useRevenueAnalytics.mockReturnValue(loaded({ data: { chartData } }));
   useCategorySales.mockReturnValue(loaded({ data: { salesByCategory: [] } }));
@@ -75,7 +86,7 @@ const renderDashboard = () =>
   render(
     <MemoryRouter>
       <Dashboard />
-    </MemoryRouter>
+    </MemoryRouter>,
   );
 
 describe("Dashboard (FE-14)", () => {

@@ -53,7 +53,8 @@ export default function Tabs({
     if (!enabled.length) return;
     const currentIndex = enabled.findIndex((tab) => tab.id === activeTab?.id);
     let next = null;
-    if (event.key === "ArrowRight") next = enabled[(currentIndex + 1) % enabled.length];
+    if (event.key === "ArrowRight")
+      next = enabled[(currentIndex + 1) % enabled.length];
     else if (event.key === "ArrowLeft")
       next = enabled[(currentIndex - 1 + enabled.length) % enabled.length];
     else if (event.key === "Home") next = enabled[0];
@@ -92,7 +93,9 @@ export default function Tabs({
               onClick={() => activate(tab)}
               onKeyDown={handleKeyDown}
               className={`relative flex items-center gap-2 whitespace-nowrap px-5 py-3.5 text-sm font-semibold transition-colors cursor-pointer bg-transparent border-none disabled:opacity-40 disabled:cursor-not-allowed ${
-                isActive ? "text-neutral-900" : "text-neutral-400 hover:text-neutral-600"
+                isActive
+                  ? "text-neutral-900"
+                  : "text-neutral-400 hover:text-neutral-600"
               }`}
             >
               {Icon && (
@@ -104,7 +107,10 @@ export default function Tabs({
               )}
               {tab.label}
               {isActive && (
-                <span className="absolute bottom-0 left-0 right-0 h-0.5 bg-brand" aria-hidden="true" />
+                <span
+                  className="absolute bottom-0 left-0 right-0 h-0.5 bg-brand"
+                  aria-hidden="true"
+                />
               )}
             </button>
           );

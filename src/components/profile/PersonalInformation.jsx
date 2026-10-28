@@ -21,8 +21,9 @@ const currentYear = new Date().getFullYear();
 
 export default function PersonalInformation() {
   const fileInputRef = useRef(null);
-  const { authUser, signIn } = useAuthStore(useShallow((state) => ({ authUser: state.user, signIn: state.signIn })));
-
+  const { authUser, signIn } = useAuthStore(
+    useShallow((state) => ({ authUser: state.user, signIn: state.signIn })),
+  );
 
   const { data, isLoading } = useProfile();
   const { mutate: updateProfile, isPending: isUpdating } = useUpdateProfile();
@@ -333,10 +334,14 @@ export default function PersonalInformation() {
           {/* First Name & Last Name */}
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
             <div>
-              <label htmlFor="profile-firstName" className="block text-sm font-medium text-neutral-800 mb-1 font-dm-sans">
+              <label
+                htmlFor="profile-firstName"
+                className="block text-sm font-medium text-neutral-800 mb-1 font-dm-sans"
+              >
                 First Name <span className="text-red-500">*</span>
               </label>
-              <input id="profile-firstName"
+              <input
+                id="profile-firstName"
                 type="text"
                 {...register("firstName")}
                 className={`w-full px-4 py-2.5 rounded-lg border focus:ring-1 outline-none transition-all font-dm-sans text-neutral-900 ${errors.firstName ? "border-red-500 focus:border-red-500 focus:ring-red-500/20" : "border-neutral-200 focus:border-[#F27318] focus:ring-[#F27318]"}`}
@@ -348,10 +353,14 @@ export default function PersonalInformation() {
               )}
             </div>
             <div>
-              <label htmlFor="profile-lastName" className="block text-sm font-medium text-neutral-800 mb-1 font-dm-sans">
+              <label
+                htmlFor="profile-lastName"
+                className="block text-sm font-medium text-neutral-800 mb-1 font-dm-sans"
+              >
                 Last Name <span className="text-red-500">*</span>
               </label>
-              <input id="profile-lastName"
+              <input
+                id="profile-lastName"
                 type="text"
                 {...register("lastName")}
                 className={`w-full px-4 py-2.5 rounded-lg border focus:ring-1 outline-none transition-all font-dm-sans text-neutral-900 ${errors.lastName ? "border-red-500 focus:border-red-500 focus:ring-red-500/20" : "border-neutral-200 focus:border-[#F27318] focus:ring-[#F27318]"}`}
@@ -366,11 +375,15 @@ export default function PersonalInformation() {
 
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
             <div>
-              <label htmlFor="profile-email" className="block text-sm font-medium text-neutral-800 mb-1 font-dm-sans">
+              <label
+                htmlFor="profile-email"
+                className="block text-sm font-medium text-neutral-800 mb-1 font-dm-sans"
+              >
                 Email Address <span className="text-red-500">*</span>
               </label>
               <div className="relative">
-                <input id="profile-email"
+                <input
+                  id="profile-email"
                   type="email"
                   {...register("email")}
                   disabled
@@ -391,7 +404,10 @@ export default function PersonalInformation() {
               )}
             </div>
             <div>
-              <label htmlFor="profile-phone" className="block text-sm font-medium text-neutral-800 mb-1 font-dm-sans">
+              <label
+                htmlFor="profile-phone"
+                className="block text-sm font-medium text-neutral-800 mb-1 font-dm-sans"
+              >
                 Phone Number
               </label>
               <div className="flex gap-2">
@@ -402,7 +418,8 @@ export default function PersonalInformation() {
                 >
                   <option value="+977">+977</option>
                 </select>
-                <input id="profile-phone"
+                <input
+                  id="profile-phone"
                   type="tel"
                   {...register("phone")}
                   placeholder="98XXXXXXXX"
@@ -431,10 +448,11 @@ export default function PersonalInformation() {
                     onClick={() =>
                       setValue("gender", option, { shouldDirty: true })
                     }
-                    className={`px-4 py-2.5 rounded-lg border-2 text-sm font-medium transition-all font-dm-sans capitalize flex-1 sm:flex-none min-w-[80px] ${gender === option
+                    className={`px-4 py-2.5 rounded-lg border-2 text-sm font-medium transition-all font-dm-sans capitalize flex-1 sm:flex-none min-w-[80px] ${
+                      gender === option
                         ? "border-[#F27318] bg-[#F27318]/5 text-[#F27318]"
                         : "border-neutral-200 text-neutral-600 hover:border-neutral-300"
-                      }`}
+                    }`}
                   >
                     {option}
                   </button>
@@ -448,10 +466,14 @@ export default function PersonalInformation() {
             </div>
 
             <div>
-              <label htmlFor="profile-dateOfBirth" className="block text-sm font-medium text-neutral-800 mb-2 font-dm-sans text-left">
+              <label
+                htmlFor="profile-dateOfBirth"
+                className="block text-sm font-medium text-neutral-800 mb-2 font-dm-sans text-left"
+              >
                 Date of Birth
               </label>
-              <input id="profile-dateOfBirth"
+              <input
+                id="profile-dateOfBirth"
                 type="date"
                 {...register("dateOfBirth")}
                 max={new Date().toISOString().split("T")[0]}
@@ -487,8 +509,6 @@ export default function PersonalInformation() {
           </div>
         </form>
       </div>
-
-
     </div>
   );
 }

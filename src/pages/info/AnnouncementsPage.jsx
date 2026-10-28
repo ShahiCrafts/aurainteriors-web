@@ -11,10 +11,13 @@ import {
   AlertTriangle,
   CheckCircle,
   FileText,
-  } from "lucide-react";
+} from "lucide-react";
 import Navbar from "../../layouts/customer/Navbar";
 import Footer from "../../layouts/customer/Footer";
-import { usePublicAnnouncements, usePublicAnnouncement } from "../../hooks/admin/useAnnouncementTan";
+import {
+  usePublicAnnouncements,
+  usePublicAnnouncement,
+} from "../../hooks/admin/useAnnouncementTan";
 import Skeleton from "../../components/common/Skeleton";
 import Pagination from "../../components/common/Pagination";
 import { validateMediaUrl, safeActionUrl } from "../../utils/safeUrl";
@@ -27,7 +30,11 @@ const announcementImage = (announcement) =>
 
 const TYPE_CONFIG = {
   general: { icon: Info, color: "bg-blue-500", label: "General" },
-  maintenance: { icon: AlertTriangle, color: "bg-yellow-500", label: "Maintenance" },
+  maintenance: {
+    icon: AlertTriangle,
+    color: "bg-yellow-500",
+    label: "Maintenance",
+  },
   update: { icon: CheckCircle, color: "bg-green-500", label: "Update" },
   promotion: { icon: Megaphone, color: "bg-purple-500", label: "Promotion" },
   policy: { icon: FileText, color: "bg-gray-500", label: "Policy" },
@@ -44,7 +51,8 @@ const PRIORITY_COLORS = {
 function AnnouncementCard({ announcement, onClick }) {
   const typeConfig = TYPE_CONFIG[announcement.type] || TYPE_CONFIG.general;
   const TypeIcon = typeConfig.icon;
-  const priorityBorder = PRIORITY_COLORS[announcement.priority] || PRIORITY_COLORS.normal;
+  const priorityBorder =
+    PRIORITY_COLORS[announcement.priority] || PRIORITY_COLORS.normal;
 
   return (
     <motion.div
@@ -66,7 +74,9 @@ function AnnouncementCard({ announcement, onClick }) {
             {announcement.isPinned && (
               <Pin className="w-4 h-4 text-amber-500 shrink-0" />
             )}
-            <span className={`px-2 py-0.5 text-xs font-medium rounded-full ${typeConfig.color} text-white`}>
+            <span
+              className={`px-2 py-0.5 text-xs font-medium rounded-full ${typeConfig.color} text-white`}
+            >
               {typeConfig.label}
             </span>
             <span className="text-xs text-gray-400">
@@ -149,7 +159,9 @@ function AnnouncementDetail({ announcement, onBack }) {
 
         {/* Type and Date */}
         <div className="flex flex-wrap items-center gap-3 mb-4">
-          <div className={`inline-flex items-center gap-2 px-3 py-1.5 rounded-full ${typeConfig.color} text-white text-sm font-medium`}>
+          <div
+            className={`inline-flex items-center gap-2 px-3 py-1.5 rounded-full ${typeConfig.color} text-white text-sm font-medium`}
+          >
             <TypeIcon className="w-4 h-4" />
             {typeConfig.label}
           </div>
@@ -221,7 +233,11 @@ export default function AnnouncementsPage() {
   const [typeFilter, setTypeFilter] = useState("all");
 
   // Fetch announcements
-  const { data: announcementsData, isLoading, error } = usePublicAnnouncements({
+  const {
+    data: announcementsData,
+    isLoading,
+    error,
+  } = usePublicAnnouncements({
     page,
     limit: 10,
     type: typeFilter !== "all" ? typeFilter : undefined,
@@ -233,7 +249,7 @@ export default function AnnouncementsPage() {
   // Fetch single announcement detail when selected
   const { data: detailData, isLoading: detailLoading } = usePublicAnnouncement(
     selectedAnnouncement?._id,
-    { enabled: !!selectedAnnouncement }
+    { enabled: !!selectedAnnouncement },
   );
 
   const handleSelectAnnouncement = (announcement) => {
@@ -260,7 +276,8 @@ export default function AnnouncementsPage() {
               Announcements
             </h1>
             <p className="text-gray-600 max-w-lg mx-auto">
-              Stay updated with the latest news, updates, and important information from Aura Interiors.
+              Stay updated with the latest news, updates, and important
+              information from Aura Interiors.
             </p>
           </div>
 
@@ -282,7 +299,9 @@ export default function AnnouncementsPage() {
                   </div>
                 ) : (
                   <AnnouncementDetail
-                    announcement={detailData?.data?.announcement || selectedAnnouncement}
+                    announcement={
+                      detailData?.data?.announcement || selectedAnnouncement
+                    }
                     onBack={handleBack}
                   />
                 )}
@@ -297,11 +316,15 @@ export default function AnnouncementsPage() {
                 {/* Type Filter */}
                 <div className="flex flex-wrap gap-2 mb-6 justify-center">
                   <button
-                    onClick={() => { setTypeFilter("all"); setPage(1); }}
-                    className={`px-4 py-2 rounded-full text-sm font-medium transition-colors ${typeFilter === "all"
-                      ? "bg-amber-600 text-white"
-                      : "bg-white text-gray-600 hover:bg-gray-100 border border-gray-200"
-                      }`}
+                    onClick={() => {
+                      setTypeFilter("all");
+                      setPage(1);
+                    }}
+                    className={`px-4 py-2 rounded-full text-sm font-medium transition-colors ${
+                      typeFilter === "all"
+                        ? "bg-amber-600 text-white"
+                        : "bg-white text-gray-600 hover:bg-gray-100 border border-gray-200"
+                    }`}
                   >
                     All
                   </button>
@@ -310,11 +333,15 @@ export default function AnnouncementsPage() {
                     return (
                       <button
                         key={key}
-                        onClick={() => { setTypeFilter(key); setPage(1); }}
-                        className={`px-4 py-2 rounded-full text-sm font-medium transition-colors inline-flex items-center gap-1.5 ${typeFilter === key
-                          ? "bg-amber-600 text-white"
-                          : "bg-white text-gray-600 hover:bg-gray-100 border border-gray-200"
-                          }`}
+                        onClick={() => {
+                          setTypeFilter(key);
+                          setPage(1);
+                        }}
+                        className={`px-4 py-2 rounded-full text-sm font-medium transition-colors inline-flex items-center gap-1.5 ${
+                          typeFilter === key
+                            ? "bg-amber-600 text-white"
+                            : "bg-white text-gray-600 hover:bg-gray-100 border border-gray-200"
+                        }`}
                       >
                         <Icon className="w-4 h-4" />
                         {config.label}
@@ -327,7 +354,10 @@ export default function AnnouncementsPage() {
                 {isLoading ? (
                   <div className="space-y-4">
                     {[1, 2, 3].map((i) => (
-                      <div key={i} className="bg-white rounded-xl p-5 border border-gray-100 flex items-start gap-4">
+                      <div
+                        key={i}
+                        className="bg-white rounded-xl p-5 border border-gray-100 flex items-start gap-4"
+                      >
                         <Skeleton className="w-11 h-11 rounded-lg shrink-0" />
                         <div className="flex-1 space-y-2">
                           <Skeleton className="w-1/3 h-4 rounded" />
@@ -340,13 +370,19 @@ export default function AnnouncementsPage() {
                 ) : error ? (
                   <div className="text-center py-12 bg-white rounded-xl border border-gray-100">
                     <AlertTriangle className="w-12 h-12 text-red-400 mx-auto mb-4" />
-                    <p className="text-gray-500">Failed to load announcements. Please try again later.</p>
+                    <p className="text-gray-500">
+                      Failed to load announcements. Please try again later.
+                    </p>
                   </div>
                 ) : announcements.length === 0 ? (
                   <div className="text-center py-12 bg-white rounded-xl border border-gray-100">
                     <Megaphone className="w-12 h-12 text-gray-300 mx-auto mb-4" />
-                    <p className="text-gray-500">No announcements at the moment.</p>
-                    <p className="text-gray-400 text-sm mt-1">Check back later for updates!</p>
+                    <p className="text-gray-500">
+                      No announcements at the moment.
+                    </p>
+                    <p className="text-gray-400 text-sm mt-1">
+                      Check back later for updates!
+                    </p>
                   </div>
                 ) : (
                   <>

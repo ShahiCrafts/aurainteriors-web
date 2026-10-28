@@ -24,8 +24,10 @@ const readFileAsDataURL = (file) =>
     const reader = new FileReader();
     reader.onload = (event) => resolve(event.target.result);
     reader.onerror = () => {
-      console.error('FileReader error');
-      reject(new Error('Image compression failed: could not read the image file'));
+      console.error("FileReader error");
+      reject(
+        new Error("Image compression failed: could not read the image file"),
+      );
     };
     reader.readAsDataURL(file);
   });
@@ -35,8 +37,8 @@ const loadImage = (dataUrl) =>
     const img = new Image();
     img.onload = () => resolve(img);
     img.onerror = () => {
-      console.error('Failed to load image for compression');
-      reject(new Error('Image compression failed: could not decode the image'));
+      console.error("Failed to load image for compression");
+      reject(new Error("Image compression failed: could not decode the image"));
     };
     img.src = dataUrl;
   });
@@ -46,28 +48,38 @@ const loadImage = (dataUrl) =>
 const encodeImageOnce = (img, width, height, quality) =>
   new Promise((resolve, reject) => {
     try {
-      const canvas = document.createElement('canvas');
+      const canvas = document.createElement("canvas");
       canvas.width = width;
       canvas.height = height;
-      const ctx = canvas.getContext('2d');
+      const ctx = canvas.getContext("2d");
       if (!ctx) {
-        reject(new Error('Image compression failed: canvas 2d context unavailable'));
+        reject(
+          new Error("Image compression failed: canvas 2d context unavailable"),
+        );
         return;
       }
       ctx.drawImage(img, 0, 0, width, height);
       canvas.toBlob(
         (blob) => {
           if (!blob) {
-            reject(new Error('Image compression failed: re-encoding produced no output'));
+            reject(
+              new Error(
+                "Image compression failed: re-encoding produced no output",
+              ),
+            );
             return;
           }
           resolve(blob);
         },
-        'image/jpeg',
-        quality
+        "image/jpeg",
+        quality,
       );
     } catch (error) {
-      reject(error instanceof Error ? error : new Error('Image compression failed: re-encoding failed'));
+      reject(
+        error instanceof Error
+          ? error
+          : new Error("Image compression failed: re-encoding failed"),
+      );
     }
   });
 
@@ -99,7 +111,7 @@ export const compressImage = async (file, options = {}) => {
     img.width * img.height > MAX_IMAGE_PIXELS
   ) {
     throw new Error(
-      `Image compression failed: image dimensions ${img.width}x${img.height} exceed the maximum allowed size`
+      `Image compression failed: image dimensions ${img.width}x${img.height} exceed the maximum allowed size`,
     );
   }
 
@@ -146,7 +158,7 @@ export const compressImage = async (file, options = {}) => {
       }
       if (blob.size <= Math.min(file.size, maxSizeBytes)) break;
     } catch (error) {
-      console.error('Image compression error:', error);
+      console.error("Image compression error:", error);
       lastError = error;
     }
   }
@@ -154,7 +166,7 @@ export const compressImage = async (file, options = {}) => {
   if (!smallestBlob) {
     throw lastError instanceof Error
       ? lastError
-      : new Error('Image compression failed: could not re-encode the image');
+      : new Error("Image compression failed: could not re-encode the image");
   }
 
   // FE-36: the re-encode is always JPEG bytes, so the filename must
@@ -162,9 +174,9 @@ export const compressImage = async (file, options = {}) => {
   // in a .png/.gif wrapper (a GIF additionally lost its animation to
   // a still frame under a .gif name). Renaming to .jpg is the honest
   // label for a still re-encode.
-  const jpegName = `${String(file.name || 'image').replace(/\.[^/.]+$/, '') || 'image'}.jpg`;
+  const jpegName = `${String(file.name || "image").replace(/\.[^/.]+$/, "") || "image"}.jpg`;
   return new File([smallestBlob], jpegName, {
-    type: 'image/jpeg',
+    type: "image/jpeg",
     lastModified: Date.now(),
   });
 };
@@ -176,7 +188,7 @@ export const compressImage = async (file, options = {}) => {
  * - Documents: return as-is (no lossless compression)
  */
 export const compressFileIfNeeded = async (file) => {
-  if (!file.type.startsWith('image/')) {
+  if (!file.type.startsWith("image/")) {
     // Not an image, return as-is
     return file;
   }
@@ -195,7 +207,7 @@ export const compressFileIfNeeded = async (file) => {
 
   if (reduction > 5) {
     console.log(
-      `Image compression: ${(originalSize / 1024).toFixed(1)}KB → ${(compressedSize / 1024).toFixed(1)}KB (${reduction}% reduction)`
+      `Image compression: ${(originalSize / 1024).toFixed(1)}KB → ${(compressedSize / 1024).toFixed(1)}KB (${reduction}% reduction)`,
     );
   }
 

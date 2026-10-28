@@ -1,4 +1,4 @@
-import api from './index';
+import api from "./index";
 
 /**
  * Subscribe to newsletter
@@ -7,9 +7,9 @@ import api from './index';
  * @returns {Promise} API response
  */
 export const subscribeNewsletter = async (data) => {
-    const { email, source = 'footer' } = data;
-    const response = await api.post('/newsletter/subscribe', { email, source });
-    return response.data;
+  const { email, source = "footer" } = data;
+  const response = await api.post("/newsletter/subscribe", { email, source });
+  return response.data;
 };
 
 /**
@@ -18,8 +18,8 @@ export const subscribeNewsletter = async (data) => {
  * @returns {Promise} API response
  */
 export const unsubscribeNewsletter = async (token) => {
-    const response = await api.post('/newsletter/unsubscribe', { token });
-    return response.data;
+  const response = await api.post("/newsletter/unsubscribe", { token });
+  return response.data;
 };
 
 /**
@@ -28,8 +28,8 @@ export const unsubscribeNewsletter = async (token) => {
  * @returns {Promise} API response
  */
 export const getNewsletterSubscribers = async (params) => {
-    const response = await api.get('/newsletter/subscribers', { params });
-    return response.data;
+  const response = await api.get("/newsletter/subscribers", { params });
+  return response.data;
 };
 
 /**
@@ -38,8 +38,8 @@ export const getNewsletterSubscribers = async (params) => {
  * @returns {Promise} API response
  */
 export const sendTrendEmail = async (data) => {
-    const response = await api.post('/newsletter/send-trend', data);
-    return response.data;
+  const response = await api.post("/newsletter/send-trend", data);
+  return response.data;
 };
 
 /**
@@ -47,6 +47,6 @@ export const sendTrendEmail = async (data) => {
  * @returns {Promise} API response
  */
 export const getNewsletterStats = async () => {
-    const response = await api.get('/newsletter/stats');
-    return response.data;
+  const response = await api.get("/newsletter/stats");
+  return response.data;
 };

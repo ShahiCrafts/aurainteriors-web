@@ -31,32 +31,57 @@ const data = [
 
 describe("RevenueChart period control (FE-38)", () => {
   it("the select is controlled by the period prop and the subtitle states that window", () => {
-    render(<RevenueChart data={data} period="this-year" onPeriodChange={vi.fn()} />);
+    render(
+      <RevenueChart data={data} period="this-year" onPeriodChange={vi.fn()} />,
+    );
     expect(screen.getByLabelText(/revenue period/i)).toHaveValue("this-year");
-    expect(screen.getByText(/revenue trend for this year/i)).toBeInTheDocument();
-    expect(screen.queryByText(/revenue trend over the last 30 days/i)).not.toBeInTheDocument();
+    expect(
+      screen.getByText(/revenue trend for this year/i),
+    ).toBeInTheDocument();
+    expect(
+      screen.queryByText(/revenue trend over the last 30 days/i),
+    ).not.toBeInTheDocument();
   });
 
   it("the default period is last-30 and its subtitle says so", () => {
-    render(<RevenueChart data={data} period="last-30" onPeriodChange={vi.fn()} />);
+    render(
+      <RevenueChart data={data} period="last-30" onPeriodChange={vi.fn()} />,
+    );
     expect(screen.getByLabelText(/revenue period/i)).toHaveValue("last-30");
-    expect(screen.getByText(/revenue trend over the last 30 days/i)).toBeInTheDocument();
+    expect(
+      screen.getByText(/revenue trend over the last 30 days/i),
+    ).toBeInTheDocument();
   });
 
   it("changing the select reports the new period to the owner of the query", () => {
     const onPeriodChange = vi.fn();
-    render(<RevenueChart data={data} period="last-30" onPeriodChange={onPeriodChange} />);
-    fireEvent.change(screen.getByLabelText(/revenue period/i), { target: { value: "last-3-months" } });
+    render(
+      <RevenueChart
+        data={data}
+        period="last-30"
+        onPeriodChange={onPeriodChange}
+      />,
+    );
+    fireEvent.change(screen.getByLabelText(/revenue period/i), {
+      target: { value: "last-3-months" },
+    });
     expect(onPeriodChange).toHaveBeenCalledTimes(1);
     expect(onPeriodChange).toHaveBeenCalledWith("last-3-months");
   });
 
   it("offers exactly the four periods the audit found rendered-but-dead", () => {
-    render(<RevenueChart data={data} period="last-30" onPeriodChange={vi.fn()} />);
-    const options = [...screen.getByLabelText(/revenue period/i).querySelectorAll("option")].map(
-      (o) => o.textContent
+    render(
+      <RevenueChart data={data} period="last-30" onPeriodChange={vi.fn()} />,
     );
-    expect(options).toEqual(["Last 30 Days", "This Month", "Last 3 Months", "This Year"]);
+    const options = [
+      ...screen.getByLabelText(/revenue period/i).querySelectorAll("option"),
+    ].map((o) => o.textContent);
+    expect(options).toEqual([
+      "Last 30 Days",
+      "This Month",
+      "Last 3 Months",
+      "This Year",
+    ]);
   });
 });
 

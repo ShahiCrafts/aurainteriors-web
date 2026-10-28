@@ -53,7 +53,7 @@ export function categoryScopeOptions(categories, selectedSlugs = []) {
   const roots = Array.isArray(categories) ? categories : [];
   const index = indexCategoryTree(roots);
   const known = [...new Set(selectedSlugs || [])].filter((slug) =>
-    index.has(slug)
+    index.has(slug),
   );
   if (known.length === 0) return roots;
 
@@ -68,9 +68,7 @@ export function categoryScopeOptions(categories, selectedSlugs = []) {
       : roots;
   }
 
-  const parents = new Set(
-    known.map((slug) => index.get(slug).parentSlug)
-  );
+  const parents = new Set(known.map((slug) => index.get(slug).parentSlug));
   if (parents.size === 1) {
     const [parentSlug] = parents;
     return parentSlug ? childrenOf(index.get(parentSlug).node) : roots;

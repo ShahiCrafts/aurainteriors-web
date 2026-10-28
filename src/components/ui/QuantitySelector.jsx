@@ -16,7 +16,11 @@ import { Minus, Plus } from "lucide-react";
 const SIZE_CLASSES = {
   sm: { button: "w-7 h-7", input: "w-10 h-7 text-sm", icon: 13 },
   md: { button: "w-9 h-9", input: "w-12 h-9 text-sm", icon: 15 },
-  lg: { button: "w-[52px] h-[52px]", input: "w-14 h-[52px] text-base", icon: 18 },
+  lg: {
+    button: "w-[52px] h-[52px]",
+    input: "w-14 h-[52px] text-base",
+    icon: 18,
+  },
 };
 
 /**
@@ -75,9 +79,12 @@ export default function QuantitySelector({
         type="text"
         inputMode="numeric"
         aria-label="Quantity"
-        className={`${dims.input} text-center font-semibold text-[#1A1714] border border-neutral-400 rounded-lg outline-none transition-colors focus:border-brand focus:ring-2 focus:ring-brand/20 disabled:opacity-50`} value={draft ?? String(value)}
+        className={`${dims.input} text-center font-semibold text-[#1A1714] border border-neutral-400 rounded-lg outline-none transition-colors focus:border-brand focus:ring-2 focus:ring-brand/20 disabled:opacity-50`}
+        value={draft ?? String(value)}
         disabled={disabled}
-        onChange={(event) => setDraft(event.target.value.replace(/[^0-9]/g, ""))}
+        onChange={(event) =>
+          setDraft(event.target.value.replace(/[^0-9]/g, ""))
+        }
         onBlur={commitDraft}
         onKeyDown={(event) => {
           if (event.key === "Enter") {

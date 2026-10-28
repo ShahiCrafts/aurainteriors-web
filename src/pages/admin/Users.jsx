@@ -96,7 +96,7 @@ export default function Users() {
         onError: (err) => {
           toast.error(formatError(err, "Failed to reactivate user"));
         },
-      }
+      },
     );
   };
 
@@ -113,7 +113,7 @@ export default function Users() {
         onError: (err) => {
           toast.error(formatError(err, "Failed to deactivate user"));
         },
-      }
+      },
     );
   };
 
@@ -147,7 +147,7 @@ export default function Users() {
           queryClient.getMutationCache().clear();
           resetMutation.reset();
         },
-      }
+      },
     );
   };
 
@@ -226,13 +226,27 @@ export default function Users() {
             <table className="w-full">
               <thead>
                 <tr className="bg-gray-50/80 border-b border-gray-100">
-                  <th className="px-6 py-4"><Skeleton className="h-4 w-24" /></th>
-                  <th className="px-6 py-4"><Skeleton className="h-4 w-20" /></th>
-                  <th className="px-6 py-4"><Skeleton className="h-4 w-12" /></th>
-                  <th className="px-6 py-4"><Skeleton className="h-4 w-16" /></th>
-                  <th className="px-6 py-4"><Skeleton className="h-4 w-20" /></th>
-                  <th className="px-6 py-4"><Skeleton className="h-4 w-16" /></th>
-                  <th className="px-6 py-4 text-center"><Skeleton className="h-4 w-16 mx-auto" /></th>
+                  <th className="px-6 py-4">
+                    <Skeleton className="h-4 w-24" />
+                  </th>
+                  <th className="px-6 py-4">
+                    <Skeleton className="h-4 w-20" />
+                  </th>
+                  <th className="px-6 py-4">
+                    <Skeleton className="h-4 w-12" />
+                  </th>
+                  <th className="px-6 py-4">
+                    <Skeleton className="h-4 w-16" />
+                  </th>
+                  <th className="px-6 py-4">
+                    <Skeleton className="h-4 w-20" />
+                  </th>
+                  <th className="px-6 py-4">
+                    <Skeleton className="h-4 w-16" />
+                  </th>
+                  <th className="px-6 py-4 text-center">
+                    <Skeleton className="h-4 w-16 mx-auto" />
+                  </th>
                 </tr>
               </thead>
               <tbody className="divide-y divide-gray-50">
@@ -247,11 +261,21 @@ export default function Users() {
                         </div>
                       </div>
                     </td>
-                    <td className="px-6 py-4"><Skeleton className="h-4 w-28" /></td>
-                    <td className="px-6 py-4"><Skeleton className="h-6 w-16 rounded-full" /></td>
-                    <td className="px-6 py-4"><Skeleton className="h-6 w-16 rounded-full" /></td>
-                    <td className="px-6 py-4"><Skeleton className="h-4 w-20" /></td>
-                    <td className="px-6 py-4"><Skeleton className="h-4 w-20" /></td>
+                    <td className="px-6 py-4">
+                      <Skeleton className="h-4 w-28" />
+                    </td>
+                    <td className="px-6 py-4">
+                      <Skeleton className="h-6 w-16 rounded-full" />
+                    </td>
+                    <td className="px-6 py-4">
+                      <Skeleton className="h-6 w-16 rounded-full" />
+                    </td>
+                    <td className="px-6 py-4">
+                      <Skeleton className="h-4 w-20" />
+                    </td>
+                    <td className="px-6 py-4">
+                      <Skeleton className="h-4 w-20" />
+                    </td>
                     <td className="px-6 py-4">
                       <div className="flex justify-center gap-2">
                         <Skeleton className="w-8 h-8 rounded-lg" />
@@ -333,10 +357,11 @@ export default function Users() {
                     </td>
                     <td className="px-6 py-4">
                       <span
-                        className={`inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-[10px] font-bold uppercase tracking-wider ${user.role === "admin"
-                          ? "bg-purple-50 text-purple-700"
-                          : "bg-blue-50 text-blue-700"
-                          }`}
+                        className={`inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-[10px] font-bold uppercase tracking-wider ${
+                          user.role === "admin"
+                            ? "bg-purple-50 text-purple-700"
+                            : "bg-blue-50 text-blue-700"
+                        }`}
                       >
                         {user.role === "admin" ? (
                           <Shield size={10} />
@@ -349,10 +374,11 @@ export default function Users() {
                     <td className="px-6 py-4">
                       <div className="flex flex-col gap-1">
                         <span
-                          className={`inline-flex items-center w-fit px-2.5 py-1 rounded-full text-[10px] font-bold uppercase tracking-wider ${user.isActive
-                            ? "bg-teal-50 text-teal-700"
-                            : "bg-red-50 text-red-700"
-                            }`}
+                          className={`inline-flex items-center w-fit px-2.5 py-1 rounded-full text-[10px] font-bold uppercase tracking-wider ${
+                            user.isActive
+                              ? "bg-teal-50 text-teal-700"
+                              : "bg-red-50 text-red-700"
+                          }`}
                         >
                           {user.isActive ? "Active" : "Inactive"}
                         </span>
@@ -385,9 +411,7 @@ export default function Users() {
                     <td className="px-6 py-4">
                       <div className="flex items-center gap-1.5 text-sm text-gray-600">
                         <Calendar size={14} className="text-gray-400" />
-                        <span>
-                          {formatDate(user.createdAt)}
-                        </span>
+                        <span>{formatDate(user.createdAt)}</span>
                       </div>
                     </td>
                     <td className="px-6 py-4">
@@ -406,10 +430,11 @@ export default function Users() {
                         </button>
                         <button
                           onClick={() => handleOpenStatusModal(user)}
-                          className={`p-2 rounded-lg transition-colors ${user.isActive
-                            ? "text-gray-500 hover:bg-red-50 hover:text-red-600"
-                            : "text-teal-600 hover:bg-teal-50"
-                            }`}
+                          className={`p-2 rounded-lg transition-colors ${
+                            user.isActive
+                              ? "text-gray-500 hover:bg-red-50 hover:text-red-600"
+                              : "text-teal-600 hover:bg-teal-50"
+                          }`}
                           title={
                             user.isActive
                               ? "Deactivate User"
@@ -462,7 +487,10 @@ export default function Users() {
                   {selectedUser?.email}
                 </span>
               </p>
-              <label htmlFor="reset-new-password" className="block text-sm font-medium text-gray-700 mb-2">
+              <label
+                htmlFor="reset-new-password"
+                className="block text-sm font-medium text-gray-700 mb-2"
+              >
                 New Password
               </label>
               <input
@@ -474,7 +502,10 @@ export default function Users() {
                 placeholder="At least 8 characters"
                 className="w-full px-4 py-2.5 border border-gray-200 rounded-lg text-sm focus:outline-none focus:border-teal-500 focus:ring-2 focus:ring-teal-500/20"
               />
-              <label htmlFor="reset-confirm-password" className="block text-sm font-medium text-gray-700 mb-2 mt-4">
+              <label
+                htmlFor="reset-confirm-password"
+                className="block text-sm font-medium text-gray-700 mb-2 mt-4"
+              >
                 Confirm New Password
               </label>
               <input
@@ -596,19 +627,24 @@ function Modal({ title, children, onClose }) {
         onClick={(e) => e.stopPropagation()}
         className="w-full max-w-md"
       >
-       <Dialog open onClose={onClose} label={title} className="bg-white rounded-xl max-w-md w-full p-6 border border-gray-100 shadow-xl">
-        <div className="flex items-center justify-between mb-5">
-          <h3 className="text-lg font-bold text-gray-900">{title}</h3>
-          <button
-            onClick={onClose}
-            aria-label="Close dialog"
-            className="p-2 hover:bg-gray-100 rounded-lg transition-colors"
-          >
-            <X className="w-5 h-5 text-gray-400" />
-          </button>
-        </div>
-        {children}
-       </Dialog>
+        <Dialog
+          open
+          onClose={onClose}
+          label={title}
+          className="bg-white rounded-xl max-w-md w-full p-6 border border-gray-100 shadow-xl"
+        >
+          <div className="flex items-center justify-between mb-5">
+            <h3 className="text-lg font-bold text-gray-900">{title}</h3>
+            <button
+              onClick={onClose}
+              aria-label="Close dialog"
+              className="p-2 hover:bg-gray-100 rounded-lg transition-colors"
+            >
+              <X className="w-5 h-5 text-gray-400" />
+            </button>
+          </div>
+          {children}
+        </Dialog>
       </motion.div>
     </motion.div>
   );

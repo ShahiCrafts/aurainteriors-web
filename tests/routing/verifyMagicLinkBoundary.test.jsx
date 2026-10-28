@@ -25,27 +25,57 @@ const { marker } = vi.hoisted(() => {
   return { marker: markerFn };
 });
 
-vi.mock("../../src/pages/NewsletterActionPage.jsx", marker("PAGE:NewsletterActionPage"));
+vi.mock(
+  "../../src/pages/NewsletterActionPage.jsx",
+  marker("PAGE:NewsletterActionPage"),
+);
 vi.mock("../../src/pages/HomePage.jsx", marker("PAGE:HomePage"));
 vi.mock("../../src/components/modals/AuthModal.jsx", marker("PAGE:AuthModal"));
 vi.mock("../../src/components/chat/ChatWidget.jsx", marker("PAGE:ChatWidget"));
 vi.mock("../../src/pages/customer/ProfilePage.jsx", marker("PAGE:ProfilePage"));
-vi.mock("../../src/pages/customer/NotificationsPage.jsx", marker("PAGE:NotificationsPage"));
+vi.mock(
+  "../../src/pages/customer/NotificationsPage.jsx",
+  marker("PAGE:NotificationsPage"),
+);
 vi.mock("../../src/pages/shop/ShopPage.jsx", marker("PAGE:ShopPage"));
 vi.mock("../../src/pages/blog/BlogsPage.jsx", marker("PAGE:BlogsPage"));
-vi.mock("../../src/pages/blog/BlogDetailsPage.jsx", marker("PAGE:BlogDetailsPage"));
-vi.mock("../../src/pages/shop/ProductDetailsPage.jsx", marker("PAGE:ProductDetailsPage"));
+vi.mock(
+  "../../src/pages/blog/BlogDetailsPage.jsx",
+  marker("PAGE:BlogDetailsPage"),
+);
+vi.mock(
+  "../../src/pages/shop/ProductDetailsPage.jsx",
+  marker("PAGE:ProductDetailsPage"),
+);
 vi.mock("../../src/pages/shop/ARViewPage.jsx", marker("PAGE:ARViewPage"));
 vi.mock("../../src/pages/shop/NativeARPage.jsx", marker("PAGE:NativeARPage"));
-vi.mock("../../src/pages/checkout/CheckoutPage.jsx", marker("PAGE:CheckoutPage"));
-vi.mock("../../src/pages/customer/OrderConfirmationPage.jsx", marker("PAGE:OrderConfirmationPage"));
-vi.mock("../../src/pages/checkout/PaymentFailedPage.jsx", marker("PAGE:PaymentFailedPage"));
-vi.mock("../../src/pages/customer/TrackOrderPage.jsx", marker("PAGE:TrackOrderPage"));
+vi.mock(
+  "../../src/pages/checkout/CheckoutPage.jsx",
+  marker("PAGE:CheckoutPage"),
+);
+vi.mock(
+  "../../src/pages/customer/OrderConfirmationPage.jsx",
+  marker("PAGE:OrderConfirmationPage"),
+);
+vi.mock(
+  "../../src/pages/checkout/PaymentFailedPage.jsx",
+  marker("PAGE:PaymentFailedPage"),
+);
+vi.mock(
+  "../../src/pages/customer/TrackOrderPage.jsx",
+  marker("PAGE:TrackOrderPage"),
+);
 vi.mock("../../src/pages/info/ContactPage.jsx", marker("PAGE:ContactPage"));
 vi.mock("../../src/pages/info/FAQPage.jsx", marker("PAGE:FAQPage"));
 vi.mock("../../src/pages/info/NotFoundPage.jsx", marker("PAGE:NotFoundPage"));
-vi.mock("../../src/pages/info/AnnouncementsPage.jsx", marker("PAGE:AnnouncementsPage"));
-vi.mock("../../src/components/auth/AuthCallback.jsx", marker("PAGE:AuthCallback"));
+vi.mock(
+  "../../src/pages/info/AnnouncementsPage.jsx",
+  marker("PAGE:AnnouncementsPage"),
+);
+vi.mock(
+  "../../src/components/auth/AuthCallback.jsx",
+  marker("PAGE:AuthCallback"),
+);
 
 vi.mock("../../src/pages/auth/VerifyMagicLinkPage.jsx", async () => {
   const React = await import("react");
@@ -77,7 +107,7 @@ describe("/auth/verify boundary + fallback (FE-56)", () => {
     render(
       <MemoryRouter initialEntries={["/auth/verify"]}>
         <App />
-      </MemoryRouter>
+      </MemoryRouter>,
     );
     expect(await screen.findByRole("status")).toBeInTheDocument();
     expect(screen.getByText(/Loading/)).toBeInTheDocument();
@@ -88,7 +118,7 @@ describe("/auth/verify boundary + fallback (FE-56)", () => {
     const { container } = render(
       <MemoryRouter initialEntries={["/auth/verify"]}>
         <App />
-      </MemoryRouter>
+      </MemoryRouter>,
     );
     expect(await screen.findByText(/Something went wrong/)).toBeInTheDocument();
     expect(screen.getByRole("button", { name: /reload/i })).toBeInTheDocument();

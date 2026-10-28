@@ -1,11 +1,10 @@
-import { useRef, useEffect, useLayoutEffect, useState, memo } from 'react';
-import { MessageCircle, Sparkles, ChevronDown, User, Bot } from 'lucide-react';
-import { ChatMessageSkeleton } from '../common/Skeleton';
-import ChatMessage from './ChatMessage';
-import useAuthStore from '../../store/authStore';
+import { useRef, useEffect, useLayoutEffect, useState, memo } from "react";
+import { MessageCircle, Sparkles, ChevronDown, User, Bot } from "lucide-react";
+import { ChatMessageSkeleton } from "../common/Skeleton";
+import ChatMessage from "./ChatMessage";
+import useAuthStore from "../../store/authStore";
 import { useShallow } from "zustand/react/shallow";
-import { UserAvatar } from '../common/InitialsAvatar';
-
+import { UserAvatar } from "../common/InitialsAvatar";
 
 const ChatMessageList = ({
   messages,
@@ -27,7 +26,6 @@ const ChatMessageList = ({
   const [hasNewMessages, setHasNewMessages] = useState(false);
   const prevContentCountRef = useRef(0);
 
-
   // FIX 1: Auto-scroll only when near bottom OR on first load
   const isFirstLoadRef = useRef(true);
   const historyAnchorRef = useRef(null);
@@ -40,7 +38,8 @@ const ChatMessageList = ({
       if (!isFetchingMore && messagesContainerRef.current) {
         const container = messagesContainerRef.current;
         const anchor = historyAnchorRef.current;
-        container.scrollTop = anchor.top + container.scrollHeight - anchor.height;
+        container.scrollTop =
+          anchor.top + container.scrollHeight - anchor.height;
         historyAnchorRef.current = null;
       }
       prevContentCountRef.current = currentCount;
@@ -49,11 +48,11 @@ const ChatMessageList = ({
 
     if (!isFetchingMore && isNewContent) {
       if (isFirstLoadRef.current) {
-        messagesEndRef.current?.scrollIntoView({ behavior: 'auto' });
+        messagesEndRef.current?.scrollIntoView({ behavior: "auto" });
         isFirstLoadRef.current = false;
         setHasNewMessages(false);
       } else if (isNearBottomRef.current) {
-        messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
+        messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
         setHasNewMessages(false);
       } else {
         // User is scrolled up — show the pill instead of forcing scroll
@@ -66,7 +65,7 @@ const ChatMessageList = ({
 
   useEffect(() => {
     if (typingStatus?.isTyping && isNearBottomRef.current) {
-      messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
+      messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
     }
   }, [typingStatus?.isTyping]);
 
@@ -76,24 +75,28 @@ const ChatMessageList = ({
     if (!container) return;
 
     // FIX 1: Track whether user is near the bottom (threshold: 100px)
-    const distFromBottom = container.scrollHeight - container.scrollTop - container.clientHeight;
+    const distFromBottom =
+      container.scrollHeight - container.scrollTop - container.clientHeight;
     const nearBottom = distFromBottom < 100;
     isNearBottomRef.current = nearBottom;
     if (nearBottom) setHasNewMessages(false);
 
     // Infinite scroll — load older messages when reaching the top
     if (container.scrollTop === 0 && hasMore && !isFetchingMore) {
-      historyAnchorRef.current = { height: container.scrollHeight, top: container.scrollTop };
+      historyAnchorRef.current = {
+        height: container.scrollHeight,
+        top: container.scrollTop,
+      };
       onLoadMore();
     }
   };
 
   // One progress indicator per AI turn. This is status only; AI content is never
   // rendered token-by-token. The canonical persisted response still appears once.
-  const showTypingBubble = typingStatus?.isTyping && (
-    (isAdminView && typingStatus.userRole === "customer") ||
-    (!isAdminView && ["admin", "ai"].includes(typingStatus.userRole))
-  );
+  const showTypingBubble =
+    typingStatus?.isTyping &&
+    ((isAdminView && typingStatus.userRole === "customer") ||
+      (!isAdminView && ["admin", "ai"].includes(typingStatus.userRole)));
 
   if (isLoading) {
     return (
@@ -111,7 +114,9 @@ const ChatMessageList = ({
         <div className="w-20 h-20 rounded-2xl bg-linear-to-br from-teal-100 to-teal-50 flex items-center justify-center mb-4 shadow-sm">
           <MessageCircle className="w-10 h-10 text-teal-600" />
         </div>
-        <p className="text-neutral-700 font-semibold text-base">Start a conversation</p>
+        <p className="text-neutral-700 font-semibold text-base">
+          Start a conversation
+        </p>
         <p className="text-sm text-neutral-400 mt-1.5 text-center max-w-60">
           Send us a message and we'll get back to you as soon as possible
         </p>
@@ -133,7 +138,10 @@ const ChatMessageList = ({
       {isFetchingMore && (
         <div className="flex justify-center py-3">
           <div className="flex items-center gap-2 text-sm text-neutral-500 bg-white px-4 py-2 rounded-full shadow-sm border border-neutral-100">
-            <span className="h-2 w-2 shrink-0 rounded-full bg-teal-600 motion-safe:animate-pulse" aria-hidden="true" />
+            <span
+              className="h-2 w-2 shrink-0 rounded-full bg-teal-600 motion-safe:animate-pulse"
+              aria-hidden="true"
+            />
             <span>Loading earlier messages...</span>
           </div>
         </div>
@@ -155,8 +163,12 @@ const ChatMessageList = ({
       {messages.map((message) => {
         const messageSenderId = message.sender?._id || message.sender;
         const isOwnMessage =
-          (messageSenderId && currentUserId && messageSenderId.toString() === currentUserId.toString()) ||
-          (user?.role === "admin" ? message.senderRole === "admin" : message.senderRole === "customer");
+          (messageSenderId &&
+            currentUserId &&
+            messageSenderId.toString() === currentUserId.toString()) ||
+          (user?.role === "admin"
+            ? message.senderRole === "admin"
+            : message.senderRole === "customer");
 
         return (
           <ChatMessage
@@ -169,44 +181,72 @@ const ChatMessageList = ({
         );
       })}
 
-      {showTypingBubble && (() => {
-        const isAiTyping = typingStatus.userRole === 'ai';
-        const matchedMsg = messages.find(m => m.senderRole === typingStatus.userRole);
-        const userObj = matchedMsg?.sender;
-        const isGuest = userObj?.firstName === "Guest" && userObj?.lastName === "User";
-        
-        return (
-          <div className="flex w-full mb-3 px-4 justify-start animate-fade-in">
-            <div className="flex max-w-full gap-3 flex-row items-center">
-              {/* Avatar */}
-              {isAiTyping ? (
-                <div className="w-8 h-8 rounded-full bg-slate-800 text-teal-400 border border-slate-700 flex items-center justify-center shrink-0">
-                  <Bot size={16} />
-                </div>
-              ) : isGuest ? (
-                <div className="w-8 h-8 rounded-full bg-gray-100 border border-gray-200 text-gray-500 flex items-center justify-center shrink-0">
-                  <User size={14} strokeWidth={1.5} />
-                </div>
-              ) : (
-                /* FE-06: real avatar img or local initials — never an
+      {showTypingBubble &&
+        (() => {
+          const isAiTyping = typingStatus.userRole === "ai";
+          const matchedMsg = messages.find(
+            (m) => m.senderRole === typingStatus.userRole,
+          );
+          const userObj = matchedMsg?.sender;
+          const isGuest =
+            userObj?.firstName === "Guest" && userObj?.lastName === "User";
+
+          return (
+            <div className="flex w-full mb-3 px-4 justify-start animate-fade-in">
+              <div className="flex max-w-full gap-3 flex-row items-center">
+                {/* Avatar */}
+                {isAiTyping ? (
+                  <div className="w-8 h-8 rounded-full bg-slate-800 text-teal-400 border border-slate-700 flex items-center justify-center shrink-0">
+                    <Bot size={16} />
+                  </div>
+                ) : isGuest ? (
+                  <div className="w-8 h-8 rounded-full bg-gray-100 border border-gray-200 text-gray-500 flex items-center justify-center shrink-0">
+                    <User size={14} strokeWidth={1.5} />
+                  </div>
+                ) : (
+                  /* FE-06: real avatar img or local initials — never an
                    external placeholder URL built from the user's name. */
-                <UserAvatar
-                  user={userObj}
-                  name={typingStatus.userRole === 'admin' ? "Admin" : undefined}
-                  alt={typingStatus.userRole === 'admin' ? "Admin" : userObj?.firstName || "User"}
-                  className="w-8 h-8 rounded-full text-xs border shadow-xs"
-                />
-              )}
-              {/* Bubble */}
-              <div className="bg-gray-100 px-4 py-2.5 rounded-2xl flex gap-1 items-center justify-center w-fit">
-                <span className="w-1.5 h-1.5 bg-gray-500 rounded-full animate-bounce" style={{ animationDelay: '0ms', animationDuration: '600ms' }} />
-                <span className="w-1.5 h-1.5 bg-gray-500 rounded-full animate-bounce" style={{ animationDelay: '150ms', animationDuration: '600ms' }} />
-                <span className="w-1.5 h-1.5 bg-gray-500 rounded-full animate-bounce" style={{ animationDelay: '300ms', animationDuration: '600ms' }} />
+                  <UserAvatar
+                    user={userObj}
+                    name={
+                      typingStatus.userRole === "admin" ? "Admin" : undefined
+                    }
+                    alt={
+                      typingStatus.userRole === "admin"
+                        ? "Admin"
+                        : userObj?.firstName || "User"
+                    }
+                    className="w-8 h-8 rounded-full text-xs border shadow-xs"
+                  />
+                )}
+                {/* Bubble */}
+                <div className="bg-gray-100 px-4 py-2.5 rounded-2xl flex gap-1 items-center justify-center w-fit">
+                  <span
+                    className="w-1.5 h-1.5 bg-gray-500 rounded-full animate-bounce"
+                    style={{
+                      animationDelay: "0ms",
+                      animationDuration: "600ms",
+                    }}
+                  />
+                  <span
+                    className="w-1.5 h-1.5 bg-gray-500 rounded-full animate-bounce"
+                    style={{
+                      animationDelay: "150ms",
+                      animationDuration: "600ms",
+                    }}
+                  />
+                  <span
+                    className="w-1.5 h-1.5 bg-gray-500 rounded-full animate-bounce"
+                    style={{
+                      animationDelay: "300ms",
+                      animationDuration: "600ms",
+                    }}
+                  />
+                </div>
               </div>
             </div>
-          </div>
-        );
-      })()}
+          );
+        })()}
 
       <div ref={messagesEndRef} />
 
@@ -215,7 +255,7 @@ const ChatMessageList = ({
         <div className="sticky bottom-3 flex justify-center pointer-events-none">
           <button
             onClick={() => {
-              messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
+              messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
               setHasNewMessages(false);
             }}
             className="pointer-events-auto flex items-center gap-1.5 px-3 py-1.5 bg-[#F27318] text-white text-[11px] font-bold rounded-full shadow-lg hover:bg-[#D9620E] transition-colors animate-bounce"

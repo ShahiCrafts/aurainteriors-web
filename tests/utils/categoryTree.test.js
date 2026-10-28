@@ -65,7 +65,11 @@ describe("subtreeProductCount", () => {
 
 describe("descendantIdSet", () => {
   it("returns every id strictly below the given category", () => {
-    expect([...descendantIdSet(CATEGORIES, "a")].sort()).toEqual(["a1", "a1a", "a2"]);
+    expect([...descendantIdSet(CATEGORIES, "a")].sort()).toEqual([
+      "a1",
+      "a1a",
+      "a2",
+    ]);
     expect(descendantIdSet(CATEGORIES, "a1a").size).toBe(0);
   });
 });
@@ -73,9 +77,16 @@ describe("descendantIdSet", () => {
 describe("flattenVisibleTree", () => {
   it("flattens with depth, hiding children of collapsed nodes", () => {
     const roots = buildCategoryTree(CATEGORIES);
-    const all = flattenVisibleTree(roots, new Set(["a", "b", "a1", "a2", "a1a"]));
+    const all = flattenVisibleTree(
+      roots,
+      new Set(["a", "b", "a1", "a2", "a1a"]),
+    );
     expect(all.map((r) => [r.category._id, r.depth])).toEqual([
-      ["b", 0], ["a", 0], ["a1", 1], ["a1a", 2], ["a2", 1],
+      ["b", 0],
+      ["a", 0],
+      ["a1", 1],
+      ["a1a", 2],
+      ["a2", 1],
     ]);
     const collapsed = flattenVisibleTree(roots, new Set(["b"]));
     expect(collapsed.map((r) => r.category._id)).toEqual(["b", "a"]);
@@ -86,8 +97,16 @@ describe("flattenVisibleTree", () => {
 
 describe("moveIdWithinSiblings", () => {
   it("swaps with the neighbour in the given direction", () => {
-    expect(moveIdWithinSiblings(["a1", "a2", "a3"], "a2", -1)).toEqual(["a2", "a1", "a3"]);
-    expect(moveIdWithinSiblings(["a1", "a2", "a3"], "a2", 1)).toEqual(["a1", "a3", "a2"]);
+    expect(moveIdWithinSiblings(["a1", "a2", "a3"], "a2", -1)).toEqual([
+      "a2",
+      "a1",
+      "a3",
+    ]);
+    expect(moveIdWithinSiblings(["a1", "a2", "a3"], "a2", 1)).toEqual([
+      "a1",
+      "a3",
+      "a2",
+    ]);
   });
 
   it("is a no-op at the edges or for unknown ids", () => {

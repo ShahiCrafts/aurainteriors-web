@@ -14,7 +14,11 @@
 // "cart changed, refreshed".
 import { describe, it, expect, vi, beforeEach } from "vitest";
 import { renderHook, act, waitFor } from "@testing-library/react";
-import { QueryClient, QueryClientProvider, useMutation } from "@tanstack/react-query";
+import {
+  QueryClient,
+  QueryClientProvider,
+  useMutation,
+} from "@tanstack/react-query";
 
 // One shared toast mock registered for both module ids that resolve
 // to the app's toast singleton: src/lib/toast.js (imported directly by
@@ -39,18 +43,27 @@ vi.mock("../../src/api/cartApi.js", () => ({
 
 import { queryClient as sharedQueryClient } from "../../src/lib/queryClient.js";
 import cartApi from "../../src/api/cartApi.js";
-import { useAddToCart, useUpdateCartItem } from "../../src/hooks/cart/useCartTan.js";
+import {
+  useAddToCart,
+  useUpdateCartItem,
+} from "../../src/hooks/cart/useCartTan.js";
 
 const toast = { error: toastMock.error, success: toastMock.success };
 const allErrorCalls = () => toastMock.error.mock.calls;
 
 function sharedWrapper({ children }) {
-  return <QueryClientProvider client={sharedQueryClient}>{children}</QueryClientProvider>;
+  return (
+    <QueryClientProvider client={sharedQueryClient}>
+      {children}
+    </QueryClientProvider>
+  );
 }
 
 function freshWrapper(client) {
   return function Wrapper({ children }) {
-    return <QueryClientProvider client={client}>{children}</QueryClientProvider>;
+    return (
+      <QueryClientProvider client={client}>{children}</QueryClientProvider>
+    );
   };
 }
 
@@ -67,9 +80,10 @@ describe("FE-47 global mutation onError (shared QueryClient defaults)", () => {
     const { result } = renderHook(
       () =>
         useMutation({
-          mutationFn: () => Promise.reject(serverError(500, "Boom from server")),
+          mutationFn: () =>
+            Promise.reject(serverError(500, "Boom from server")),
         }),
-      { wrapper: sharedWrapper }
+      { wrapper: sharedWrapper },
     );
     await act(async () => {
       await result.current.mutateAsync({}).catch(() => {});
@@ -84,7 +98,7 @@ describe("FE-47 global mutation onError (shared QueryClient defaults)", () => {
         useMutation({
           mutationFn: () => Promise.reject(serverError(500)),
         }),
-      { wrapper: sharedWrapper }
+      { wrapper: sharedWrapper },
     );
     await act(async () => {
       await result.current.mutateAsync({}).catch(() => {});
@@ -97,10 +111,11 @@ describe("FE-47 global mutation onError (shared QueryClient defaults)", () => {
     const { result } = renderHook(
       () =>
         useMutation({
-          mutationFn: () => Promise.reject(serverError(500, "Boom from server")),
+          mutationFn: () =>
+            Promise.reject(serverError(500, "Boom from server")),
           meta: { suppressGlobalErrorToast: true },
         }),
-      { wrapper: sharedWrapper }
+      { wrapper: sharedWrapper },
     );
     await act(async () => {
       await result.current.mutateAsync({}).catch(() => {});
@@ -113,10 +128,11 @@ describe("FE-47 global mutation onError (shared QueryClient defaults)", () => {
     const { result } = renderHook(
       () =>
         useMutation({
-          mutationFn: () => Promise.reject(serverError(500, "Boom from server")),
+          mutationFn: () =>
+            Promise.reject(serverError(500, "Boom from server")),
           onError: localOnError,
         }),
-      { wrapper: sharedWrapper }
+      { wrapper: sharedWrapper },
     );
     await act(async () => {
       await result.current.mutateAsync({}).catch(() => {});
@@ -129,7 +145,10 @@ describe("FE-47 global mutation onError (shared QueryClient defaults)", () => {
 describe("FE-47 cart mutations", () => {
   function makeClient() {
     return new QueryClient({
-      defaultOptions: { queries: { retry: false }, mutations: { retry: false } },
+      defaultOptions: {
+        queries: { retry: false },
+        mutations: { retry: false },
+      },
     });
   }
 
@@ -137,9 +156,13 @@ describe("FE-47 cart mutations", () => {
     cartApi.addToCart.mockRejectedValue(serverError(409, "Cart conflict"));
     const client = makeClient();
     const invalidateSpy = vi.spyOn(client, "invalidateQueries");
-    const { result } = renderHook(() => useAddToCart(), { wrapper: freshWrapper(client) });
+    const { result } = renderHook(() => useAddToCart(), {
+      wrapper: freshWrapper(client),
+    });
     await act(async () => {
-      await result.current.mutateAsync({ productId: "p1", quantity: 1 }).catch(() => {});
+      await result.current
+        .mutateAsync({ productId: "p1", quantity: 1 })
+        .catch(() => {});
     });
     await waitFor(() => expect(allErrorCalls().length).toBeGreaterThan(0));
     const messages = allErrorCalls().map((c) => c[0]);
@@ -151,12 +174,18 @@ describe("FE-47 cart mutations", () => {
     cartApi.updateCartItem.mockRejectedValue(serverError(409, "Cart conflict"));
     const client = makeClient();
     const invalidateSpy = vi.spyOn(client, "invalidateQueries");
-    const { result } = renderHook(() => useUpdateCartItem(), { wrapper: freshWrapper(client) });
+    const { result } = renderHook(() => useUpdateCartItem(), {
+      wrapper: freshWrapper(client),
+    });
     await act(async () => {
-      await result.current.mutateAsync({ itemId: "i1", quantity: 2 }).catch(() => {});
+      await result.current
+        .mutateAsync({ itemId: "i1", quantity: 2 })
+        .catch(() => {});
     });
     await waitFor(() => expect(allErrorCalls().length).toBeGreaterThan(0));
-    expect(allErrorCalls().map((c) => c[0])).toEqual(["cart changed, refreshed"]);
+    expect(allErrorCalls().map((c) => c[0])).toEqual([
+      "cart changed, refreshed",
+    ]);
     expect(invalidateSpy).toHaveBeenCalledWith({ queryKey: ["cart"] });
   });
 
@@ -164,7 +193,9 @@ describe("FE-47 cart mutations", () => {
     cartApi.addToCart.mockResolvedValue({ success: true });
     const client = makeClient();
     const invalidateSpy = vi.spyOn(client, "invalidateQueries");
-    const { result } = renderHook(() => useAddToCart(), { wrapper: freshWrapper(client) });
+    const { result } = renderHook(() => useAddToCart(), {
+      wrapper: freshWrapper(client),
+    });
     await act(async () => {
       await result.current.mutateAsync({ productId: "p1", quantity: 1 });
     });
@@ -175,9 +206,13 @@ describe("FE-47 cart mutations", () => {
   it("non-409 failure → one honest toast with the server message", async () => {
     cartApi.addToCart.mockRejectedValue(serverError(500, "Cart service down"));
     const client = makeClient();
-    const { result } = renderHook(() => useAddToCart(), { wrapper: freshWrapper(client) });
+    const { result } = renderHook(() => useAddToCart(), {
+      wrapper: freshWrapper(client),
+    });
     await act(async () => {
-      await result.current.mutateAsync({ productId: "p1", quantity: 1 }).catch(() => {});
+      await result.current
+        .mutateAsync({ productId: "p1", quantity: 1 })
+        .catch(() => {});
     });
     await waitFor(() => expect(allErrorCalls().length).toBeGreaterThan(0));
     expect(allErrorCalls().map((c) => c[0])).toEqual(["Cart service down"]);

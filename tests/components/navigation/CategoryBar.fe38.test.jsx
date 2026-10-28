@@ -15,7 +15,10 @@ import { MemoryRouter } from "react-router-dom";
 const h = vi.hoisted(() => ({ catalog: undefined }));
 
 vi.mock("../../../src/hooks/product/useCategoryTan.js", () => ({
-  useCategoryTree: () => ({ data: { data: { categories: [] } }, isLoading: false }),
+  useCategoryTree: () => ({
+    data: { data: { categories: [] } },
+    isLoading: false,
+  }),
 }));
 
 vi.mock("../../../src/hooks/product/useArCatalogTan.js", () => ({
@@ -38,9 +41,19 @@ const arProduct = {
   slug: "velvet-chair",
   name: "Velvet Chair",
   modelUrl: "https://cdn.aurainteriors.example/models/velvet.glb",
-  modelFiles: [{ format: "glb", url: "https://cdn.aurainteriors.example/models/velvet.glb" }],
+  modelFiles: [
+    {
+      format: "glb",
+      url: "https://cdn.aurainteriors.example/models/velvet.glb",
+    },
+  ],
 };
-const plainProduct = { _id: "p-plain", slug: "oak-table", name: "Oak Table", images: [] };
+const plainProduct = {
+  _id: "p-plain",
+  slug: "oak-table",
+  name: "Oak Table",
+  images: [],
+};
 
 beforeEach(() => {
   h.catalog = undefined;
@@ -51,7 +64,7 @@ describe("CategoryBar 'Try AR View' (FE-38)", () => {
     render(
       <MemoryRouter initialEntries={["/shop"]}>
         <CategoryBar />
-      </MemoryRouter>
+      </MemoryRouter>,
     );
     expect(screen.queryByText("Try AR View")).not.toBeInTheDocument();
   });
@@ -61,7 +74,7 @@ describe("CategoryBar 'Try AR View' (FE-38)", () => {
     render(
       <MemoryRouter initialEntries={["/shop"]}>
         <CategoryBar />
-      </MemoryRouter>
+      </MemoryRouter>,
     );
     expect(screen.queryByText("Try AR View")).not.toBeInTheDocument();
   });
@@ -71,7 +84,7 @@ describe("CategoryBar 'Try AR View' (FE-38)", () => {
     render(
       <MemoryRouter initialEntries={["/shop"]}>
         <CategoryBar />
-      </MemoryRouter>
+      </MemoryRouter>,
     );
     fireEvent.click(screen.getByText("Try AR View"));
     const modal = await screen.findByTestId("ar-modal");

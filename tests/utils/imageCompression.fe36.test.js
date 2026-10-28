@@ -107,7 +107,7 @@ describe("FE-36: null toBlob fails fast instead of hanging", () => {
     const settled = await Promise.race([
       compressImage(makeFile("photo.png", "image/png")).then(
         () => "resolved",
-        (err) => `rejected:${err.message}`
+        (err) => `rejected:${err.message}`,
       ),
       new Promise((resolve) => setTimeout(() => resolve("TIMED OUT"), 1000)),
     ]);
@@ -121,7 +121,8 @@ describe("FE-36: the maxSizeKB budget drives a quality step-down", () => {
     // 700 KB original; encoder emits 600 KB, then 550 KB, then 400 KB.
     const original = makeFile("big.jpg", "image/jpeg", 700 * 1024);
     const sizes = [600 * 1024, 550 * 1024, 400 * 1024];
-    toBlobImpl = (cb) => cb(blobOfSize(sizes[Math.min(toBlobCalls - 1, sizes.length - 1)]));
+    toBlobImpl = (cb) =>
+      cb(blobOfSize(sizes[Math.min(toBlobCalls - 1, sizes.length - 1)]));
 
     const out = await compressImage(original);
     expect(toBlobCalls).toBeGreaterThanOrEqual(3);

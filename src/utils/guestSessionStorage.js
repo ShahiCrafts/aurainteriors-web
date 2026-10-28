@@ -16,8 +16,8 @@
  * ChatWidget).
  */
 
-const GUEST_SESSION_KEY = 'aura_guest_session_id'; // legacy key — removal only
-const GUEST_EMAIL_KEY = 'aura_guest_email';
+const GUEST_SESSION_KEY = "aura_guest_session_id"; // legacy key — removal only
+const GUEST_EMAIL_KEY = "aura_guest_email";
 
 const SESSION_ID_SHAPE = /^guest_[a-f0-9]{64}$/;
 
@@ -30,7 +30,9 @@ let memorySessionId = null;
 function removeLegacyStoredSessionId() {
   try {
     localStorage.removeItem(GUEST_SESSION_KEY);
-  } catch { /* Storage may be unavailable; the in-memory value is authoritative. */ }
+  } catch {
+    /* Storage may be unavailable; the in-memory value is authoritative. */
+  }
 }
 removeLegacyStoredSessionId();
 
@@ -51,7 +53,8 @@ export const getGuestSessionId = () => {
  */
 export const setGuestSessionId = (sessionId, email = null) => {
   try {
-    if (typeof sessionId !== "string" || !SESSION_ID_SHAPE.test(sessionId)) return;
+    if (typeof sessionId !== "string" || !SESSION_ID_SHAPE.test(sessionId))
+      return;
     memorySessionId = sessionId;
     removeLegacyStoredSessionId();
 
@@ -63,7 +66,7 @@ export const setGuestSessionId = (sessionId, email = null) => {
       document.cookie = `guestEmail=${encodeURIComponent(email)}; expires=${date.toUTCString()}; path=/`;
     }
   } catch (error) {
-    console.error('Error storing guest session:', error);
+    console.error("Error storing guest session:", error);
   }
 };
 
@@ -80,9 +83,10 @@ export const clearGuestSession = () => {
     localStorage.removeItem(GUEST_EMAIL_KEY);
 
     // Clear the (non-credential) email cookie.
-    document.cookie = 'guestEmail=; expires=Thu, 01 Jan 1970 00:00:00 UTC; path=/;';
+    document.cookie =
+      "guestEmail=; expires=Thu, 01 Jan 1970 00:00:00 UTC; path=/;";
   } catch (error) {
-    console.error('Error clearing guest session:', error);
+    console.error("Error clearing guest session:", error);
   }
 };
 
@@ -93,7 +97,7 @@ export const getGuestEmail = () => {
   try {
     return localStorage.getItem(GUEST_EMAIL_KEY);
   } catch (error) {
-    console.error('Error reading guest email:', error);
+    console.error("Error reading guest email:", error);
     return null;
   }
 };

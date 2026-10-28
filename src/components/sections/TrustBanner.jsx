@@ -29,7 +29,7 @@ function timeRemaining(target) {
 export default function TrustBanner({ saleEndsAt } = {}) {
   const target = useMemo(
     () => (saleEndsAt ? new Date(saleEndsAt) : endOfToday()),
-    [saleEndsAt]
+    [saleEndsAt],
   );
   const [timeLeft, setTimeLeft] = useState(() => timeRemaining(target));
 
@@ -42,12 +42,15 @@ export default function TrustBanner({ saleEndsAt } = {}) {
   return (
     <section className="font-dm-sans px-2 md:px-6 lg:px-8 py-2 md:py-4 bg-[#f6f6f6]">
       <div className="max-w-[1440px] mx-auto flex flex-col lg:flex-row gap-2 md:gap-4 items-stretch">
-
         {/* CARD 1 (LEFT): SALE COUNTDOWN */}
         <div className="bg-white rounded-lg shadow-[0_4px_25px_rgba(0,0,0,0.06)] flex items-center gap-6 p-4 lg:px-8 shrink-0">
           <div className="flex flex-col">
-            <span className="text-[#F27318] text-[22px] font-bold tracking-tight leading-none">SALE</span>
-            <span className="text-black/40 text-[12px] font-medium mt-1 whitespace-nowrap">Ends In</span>
+            <span className="text-[#F27318] text-[22px] font-bold tracking-tight leading-none">
+              SALE
+            </span>
+            <span className="text-black/40 text-[12px] font-medium mt-1 whitespace-nowrap">
+              Ends In
+            </span>
           </div>
 
           <div className="flex gap-5">
@@ -78,7 +81,9 @@ export default function TrustBanner({ saleEndsAt } = {}) {
                 <Home size={18} strokeWidth={2.5} />
               </div>
               <div className="flex flex-col gap-0.5">
-                <p className="text-[15px] font-medium text-[#1A1714] leading-tight">5000+ Homes</p>
+                <p className="text-[15px] font-medium text-[#1A1714] leading-tight">
+                  5000+ Homes
+                </p>
                 <p className="text-[12px] text-black/50">Trusted Globally</p>
               </div>
             </div>
@@ -88,7 +93,9 @@ export default function TrustBanner({ saleEndsAt } = {}) {
                 <Truck size={18} strokeWidth={2.5} />
               </div>
               <div className="flex flex-col gap-0.5">
-                <p className="text-[15px] font-medium text-[#1A1714] leading-tight">Free Delivery</p>
+                <p className="text-[15px] font-medium text-[#1A1714] leading-tight">
+                  Free Delivery
+                </p>
                 <p className="text-[12px] text-black/50">Pan-Nepal</p>
               </div>
             </div>
@@ -98,7 +105,9 @@ export default function TrustBanner({ saleEndsAt } = {}) {
                 <ShieldCheck size={18} strokeWidth={2.5} />
               </div>
               <div className="flex flex-col gap-0.5">
-                <p className="text-[15px] font-medium text-[#1A1714] leading-tight">10 Year Warranty</p>
+                <p className="text-[15px] font-medium text-[#1A1714] leading-tight">
+                  10 Year Warranty
+                </p>
                 <p className="text-[12px] text-black/50">Certified Quality</p>
               </div>
             </div>
@@ -122,7 +131,6 @@ export default function TrustBanner({ saleEndsAt } = {}) {
             />
           </div>
         </div>
-
       </div>
     </section>
   );

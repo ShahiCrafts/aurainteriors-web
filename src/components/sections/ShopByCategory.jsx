@@ -1,4 +1,3 @@
-
 import React from "react";
 import { Link } from "react-router-dom";
 import { MoveRight } from "lucide-react";
@@ -39,7 +38,8 @@ export default function ShopByCategory() {
             </h2>
 
             <p className="mt-1.5 text-[14px] text-black/45 md:text-[15px]">
-              Discover furniture and décor for every space, styled for modern living.
+              Discover furniture and décor for every space, styled for modern
+              living.
             </p>
           </div>
 

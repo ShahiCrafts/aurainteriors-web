@@ -57,7 +57,12 @@ beforeEach(() => {
 
 describe("AiAssistantPanel with no AI data (FE-14)", () => {
   it("shows an honest empty state instead of the fabricated summary", () => {
-    render(<AiAssistantPanel chat={{ ...baseChat, metadata: {} }} onUseReply={vi.fn()} />);
+    render(
+      <AiAssistantPanel
+        chat={{ ...baseChat, metadata: {} }}
+        onUseReply={vi.fn()}
+      />,
+    );
 
     expect(screen.getByText("No AI summary available")).toBeInTheDocument();
     expect(screen.queryByText(FABRICATED_SUMMARY)).not.toBeInTheDocument();
@@ -69,16 +74,20 @@ describe("AiAssistantPanel with no AI data (FE-14)", () => {
 
     expect(screen.queryByText(FABRICATED_REPLY)).not.toBeInTheDocument();
     expect(screen.queryByText(/Suggested Response/)).not.toBeInTheDocument();
-    expect(screen.queryByRole("button", { name: /Send to Input/ })).not.toBeInTheDocument();
     expect(
-      screen.queryByRole("button", { name: /Copy suggested response/i })
+      screen.queryByRole("button", { name: /Send to Input/ }),
+    ).not.toBeInTheDocument();
+    expect(
+      screen.queryByRole("button", { name: /Copy suggested response/i }),
     ).not.toBeInTheDocument();
 
     // Click every remaining control in the panel: none may dispatch the
     // fabricated text (or any suggestion) to the agent input / customer.
     screen.getAllByRole("button").forEach((button) => fireEvent.click(button));
     expect(onUseReply).not.toHaveBeenCalled();
-    expect(navigator.clipboard.writeText).not.toHaveBeenCalledWith(FABRICATED_REPLY);
+    expect(navigator.clipboard.writeText).not.toHaveBeenCalledWith(
+      FABRICATED_REPLY,
+    );
     expect(navigator.clipboard.writeText).not.toHaveBeenCalled();
   });
 });
@@ -96,12 +105,16 @@ describe("AiAssistantPanel with real AI data (FE-14)", () => {
     render(<AiAssistantPanel chat={realChat} onUseReply={vi.fn()} />);
 
     expect(
-      screen.getByText("Customer asked about a refund for a damaged chair.")
+      screen.getByText("Customer asked about a refund for a damaged chair."),
     ).toBeInTheDocument();
     expect(
-      screen.getByText(/Sorry about that — I can arrange a replacement today\./)
+      screen.getByText(
+        /Sorry about that — I can arrange a replacement today\./,
+      ),
     ).toBeInTheDocument();
-    expect(screen.queryByText("No AI summary available")).not.toBeInTheDocument();
+    expect(
+      screen.queryByText("No AI summary available"),
+    ).not.toBeInTheDocument();
   });
 
   it("dispatches exactly the real suggested reply, never fabricated text", () => {
@@ -112,7 +125,7 @@ describe("AiAssistantPanel with real AI data (FE-14)", () => {
 
     expect(onUseReply).toHaveBeenCalledTimes(1);
     expect(onUseReply).toHaveBeenCalledWith(
-      "Sorry about that — I can arrange a replacement today."
+      "Sorry about that — I can arrange a replacement today.",
     );
     expect(onUseReply).not.toHaveBeenCalledWith(FABRICATED_REPLY);
   });
@@ -124,7 +137,7 @@ describe("AiAssistantPanel with real AI data (FE-14)", () => {
 
     expect(navigator.clipboard.writeText).toHaveBeenCalledTimes(1);
     expect(navigator.clipboard.writeText).toHaveBeenCalledWith(
-      "Sorry about that — I can arrange a replacement today."
+      "Sorry about that — I can arrange a replacement today.",
     );
   });
 });

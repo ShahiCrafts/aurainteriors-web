@@ -49,7 +49,7 @@ function renderGuard(Guard) {
           }
         />
       </Routes>
-    </MemoryRouter>
+    </MemoryRouter>,
   );
 }
 

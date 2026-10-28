@@ -26,15 +26,63 @@ import { formatDate as formatDateShared } from "../../utils/formatDate";
 import OrderTrackingTimeline from "./OrderTrackingTimeline";
 
 const STATUS_STYLE = {
-  pending: { label: "Pending", icon: Clock, bg: "bg-amber-50", text: "text-amber-600", dot: "bg-amber-400", step: 0 },
-  confirmed: { label: "Confirmed", icon: CheckCircle2, bg: "bg-emerald-50", text: "text-emerald-600", dot: "bg-emerald-400", step: 1 },
-  processing: { label: "Processing", icon: Box, bg: "bg-blue-50", text: "text-blue-600", dot: "bg-blue-400", step: 2 },
-  shipped: { label: "Shipped", icon: Truck, bg: "bg-indigo-50", text: "text-indigo-600", dot: "bg-indigo-400", step: 3 },
-  delivered: { label: "Delivered", icon: CheckCircle2, bg: "bg-emerald-50", text: "text-emerald-600", dot: "bg-emerald-400", step: 4 },
-  cancelled: { label: "Cancelled", icon: XCircle, bg: "bg-red-50", text: "text-red-500", dot: "bg-red-400", step: -1 },
+  pending: {
+    label: "Pending",
+    icon: Clock,
+    bg: "bg-amber-50",
+    text: "text-amber-600",
+    dot: "bg-amber-400",
+    step: 0,
+  },
+  confirmed: {
+    label: "Confirmed",
+    icon: CheckCircle2,
+    bg: "bg-emerald-50",
+    text: "text-emerald-600",
+    dot: "bg-emerald-400",
+    step: 1,
+  },
+  processing: {
+    label: "Processing",
+    icon: Box,
+    bg: "bg-blue-50",
+    text: "text-blue-600",
+    dot: "bg-blue-400",
+    step: 2,
+  },
+  shipped: {
+    label: "Shipped",
+    icon: Truck,
+    bg: "bg-indigo-50",
+    text: "text-indigo-600",
+    dot: "bg-indigo-400",
+    step: 3,
+  },
+  delivered: {
+    label: "Delivered",
+    icon: CheckCircle2,
+    bg: "bg-emerald-50",
+    text: "text-emerald-600",
+    dot: "bg-emerald-400",
+    step: 4,
+  },
+  cancelled: {
+    label: "Cancelled",
+    icon: XCircle,
+    bg: "bg-red-50",
+    text: "text-red-500",
+    dot: "bg-red-400",
+    step: -1,
+  },
 };
 
-const TRACK_STEPS = ["pending", "confirmed", "processing", "shipped", "delivered"];
+const TRACK_STEPS = [
+  "pending",
+  "confirmed",
+  "processing",
+  "shipped",
+  "delivered",
+];
 
 // Shared style for secondary action buttons — consistent border + hover across the row
 const ACTION_BTN_CLASS =
@@ -48,7 +96,8 @@ export default function OrderCard({ order, defaultExpanded = false }) {
   const [copied, setCopied] = useState(false);
   const getImageUrl = (item) => getImageUrlUtil(item.image, "products");
 
-  const formatDate = (date) => formatDateShared(date, { month: "short", day: "numeric", year: "numeric" });
+  const formatDate = (date) =>
+    formatDateShared(date, { month: "short", day: "numeric", year: "numeric" });
 
   const status = STATUS_STYLE[order.orderStatus] || STATUS_STYLE.pending;
   const StatusIcon = status.icon;
@@ -79,9 +128,13 @@ export default function OrderCard({ order, defaultExpanded = false }) {
   // Request Return uses useRequestReturn (delivered orders only —
   // the server rejects returns for any other status), and Invoice
   // was removed (no invoice endpoint exists in the client API).
-  const { isAuthenticated } = useAuthStore(useShallow((state) => ({ isAuthenticated: state.isAuthenticated })));
+  const { isAuthenticated } = useAuthStore(
+    useShallow((state) => ({ isAuthenticated: state.isAuthenticated })),
+  );
   const { mutate: addToCart } = useAddToCart();
-  const { addItem: addToGuestCart } = useGuestCartStore(useShallow((state) => ({ addItem: state.addItem })));
+  const { addItem: addToGuestCart } = useGuestCartStore(
+    useShallow((state) => ({ addItem: state.addItem })),
+  );
   const { mutate: requestReturnMutate, isPending: isRequestingReturn } =
     useRequestReturn();
   const [showReturnForm, setShowReturnForm] = useState(false);
@@ -114,8 +167,8 @@ export default function OrderCard({ order, defaultExpanded = false }) {
             images: item.image ? [{ url: item.image }] : item.images || [],
           },
           item.quantity || 1,
-          item.variant || {}
-        )
+          item.variant || {},
+        ),
       );
       toast.success("Added to cart");
       return;
@@ -133,8 +186,8 @@ export default function OrderCard({ order, defaultExpanded = false }) {
             remaining -= 1;
             if (remaining === 0) toast.success("Added to cart");
           },
-        }
-      )
+        },
+      ),
     );
   };
 
@@ -150,7 +203,7 @@ export default function OrderCard({ order, defaultExpanded = false }) {
           setShowReturnForm(false);
           setReturnReason("");
         },
-      }
+      },
     );
   };
 
@@ -178,7 +231,14 @@ export default function OrderCard({ order, defaultExpanded = false }) {
               className="w-12 h-12 rounded-lg overflow-hidden border-2 border-white bg-white"
               style={{ zIndex: previewItems.length - idx }}
             >
-              <ImageWithFallback src={getImageUrl(item)} alt="" loading="lazy" width={48} height={48} className="w-full h-full object-cover" />
+              <ImageWithFallback
+                src={getImageUrl(item)}
+                alt=""
+                loading="lazy"
+                width={48}
+                height={48}
+                className="w-full h-full object-cover"
+              />
             </div>
           ))}
           {extraCount > 0 && (
@@ -200,17 +260,25 @@ export default function OrderCard({ order, defaultExpanded = false }) {
               title="Copy order ID"
               className="shrink-0 text-neutral-300 hover:text-neutral-600 transition-colors"
             >
-              {copied ? <Check size={14} className="text-emerald-500" /> : <Copy size={14} />}
+              {copied ? (
+                <Check size={14} className="text-emerald-500" />
+              ) : (
+                <Copy size={14} />
+              )}
             </span>
           </div>
           <p className="text-[14px] text-neutral-400 font-medium mt-0.5 whitespace-nowrap">
-            {formatDate(order.orderedAt)} · {items.length} item{items.length !== 1 ? "s" : ""}
+            {formatDate(order.orderedAt)} · {items.length} item
+            {items.length !== 1 ? "s" : ""}
           </p>
         </div>
 
         {/* Middle: item names + inline progress — fills the empty space */}
         <div className="hidden md:flex flex-col justify-center min-w-0 pl-6 border-l border-neutral-100 gap-4">
-          <p className="text-[15px] text-neutral-500 font-medium truncate" title={itemNamesSummary}>
+          <p
+            className="text-[15px] text-neutral-500 font-medium truncate"
+            title={itemNamesSummary}
+          >
             {itemNamesSummary}
           </p>
           {isTrackable ? (
@@ -261,7 +329,11 @@ export default function OrderCard({ order, defaultExpanded = false }) {
           {/* Tracking timeline — full width, on top */}
           {items.length > 0 && (
             <div className="px-6 py-10">
-              <OrderTrackingTimeline status={order.orderStatus} dates={trackingDates} compact />
+              <OrderTrackingTimeline
+                status={order.orderStatus}
+                dates={trackingDates}
+                compact
+              />
             </div>
           )}
 
@@ -274,7 +346,14 @@ export default function OrderCard({ order, defaultExpanded = false }) {
                   className="flex gap-4 min-w-[450px] max-w-[380px] shrink-0 bg-white border border-neutral-200 rounded-xl p-4"
                 >
                   <div className="w-24 h-24 bg-white rounded-lg overflow-hidden shrink-0 border border-neutral-100">
-                    <ImageWithFallback src={getImageUrl(item)} alt={item.name} loading="lazy" width={96} height={96} className="w-full h-full object-cover" />
+                    <ImageWithFallback
+                      src={getImageUrl(item)}
+                      alt={item.name}
+                      loading="lazy"
+                      width={96}
+                      height={96}
+                      className="w-full h-full object-cover"
+                    />
                   </div>
                   <div className="min-w-0">
                     <h5 className="text-[16px] font-semibold text-neutral-900 leading-snug">
@@ -283,8 +362,14 @@ export default function OrderCard({ order, defaultExpanded = false }) {
                     {item.variant && (
                       <div className="flex flex-col gap-0.5 mt-1.5">
                         {Object.entries(item.variant).map(([k, v]) => (
-                          <span key={k} className="text-[14px] text-neutral-400 font-medium">
-                            {k}: <span className="text-neutral-700 font-semibold">{v}</span>
+                          <span
+                            key={k}
+                            className="text-[14px] text-neutral-400 font-medium"
+                          >
+                            {k}:{" "}
+                            <span className="text-neutral-700 font-semibold">
+                              {v}
+                            </span>
                           </span>
                         ))}
                       </div>

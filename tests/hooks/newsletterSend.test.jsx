@@ -52,7 +52,10 @@ describe("useSendTrendEmail (FE-41)", () => {
     });
     const { result } = renderHook(() => useSendTrendEmail(), { wrapper });
     await act(async () => {
-      await result.current.mutateAsync({ subject: "Hi", htmlContent: "<p>x</p>" });
+      await result.current.mutateAsync({
+        subject: "Hi",
+        htmlContent: "<p>x</p>",
+      });
     });
     expect(toast.success).toHaveBeenCalledTimes(1);
     expect(toast.success.mock.calls[0][0]).toContain("17");
@@ -68,9 +71,14 @@ describe("useSendTrendEmail (FE-41)", () => {
     });
     const { result } = renderHook(() => useSendTrendEmail(), { wrapper });
     await act(async () => {
-      await result.current.mutateAsync({ subject: "Hi", htmlContent: "<p>x</p>" });
+      await result.current.mutateAsync({
+        subject: "Hi",
+        htmlContent: "<p>x</p>",
+      });
     });
-    expect(toast.success).toHaveBeenCalledWith("Trend emails sent successfully");
+    expect(toast.success).toHaveBeenCalledWith(
+      "Trend emails sent successfully",
+    );
   });
 
   it("202 queued → polls and reports the job's real counts", async () => {
@@ -86,7 +94,10 @@ describe("useSendTrendEmail (FE-41)", () => {
     });
     const { result } = renderHook(() => useSendTrendEmail(), { wrapper });
     await act(async () => {
-      await result.current.mutateAsync({ subject: "Hi", htmlContent: "<p>x</p>" });
+      await result.current.mutateAsync({
+        subject: "Hi",
+        htmlContent: "<p>x</p>",
+      });
     });
     await waitFor(() => expect(toast.success).toHaveBeenCalled());
     expect(pollJob).toHaveBeenCalledWith("job-42", expect.anything());
@@ -104,11 +115,18 @@ describe("useSendTrendEmail (FE-41)", () => {
     });
     const dead = new Error("Background job failed: SMTP connection refused");
     dead.code = "JOB_DEAD";
-    dead.job = { id: "job-42", status: "dead", lastError: "SMTP connection refused" };
+    dead.job = {
+      id: "job-42",
+      status: "dead",
+      lastError: "SMTP connection refused",
+    };
     pollJob.mockRejectedValue(dead);
     const { result } = renderHook(() => useSendTrendEmail(), { wrapper });
     await act(async () => {
-      await result.current.mutateAsync({ subject: "Hi", htmlContent: "<p>x</p>" });
+      await result.current.mutateAsync({
+        subject: "Hi",
+        htmlContent: "<p>x</p>",
+      });
     });
     await waitFor(() => expect(toast.error).toHaveBeenCalled());
     expect(toast.success).not.toHaveBeenCalled();

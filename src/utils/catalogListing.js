@@ -106,8 +106,10 @@ export function attrValueRemovePatch(selection, key, value) {
 // Patch setting an attr range; empty bounds clear that side.
 export function attrRangePatch(key, min, max) {
   return {
-    [`attr.${key}.min`]: min === "" || min === null || min === undefined ? null : String(min),
-    [`attr.${key}.max`]: max === "" || max === null || max === undefined ? null : String(max),
+    [`attr.${key}.min`]:
+      min === "" || min === null || min === undefined ? null : String(min),
+    [`attr.${key}.max`]:
+      max === "" || max === null || max === undefined ? null : String(max),
   };
 }
 
@@ -122,7 +124,12 @@ export function roomTogglePatch(rooms, slug) {
 // carries route-pinned dimensions for the room/collection pages
 // ({ room: slug } / { collection: slug }) which never live in the
 // URL; a URL value wins when both exist so shared links stay honest.
-export function buildListingParams({ searchParams, page = 1, limit = 12, pinned = {} }) {
+export function buildListingParams({
+  searchParams,
+  page = 1,
+  limit = 12,
+  pinned = {},
+}) {
   const params = { page, limit, status: "active", facets: "1" };
 
   const search = searchParams.get("search");
@@ -255,7 +262,12 @@ export function buildFilterChips(searchParams, labels = {}) {
   const rating = Number(searchParams.get("rating"));
   if (rating > 0) {
     // The star itself is an icon in the chip UI; the label is text.
-    chips.push({ id: "rating", kind: "rating", label: `${rating} & up`, patch: { rating: null } });
+    chips.push({
+      id: "rating",
+      kind: "rating",
+      label: `${rating} & up`,
+      patch: { rating: null },
+    });
   }
 
   for (const name of splitList(searchParams.get("colors"))) {
@@ -273,7 +285,9 @@ export function buildFilterChips(searchParams, labels = {}) {
     chips.push({
       id: `materials:${name}`,
       label: name,
-      patch: { materials: all.filter((item) => item !== name).join(",") || null },
+      patch: {
+        materials: all.filter((item) => item !== name).join(",") || null,
+      },
     });
   }
 
@@ -344,14 +358,19 @@ export const LEGACY_FACET_KEYS = new Set(["colors", "materials"]);
 // / measurement / money) need a usable bound — a finite numeric
 // option value, mirroring how RangeFacet derives its bounds, or
 // numeric min/max fields on the facet itself.
-const RANGE_FACET_TYPES = new Set(["integer", "decimal", "measurement", "money"]);
+const RANGE_FACET_TYPES = new Set([
+  "integer",
+  "decimal",
+  "measurement",
+  "money",
+]);
 
 function facetEntryActive(entry) {
   return Boolean(
     entry &&
-      ((entry.values || []).length > 0 ||
-        entry.min !== null && entry.min !== undefined ||
-        entry.max !== null && entry.max !== undefined)
+    ((entry.values || []).length > 0 ||
+      (entry.min !== null && entry.min !== undefined) ||
+      (entry.max !== null && entry.max !== undefined)),
   );
 }
 
@@ -362,11 +381,11 @@ function facetHasOptions(facet) {
         option.value !== null &&
         option.value !== undefined &&
         option.value !== "" &&
-        Number.isFinite(Number(option.value))
+        Number.isFinite(Number(option.value)),
     );
     if (hasNumericOption) return true;
     return [facet.min, facet.max].some(
-      (bound) => typeof bound === "number" && Number.isFinite(bound)
+      (bound) => typeof bound === "number" && Number.isFinite(bound),
     );
   }
   return (facet.options || []).length > 0;
@@ -381,13 +400,16 @@ export function facetGroupVisible(facet, entry) {
 // rendering (room unless hidden, availability, or a non-legacy
 // attribute facet that passes facetGroupVisible for the current
 // selection).
-export function hasFacetSections(facets, { hideRoom = false, selection = {} } = {}) {
+export function hasFacetSections(
+  facets,
+  { hideRoom = false, selection = {} } = {},
+) {
   if (!facets) return false;
   if (!hideRoom && (facets.room?.options || []).length > 0) return true;
   if ((facets.availability?.options || []).length > 0) return true;
   return (facets.attributes || []).some(
     (facet) =>
       !LEGACY_FACET_KEYS.has(facet.key) &&
-      facetGroupVisible(facet, selection[facet.key])
+      facetGroupVisible(facet, selection[facet.key]),
   );
 }

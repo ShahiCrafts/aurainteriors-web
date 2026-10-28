@@ -21,7 +21,7 @@ import { fileURLToPath } from "node:url";
 
 const SRC_ROOT = path.resolve(
   path.dirname(fileURLToPath(import.meta.url)),
-  "../../src"
+  "../../src",
 );
 
 const PATTERNS = [
@@ -30,7 +30,10 @@ const PATTERNS = [
   { id: "fake-order-number", regex: /12931/ },
   // Dashboard.jsx generated sine-wave "sparklines" from Math.sin via
   // generatePlaceholderSparkline and presented them as store metrics.
-  { id: "placeholder-sparkline-generator", regex: /generatePlaceholderSparkline/ },
+  {
+    id: "placeholder-sparkline-generator",
+    regex: /generatePlaceholderSparkline/,
+  },
   { id: "placeholder-sparkline-math", regex: /Math\.sin\(/ },
   // ProductCard.jsx derived a 4.0-4.9 "rating" by hashing the product id:
   // 4.0 + (hash % 10) / 10.
@@ -75,7 +78,7 @@ const ALLOWLIST = [
     file: "src/pages/shop/product-details/PurchasePanel.jsx",
     pattern: "fake-bought-count",
     reason:
-      "Comment at the fixed element documenting that the fabricated \"200+\" fallback was removed, not a rendered value.",
+      'Comment at the fixed element documenting that the fabricated "200+" fallback was removed, not a rendered value.',
   },
 ];
 
@@ -96,16 +99,13 @@ describe("FE-14 fabrication sweep (pen-test gate)", () => {
 
     const hits = [];
     for (const file of files) {
-      const rel = path.relative(
-        path.resolve(SRC_ROOT, ".."),
-        file
-      );
+      const rel = path.relative(path.resolve(SRC_ROOT, ".."), file);
       const lines = readFileSync(file, "utf8").split("\n");
       lines.forEach((line, i) => {
         for (const { id, regex } of PATTERNS) {
           if (regex.test(line)) {
             const allowed = ALLOWLIST.some(
-              (a) => a.file === rel && a.pattern === id
+              (a) => a.file === rel && a.pattern === id,
             );
             if (!allowed) {
               hits.push(`${rel}:${i + 1} [${id}] ${line.trim()}`);

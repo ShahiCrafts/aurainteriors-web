@@ -1,4 +1,3 @@
-
 import React, { useMemo, useState } from "react";
 import { Link } from "react-router-dom";
 import { useProducts } from "../../hooks/product/useProductTan";
@@ -23,14 +22,13 @@ export default function FeaturedPieces() {
   const [visibleCount, setVisibleCount] = useState(5);
   const [sectionRef, isInView] = useInView();
 
-  const { data: productData, isLoading } = useProducts(
-    PRODUCT_PARAMS,
-    { enabled: isInView }
-  );
+  const { data: productData, isLoading } = useProducts(PRODUCT_PARAMS, {
+    enabled: isInView,
+  });
 
   const products = useMemo(
     () => productData?.data?.products || [],
-    [productData]
+    [productData],
   );
 
   React.useEffect(() => {
@@ -57,7 +55,7 @@ export default function FeaturedPieces() {
 
   const visibleProducts = useMemo(
     () => products.slice(0, visibleCount * ROWS),
-    [products, visibleCount]
+    [products, visibleCount],
   );
 
   return (
@@ -66,7 +64,6 @@ export default function FeaturedPieces() {
       className="bg-white px-2 pb-10 pt-8 font-dm-sans md:px-6 lg:px-8"
     >
       <div className="mx-auto max-w-[1440px]">
-
         {/* Section Header */}
         <div className="mb-6 flex flex-wrap items-end justify-between gap-4">
           <div>
@@ -103,10 +100,7 @@ export default function FeaturedPieces() {
         ) : visibleProducts.length > 0 ? (
           <div className="grid grid-cols-2 gap-4 md:grid-cols-3 md:gap-5 xl:grid-cols-5">
             {visibleProducts.map((product) => (
-              <ProductCard
-                key={product._id}
-                product={product}
-              />
+              <ProductCard key={product._id} product={product} />
             ))}
           </div>
         ) : (
@@ -117,7 +111,6 @@ export default function FeaturedPieces() {
 
         {/* Promotional Cards */}
         <div className="mt-7 grid grid-cols-1 gap-3 lg:grid-cols-[3fr_2fr]">
-
           {/* Sofas & Seating */}
           <PromoCard
             variant="primary"
@@ -126,9 +119,7 @@ export default function FeaturedPieces() {
               <>
                 Discover Comfort
                 <br />
-                <span className="text-[#FF6500]">
-                  With our Sofa Collection
-                </span>
+                <span className="text-[#FF6500]">With our Sofa Collection</span>
               </>
             }
             description="Beautifully crafted sofas and seating for a more comfortable home."
@@ -150,9 +141,7 @@ export default function FeaturedPieces() {
               <>
                 Premium
                 <br />
-                <span className="text-[#FF6500]">
-                  Lighting Collection
-                </span>
+                <span className="text-[#FF6500]">Lighting Collection</span>
               </>
             }
             description="Modern lighting for a warmer, more beautiful home."

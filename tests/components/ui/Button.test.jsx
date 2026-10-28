@@ -34,7 +34,10 @@ describe("Button", () => {
     );
     fireEvent.click(screen.getByRole("button", { name: "Go" }));
     expect(onClick).toHaveBeenCalledTimes(1);
-    expect(screen.getByRole("button", { name: "Go" })).toHaveAttribute("type", "submit");
+    expect(screen.getByRole("button", { name: "Go" })).toHaveAttribute(
+      "type",
+      "submit",
+    );
   });
 
   it("disabled blocks clicks; loading shows a busy indicator and disables", () => {

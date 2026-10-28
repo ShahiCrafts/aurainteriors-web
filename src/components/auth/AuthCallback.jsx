@@ -7,7 +7,9 @@ import { getProfile } from "../../api/profileApi";
 import Skeleton from "../common/Skeleton";
 
 export default function AuthCallback() {
-  const { signIn } = useAuthStore(useShallow((state) => ({ signIn: state.signIn })));
+  const { signIn } = useAuthStore(
+    useShallow((state) => ({ signIn: state.signIn })),
+  );
   const navigate = useNavigate();
   const isProcessing = useRef(false);
 
@@ -34,7 +36,7 @@ export default function AuthCallback() {
           if (getAuthRevision() === revisionAtStart) {
             signIn(user);
             toast.success(
-              `Welcome${user.firstName ? `, ${user.firstName}` : ""}!`
+              `Welcome${user.firstName ? `, ${user.firstName}` : ""}!`,
             );
           }
 

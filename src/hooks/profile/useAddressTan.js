@@ -18,11 +18,13 @@ import { addressKeys } from "../queryKeys";
 // built with the exact shapes useAddresses/useAddress use.
 // Phase 6: the shapes come from hooks/queryKeys (addressKeys) —
 // identical arrays, one construction site.
-const addressListKey = () => addressKeys.list(useAuthStore.getState().user?._id);
-const addressDetailKey = (id) => addressKeys.detail(id, useAuthStore.getState().user?._id);
+const addressListKey = () =>
+  addressKeys.list(useAuthStore.getState().user?._id);
+const addressDetailKey = (id) =>
+  addressKeys.detail(id, useAuthStore.getState().user?._id);
 
 export const useAddresses = (options = {}) => {
-  const userId = useAuthStore(state => state.user?._id);
+  const userId = useAuthStore((state) => state.user?._id);
   return useQuery({
     queryKey: addressKeys.list(userId),
     queryFn: async () => {
@@ -36,7 +38,7 @@ export const useAddresses = (options = {}) => {
 };
 
 export const useAddress = (id) => {
-  const userId = useAuthStore(state => state.user?._id);
+  const userId = useAuthStore((state) => state.user?._id);
   return useQuery({
     queryKey: addressKeys.detail(id, userId),
     queryFn: async () => {
@@ -105,9 +107,14 @@ export const useDeleteAddress = () => {
 };
 
 export const useDefaultAddress = () => {
-  const { isAuthenticated } = useAuthStore(useShallow((state) => ({ isAuthenticated: state.isAuthenticated })));
-  const { data: addresses, isLoading } = useAddresses({ enabled: isAuthenticated });
-  const defaultAddress = addresses?.find((addr) => addr.isDefault) || addresses?.[0];
+  const { isAuthenticated } = useAuthStore(
+    useShallow((state) => ({ isAuthenticated: state.isAuthenticated })),
+  );
+  const { data: addresses, isLoading } = useAddresses({
+    enabled: isAuthenticated,
+  });
+  const defaultAddress =
+    addresses?.find((addr) => addr.isDefault) || addresses?.[0];
   return { defaultAddress, isLoading };
 };
 

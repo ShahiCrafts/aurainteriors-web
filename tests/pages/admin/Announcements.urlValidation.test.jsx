@@ -34,21 +34,30 @@ async function openFormAndFill({ actionUrl, imageUrl }) {
   render(<Announcements />);
   const [newBtn] = await screen.findAllByText("New Announcement");
   fireEvent.click(newBtn);
-  fireEvent.change(await screen.findByPlaceholderText("Enter announcement title"), {
-    target: { value: "Sale" },
-  });
+  fireEvent.change(
+    await screen.findByPlaceholderText("Enter announcement title"),
+    {
+      target: { value: "Sale" },
+    },
+  );
   fireEvent.change(screen.getByPlaceholderText("Enter announcement content"), {
     target: { value: "Big sale this week" },
   });
   if (actionUrl !== undefined) {
-    fireEvent.change(screen.getByPlaceholderText("/dashboard/orders or https://…"), {
-      target: { value: actionUrl },
-    });
+    fireEvent.change(
+      screen.getByPlaceholderText("/dashboard/orders or https://…"),
+      {
+        target: { value: actionUrl },
+      },
+    );
   }
   if (imageUrl !== undefined) {
-    fireEvent.change(screen.getByPlaceholderText("https://example.com/image.jpg"), {
-      target: { value: imageUrl },
-    });
+    fireEvent.change(
+      screen.getByPlaceholderText("https://example.com/image.jpg"),
+      {
+        target: { value: imageUrl },
+      },
+    );
   }
   // "Create Announcement" exists twice (empty-state button + modal
   // submit) — the modal's is the last in DOM order.
@@ -64,7 +73,9 @@ describe("FE-04 Announcements save validation", () => {
 
   it("hostile actionUrl (javascript:) blocks the save with an inline error", async () => {
     await openFormAndFill({ actionUrl: "javascript:alert(1)" });
-    expect(await screen.findByRole("alert")).toHaveTextContent(/site-relative path/);
+    expect(await screen.findByRole("alert")).toHaveTextContent(
+      /site-relative path/,
+    );
     expect(hoisted.create).not.toHaveBeenCalled();
   });
 

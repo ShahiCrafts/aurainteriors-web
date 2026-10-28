@@ -31,10 +31,7 @@ const SupportChats = () => {
     sortBy: "lastMessageAt",
   });
 
-  const chats = useMemo(
-    () => chatsData?.data?.chats || [],
-    [chatsData]
-  );
+  const chats = useMemo(() => chatsData?.data?.chats || [], [chatsData]);
   const selectedChat =
     chats.find((c) => (c._id ?? c.id) === selectedChatId) ?? null;
 
@@ -68,7 +65,6 @@ const SupportChats = () => {
 
   return (
     <div className="flex flex-col h-[calc(100vh-80px)] gap-4 overflow-hidden">
-
       <div className="flex-1 flex overflow-hidden gap-4 min-h-0">
         {/* Sidebar: Chat List */}
         <div
@@ -76,20 +72,20 @@ const SupportChats = () => {
             selectedChat ? "hidden lg:flex" : "flex"
           }`}
         >
-            <div className="flex-1 overflow-hidden flex flex-col min-h-0 border-r border-r-gray-100">
-              <ChatList
-                chats={chatsData?.data?.chats || []}
-                pagination={chatsData?.data?.pagination}
-                isLoading={isLoadingChats}
-                selectedChat={selectedChat}
-                onSelectChat={handleSelectChat}
-                statusFilter={statusFilter}
-                onStatusFilterChange={setStatusFilter}
-                onPageChange={setPage}
-                currentPage={page}
-                hideTitle={false} // Set to true if ChatList still shows a title internally
-              />
-            </div>
+          <div className="flex-1 overflow-hidden flex flex-col min-h-0 border-r border-r-gray-100">
+            <ChatList
+              chats={chatsData?.data?.chats || []}
+              pagination={chatsData?.data?.pagination}
+              isLoading={isLoadingChats}
+              selectedChat={selectedChat}
+              onSelectChat={handleSelectChat}
+              statusFilter={statusFilter}
+              onStatusFilterChange={setStatusFilter}
+              onPageChange={setPage}
+              currentPage={page}
+              hideTitle={false} // Set to true if ChatList still shows a title internally
+            />
+          </div>
         </div>
 
         {/* Conversation Area */}
@@ -152,15 +148,15 @@ const SupportChats = () => {
             </div>
           )}
         </div>
-        
+
         {/* Column 3: AI Assistant (only visible when chat is selected) */}
         {selectedChat && (
           <div className="hidden xl:flex h-full shrink-0">
-             <AiAssistantPanel
-                chat={selectedChat}
-                onUseReply={handleUseReply}
-                onEditReply={handleUseReply}
-             />
+            <AiAssistantPanel
+              chat={selectedChat}
+              onUseReply={handleUseReply}
+              onEditReply={handleUseReply}
+            />
           </div>
         )}
       </div>

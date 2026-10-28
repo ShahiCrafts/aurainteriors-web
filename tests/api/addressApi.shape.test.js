@@ -18,9 +18,15 @@ import * as addressApi from "../../src/api/addressApi.js";
 
 beforeEach(() => {
   vi.clearAllMocks();
-  api.get.mockResolvedValue({ data: { status: "success", data: { addresses: [] } } });
-  api.post.mockResolvedValue({ data: { status: "success", data: { address: {} } } });
-  api.patch.mockResolvedValue({ data: { status: "success", data: { address: {} } } });
+  api.get.mockResolvedValue({
+    data: { status: "success", data: { addresses: [] } },
+  });
+  api.post.mockResolvedValue({
+    data: { status: "success", data: { address: {} } },
+  });
+  api.patch.mockResolvedValue({
+    data: { status: "success", data: { address: {} } },
+  });
   api.delete.mockResolvedValue({ data: { status: "success" } });
 });
 

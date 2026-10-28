@@ -8,9 +8,7 @@ import {
   useUpdateProduct,
 } from "../../../../hooks/product/useProductTan";
 import { toast } from "../../../../lib/toast";
-import {
-  getImageUrl as getImageUrlUtil,
-} from "../../../../utils/imageUrl";
+import { getImageUrl as getImageUrlUtil } from "../../../../utils/imageUrl";
 import formatError from "../../../../utils/errorHandler";
 import { parseProductPriceStock } from "../../../../utils/adminForms";
 
@@ -86,7 +84,7 @@ export default function useProductFormState({ categories }) {
   // keys the current resolution does not render.
   const storedCatalogAttributes = useMemo(
     () => editingProduct?.catalogAttributes || {},
-    [editingProduct]
+    [editingProduct],
   );
 
   const handleAddColor = () => {
@@ -184,7 +182,7 @@ export default function useProductFormState({ categories }) {
           ? product.modelUrl
             ? "url"
             : "upload"
-          : "url"
+          : "url",
       );
       // Set existing images as previews
       if (product.images?.length > 0) {
@@ -193,7 +191,7 @@ export default function useProductFormState({ categories }) {
             url: getImageUrlUtil(img.url, "products"),
             existing: true,
             originalUrl: img.url,
-          }))
+          })),
         );
       } else {
         setImagePreviews([]);
@@ -205,7 +203,7 @@ export default function useProductFormState({ categories }) {
           product.modelFiles.map((model) => ({
             ...model,
             existing: true,
-          }))
+          })),
         );
       } else {
         setExistingModelFiles([]);
@@ -285,7 +283,10 @@ export default function useProductFormState({ categories }) {
               });
             }, 400);
           }
-          setUploadProgress((prev) => ({ ...prev, [previewUrl]: Math.min(progress, 100) }));
+          setUploadProgress((prev) => ({
+            ...prev,
+            [previewUrl]: Math.min(progress, 100),
+          }));
         }, 200);
       };
       reader.readAsDataURL(file);
@@ -308,7 +309,7 @@ export default function useProductFormState({ categories }) {
 
       if (!validExtensions.includes(fileExtension)) {
         toast.error(
-          `Invalid file format: ${file.name}. Please upload .glb, .gltf, or .usdz files`
+          `Invalid file format: ${file.name}. Please upload .glb, .gltf, or .usdz files`,
         );
         continue;
       }
@@ -421,8 +422,9 @@ export default function useProductFormState({ categories }) {
       // Remove from new files
       setImageFiles((prev) =>
         prev.filter(
-          (_, i) => i !== index - imagePreviews.filter((p) => p.existing).length
-        )
+          (_, i) =>
+            i !== index - imagePreviews.filter((p) => p.existing).length,
+        ),
       );
       setImagePreviews((prev) => prev.filter((_, i) => i !== index));
     }
@@ -450,12 +452,12 @@ export default function useProductFormState({ categories }) {
     // server's own 400s still surface through the catch below.
     const missingAttrs = missingRequiredAttributes(
       catalogAttrState.resolved,
-      catalogAttrState.values
+      catalogAttrState.values,
     );
     const builtAttrs = buildAttributesPayload(
       catalogAttrState.resolved,
       catalogAttrState.values,
-      catalogAttrState.passthrough
+      catalogAttrState.passthrough,
     );
     if (missingAttrs.length > 0 || Object.keys(builtAttrs.errors).length > 0) {
       setShowAttrErrors(true);
@@ -464,7 +466,7 @@ export default function useProductFormState({ categories }) {
         toast.error(
           `Missing required attribute${missingAttrs.length > 1 ? "s" : ""}: ${missingAttrs
             .map((entry) => entry.label)
-            .join(", ")}`
+            .join(", ")}`,
         );
       } else {
         const [firstKey, firstError] = Object.entries(builtAttrs.errors)[0];
@@ -539,7 +541,7 @@ export default function useProductFormState({ categories }) {
         .filter((p) => p.existing)
         .map((p) => p.originalUrl);
       const removedImages = existingUrls.filter(
-        (url) => !remainingUrls.includes(url)
+        (url) => !remainingUrls.includes(url),
       );
       if (removedImages.length > 0) {
         formData.removeImages = removedImages;
@@ -550,7 +552,7 @@ export default function useProductFormState({ categories }) {
         editingProduct.modelFiles?.map((m) => m.url) || [];
       const remainingModelUrls = existingModelFiles.map((m) => m.url);
       const removedModelFiles = existingModelUrls.filter(
-        (url) => !remainingModelUrls.includes(url)
+        (url) => !remainingModelUrls.includes(url),
       );
       if (removedModelFiles.length > 0) {
         formData.removeModelFiles = removedModelFiles;

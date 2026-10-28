@@ -1,5 +1,5 @@
-import { useState, useRef, useMemo } from 'react';
-import { motion, AnimatePresence } from 'framer-motion';
+import { useState, useRef, useMemo } from "react";
+import { motion, AnimatePresence } from "framer-motion";
 import {
   Plus,
   Search,
@@ -13,32 +13,37 @@ import {
   SlidersHorizontal,
   GitFork,
   Layers,
-} from 'lucide-react';
+} from "lucide-react";
 import Skeleton from "../../components/common/Skeleton";
 import ConfirmationDialog from "../../components/modals/ConfirmationDialog";
-import { useCategories, useCreateCategory, useUpdateCategory, useDeleteCategory } from '../../hooks/product/useCategoryTan';
-import { useProductTypes, useRooms } from '../../hooks/catalog/useCatalogTan';
-import { categoryParentId } from '../../utils/categoryTree';
-import CategoryTree from './categories/CategoryTree';
-import CategoryFormModal from './categories/CategoryFormModal';
-import CategoryAttributesPanel from './categories/CategoryAttributesPanel';
-import useCategoryTree from './categories/hooks/useCategoryTree';
+import {
+  useCategories,
+  useCreateCategory,
+  useUpdateCategory,
+  useDeleteCategory,
+} from "../../hooks/product/useCategoryTan";
+import { useProductTypes, useRooms } from "../../hooks/catalog/useCatalogTan";
+import { categoryParentId } from "../../utils/categoryTree";
+import CategoryTree from "./categories/CategoryTree";
+import CategoryFormModal from "./categories/CategoryFormModal";
+import CategoryAttributesPanel from "./categories/CategoryAttributesPanel";
+import useCategoryTree from "./categories/hooks/useCategoryTree";
 import { toast } from "../../lib/toast";
 import formatError from "../../utils/errorHandler";
-import ImageWithFallback from '../../components/fallbacks/ImageWithFallback';
-import { getCategoryImageUrl } from '../../utils/imageUrl';
-import { API_V1_URL } from '../../config/constants';
+import ImageWithFallback from "../../components/fallbacks/ImageWithFallback";
+import { getCategoryImageUrl } from "../../utils/imageUrl";
+import { API_V1_URL } from "../../config/constants";
 
 const API_URL = API_V1_URL;
 
 export default function Categories() {
   const fileInputRef = useRef(null);
 
-  const [searchQuery, setSearchQuery] = useState('');
-  const [statusFilter, setStatusFilter] = useState('all');
-  const [typeFilter, setTypeFilter] = useState('all');
-  const [densityFilter, setDensityFilter] = useState('all');
-  const [sortBy, setSortBy] = useState('sortOrder');
+  const [searchQuery, setSearchQuery] = useState("");
+  const [statusFilter, setStatusFilter] = useState("all");
+  const [typeFilter, setTypeFilter] = useState("all");
+  const [densityFilter, setDensityFilter] = useState("all");
+  const [sortBy, setSortBy] = useState("sortOrder");
   const [showModal, setShowModal] = useState(false);
   const [editingCategory, setEditingCategory] = useState(null);
   const [imagePreview, setImagePreview] = useState(null);
@@ -46,13 +51,13 @@ export default function Categories() {
   const [categoryToDelete, setCategoryToDelete] = useState(null);
   const [attributesCategory, setAttributesCategory] = useState(null);
   const [categoryForm, setCategoryForm] = useState({
-    name: '',
-    description: '',
+    name: "",
+    description: "",
     image: null,
-    status: 'active',
-    parent: '',
+    status: "active",
+    parent: "",
     sortOrder: 0,
-    productType: '',
+    productType: "",
     roomSlugs: [],
   });
 
@@ -87,21 +92,21 @@ export default function Categories() {
   // sort switches to the flat card grid below.
   const isTreeMode =
     !searchQuery.trim() &&
-    statusFilter === 'all' &&
-    typeFilter === 'all' &&
-    densityFilter === 'all' &&
-    sortBy === 'sortOrder';
+    statusFilter === "all" &&
+    typeFilter === "all" &&
+    densityFilter === "all" &&
+    sortBy === "sortOrder";
 
-  const handleAddCategory = (parentId = '') => {
+  const handleAddCategory = (parentId = "") => {
     setEditingCategory(null);
     setCategoryForm({
-      name: '',
-      description: '',
+      name: "",
+      description: "",
       image: null,
-      status: 'active',
-      parent: parentId || '',
+      status: "active",
+      parent: parentId || "",
       sortOrder: 0,
-      productType: '',
+      productType: "",
       roomSlugs: [],
     });
     setImagePreview(null);
@@ -112,26 +117,28 @@ export default function Categories() {
     setEditingCategory(category);
     setCategoryForm({
       name: category.name,
-      description: category.description || '',
+      description: category.description || "",
       image: null,
       status: category.status,
-      parent: categoryParentId(category) || '',
+      parent: categoryParentId(category) || "",
       sortOrder: category.sortOrder || 0,
-      productType: category.productType || '',
+      productType: category.productType || "",
       roomSlugs: category.roomSlugs || [],
     });
-    setImagePreview(category.image ? getCategoryImageUrl(category.image) : null);
+    setImagePreview(
+      category.image ? getCategoryImageUrl(category.image) : null,
+    );
     setShowModal(true);
   };
 
   const handleDeleteCategory = async () => {
     try {
       await deleteMutation.mutateAsync(categoryToDelete);
-      toast.success('Category deleted successfully');
+      toast.success("Category deleted successfully");
       setDeleteModalOpen(false);
       setCategoryToDelete(null);
     } catch (err) {
-      toast.error(formatError(err, 'Failed to delete category'));
+      toast.error(formatError(err, "Failed to delete category"));
     }
   };
 
@@ -163,9 +170,9 @@ export default function Categories() {
       // Always send the parent on update: '' means "move to root"
       // (the server maps it to null). On create the api layer drops
       // the empty value and the category is created at the root.
-      parent: categoryForm.parent || '',
+      parent: categoryForm.parent || "",
       // '' clears an assigned product type server-side.
-      productType: categoryForm.productType || '',
+      productType: categoryForm.productType || "",
       roomSlugs: categoryForm.roomSlugs,
     };
 
@@ -175,15 +182,18 @@ export default function Categories() {
 
     try {
       if (editingCategory) {
-        await updateMutation.mutateAsync({ id: editingCategory._id, data: formData });
-        toast.success('Category updated successfully');
+        await updateMutation.mutateAsync({
+          id: editingCategory._id,
+          data: formData,
+        });
+        toast.success("Category updated successfully");
       } else {
         await createMutation.mutateAsync(formData);
-        toast.success('Category created successfully');
+        toast.success("Category created successfully");
       }
       setShowModal(false);
     } catch (err) {
-      toast.error(formatError(err, 'Something went wrong'));
+      toast.error(formatError(err, "Something went wrong"));
     }
   };
 
@@ -193,54 +203,71 @@ export default function Categories() {
     // 1. Search Query
     if (searchQuery.trim()) {
       const q = searchQuery.toLowerCase();
-      result = result.filter(cat => 
-        (cat.name || '').toLowerCase().includes(q) || 
-        (cat.slug || '').toLowerCase().includes(q) || 
-        (cat.description && cat.description.toLowerCase().includes(q))
+      result = result.filter(
+        (cat) =>
+          (cat.name || "").toLowerCase().includes(q) ||
+          (cat.slug || "").toLowerCase().includes(q) ||
+          (cat.description && cat.description.toLowerCase().includes(q)),
       );
     }
 
     // 2. Status Filter
-    if (statusFilter !== 'all') {
-      result = result.filter(cat => cat.status === statusFilter);
+    if (statusFilter !== "all") {
+      result = result.filter((cat) => cat.status === statusFilter);
     }
 
     // 3. Type Filter
-    if (typeFilter !== 'all') {
-      if (typeFilter === 'parent') {
-        result = result.filter(cat => !cat.parent);
-      } else if (typeFilter === 'subcategory') {
-        result = result.filter(cat => !!cat.parent);
+    if (typeFilter !== "all") {
+      if (typeFilter === "parent") {
+        result = result.filter((cat) => !cat.parent);
+      } else if (typeFilter === "subcategory") {
+        result = result.filter((cat) => !!cat.parent);
       }
     }
 
     // 4. Density Filter (Assigned / Empty)
-    if (densityFilter !== 'all') {
-      if (densityFilter === 'assigned') {
-        result = result.filter(cat => (cat.productCount || 0) > 0);
-      } else if (densityFilter === 'empty') {
-        result = result.filter(cat => (cat.productCount || 0) === 0);
+    if (densityFilter !== "all") {
+      if (densityFilter === "assigned") {
+        result = result.filter((cat) => (cat.productCount || 0) > 0);
+      } else if (densityFilter === "empty") {
+        result = result.filter((cat) => (cat.productCount || 0) === 0);
       }
     }
 
     // 5. Sorting
     result.sort((a, b) => {
-      if (sortBy === 'name') {
+      if (sortBy === "name") {
         return a.name.localeCompare(b.name);
       }
-      if (sortBy === 'products') {
+      if (sortBy === "products") {
         return (b.productCount || 0) - (a.productCount || 0);
       }
       return (a.sortOrder || 0) - (b.sortOrder || 0);
     });
 
     return result;
-  }, [categories, searchQuery, statusFilter, typeFilter, densityFilter, sortBy]);
+  }, [
+    categories,
+    searchQuery,
+    statusFilter,
+    typeFilter,
+    densityFilter,
+    sortBy,
+  ]);
 
   // Compute Stats Card Values
-  const parentCategoriesCount = useMemo(() => categories.filter(c => !c.parent).length, [categories]);
-  const subcategoriesCount = useMemo(() => categories.filter(c => !!c.parent).length, [categories]);
-  const totalProductsCount = useMemo(() => categories.reduce((acc, cat) => acc + (cat.productCount || 0), 0), [categories]);
+  const parentCategoriesCount = useMemo(
+    () => categories.filter((c) => !c.parent).length,
+    [categories],
+  );
+  const subcategoriesCount = useMemo(
+    () => categories.filter((c) => !!c.parent).length,
+    [categories],
+  );
+  const totalProductsCount = useMemo(
+    () => categories.reduce((acc, cat) => acc + (cat.productCount || 0), 0),
+    [categories],
+  );
 
   if (isLoading) {
     return (
@@ -266,7 +293,10 @@ export default function Categories() {
         {/* Grid Skeleton */}
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
           {[...Array(4)].map((_, i) => (
-            <div key={i} className="bg-white rounded-2xl border border-gray-100 p-5 flex gap-4">
+            <div
+              key={i}
+              className="bg-white rounded-2xl border border-gray-100 p-5 flex gap-4"
+            >
               <Skeleton className="w-20 h-20 rounded-xl" />
               <div className="flex-1 space-y-3">
                 <div className="flex justify-between">
@@ -292,7 +322,9 @@ export default function Categories() {
   if (error) {
     return (
       <div className="text-center py-12 bg-white rounded-2xl border border-gray-100">
-        <h2 className="text-xl font-semibold text-red-600 mb-2">Error Loading Categories</h2>
+        <h2 className="text-xl font-semibold text-red-600 mb-2">
+          Error Loading Categories
+        </h2>
         <p className="text-gray-500">{formatError(error)}</p>
       </div>
     );
@@ -323,8 +355,12 @@ export default function Categories() {
         <div className="bg-white rounded-xl p-5 border border-gray-100 shadow-[0_2px_10px_-4px_rgba(0,0,0,0.05)] relative overflow-hidden">
           <div className="flex items-start justify-between">
             <div>
-              <p className="text-sm font-medium text-gray-500 mb-1">Total Categories</p>
-              <p className="text-2xl font-bold text-gray-900 tracking-tight">{categories.length}</p>
+              <p className="text-sm font-medium text-gray-500 mb-1">
+                Total Categories
+              </p>
+              <p className="text-2xl font-bold text-gray-900 tracking-tight">
+                {categories.length}
+              </p>
             </div>
             <div className="p-2.5 rounded-xl bg-blue-600 text-white shadow-sm">
               <FolderTree size={20} />
@@ -339,8 +375,12 @@ export default function Categories() {
         <div className="bg-white rounded-xl p-5 border border-gray-100 shadow-[0_2px_10px_-4px_rgba(0,0,0,0.05)] relative overflow-hidden">
           <div className="flex items-start justify-between">
             <div>
-              <p className="text-sm font-medium text-gray-500 mb-1">Parent Groups</p>
-              <p className="text-2xl font-bold text-gray-900 tracking-tight">{parentCategoriesCount}</p>
+              <p className="text-sm font-medium text-gray-500 mb-1">
+                Parent Groups
+              </p>
+              <p className="text-2xl font-bold text-gray-900 tracking-tight">
+                {parentCategoriesCount}
+              </p>
             </div>
             <div className="p-2.5 rounded-xl bg-purple-600 text-white shadow-sm">
               <Layers size={20} />
@@ -355,8 +395,12 @@ export default function Categories() {
         <div className="bg-white rounded-xl p-5 border border-gray-100 shadow-[0_2px_10px_-4px_rgba(0,0,0,0.05)] relative overflow-hidden">
           <div className="flex items-start justify-between">
             <div>
-              <p className="text-sm font-medium text-gray-500 mb-1">Subcategories</p>
-              <p className="text-2xl font-bold text-gray-900 tracking-tight">{subcategoriesCount}</p>
+              <p className="text-sm font-medium text-gray-500 mb-1">
+                Subcategories
+              </p>
+              <p className="text-2xl font-bold text-gray-900 tracking-tight">
+                {subcategoriesCount}
+              </p>
             </div>
             <div className="p-2.5 rounded-xl bg-pink-600 text-white shadow-sm">
               <GitFork size={20} />
@@ -371,8 +415,12 @@ export default function Categories() {
         <div className="bg-white rounded-xl p-5 border border-gray-100 shadow-[0_2px_10px_-4px_rgba(0,0,0,0.05)] relative overflow-hidden">
           <div className="flex items-start justify-between">
             <div>
-              <p className="text-sm font-medium text-gray-500 mb-1">Total Products</p>
-              <p className="text-2xl font-bold text-gray-900 tracking-tight">{totalProductsCount}</p>
+              <p className="text-sm font-medium text-gray-500 mb-1">
+                Total Products
+              </p>
+              <p className="text-2xl font-bold text-gray-900 tracking-tight">
+                {totalProductsCount}
+              </p>
             </div>
             <div className="p-2.5 rounded-xl bg-emerald-600 text-white shadow-sm">
               <Package size={20} />
@@ -465,158 +513,176 @@ export default function Categories() {
           confirmDelete={confirmDelete}
         />
       ) : (
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
-        {filteredCategories.map((category) => (
-          <motion.div
-            key={category._id}
-            layout
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            className="bg-white rounded-2xl border border-gray-100 overflow-hidden shadow-[0_2px_10px_-4px_rgba(0,0,0,0.05)] flex flex-col justify-between"
-          >
-            <div className="flex items-start gap-4 p-5">
-              {/* Category Image */}
-              <div className="w-20 h-20 rounded-xl overflow-hidden bg-gray-50 border border-gray-100 shadow-sm shrink-0">
-                {category.image ? (
-                  <ImageWithFallback
-                    src={getCategoryImageUrl(category.image)}
-                    alt={category.name}
-                    className="w-full h-full object-cover"
-                  />
-                ) : (
-                  <div className="w-full h-full flex items-center justify-center">
-                    <Image className="w-6 h-6 text-gray-400" />
-                  </div>
-                )}
-              </div>
-
-              {/* Category Info */}
-              <div className="flex-1 min-w-0">
-                <div className="flex items-start justify-between">
-                  <div>
-                    <h3 className="font-bold text-gray-900 text-[16px]">{category.name}</h3>
-                    <p className="font-mono text-xs text-gray-400 mt-0.5">/{category.slug}</p>
-                  </div>
-                  <span className={`inline-flex items-center px-3 py-1 rounded-full text-xs font-semibold capitalize ${
-                    category.status === 'active'
-                      ? 'bg-emerald-50 text-emerald-700'
-                      : 'bg-slate-100 text-slate-600'
-                  }`}>
-                    {category.status === 'active' ? 'Active' : 'Inactive'}
-                  </span>
-                </div>
-                <p className="text-sm text-gray-500 mt-2 line-clamp-2 leading-relaxed">{category.description}</p>
-                <div className="flex items-center gap-2 mt-3.5">
-                  <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-[10px] font-bold uppercase tracking-wider bg-blue-50 text-blue-700 border border-blue-100">
-                    <Package className="w-3.5 h-3.5" />
-                    {category.productCount || 0} products
-                  </span>
-                  <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-[10px] font-bold uppercase tracking-wider bg-purple-50 text-purple-700 border border-purple-100">
-                    <FolderTree className="w-3.5 h-3.5" />
-                    {category.subcategories?.length || 0} subcategories
-                  </span>
-                </div>
-              </div>
-
-              {/* Actions */}
-              <div className="flex items-center gap-1">
-                <button
-                  onClick={() => setAttributesCategory(category)}
-                  className="p-2 hover:bg-slate-100 text-gray-500 rounded-full transition-colors duration-150"
-                  title="Attributes"
-                >
-                  <SlidersHorizontal className="w-4 h-4" />
-                </button>
-                <button
-                  onClick={() => handleEditCategory(category)}
-                  className="p-2 hover:bg-slate-100 text-gray-500 rounded-full transition-colors duration-150"
-                  title="Edit"
-                >
-                  <Edit2 className="w-4 h-4" />
-                </button>
-                <button
-                  onClick={() => confirmDelete(category._id)}
-                  className="p-2 hover:bg-red-50 text-red-500 rounded-full transition-colors duration-150"
-                  disabled={deleteMutation.isPending}
-                  title="Delete"
-                >
-                  <Trash2 className="w-4 h-4" />
-                </button>
-              </div>
-            </div>
-
-            {/* Subcategories */}
-            {category.subcategories?.length > 0 && (
-              <div className="border-t border-gray-100">
-                <button
-                  onClick={() => toggleExpand(category._id)}
-                  className="w-full flex items-center justify-between px-5 py-3 text-sm font-semibold text-gray-600 hover:bg-gray-50/50 transition-colors"
-                >
-                  <span>Subcategories ({category.subcategories.length})</span>
-                  {expandedCategories.includes(category._id) ? (
-                    <ChevronDown className="w-4 h-4" />
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
+          {filteredCategories.map((category) => (
+            <motion.div
+              key={category._id}
+              layout
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              className="bg-white rounded-2xl border border-gray-100 overflow-hidden shadow-[0_2px_10px_-4px_rgba(0,0,0,0.05)] flex flex-col justify-between"
+            >
+              <div className="flex items-start gap-4 p-5">
+                {/* Category Image */}
+                <div className="w-20 h-20 rounded-xl overflow-hidden bg-gray-50 border border-gray-100 shadow-sm shrink-0">
+                  {category.image ? (
+                    <ImageWithFallback
+                      src={getCategoryImageUrl(category.image)}
+                      alt={category.name}
+                      className="w-full h-full object-cover"
+                    />
                   ) : (
-                    <ChevronRight className="w-4 h-4" />
+                    <div className="w-full h-full flex items-center justify-center">
+                      <Image className="w-6 h-6 text-gray-400" />
+                    </div>
                   )}
-                </button>
-                <AnimatePresence>
-                  {expandedCategories.includes(category._id) && (
-                    <motion.div
-                      initial={{ height: 0 }}
-                      animate={{ height: 'auto' }}
-                      exit={{ height: 0 }}
-                      className="overflow-hidden"
+                </div>
+
+                {/* Category Info */}
+                <div className="flex-1 min-w-0">
+                  <div className="flex items-start justify-between">
+                    <div>
+                      <h3 className="font-bold text-gray-900 text-[16px]">
+                        {category.name}
+                      </h3>
+                      <p className="font-mono text-xs text-gray-400 mt-0.5">
+                        /{category.slug}
+                      </p>
+                    </div>
+                    <span
+                      className={`inline-flex items-center px-3 py-1 rounded-full text-xs font-semibold capitalize ${
+                        category.status === "active"
+                          ? "bg-emerald-50 text-emerald-700"
+                          : "bg-slate-100 text-slate-600"
+                      }`}
                     >
-                      <div className="px-5 pb-4 space-y-2">
-                        {category.subcategories.map((sub) => (
-                          <div
-                            key={sub._id}
-                            className="flex items-center justify-between p-3 bg-gray-50/70 border border-gray-100/50 rounded-xl"
-                          >
-                            <div className="flex items-center gap-3">
-                              <GripVertical className="w-4 h-4 text-gray-400" />
-                              <span className="text-sm font-semibold text-gray-700">{sub.name}</span>
-                              <span className={`inline-flex items-center px-2 py-0.5 rounded-full text-[10px] font-bold capitalize ${
-                                sub.status === 'active'
-                                  ? 'bg-emerald-50 text-emerald-700'
-                                  : 'bg-slate-100 text-slate-600'
-                              }`}>
-                                {sub.status === 'active' ? 'Active' : 'Inactive'}
-                              </span>
-                            </div>
-                            <div className="flex items-center gap-1">
-                              <button
-                                onClick={() => handleEditCategory(sub)}
-                                className="p-1.5 hover:bg-slate-200 text-gray-500 rounded-full transition-colors"
-                              >
-                                <Edit2 className="w-3.5 h-3.5" />
-                              </button>
-                              <button
-                                onClick={() => confirmDelete(sub._id)}
-                                className="p-1.5 hover:bg-red-50 text-red-500 rounded-full transition-colors"
-                              >
-                                <Trash2 className="w-3.5 h-3.5" />
-                              </button>
-                            </div>
-                          </div>
-                        ))}
-                      </div>
-                    </motion.div>
-                  )}
-                </AnimatePresence>
+                      {category.status === "active" ? "Active" : "Inactive"}
+                    </span>
+                  </div>
+                  <p className="text-sm text-gray-500 mt-2 line-clamp-2 leading-relaxed">
+                    {category.description}
+                  </p>
+                  <div className="flex items-center gap-2 mt-3.5">
+                    <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-[10px] font-bold uppercase tracking-wider bg-blue-50 text-blue-700 border border-blue-100">
+                      <Package className="w-3.5 h-3.5" />
+                      {category.productCount || 0} products
+                    </span>
+                    <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-[10px] font-bold uppercase tracking-wider bg-purple-50 text-purple-700 border border-purple-100">
+                      <FolderTree className="w-3.5 h-3.5" />
+                      {category.subcategories?.length || 0} subcategories
+                    </span>
+                  </div>
+                </div>
+
+                {/* Actions */}
+                <div className="flex items-center gap-1">
+                  <button
+                    onClick={() => setAttributesCategory(category)}
+                    className="p-2 hover:bg-slate-100 text-gray-500 rounded-full transition-colors duration-150"
+                    title="Attributes"
+                  >
+                    <SlidersHorizontal className="w-4 h-4" />
+                  </button>
+                  <button
+                    onClick={() => handleEditCategory(category)}
+                    className="p-2 hover:bg-slate-100 text-gray-500 rounded-full transition-colors duration-150"
+                    title="Edit"
+                  >
+                    <Edit2 className="w-4 h-4" />
+                  </button>
+                  <button
+                    onClick={() => confirmDelete(category._id)}
+                    className="p-2 hover:bg-red-50 text-red-500 rounded-full transition-colors duration-150"
+                    disabled={deleteMutation.isPending}
+                    title="Delete"
+                  >
+                    <Trash2 className="w-4 h-4" />
+                  </button>
+                </div>
               </div>
-            )}
-          </motion.div>
-        ))}
-      </div>
+
+              {/* Subcategories */}
+              {category.subcategories?.length > 0 && (
+                <div className="border-t border-gray-100">
+                  <button
+                    onClick={() => toggleExpand(category._id)}
+                    className="w-full flex items-center justify-between px-5 py-3 text-sm font-semibold text-gray-600 hover:bg-gray-50/50 transition-colors"
+                  >
+                    <span>Subcategories ({category.subcategories.length})</span>
+                    {expandedCategories.includes(category._id) ? (
+                      <ChevronDown className="w-4 h-4" />
+                    ) : (
+                      <ChevronRight className="w-4 h-4" />
+                    )}
+                  </button>
+                  <AnimatePresence>
+                    {expandedCategories.includes(category._id) && (
+                      <motion.div
+                        initial={{ height: 0 }}
+                        animate={{ height: "auto" }}
+                        exit={{ height: 0 }}
+                        className="overflow-hidden"
+                      >
+                        <div className="px-5 pb-4 space-y-2">
+                          {category.subcategories.map((sub) => (
+                            <div
+                              key={sub._id}
+                              className="flex items-center justify-between p-3 bg-gray-50/70 border border-gray-100/50 rounded-xl"
+                            >
+                              <div className="flex items-center gap-3">
+                                <GripVertical className="w-4 h-4 text-gray-400" />
+                                <span className="text-sm font-semibold text-gray-700">
+                                  {sub.name}
+                                </span>
+                                <span
+                                  className={`inline-flex items-center px-2 py-0.5 rounded-full text-[10px] font-bold capitalize ${
+                                    sub.status === "active"
+                                      ? "bg-emerald-50 text-emerald-700"
+                                      : "bg-slate-100 text-slate-600"
+                                  }`}
+                                >
+                                  {sub.status === "active"
+                                    ? "Active"
+                                    : "Inactive"}
+                                </span>
+                              </div>
+                              <div className="flex items-center gap-1">
+                                <button
+                                  onClick={() => handleEditCategory(sub)}
+                                  className="p-1.5 hover:bg-slate-200 text-gray-500 rounded-full transition-colors"
+                                >
+                                  <Edit2 className="w-3.5 h-3.5" />
+                                </button>
+                                <button
+                                  onClick={() => confirmDelete(sub._id)}
+                                  className="p-1.5 hover:bg-red-50 text-red-500 rounded-full transition-colors"
+                                >
+                                  <Trash2 className="w-3.5 h-3.5" />
+                                </button>
+                              </div>
+                            </div>
+                          ))}
+                        </div>
+                      </motion.div>
+                    )}
+                  </AnimatePresence>
+                </div>
+              )}
+            </motion.div>
+          ))}
+        </div>
       )}
 
       {filteredCategories.length === 0 && (
         <div className="text-center py-16 bg-white rounded-2xl border border-gray-100 shadow-[0_2px_10px_-4px_rgba(0,0,0,0.05)]">
           <FolderTree className="w-12 h-12 text-gray-300 mx-auto mb-4" />
-          <h3 className="font-semibold text-gray-900 mb-1">No categories found</h3>
+          <h3 className="font-semibold text-gray-900 mb-1">
+            No categories found
+          </h3>
           <p className="text-sm text-gray-500">
-            {searchQuery ? 'Try adjusting your search' : 'Create your first category to get started'}
+            {searchQuery
+              ? "Try adjusting your search"
+              : "Create your first category to get started"}
           </p>
         </div>
       )}

@@ -63,22 +63,17 @@ async function importFresh() {
   const queryClient = (await import("../../src/lib/queryClient.js"))
     .queryClient;
   const { USER_KEYS } = await import("../../src/hooks/admin/useUserTan.js");
-  const { CONTACT_KEYS } = await import(
-    "../../src/hooks/admin/useContactTan.js"
-  );
-  const { ANNOUNCEMENT_KEYS } = await import(
-    "../../src/hooks/admin/useAnnouncementTan.js"
-  );
-  const { PROMOTION_KEYS } = await import(
-    "../../src/hooks/admin/usePromotionTan.js"
-  );
-  const { ANALYTICS_KEYS } = await import(
-    "../../src/hooks/admin/useAnalyticsTan.js"
-  );
+  const { CONTACT_KEYS } =
+    await import("../../src/hooks/admin/useContactTan.js");
+  const { ANNOUNCEMENT_KEYS } =
+    await import("../../src/hooks/admin/useAnnouncementTan.js");
+  const { PROMOTION_KEYS } =
+    await import("../../src/hooks/admin/usePromotionTan.js");
+  const { ANALYTICS_KEYS } =
+    await import("../../src/hooks/admin/useAnalyticsTan.js");
   const discount = await import("../../src/hooks/admin/useDiscountTan.js");
-  const newsletterKeys = await import(
-    "../../src/hooks/newsletter/useNewsletterTan.js"
-  );
+  const newsletterKeys =
+    await import("../../src/hooks/newsletter/useNewsletterTan.js");
   return {
     authStore,
     queryClient,
@@ -125,7 +120,10 @@ function adminKeySet(m) {
     ["discounts.applied", () => m.DISCOUNT_KEYS.applied()],
     ["discounts.validate", () => m.DISCOUNT_KEYS.validate("SAVE10")],
     ["newsletter.all", () => m.NEWSLETTER_KEYS.all()],
-    ["newsletter.subscribers", () => m.NEWSLETTER_KEYS.subscribers({ page: 1 })],
+    [
+      "newsletter.subscribers",
+      () => m.NEWSLETTER_KEYS.subscribers({ page: 1 }),
+    ],
     ["newsletter.stats", () => m.NEWSLETTER_KEYS.stats()],
   ];
 }
@@ -155,7 +153,11 @@ describe("FE-08 admin key factories", () => {
     expect(m.authStore.getState().user).toBeNull();
 
     expect(m.USER_KEYS.all()).toEqual(["users", "guest"]);
-    expect(m.DISCOUNT_KEYS.applied()).toEqual(["discounts", "guest", "applied"]);
+    expect(m.DISCOUNT_KEYS.applied()).toEqual([
+      "discounts",
+      "guest",
+      "applied",
+    ]);
     expect(m.NEWSLETTER_KEYS.stats()).toEqual(["newsletter", "guest", "stats"]);
   });
 
@@ -192,16 +194,15 @@ describe("FE-08 discount invalidation reaches the applied entry", () => {
     await waitFor(() => expect(m.authStore.getState().loading).toBe(false));
     m.authStore.getState().signIn(adminA);
 
-    const discountApi = (await import("../../src/api/discountApi.js"))
-      .default;
+    const discountApi = (await import("../../src/api/discountApi.js")).default;
     discountApi.delete.mockResolvedValue({});
 
     const client = m.queryClient;
     client.setQueryData(m.DISCOUNT_KEYS.applied(), { code: "SAVE10" });
     client.setQueryData(m.DISCOUNT_KEYS.list({}), { data: [] });
-    expect(
-      client.getQueryState(m.DISCOUNT_KEYS.applied()).isInvalidated,
-    ).toBe(false);
+    expect(client.getQueryState(m.DISCOUNT_KEYS.applied()).isInvalidated).toBe(
+      false,
+    );
 
     const wrapper = ({ children }) =>
       React.createElement(QueryClientProvider, { client }, children);
@@ -210,9 +211,9 @@ describe("FE-08 discount invalidation reaches the applied entry", () => {
       await result.current.mutateAsync("d-1");
     });
 
-    expect(
-      client.getQueryState(m.DISCOUNT_KEYS.applied()).isInvalidated,
-    ).toBe(true);
+    expect(client.getQueryState(m.DISCOUNT_KEYS.applied()).isInvalidated).toBe(
+      true,
+    );
     expect(client.getQueryState(m.DISCOUNT_KEYS.list({})).isInvalidated).toBe(
       true,
     );
@@ -233,7 +234,11 @@ describe("FE-08 newsletter admin hooks", () => {
       defaultOptions: { queries: { retry: false } },
     });
     const wrapper = ({ children }) =>
-      React.createElement(QueryClientProvider, { client: localClient }, children);
+      React.createElement(
+        QueryClientProvider,
+        { client: localClient },
+        children,
+      );
 
     renderHook(() => m.useNewsletterSubscribers({ page: 1 }), { wrapper });
     renderHook(() => m.useNewsletterStats(), { wrapper });
@@ -243,12 +248,20 @@ describe("FE-08 newsletter admin hooks", () => {
         localClient.getQueryState(m.NEWSLETTER_KEYS.subscribers({ page: 1 }))
           ?.status,
       ).toBe("success");
-      expect(
-        localClient.getQueryState(m.NEWSLETTER_KEYS.stats())?.status,
-      ).toBe("success");
+      expect(localClient.getQueryState(m.NEWSLETTER_KEYS.stats())?.status).toBe(
+        "success",
+      );
     });
-    const keys = localClient.getQueryCache().getAll().map((q) => q.queryKey);
-    expect(keys).toContainEqual(["newsletter", "admin-a", "subscribers", { page: 1 }]);
+    const keys = localClient
+      .getQueryCache()
+      .getAll()
+      .map((q) => q.queryKey);
+    expect(keys).toContainEqual([
+      "newsletter",
+      "admin-a",
+      "subscribers",
+      { page: 1 },
+    ]);
     expect(keys).toContainEqual(["newsletter", "admin-a", "stats"]);
   });
 });
