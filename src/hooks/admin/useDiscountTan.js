@@ -2,12 +2,6 @@ import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import discountApi from "../../api/discountApi";
 import { scopedAdminKey, adminScope } from "../../lib/adminScope";
 
-// FE-08: keys are scoped to the signed-in user's id (read at call
-// time). `applied` previously was ["discount", "applied"] — disjoint
-// from the ["discounts"] CRUD keys, so discount create/update/delete
-// invalidations never reached it and a deleted discount could display
-// as applied for the rest of the session. It now lives under the same
-// scoped ["discounts", <id>] prefix the CRUD mutations invalidate.
 export const DISCOUNT_KEYS = {
   all: () => scopedAdminKey("discounts"),
   list: (params) => [...DISCOUNT_KEYS.all(), "list", params],
@@ -15,13 +9,6 @@ export const DISCOUNT_KEYS = {
   applied: () => [...DISCOUNT_KEYS.all(), "applied"],
   validate: (code) => ["discounts", adminScope(), "validate", code],
 };
-// FE-55: mutations invalidate the narrowest keys that changed —
-// the list prefix plus the specific detail/applied keys — never
-// DISCOUNT_KEYS.all(), whose prefix also matched every other
-// discount's detail and every validate(code) entry. `applied` IS
-// kept for update/delete: it lives under the discounts domain
-// (FE-08) and an edited/deleted discount must not keep displaying
-// as applied with stale terms.
 const discountListKey = () => [...DISCOUNT_KEYS.all(), "list"];
 
 export const useDiscounts = (params = {}) => {
@@ -75,7 +62,6 @@ export const useDeleteDiscount = () => {
     mutationFn: (id) => discountApi.delete(id),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: discountListKey() });
-      // FE-08: the applied entry must not outlive its discount.
       queryClient.invalidateQueries({ queryKey: DISCOUNT_KEYS.applied() });
     },
   });

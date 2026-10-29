@@ -60,15 +60,13 @@ export default function ProfilePage() {
         <div className="w-full h-full">
           <div className="flex flex-col lg:flex-row items-stretch gap-6 h-full">
             {/* Left Column: Sidebar Card — truly pinned, no sticky, no scroll */}
-            <aside className="w-full lg:w-[320px] xl:w-[380px] shrink-0 bg-white h-full overflow-hidden flex flex-col p-6 lg:p-8 space-y-8">
+            <aside className="w-full lg:w-[320px] xl:w-95 shrink-0 bg-white h-full overflow-hidden flex flex-col p-6 lg:p-8 space-y-8">
               {/* Account Summary */}
               <div>
                 <h3 className="text-[15px] font-medium text-[#1A1714]/30 mb-4">
                   Aura Interiors Account
                 </h3>
                 <div className="flex items-center gap-3.5">
-                  {/* FE-06: real avatar img or local initials
-                      (UserAvatar) inside the same 48px circle. */}
                   <div className="w-12 h-12 rounded-full overflow-hidden flex items-center justify-center shadow-sm shrink-0">
                     <UserAvatar
                       user={user}
@@ -101,11 +99,10 @@ export default function ProfilePage() {
                       <button
                         key={item.id}
                         onClick={() => setActiveTab(item.id)}
-                        className={`flex items-center text-[16px] transition-all duration-200 text-left tracking-tight px-4 py-3 rounded-lg w-full font-medium ${
-                          isActive
-                            ? "bg-[#FFF8F2] text-[#F27318] font-bold border-l-4 border-[#F27318]"
+                        className={`flex items-center text-[16px] transition-all duration-200 text-left tracking-tight px-4 py-3 rounded-lg w-full font-medium ${isActive
+                            ? "bg-[#FFF8F2] text-brand font-bold border-l-4 border-brand"
                             : "text-[#1A1714]/60 hover:text-[#1A1714] hover:bg-neutral-50"
-                        }`}
+                          }`}
                       >
                         {item.label}
                       </button>
@@ -128,16 +125,15 @@ export default function ProfilePage() {
             {/* Right Column: Content Panel — fills remaining height exactly, scrolls internally only if needed */}
             <div className="flex-1 w-full bg-white p-6 lg:p-8 flex flex-col h-full overflow-y-auto">
               {/* Mobile Navigation - Simple Text Scroller */}
-              <div className="lg:hidden flex items-center gap-6 overflow-x-auto no-scrollbar pb-4 mb-8 border-b border-black/[0.03] shrink-0">
+              <div className="lg:hidden flex items-center gap-6 overflow-x-auto no-scrollbar pb-4 mb-8 border-b border-black/3 shrink-0">
                 {navItems.map((item) => (
                   <button
                     key={item.id}
                     onClick={() => setActiveTab(item.id)}
-                    className={`text-[14px] whitespace-nowrap font-bold transition-all ${
-                      activeTab === item.id
-                        ? "text-[#F27318] border-b-2 border-[#F27318] pb-1"
+                    className={`text-[14px] whitespace-nowrap font-bold transition-all ${activeTab === item.id
+                        ? "text-brand border-b-2 border-brand pb-1"
                         : "text-black/40"
-                    }`}
+                      }`}
                   >
                     {item.label}
                   </button>

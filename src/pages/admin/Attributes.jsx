@@ -12,16 +12,6 @@ import {
 } from "../../hooks/catalog/useCatalogTan";
 import formatError from "../../utils/errorHandler";
 
-// Phase 6 (catalog) — attribute definition manager.
-//
-// Definitions drive the dynamic product form, the facet engine and
-// the variant axes. The server owns the guards and this page
-// surfaces them honestly: the key is immutable, a type/storage
-// change is rejected while products carry values (the 400 is shown
-// verbatim), delete is a soft deactivate by default and the
-// permanent (hard) delete is refused while anything references the
-// key — again with the server's message, never a fake success.
-
 const ATTRIBUTE_TYPES = [
   "string",
   "enum",
@@ -373,11 +363,10 @@ export default function Attributes() {
                 </p>
               </div>
               <span
-                className={`inline-flex items-center px-2.5 py-1 rounded-full text-[11px] font-semibold shrink-0 ${
-                  definition.active !== false
-                    ? "bg-emerald-50 text-emerald-700"
-                    : "bg-slate-100 text-slate-600"
-                }`}
+                className={`inline-flex items-center px-2.5 py-1 rounded-full text-[11px] font-semibold shrink-0 ${definition.active !== false
+                  ? "bg-emerald-50 text-emerald-700"
+                  : "bg-slate-100 text-slate-600"
+                  }`}
               >
                 {definition.active !== false ? "Active" : "Inactive"}
               </span>

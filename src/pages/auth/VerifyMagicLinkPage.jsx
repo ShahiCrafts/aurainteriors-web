@@ -6,7 +6,6 @@ import useAuthStore, { getAuthRevision } from "../../store/authStore";
 import { useShallow } from "zustand/react/shallow";
 import { toast } from "../../lib/toast";
 
-// Module-level set to prevent double-firing in React 18 StrictMode
 const processedTokens = new Set();
 
 export default function VerifyMagicLinkPage() {
@@ -30,9 +29,6 @@ export default function VerifyMagicLinkPage() {
     processedTokens.add(token);
 
     const verify = async () => {
-      // FE-18: this completion is not cancelled by unmount; if a
-      // sign-out intervened while verification was in flight, do not
-      // resurrect a session — land on home as a guest instead.
       const revisionAtStart = getAuthRevision();
       try {
         const response = await verifyMagicLinkApi(token);

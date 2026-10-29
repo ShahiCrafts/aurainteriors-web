@@ -1,7 +1,7 @@
 import { useState, useLayoutEffect } from "react";
 import { motion, AnimatePresence, useReducedMotion } from "framer-motion";
 import { X, Mail, ArrowLeft, User, CheckSquare } from "lucide-react";
-import { FcGoogle } from "react-icons/fc";
+import GoogleIcon from "../common/GoogleIcon";
 import { API_V1_URL } from "../../config/constants";
 import { useSendMagicLink } from "../../hooks/auth/useMagicLinkTan";
 import { useUpdateProfile } from "../../hooks/profile/useProfileTan";
@@ -10,6 +10,7 @@ import { useShallow } from "zustand/react/shallow";
 import { toast } from "../../lib/toast";
 import formatError from "../../utils/errorHandler";
 import Dialog from "../common/Dialog";
+import authPremiumInteriors from "../../assets/images/auth/auth-premium-interiors.webp";
 
 const ORANGE = "#F27318";
 
@@ -167,8 +168,12 @@ export default function AuthModal() {
               {/* Left Side: Premium Visuals */}
               <div className="hidden md:flex w-1/2 relative bg-[#1A1714]">
                 <img
-                  src="https://images.unsplash.com/photo-1556228453-efd6c1ff04f6?q=80&w=2070&auto=format&fit=crop"
+                  src={authPremiumInteriors}
                   alt="Premium Interiors"
+                  width={1200}
+                  height={800}
+                  loading="lazy"
+                  decoding="async"
                   className="absolute inset-0 w-full h-full object-cover transition-transform duration-700 hover:scale-105"
                 />
               </div>
@@ -249,7 +254,7 @@ export default function AuthModal() {
                             type="button"
                             className="w-full h-[46px] bg-white border border-[#E2E8F0] hover:bg-gray-50 rounded-lg flex items-center justify-center gap-3 transition-all duration-200 font-semibold text-[#1A1714] cursor-pointer shadow-sm"
                           >
-                            <FcGoogle size={20} />
+                            <GoogleIcon size={20} />
                             <span className="text-[14px]">
                               Continue with Google
                             </span>

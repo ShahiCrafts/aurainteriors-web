@@ -6,9 +6,9 @@ import React, {
   useMemo,
 } from "react";
 import { createARView } from "capacitor-arcore";
-import { IoClose, IoInformationCircle, IoCamera } from "react-icons/io5";
-import { MdOutlineViewInAr } from "react-icons/md";
-import { HiOutlineCube } from "react-icons/hi2";
+import { X, Info, Camera, Scan } from "lucide-react";
+
+
 
 import {
   FilterModal,
@@ -589,7 +589,7 @@ const NativeARView = ({
       <div className="fixed inset-0 flex flex-col items-center justify-center gap-8 bg-black">
         <div className="w-full max-w-sm p-8 bg-zinc-900 border border-zinc-800 rounded-3xl text-center space-y-4">
           <div className="w-16 h-16 rounded-full bg-zinc-800 relative overflow-hidden shimmer-element mx-auto flex items-center justify-center">
-            <MdOutlineViewInAr size={28} className="text-teal-500" />
+            <Scan size={28} className="text-teal-500" />
           </div>
           <div className="w-3/4 h-5 rounded bg-zinc-800 relative overflow-hidden shimmer-element mx-auto" />
           <div className="w-1/2 h-3 rounded bg-zinc-800 relative overflow-hidden shimmer-element mx-auto" />
@@ -605,7 +605,7 @@ const NativeARView = ({
     return (
       <div className="fixed inset-0 flex flex-col items-center justify-center gap-6 bg-white text-center p-8">
         <div className="w-24 h-24 border border-gray-200 rounded-full flex items-center justify-center">
-          <MdOutlineViewInAr size={40} className="text-gray-400" />
+          <Scan size={40} className="text-gray-400" />
         </div>
         <div>
           <h2
@@ -639,7 +639,7 @@ const NativeARView = ({
     return (
       <div className="fixed inset-0 flex flex-col items-center justify-center gap-6 bg-white text-center p-8">
         <div className="w-24 h-24 border border-gray-200 rounded-full flex items-center justify-center">
-          <MdOutlineViewInAr size={40} className="text-gray-400" />
+          <Scan size={40} className="text-gray-400" />
         </div>
         <div>
           <h2
@@ -674,7 +674,7 @@ const NativeARView = ({
         <div className="absolute inset-0 bg-black flex items-center justify-center p-6">
           <div className="bg-zinc-900 rounded-2xl p-6 max-w-sm w-full border border-zinc-800">
             <div className="flex items-center justify-center w-16 h-16 bg-teal-600/20 rounded-full mx-auto mb-4">
-              <IoCamera size={32} className="text-teal-500" />
+              <Camera size={32} className="text-teal-500" />
             </div>
             <h3 className="text-white text-lg font-semibold text-center mb-2">
               Camera Access Required
@@ -730,7 +730,7 @@ const NativeARView = ({
             aria-label="Close AR view"
             className="w-11 h-11 rounded-full bg-black/40 backdrop-blur-xl text-white flex items-center justify-center active:scale-95 transition-all"
           >
-            <IoClose size={22} />
+            <X size={22} />
           </button>
 
           <div className="flex items-center gap-2 px-4 py-2.5 bg-black/40 backdrop-blur-xl rounded-full">
@@ -743,7 +743,7 @@ const NativeARView = ({
             aria-label="Gesture guide"
             className="w-11 h-11 rounded-full bg-black/40 backdrop-blur-xl text-white flex items-center justify-center active:scale-95 transition-all"
           >
-            <IoInformationCircle size={22} />
+            <Info size={22} />
           </button>
         </div>
 
@@ -829,7 +829,7 @@ const NativeARView = ({
           >
             <div className="w-full max-w-sm rounded-3xl border border-white/10 bg-zinc-950/95 p-6 text-center shadow-2xl">
               <div className="mx-auto mb-4 flex h-12 w-12 items-center justify-center rounded-2xl bg-teal-400/10 text-teal-300">
-                <MdOutlineViewInAr size={24} />
+                <Scan size={24} />
               </div>
               <h3 className="text-lg font-semibold text-white">
                 Resume AR view
@@ -859,7 +859,7 @@ const NativeARView = ({
               aria-label="Dismiss error"
               className="w-6 h-6 bg-white/20 rounded-full flex items-center justify-center active:scale-90 transition-all hover:bg-white/30"
             >
-              <IoClose size={14} />
+              <X size={14} />
             </button>
           </div>
         )}
@@ -869,14 +869,14 @@ const NativeARView = ({
             data-ui="true"
             className="absolute top-20 left-1/2 -translate-x-1/2 flex items-center gap-3 bg-rose-500/90 backdrop-blur-xl text-white px-5 py-3 rounded-full z-300 animate-[toast-in_0.3s_ease]"
           >
-            <IoCamera size={16} />
+            <Camera size={16} />
             <span className="text-sm font-medium">{screenshotError}</span>
             <button
               onClick={() => setScreenshotError(null)}
               aria-label="Dismiss error"
               className="w-6 h-6 bg-white/20 rounded-full flex items-center justify-center active:scale-90 transition-all"
             >
-              <IoClose size={14} />
+              <X size={14} />
             </button>
           </div>
         )}

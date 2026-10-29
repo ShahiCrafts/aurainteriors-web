@@ -86,7 +86,7 @@ export default function TrackOrderPage() {
           setOrder(null);
           setApiError(
             err.response?.data?.message ||
-              "Order not found. Please check your order ID and email.",
+            "Order not found. Please check your order ID and email.",
           );
         },
       },
@@ -112,10 +112,6 @@ export default function TrackOrderPage() {
     if (order?.deliveredAt) {
       return formatDate(order.deliveredAt);
     }
-    // FE-39: the public tracking view (server FA-45) carries createdAt
-    // as its only order date. Anchor the estimate to createdAt; with no
-    // order date there is no honest estimate, so do not fabricate one
-    // from today.
     if (!order?.createdAt) {
       return "N/A";
     }
@@ -141,7 +137,7 @@ export default function TrackOrderPage() {
           {/* Header */}
           <div className="text-center mb-8">
             <h1 className="text-[32px] md:text-[40px] font-bold text-[#1A1714] tracking-tight mb-2 font-playfair leading-tight">
-              Track Your <span className="italic text-[#F27318]">Order</span>
+              Track Your <span className="italic text-brand">Order</span>
             </h1>
             <p className="text-[16px] text-black/40 font-medium font-dm-sans">
               Enter your order ID and email to track your delivery status
@@ -237,9 +233,8 @@ export default function TrackOrderPage() {
                     </p>
                   </div>
                   <span
-                    className={`px-4 py-2 rounded-full text-sm font-medium border ${
-                      STATUS_COLORS[order.orderStatus]
-                    }`}
+                    className={`px-4 py-2 rounded-full text-sm font-medium border ${STATUS_COLORS[order.orderStatus]
+                      }`}
                   >
                     {STATUS_LABELS[order.orderStatus]}
                   </span>

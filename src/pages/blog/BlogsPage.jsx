@@ -82,17 +82,6 @@ export default function BlogsPage() {
   };
 
   const toggleLiked = (postId) => {
-    // FE-26: the server's like is idempotent per actor (FA-25) and
-    // there is NO unlike endpoint, so local state must reconcile with
-    // the server instead of flipping freely:
-    //  - Already liked: explicit no-op. The old code emptied the heart
-    //    locally while sending nothing, leaving the server count
-    //    incremented next to an unfilled heart until reload.
-    //  - Not liked: optimistic fill, but roll the flip back on error
-    //    (the old code registered no onError, so a failed POST left
-    //    the heart filled although the server never counted it).
-    // The hook's invalidation refetches the list on success, so the
-    // displayed count is the server's.
     if (likedPosts.includes(postId)) {
       return;
     }
@@ -134,7 +123,7 @@ export default function BlogsPage() {
           <div className="max-w-3xl">
             <h1 className="text-3xl sm:text-4xl md:text-5xl font-playfair font-medium text-neutral-900 mb-4">
               Design Inspiration{" "}
-              <span className="italic text-[#F27318]">&amp; Ideas</span>
+              <span className="italic text-brand">&amp; Ideas</span>
             </h1>
             <p className="text-neutral-600 text-base sm:text-lg">
               Explore our collection of articles, tips, and trends to inspire
@@ -154,11 +143,10 @@ export default function BlogsPage() {
                   <button
                     key={category.slug}
                     onClick={() => handleCategoryChange(category.slug)}
-                    className={`px-4 py-2 rounded-full text-sm font-medium transition-all duration-200 whitespace-nowrap ${
-                      activeCategory === category.slug
-                        ? "bg-[#F27318] text-white"
+                    className={`px-4 py-2 rounded-full text-sm font-medium transition-all duration-200 whitespace-nowrap ${activeCategory === category.slug
+                        ? "bg-brand text-white"
                         : "bg-neutral-100 text-neutral-700 hover:bg-neutral-200"
-                    }`}
+                      }`}
                   >
                     {category.name} ({category.count})
                   </button>
@@ -187,7 +175,7 @@ export default function BlogsPage() {
                 placeholder="Search articles..."
                 value={searchInput}
                 onChange={(e) => setSearchInput(e.target.value)}
-                className="w-full pl-10 pr-4 py-2 rounded-full border border-neutral-300 text-sm focus:outline-none focus:border-[#F27318] focus:ring-1 focus:ring-[#F27318] transition-all"
+                className="w-full pl-10 pr-4 py-2 rounded-full border border-neutral-300 text-sm focus:outline-none focus:border-brand focus:ring-1 focus:ring-brand transition-all"
               />
             </form>
           </div>
@@ -279,11 +267,11 @@ export default function BlogsPage() {
                       to={`/blog/${encodeURIComponent(post.slug)}`}
                       className="flex gap-3 group"
                     >
-                      <span className="text-[#F27318] font-semibold text-sm">
+                      <span className="text-brand font-semibold text-sm">
                         0{index + 1}
                       </span>
                       <div className="flex-1">
-                        <h4 className="text-sm font-medium text-neutral-800 group-hover:text-[#F27318] transition-colors line-clamp-2">
+                        <h4 className="text-sm font-medium text-neutral-800 group-hover:text-brand transition-colors line-clamp-2">
                           {post.title}
                         </h4>
                         <p className="text-xs text-neutral-500 mt-1">
@@ -296,7 +284,7 @@ export default function BlogsPage() {
               </div>
 
               {/* Newsletter */}
-              <div className="bg-[#F27318] rounded-2xl p-6 text-white">
+              <div className="bg-brand rounded-2xl p-6 text-white">
                 <h3 className="text-lg font-semibold mb-2 font-playfair">
                   Join Our Newsletter
                 </h3>
@@ -315,7 +303,7 @@ export default function BlogsPage() {
                   <button
                     type="submit"
                     disabled={isSubscribing}
-                    className="w-full py-2.5 rounded-lg bg-white text-[#F27318] font-semibold text-sm hover:bg-orange-50 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+                    className="w-full py-2.5 rounded-lg bg-white text-brand font-semibold text-sm hover:bg-orange-50 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
                   >
                     {isSubscribing ? "Subscribing..." : "Subscribe"}
                   </button>
@@ -378,7 +366,7 @@ function BlogCard({
       <div className="flex-1 flex flex-col justify-center py-1">
         {/* Meta */}
         <div className="flex items-center gap-3 mb-3">
-          <span className="px-3 py-1 bg-[#F27318] text-white text-xs font-semibold rounded-full uppercase tracking-wide">
+          <span className="px-3 py-1 bg-brand text-white text-xs font-semibold rounded-full uppercase tracking-wide">
             {post.categoryName || post.category}
           </span>
           <span className="flex items-center gap-1 text-neutral-500 text-sm">
@@ -397,7 +385,7 @@ function BlogCard({
 
         {/* Title */}
         <Link to={`/blog/${encodeURIComponent(post.slug)}`}>
-          <h2 className="text-lg sm:text-xl font-semibold text-neutral-900 mb-2 group-hover:text-[#F27318] transition-colors line-clamp-2 font-playfair">
+          <h2 className="text-lg sm:text-xl font-semibold text-neutral-900 mb-2 group-hover:text-brand transition-colors line-clamp-2 font-playfair">
             {post.title}
           </h2>
         </Link>
@@ -443,7 +431,7 @@ function BlogCard({
             </button>
             <Link
               to={`/blog/${encodeURIComponent(post.slug)}`}
-              className="flex items-center gap-1 text-[#F27318] font-medium text-sm hover:gap-2 transition-all"
+              className="flex items-center gap-1 text-brand font-medium text-sm hover:gap-2 transition-all"
             >
               Read More
               <ArrowRight size={16} />

@@ -20,11 +20,7 @@
       "headers": [
         {
           "key": "Content-Security-Policy",
-          "value": "default-src 'self'; script-src 'self'; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src 'self' data: https://fonts.gstatic.com; img-src 'self' data: blob: https:; connect-src 'self' https: wss:; media-src 'self' blob: https:; worker-src 'self' blob:; frame-src 'self' https:; object-src 'none'; base-uri 'self'; frame-ancestors 'none'; form-action 'self' https://*.esewa.com.np"
-        },
-        {
-          "key": "Content-Security-Policy-Report-Only",
-          "value": "default-src 'self'; script-src 'self'; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src 'self' https://fonts.gstatic.com; img-src 'self' data: blob: https://res.cloudinary.com https://images.unsplash.com https://plus.unsplash.com https://api.dicebear.com https://upload.wikimedia.org https://cdn.brandfetch.io https://developer.apple.com https://khaltibyime.khalti.com https://img.favpng.com; media-src 'self' blob: https://res.cloudinary.com; connect-src 'self' https://api.aurainteriors.live wss://api.aurainteriors.live https://fabritor.s3.ap-southeast-1.amazonaws.com; worker-src 'self' blob:; object-src 'none'; base-uri 'self'; form-action 'self' https://*.esewa.com.np; frame-ancestors 'none'"
+          "value": "default-src 'self'; script-src 'self'; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src 'self' data: https://fonts.gstatic.com; img-src 'self' data: blob: https://res.cloudinary.com https://*.amazonaws.com https://api.dicebear.com https://upload.wikimedia.org https://cdn.brandfetch.io https://developer.apple.com https://khaltibyime.khalti.com https://img.favpng.com; connect-src 'self' https://api.aurainteriors.live wss://api.aurainteriors.live https://res.cloudinary.com https://*.amazonaws.com; media-src 'self' blob: https://res.cloudinary.com https://*.amazonaws.com; worker-src 'self' blob:; frame-src 'self'; object-src 'none'; base-uri 'self'; frame-ancestors 'none'; form-action 'self' https://*.esewa.com.np"
         },
         {
           "key": "Permissions-Policy",
@@ -41,6 +37,10 @@
         {
           "key": "Referrer-Policy",
           "value": "strict-origin-when-cross-origin"
+        },
+        {
+          "key": "Strict-Transport-Security",
+          "value": "max-age=31536000; includeSubDomains"
         }
       ]
     }

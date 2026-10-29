@@ -43,11 +43,10 @@ function ProductCardThumb({ product, selected = false, onSelect }) {
       className="group shrink-0 w-20 snap-start flex flex-col items-center p-2 rounded-2xl transition-all hover:bg-white/10"
     >
       <div
-        className={`relative w-16 h-16 rounded-xl overflow-hidden transition-all ${
-          selected
-            ? "ring-2 ring-teal-400 ring-offset-2 ring-offset-black/70"
-            : "border border-white/20 group-hover:border-teal-400/50"
-        }`}
+        className={`relative w-16 h-16 rounded-xl overflow-hidden transition-all ${selected
+          ? "ring-2 ring-teal-400 ring-offset-2 ring-offset-black/70"
+          : "border border-white/20 group-hover:border-teal-400/50"
+          }`}
       >
         {imageUrl ? (
           <ImageWithFallback
@@ -75,9 +74,8 @@ function ProductCardThumb({ product, selected = false, onSelect }) {
         {product.name}
       </span>
       <span
-        className={`text-[10px] font-semibold ${
-          selected ? "text-teal-400" : "text-white/50"
-        }`}
+        className={`text-[10px] font-semibold ${selected ? "text-teal-400" : "text-white/50"
+          }`}
       >
         {formatNPR(product.price)}
       </span>
@@ -254,9 +252,9 @@ function ProductCardMain({
   const badge =
     !isVariantProduct && discountPercentage > 0
       ? {
-          label: `${discountPercentage}% OFF`,
-          className: "bg-[#FDE8E8] text-[#D92D20]",
-        }
+        label: `${discountPercentage}% OFF`,
+        className: "bg-[#FDE8E8] text-[#D92D20]",
+      }
       : product.isNewArrival
         ? { label: "New Arrival", className: "bg-[#DFF5E5] text-[#157347]" }
         : product.isFeatured
@@ -359,11 +357,10 @@ function ProductCardMain({
             <button
               onClick={handleWishlistToggle}
               disabled={isWishlistLoading}
-              className={`absolute top-2 right-2 sm:top-2.5 sm:right-2.5 w-7 h-7 sm:w-8 sm:h-8 rounded-full flex items-center justify-center transition-all duration-300 shadow-sm backdrop-blur-sm z-10 ${
-                isInWishlist
-                  ? "bg-brand text-white"
-                  : "bg-white/90 text-black/40 hover:text-red-500"
-              }`}
+              className={`absolute top-2 right-2 sm:top-2.5 sm:right-2.5 w-7 h-7 sm:w-8 sm:h-8 rounded-full flex items-center justify-center transition-all duration-300 shadow-sm backdrop-blur-sm z-10 ${isInWishlist
+                ? "bg-brand text-white"
+                : "bg-white/90 text-black/40 hover:text-red-500"
+                }`}
             >
               <Heart
                 size={14}
@@ -469,11 +466,10 @@ function ProductCardMain({
                   ? `Remove ${name} from wishlist`
                   : `Add ${name} to wishlist`
               }
-              className={`absolute right-3 top-3 z-20 flex h-9 w-9 items-center justify-center rounded-full shadow-sm backdrop-blur-sm transition-all duration-300 ${
-                isInWishlist
-                  ? "bg-brand text-white"
-                  : "bg-white/95 text-black/50 hover:text-red-500"
-              }`}
+              className={`absolute right-3 top-3 z-20 flex h-9 w-9 items-center justify-center rounded-full shadow-sm backdrop-blur-sm transition-all duration-300 ${isInWishlist
+                ? "bg-brand text-white"
+                : "bg-white/95 text-black/50 hover:text-red-500"
+                }`}
             >
               <Heart size={16} className={isInWishlist ? "fill-white" : ""} />
             </button>
@@ -535,7 +531,7 @@ function ProductCardMain({
                     key={dot.name}
                     data-card-color={dot.name}
                     title={dot.name}
-                    className="h-[18px] w-[18px] shrink-0 rounded-full border border-black/10"
+                    className="h-4.5 w-4.5 shrink-0 rounded-full border border-black/10"
                     style={{ backgroundColor: dot.hex }}
                   />
                 ))}

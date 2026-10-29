@@ -58,10 +58,6 @@ export default function OrderConfirmationPage() {
     });
   };
 
-  // Calculate estimated delivery (10 days from the order date). The
-  // public tracking view returns createdAt, never orderedAt (server
-  // FA-45); with no createdAt there is no honest estimate — never
-  // anchor to today.
   const getEstimatedDelivery = () => {
     if (!order?.createdAt) return "N/A";
     const deliveryDate = new Date(order.createdAt);
@@ -75,9 +71,6 @@ export default function OrderConfirmationPage() {
 
   const orderDate = formatDate(order?.createdAt);
   const estimatedDelivery = getEstimatedDelivery();
-  // The tracking view carries no guestInfo, shippingAddress or user
-  // object — the only identity this page truly has is the email the
-  // customer tracked with (query param), and no name at all.
   const customerEmail = email || "your email address";
   const customerName = "Guest Customer";
   const invoiceNo = orderId
@@ -91,20 +84,19 @@ export default function OrderConfirmationPage() {
         <div className="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 py-16 font-dm-sans">
           {/* Seal + Heading */}
           <div
-            className={`flex flex-col items-center text-center mb-14 transition-all duration-700 ease-out ${
-              mounted ? "opacity-100 translate-y-0" : "opacity-0 translate-y-3"
-            }`}
+            className={`flex flex-col items-center text-center mb-14 transition-all duration-700 ease-out ${mounted ? "opacity-100 translate-y-0" : "opacity-0 translate-y-3"
+              }`}
           >
             <div className="relative mb-6">
-              <span className="absolute inset-0 rounded-full bg-[#F27318]/15 animate-ping-slow" />
-              <div className="relative w-16 h-16 rounded-full bg-[#F27318] flex items-center justify-center">
+              <span className="absolute inset-0 rounded-full bg-brand/15 animate-ping-slow" />
+              <div className="relative w-16 h-16 rounded-full bg-brand flex items-center justify-center">
                 <Check size={30} strokeWidth={3} className="text-white" />
               </div>
             </div>
 
             <h1 className="text-[32px] md:text-[44px] font-bold text-[#1A1714] tracking-tight leading-tight">
               Thank you for your{" "}
-              <span className="text-[#F27318]">purchase!</span>
+              <span className="text-brand">purchase!</span>
             </h1>
 
             <p className="text-[15px] text-neutral-500 max-w-md mt-3 leading-relaxed">
@@ -126,11 +118,11 @@ export default function OrderConfirmationPage() {
                     <div className="flex justify-between items-start gap-4">
                       <div className="flex flex-col gap-1.5">
                         <img
-                          src="/logo.png"
+                          src="/logo-aura-interiors.webp"
                           alt="AuraInteriors Logo"
                           className="h-6 w-auto object-contain self-start"
                         />
-                        <p className="text-[15px] text-neutral-700 leading-relaxed max-w-[220px]">
+                        <p className="text-[15px] text-neutral-700 leading-relaxed max-w-55">
                           Aura Interiors Pvt. Ltd.
                           <br />
                           Lalitpur 44600, Nepal
@@ -139,11 +131,10 @@ export default function OrderConfirmationPage() {
 
                       <div className="text-right shrink-0">
                         <span
-                          className={`inline-block text-[12px] font-bold px-2.5 py-1 rounded-md uppercase tracking-wider border mb-2 ${
-                            order.paymentMethod === "esewa"
-                              ? "bg-emerald-50 text-emerald-700 border-emerald-100"
-                              : "bg-amber-50 text-amber-700 border-amber-100"
-                          }`}
+                          className={`inline-block text-[12px] font-bold px-2.5 py-1 rounded-md uppercase tracking-wider border mb-2 ${order.paymentMethod === "esewa"
+                            ? "bg-emerald-50 text-emerald-700 border-emerald-100"
+                            : "bg-amber-50 text-amber-700 border-amber-100"
+                            }`}
                         >
                           {order.paymentMethod === "esewa"
                             ? "Paid"
@@ -162,12 +153,12 @@ export default function OrderConfirmationPage() {
 
                     {/* Perforation notches sit exactly on the dashed border */}
                     {/* Left notch: half-circle facing inward, masking the left border */}
-                    <div className="absolute -left-[2px] bottom-0 translate-y-1/2 w-[14px] h-[24px] overflow-hidden pointer-events-none">
-                      <div className="w-[24px] h-[24px] -ml-[10px] rounded-full border border-neutral-200 bg-white" />
+                    <div className="absolute -left-0.5 bottom-0 translate-y-1/2 w-3.5 h-6 overflow-hidden pointer-events-none">
+                      <div className="w-6 h-6 -ml-2.5 rounded-full border border-neutral-200 bg-white" />
                     </div>
                     {/* Right notch: half-circle facing inward, masking the right border */}
-                    <div className="absolute -right-[2px] bottom-0 translate-y-1/2 w-[14px] h-[24px] overflow-hidden pointer-events-none">
-                      <div className="w-[24px] h-[24px] rounded-full border border-neutral-200 bg-white" />
+                    <div className="absolute -right-0.5 bottom-0 translate-y-1/2 w-3.5 h-6 overflow-hidden pointer-events-none">
+                      <div className="w-6 h-6 rounded-full border border-neutral-200 bg-white" />
                     </div>
                   </div>
 
@@ -267,11 +258,10 @@ export default function OrderConfirmationPage() {
                       <div className="flex justify-between items-center text-neutral-500">
                         <span>Shipping</span>
                         <span
-                          className={`font-semibold font-mono tabular-nums ${
-                            order.shippingCost === 0
-                              ? "text-emerald-600"
-                              : "text-[#1A1714]"
-                          }`}
+                          className={`font-semibold font-mono tabular-nums ${order.shippingCost === 0
+                            ? "text-emerald-600"
+                            : "text-[#1A1714]"
+                            }`}
                         >
                           {order.shippingCost === 0
                             ? "Free"
@@ -296,7 +286,7 @@ export default function OrderConfirmationPage() {
                           ? "Total Paid"
                           : "Amount Due"}
                       </span>
-                      <span className="text-[#F27318] text-[24px] font-extrabold font-mono tabular-nums">
+                      <span className="text-brand text-6 font-extrabold font-mono tabular-nums">
                         {formatNPR(order.total)}
                       </span>
                     </div>
@@ -321,7 +311,7 @@ export default function OrderConfirmationPage() {
                   <Link
                     to="/profile"
                     state={{ activeTab: "orders", searchQuery: orderId }}
-                    className="inline-flex items-center justify-center gap-2 px-4 h-12 bg-[#F27318] hover:bg-[#cd5704] text-white text-[14px] font-bold rounded-xl transition-all"
+                    className="inline-flex items-center justify-center gap-2 px-4 h-12 bg-brand hover:bg-[#cd5704] text-white text-[14px] font-bold rounded-xl transition-all"
                   >
                     <Package size={16} />
                     Track Your Order
@@ -343,21 +333,21 @@ export default function OrderConfirmationPage() {
                 <div className="flex flex-col gap-3 text-[13px] font-semibold">
                   <a
                     href="/contact"
-                    className="inline-flex items-center gap-2 text-neutral-600 hover:text-[#F27318] transition-colors"
+                    className="inline-flex items-center gap-2 text-neutral-600 hover:text-brand transition-colors"
                   >
                     <MessageSquare size={14} />
                     Contact Support
                   </a>
                   <a
                     href="/faq"
-                    className="inline-flex items-center gap-2 text-neutral-600 hover:text-[#F27318] transition-colors"
+                    className="inline-flex items-center gap-2 text-neutral-600 hover:text-brand transition-colors"
                   >
                     <HelpCircle size={14} />
                     FAQs
                   </a>
                   <a
                     href="mailto:support@aurainteriors.live"
-                    className="inline-flex items-center gap-2 text-neutral-600 hover:text-[#F27318] transition-colors"
+                    className="inline-flex items-center gap-2 text-neutral-600 hover:text-brand transition-colors"
                   >
                     <Mail size={14} />
                     Email Us

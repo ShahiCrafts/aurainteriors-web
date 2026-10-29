@@ -12,6 +12,7 @@ import useAuthStore from "../../store/authStore";
 import { useShallow } from "zustand/react/shallow";
 import useGuestCartStore from "../../store/guestCartStore";
 import { hasArModel, isIntroProduct } from "../../utils/arProducts";
+import productArSofaLifestyle from "../../assets/images/products/product-ar-sofa-lifestyle.webp";
 
 const INTRO_PRODUCT = {
   _id: "intro",
@@ -30,7 +31,7 @@ const INTRO_PRODUCT = {
     "https://fabritor.s3.ap-southeast-1.amazonaws.com/models/sofa_chair.glb",
   images: [
     {
-      url: "https://images.unsplash.com/photo-1567016376408-0226e4d0c1ea?w=800",
+      url: productArSofaLifestyle,
     },
   ],
 };
@@ -55,11 +56,6 @@ export default function ARViewPage() {
     enabled: productSlug !== "intro",
   });
 
-  // FE-30: the picker catalog (page-walking, see useArCatalogProducts)
-  // and the category tree stream in behind the AR experience. They
-  // used to be part of isLoading, so AR blocked on a limit:100
-  // catalog fetch plus the full category tree even though only the
-  // linked product is needed to start.
   const { data: catalogData } = useArCatalogProducts();
   const { data: categoriesData } = useCategories();
 
@@ -67,7 +63,6 @@ export default function ARViewPage() {
     productSlug === "intro" ? INTRO_PRODUCT : productData?.data?.product;
   const categories = categoriesData?.data?.categories || [];
 
-  // Filter products for AR compatibility and include intro if needed
   const arProducts = useMemo(
     () =>
       (catalogData?.data?.products || []).filter(
@@ -76,10 +71,7 @@ export default function ARViewPage() {
     [catalogData, productSlug],
   );
 
-  // Combine selected product with others for the catalog
   const fullProducts = product ? [product, ...arProducts] : arProducts;
-
-  // FE-30: only the selected product blocks rendering.
   const isLoading = productSlug !== "intro" && productLoading;
 
   const { mutate: addToCart, isPending: isAddingToCart } = useAddToCart();
@@ -104,12 +96,8 @@ export default function ARViewPage() {
   };
 
   const handleAddToCart = (p) => {
-    // FE-30: the synthetic intro product is not purchasable, and a
-    // rapid double-tap must submit at most one mutation.
     if (!p || isIntroProduct(p)) return;
     if (addInFlightRef.current || isAddingToCart) return;
-    // FE-30: guests use the guest cart (the same path the product
-    // page offers) instead of being silently bounced to /shop.
     if (!isAuthenticated) {
       addGuestItem(p, 1);
       return;

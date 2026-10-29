@@ -22,12 +22,13 @@ jobs:
       # do not deploy, and this is not a credential.
       VITE_API_BASE_URL: http://localhost:3001
     steps:
-      - uses: actions/checkout@v4
-      - uses: actions/setup-node@v4
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
+      - uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 # v4
         with:
           node-version: 24
           cache: npm
       - run: npm ci
+      - run: node scripts/check-dependency-sources.mjs
       - run: npm run lint
       - run: npm test
       - run: npm run build:customer
@@ -54,11 +55,12 @@ jobs:
   #     scanner's table (which lists every finding) is in the log.
   #   * CLEAN — the scanner ran and exited 0.
   #
-  # EXPECTED STATE (honest, as of Phase 5, 2026-10-24): this job will
-  # report FINDINGS-PRESENT. A local v2.0.3 run against the committed
-  # lockfile found exactly 3 rows: xlsx 0.20.3 × 2 advisories
-  # (GHSA-4r6h-8v6p-xvw6, GHSA-5pgg-2g8v-p4x9 — owner decision OD-6, no
-  # fixed release exists) and zod 4.1.13 (dev) × 1 (GHSA-mrhx-c7xc-m3w5).
+  # EXPECTED STATE (updated by the SEC-003 remediation): the former
+  # xlsx 0.20.3 × 2 advisory rows (GHSA-4r6h-8v6p-xvw6,
+  # GHSA-5pgg-2g8v-p4x9) are GONE — xlsx was replaced by exceljs and
+  # removed from the lockfile. The last local v2.0.3 scan before that
+  # change also reported zod 4.1.13 (dev) × 1 (GHSA-mrhx-c7xc-m3w5);
+  # whether any rows remain is for the next real scan to say.
   # Those rows are NOT suppressed, allowlisted, or ignored anywhere in
   # this workflow; the job stays red on them until OD-6 is decided and
   # the lockfile actually changes. See
@@ -67,7 +69,7 @@ jobs:
     name: Dependency scan (osv-scanner, pinned v2.0.3)
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
       - name: Download, verify and run osv-scanner v2.0.3 on package-lock.json
         shell: bash
         run: |
@@ -121,7 +123,7 @@ jobs:
           echo "=============================================================="
           echo "OSV RESULT: FINDINGS-PRESENT (scanner exit ${SCAN_RC})"
           echo "The scanner's table above lists every finding. Known rows"
-          echo "at Phase 5: xlsx x2 (OD-6) and zod (dev) x1 — see the job"
+          echo "xlsx was removed by the SEC-003 remediation; see the job"
           echo "comment in .github/workflows/ci.yml. Nothing is allowlisted."
           echo "=============================================================="
           echo "::error title=OSV-SCANNER FINDINGS::osv-scanner ${OSV_VERSION} reported vulnerabilities in package-lock.json (exit ${SCAN_RC}); see the scanner table above for the full list."

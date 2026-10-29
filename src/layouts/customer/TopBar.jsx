@@ -47,11 +47,11 @@ export default function TopBar() {
     : "Kathmandu 44600";
 
   return (
-    <div className="hidden md:flex bg-[#f6f6f6] px-4 md:px-6 lg:px-8 h-10 md:h-11 items-center justify-between font-dm-sans">
-      <div className="flex items-center gap-3 lg:gap-[18px]">
+    <div className="hidden md:flex bg-gray-100 px-4 md:px-6 lg:px-8 h-10 md:h-11 items-center justify-between font-dm-sans">
+      <div className="flex items-center gap-3 lg:gap-4.5">
         <div
           onClick={handleAddressClick}
-          className="flex items-center gap-1 sm:gap-[5px] text-xs sm:text-sm text-[#5A5248] cursor-pointer shrink-0"
+          className="flex items-center gap-1 sm:gap-1.25 text-xs sm:text-sm text-[#5A5248] cursor-pointer shrink-0"
         >
           <MapPin size={14} color={G} className="shrink-0" />
           <span className="hidden sm:inline">Deliver to</span>
@@ -59,16 +59,16 @@ export default function TopBar() {
             {addressText}
           </span>
         </div>
-        <div className="hidden lg:block w-px h-[18px] bg-[#DDDBD8]" />
+        <div className="hidden lg:block w-px h-4.5 bg-gray-300" />
         <div className="hidden lg:flex items-center gap-3.5">
           {topOffers.map((o, i) => (
             <div key={i} className="flex items-center gap-3.5">
-              <div className="flex items-center gap-[5px] text-[13px] text-[#5A5248] whitespace-nowrap">
+              <div className="flex items-center gap-1.25 text-[13px] text-[#5A5248] whitespace-nowrap">
                 <span className="text-brand shrink-0">{o.icon}</span>
                 <span>{o.text}</span>
               </div>
               {i < topOffers.length - 1 && (
-                <div className="w-px h-3.5 bg-[#DDDBD8]" />
+                <div className="w-px h-3.5 bg-gray-300" />
               )}
             </div>
           ))}
@@ -78,9 +78,9 @@ export default function TopBar() {
         {topLinks.map((l, i) => (
           <div key={l.label} className="flex items-center gap-1 sm:gap-0.5">
             {i > 0 && (
-              <div className="hidden sm:block w-px h-3.5 md:h-[18px] bg-[#DDDBD8] mx-1 sm:mx-0" />
+              <div className="hidden sm:block w-px h-3.5 md:h-4.5 bg-gray-300 mx-1 sm:mx-0" />
             )}
-            <span className="flex items-center gap-1 sm:gap-[5px] text-[11px] sm:text-[13.5px] font-light text-[#6A6058] cursor-pointer px-2 sm:px-[9px] py-[5px] rounded-[7px] whitespace-nowrap transition-all duration-180 hover:bg-[#ECEAE6] hover:text-[#1A1714]">
+            <span className="flex items-center gap-1 sm:gap-1.25 text-[11px] sm:text-[13.5px] font-light text-[#6A6058] cursor-pointer px-2 sm:px-2.25 py-1.25 rounded-[7px] whitespace-nowrap transition-all duration-180 hover:bg-gray-200 hover:text-[#1A1714]">
               <span className="text-brand shrink-0">{l.icon}</span>
               <span className="hidden sm:inline">{l.label}</span>
             </span>

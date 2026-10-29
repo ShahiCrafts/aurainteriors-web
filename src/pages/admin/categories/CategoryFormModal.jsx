@@ -2,11 +2,6 @@ import Dialog from "../../../components/common/Dialog";
 import { motion, AnimatePresence } from "framer-motion";
 import { X, Upload } from "lucide-react";
 
-// Phase 7 split (from Categories.jsx) — the create/edit category
-// form modal. Its shell already wrapped the shared Dialog (via
-// components/common/Dialog) before the split; that composition is
-// preserved verbatim, backdrop/Escape behaviour included. Form
-// state and submit handling stay in the page and arrive as props.
 export default function CategoryFormModal({
   showModal,
   setShowModal,
@@ -247,8 +242,8 @@ export default function CategoryFormModal({
                                   roomSlugs: e.target.checked
                                     ? [...categoryForm.roomSlugs, room.slug]
                                     : categoryForm.roomSlugs.filter(
-                                        (slug) => slug !== room.slug,
-                                      ),
+                                      (slug) => slug !== room.slug,
+                                    ),
                                 })
                               }
                               className="w-4 h-4 rounded border-gray-300 text-[#025E5D] focus:ring-[#025E5D]"

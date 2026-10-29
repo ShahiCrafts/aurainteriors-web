@@ -11,10 +11,6 @@ import { formatError } from "../../utils/errorHandler";
 import { reportSendOutcome } from "../../utils/queuedSend";
 import { scopedAdminKey } from "../../lib/adminScope";
 
-// FE-08: the subscribers list and stats hold ADMIN data, so their
-// keys are scoped to the signed-in admin's id (read at call time)
-// instead of the previous identity-less ['newsletter-subscribers'] /
-// ['newsletter-stats'].
 export const NEWSLETTER_KEYS = {
   all: () => scopedAdminKey("newsletter"),
   subscribers: (params) => [...NEWSLETTER_KEYS.all(), "subscribers", params],
@@ -78,13 +74,8 @@ export const useSendTrendEmail = () => {
 
   return useMutation({
     mutationFn: (data) => sendTrendEmail(data),
-    // FE-47: this hook toasts its own errors — opt out of the global toast.
     meta: { suppressGlobalErrorToast: true },
     onSuccess: (data) => {
-      // FE-41: in queue mode (EMAIL_MODE=outbox) the 202 body carries
-      // { jobId, queued:true } and no `successful` count — report the
-      // queued state, poll the job, and report its real counts.
-      // Inline bodies keep the guarded count message.
       void reportSendOutcome(data, { kind: "newsletter", toast });
       queryClient.invalidateQueries({ queryKey: NEWSLETTER_KEYS.stats() });
     },

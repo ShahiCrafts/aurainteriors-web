@@ -1,9 +1,5 @@
 import { Plus, X, Ruler, Weight } from "lucide-react";
 
-// Phase 7 split (from Products.jsx) — the Details tab of the
-// product form drawer (dimensions / weight / materials / colours).
-// Markup moved verbatim; all state arrives via the
-// useProductFormState return (`form`).
 const colorMap = {
   white: "#FFFFFF",
   black: "#1A1A1A",
@@ -161,7 +157,7 @@ export default function DetailsTab({ form }) {
         <label className="block text-sm font-semibold text-gray-700 mb-2">
           Materials
         </label>
-        <div className="w-full min-h-[48px] px-3 py-2.5 rounded-lg border border-gray-200 focus-within:border-teal-500 focus-within:ring-2 focus-within:ring-teal-500/10 bg-white transition-all flex flex-wrap gap-2 items-center">
+        <div className="w-full min-h-12 px-3 py-2.5 rounded-lg border border-gray-200 focus-within:border-teal-500 focus-within:ring-2 focus-within:ring-teal-500/10 bg-white transition-all flex flex-wrap gap-2 items-center">
           {productForm.materials.map((material, idx) => (
             <div
               key={`${material}-${idx}`}
@@ -208,7 +204,7 @@ export default function DetailsTab({ form }) {
                 ? "Type a material and press Enter..."
                 : "Add more..."
             }
-            className="flex-1 min-w-[120px] bg-transparent outline-none text-sm text-gray-700"
+            className="flex-1 min-w-30 bg-transparent outline-none text-sm text-gray-700"
           />
         </div>
       </div>
@@ -223,7 +219,7 @@ export default function DetailsTab({ form }) {
           <button
             type="button"
             onClick={handleAddColor}
-            className="w-[154px] h-10 rounded-lg text-sm font-semibold border border-dashed border-gray-300 bg-gray-50/50 hover:bg-gray-100 text-gray-500 hover:text-gray-700 flex items-center justify-center gap-2 transition-all cursor-pointer shrink-0"
+            className="w-38.5 h-10 rounded-lg text-sm font-semibold border border-dashed border-gray-300 bg-gray-50/50 hover:bg-gray-100 text-gray-500 hover:text-gray-700 flex items-center justify-center gap-2 transition-all cursor-pointer shrink-0"
           >
             <Plus className="w-3.5 h-3.5" />
             Add Color
@@ -238,7 +234,7 @@ export default function DetailsTab({ form }) {
             return (
               <div
                 key={color}
-                className="w-[154px] h-10 flex items-center transition-all group shrink-0"
+                className="w-38.5 h-10 flex items-center transition-all group shrink-0"
               >
                 {/* Color square — click to edit */}
                 <button

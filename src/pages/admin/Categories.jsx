@@ -75,9 +75,6 @@ export default function Categories() {
   const createMutation = useCreateCategory();
   const updateMutation = useUpdateCategory();
   const deleteMutation = useDeleteCategory();
-  // Phase 7 split: tree state (expansion, tree building, sibling
-  // reorder, parent-picker options) lives in the useCategoryTree
-  // hook over utils/categoryTree.js; it owns the reorder mutation.
   const {
     expandedCategories,
     toggleExpand,
@@ -167,11 +164,7 @@ export default function Categories() {
       description: categoryForm.description,
       status: categoryForm.status,
       sortOrder: categoryForm.sortOrder,
-      // Always send the parent on update: '' means "move to root"
-      // (the server maps it to null). On create the api layer drops
-      // the empty value and the category is created at the root.
       parent: categoryForm.parent || "",
-      // '' clears an assigned product type server-side.
       productType: categoryForm.productType || "",
       roomSlugs: categoryForm.roomSlugs,
     };
@@ -496,9 +489,6 @@ export default function Categories() {
         </div>
       </div>
 
-      {/* Categories — hierarchical tree (default view). Any
-          search/filter/non-default sort switches to the flat card
-          grid below. */}
       {isTreeMode ? (
         <CategoryTree
           treeRows={treeRows}
@@ -550,11 +540,10 @@ export default function Categories() {
                       </p>
                     </div>
                     <span
-                      className={`inline-flex items-center px-3 py-1 rounded-full text-xs font-semibold capitalize ${
-                        category.status === "active"
-                          ? "bg-emerald-50 text-emerald-700"
-                          : "bg-slate-100 text-slate-600"
-                      }`}
+                      className={`inline-flex items-center px-3 py-1 rounded-full text-xs font-semibold capitalize ${category.status === "active"
+                        ? "bg-emerald-50 text-emerald-700"
+                        : "bg-slate-100 text-slate-600"
+                        }`}
                     >
                       {category.status === "active" ? "Active" : "Inactive"}
                     </span>
@@ -635,11 +624,10 @@ export default function Categories() {
                                   {sub.name}
                                 </span>
                                 <span
-                                  className={`inline-flex items-center px-2 py-0.5 rounded-full text-[10px] font-bold capitalize ${
-                                    sub.status === "active"
-                                      ? "bg-emerald-50 text-emerald-700"
-                                      : "bg-slate-100 text-slate-600"
-                                  }`}
+                                  className={`inline-flex items-center px-2 py-0.5 rounded-full text-[10px] font-bold capitalize ${sub.status === "active"
+                                    ? "bg-emerald-50 text-emerald-700"
+                                    : "bg-slate-100 text-slate-600"
+                                    }`}
                                 >
                                   {sub.status === "active"
                                     ? "Active"

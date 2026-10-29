@@ -10,7 +10,6 @@ export default function ProductDescription({
 }) {
   if (!product?.description && !image) return null;
 
-  // Keep the author's paragraph breaks.
   const paragraphs = (product.description || "")
     .split(/\n{1,}/)
     .map((p) => p.trim())
@@ -46,7 +45,7 @@ export default function ProductDescription({
               sizes="(min-width: 1024px) 55vw, 100vw"
               alt={image.alt || product.name}
               loading="lazy"
-              className="aspect-[16/9] w-full object-cover lg:aspect-[2/1]"
+              className="aspect-video w-full object-cover lg:aspect-2/1"
             />
             {canViewInAR && (
               <button

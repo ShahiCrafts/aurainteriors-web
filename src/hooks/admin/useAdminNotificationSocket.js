@@ -8,9 +8,6 @@ const useAdminNotificationSocket = (token, userId, role) => {
   const [adminNotifications, setAdminNotifications] = useState([]);
   const [unreadAdminCount, setUnreadAdminCount] = useState(0);
   const [connected, setConnected] = useState(false);
-  // FE-24: ids already delivered over the socket. A replayed or
-  // re-emitted notification (e.g. across a reconnect) must not
-  // duplicate the list entry or inflate the unread badge.
   const seenSocketIdsRef = useRef(new Set());
 
   useEffect(() => {

@@ -6,9 +6,6 @@ import {
   Trash2,
 } from "lucide-react";
 
-// Phase 7 split (from Products.jsx) — the 3D Model tab of the
-// product form drawer. Markup moved verbatim; all state arrives
-// via the useProductFormState return (`form`).
 function getFileName(url) {
   if (!url) return "";
   try {
@@ -65,11 +62,10 @@ export default function ModelTab({ form }) {
           <button
             type="button"
             onClick={() => setModelInputType("url")}
-            className={`flex-1 flex items-center justify-center gap-2 px-4 h-10 rounded-lg border text-sm font-medium transition-all cursor-pointer ${
-              modelInputType === "url"
+            className={`flex-1 flex items-center justify-center gap-2 px-4 h-10 rounded-lg border text-sm font-medium transition-all cursor-pointer ${modelInputType === "url"
                 ? "border-teal-600 bg-teal-50 text-teal-700"
                 : "border-gray-200 text-gray-600 hover:bg-gray-50"
-            }`}
+              }`}
           >
             <LinkIcon className="w-4 h-4" />
             URL / Link
@@ -77,11 +73,10 @@ export default function ModelTab({ form }) {
           <button
             type="button"
             onClick={() => setModelInputType("upload")}
-            className={`flex-1 flex items-center justify-center gap-2 px-4 h-10 rounded-lg border text-sm font-medium transition-all cursor-pointer ${
-              modelInputType === "upload"
+            className={`flex-1 flex items-center justify-center gap-2 px-4 h-10 rounded-lg border text-sm font-medium transition-all cursor-pointer ${modelInputType === "upload"
                 ? "border-teal-600 bg-teal-50 text-teal-700"
                 : "border-gray-200 text-gray-600 hover:bg-gray-50"
-            }`}
+              }`}
           >
             <Upload className="w-4 h-4" />
             Upload File
@@ -129,17 +124,16 @@ export default function ModelTab({ form }) {
           </label>
           {existingModelFiles.filter((m) => !m.isExternal).length +
             modelFiles.length ===
-          0 ? (
+            0 ? (
             <div
               onClick={() => modelFileInputRef.current?.click()}
               onDragOver={handleModelDragOver}
               onDragLeave={handleModelDragLeave}
               onDrop={handleModelDrop}
-              className={`border-2 border-dashed rounded-lg p-6 text-center transition-colors cursor-pointer ${
-                isDraggingModel
+              className={`border-2 border-dashed rounded-lg p-6 text-center transition-colors cursor-pointer ${isDraggingModel
                   ? "border-teal-500 bg-teal-500/5"
                   : "border-gray-200 hover:border-teal-500"
-              }`}
+                }`}
             >
               <Box className="w-10 h-10 text-gray-400 mx-auto mb-2" />
               <p className="text-sm font-semibold text-gray-700">
@@ -156,11 +150,10 @@ export default function ModelTab({ form }) {
               onDragOver={handleModelDragOver}
               onDragLeave={handleModelDragLeave}
               onDrop={handleModelDrop}
-              className={`border-2 border-dashed rounded-lg py-3 px-4 text-center transition-colors cursor-pointer flex items-center justify-center gap-2 hover:bg-gray-50/80 ${
-                isDraggingModel
+              className={`border-2 border-dashed rounded-lg py-3 px-4 text-center transition-colors cursor-pointer flex items-center justify-center gap-2 hover:bg-gray-50/80 ${isDraggingModel
                   ? "border-teal-500 bg-teal-500/5"
                   : "border-gray-200 hover:border-teal-500"
-              }`}
+                }`}
             >
               <Upload className="w-4 h-4 text-gray-400" />
               <span className="text-xs font-semibold text-gray-500">
@@ -183,146 +176,145 @@ export default function ModelTab({ form }) {
       {(existingModelFiles.length > 0 ||
         modelFiles.length > 0 ||
         modelUrls.length > 0) && (
-        <div className="space-y-3.5 pt-2">
-          <label className="block text-sm font-semibold text-gray-700">
-            Current 3D Models (
-            {existingModelFiles.length + modelFiles.length + modelUrls.length})
-          </label>
+          <div className="space-y-3.5 pt-2">
+            <label className="block text-sm font-semibold text-gray-700">
+              Current 3D Models (
+              {existingModelFiles.length + modelFiles.length + modelUrls.length})
+            </label>
 
-          <div className="space-y-2 max-h-[280px] overflow-y-auto pr-1">
-            {/* 1. Existing Model Files (from Database) */}
-            {existingModelFiles.map((model, index) => (
-              <div
-                key={`existing-${index}`}
-                className="border border-gray-100 bg-white hover:border-teal-200 transition-all rounded-lg p-3 flex items-center justify-between shadow-sm"
-              >
-                <div className="flex items-center gap-3 min-w-0">
-                  <div
-                    className={`w-9 h-9 rounded-lg flex items-center justify-center shrink-0 ${
-                      model.platform === "ios"
-                        ? "bg-indigo-50 text-indigo-650"
-                        : "bg-blue-55 text-blue-650"
-                    }`}
-                  >
-                    {model.isExternal ? (
-                      <LinkIcon className="w-4.5 h-4.5 text-indigo-600" />
-                    ) : (
-                      <Box className="w-4.5 h-4.5 text-blue-600" />
-                    )}
-                  </div>
-                  <div className="min-w-0 flex-1">
-                    <p
-                      className="text-sm font-semibold text-gray-800 truncate max-w-[280px] sm:max-w-[380px]"
-                      title={model.url}
+            <div className="space-y-2 max-h-70 overflow-y-auto pr-1">
+              {/* 1. Existing Model Files (from Database) */}
+              {existingModelFiles.map((model, index) => (
+                <div
+                  key={`existing-${index}`}
+                  className="border border-gray-100 bg-white hover:border-teal-200 transition-all rounded-lg p-3 flex items-center justify-between shadow-sm"
+                >
+                  <div className="flex items-center gap-3 min-w-0">
+                    <div
+                      className={`w-9 h-9 rounded-lg flex items-center justify-center shrink-0 ${model.platform === "ios"
+                          ? "bg-indigo-50 text-indigo-650"
+                          : "bg-blue-55 text-blue-650"
+                        }`}
                     >
-                      {getFileName(model.url)}
-                    </p>
-                    <div className="flex items-center gap-2 mt-0.5">
-                      <span className="text-[10px] font-bold uppercase tracking-wider px-2 py-0.5 rounded bg-gray-50 text-gray-500 border border-gray-100">
-                        {model.format}
-                      </span>
-                      <span className="text-[10px] font-bold uppercase tracking-wider px-2 py-0.5 rounded bg-teal-50 text-teal-700 border border-teal-100/50">
-                        {model.isExternal ? "URL Link" : "Stored File"}
-                      </span>
-                      {model.fileSize && (
-                        <span className="text-[10px] font-medium text-gray-400">
-                          {(model.fileSize / (1024 * 1024)).toFixed(2)} MB
-                        </span>
+                      {model.isExternal ? (
+                        <LinkIcon className="w-4.5 h-4.5 text-indigo-600" />
+                      ) : (
+                        <Box className="w-4.5 h-4.5 text-blue-600" />
                       )}
                     </div>
-                  </div>
-                </div>
-                <button
-                  type="button"
-                  onClick={() =>
-                    removeModelFile(existingModelFiles.indexOf(model), true)
-                  }
-                  className="w-8 h-8 rounded-full flex items-center justify-center hover:bg-red-50 text-gray-400 hover:text-red-500 transition-colors cursor-pointer shrink-0"
-                >
-                  <Trash2 className="w-4 h-4" />
-                </button>
-              </div>
-            ))}
-
-            {/* 2. New Uploaded Files */}
-            {modelFiles.map((model, index) => (
-              <div
-                key={`new-file-${index}`}
-                className="border border-gray-100 bg-white hover:border-teal-200 transition-all rounded-lg p-3 flex items-center justify-between shadow-sm"
-              >
-                <div className="flex items-center gap-3 min-w-0">
-                  <div className="w-9 h-9 rounded-lg bg-blue-50 flex items-center justify-center shrink-0">
-                    <Box className="w-4.5 h-4.5 text-blue-600" />
-                  </div>
-                  <div className="min-w-0 flex-1">
-                    <p
-                      className="text-sm font-semibold text-gray-800 truncate max-w-[280px] sm:max-w-[380px]"
-                      title={model.name}
-                    >
-                      {model.name}
-                    </p>
-                    <div className="flex items-center gap-2 mt-0.5">
-                      <span className="text-[10px] font-bold uppercase tracking-wider px-2 py-0.5 rounded bg-gray-50 text-gray-500 border border-gray-100">
-                        {model.format}
-                      </span>
-                      <span className="text-[10px] font-bold uppercase tracking-wider px-2 py-0.5 rounded bg-amber-50 text-amber-700 border border-amber-100/50">
-                        New File
-                      </span>
-                      <span className="text-[10px] font-medium text-gray-400">
-                        {(model.size / (1024 * 1024)).toFixed(2)} MB
-                      </span>
+                    <div className="min-w-0 flex-1">
+                      <p
+                        className="text-sm font-semibold text-gray-800 truncate max-w-70 sm:max-w-95"
+                        title={model.url}
+                      >
+                        {getFileName(model.url)}
+                      </p>
+                      <div className="flex items-center gap-2 mt-0.5">
+                        <span className="text-[10px] font-bold uppercase tracking-wider px-2 py-0.5 rounded bg-gray-50 text-gray-500 border border-gray-100">
+                          {model.format}
+                        </span>
+                        <span className="text-[10px] font-bold uppercase tracking-wider px-2 py-0.5 rounded bg-teal-50 text-teal-700 border border-teal-100/50">
+                          {model.isExternal ? "URL Link" : "Stored File"}
+                        </span>
+                        {model.fileSize && (
+                          <span className="text-[10px] font-medium text-gray-400">
+                            {(model.fileSize / (1024 * 1024)).toFixed(2)} MB
+                          </span>
+                        )}
+                      </div>
                     </div>
                   </div>
+                  <button
+                    type="button"
+                    onClick={() =>
+                      removeModelFile(existingModelFiles.indexOf(model), true)
+                    }
+                    className="w-8 h-8 rounded-full flex items-center justify-center hover:bg-red-50 text-gray-400 hover:text-red-500 transition-colors cursor-pointer shrink-0"
+                  >
+                    <Trash2 className="w-4 h-4" />
+                  </button>
                 </div>
-                <button
-                  type="button"
-                  onClick={() => removeModelFile(index, false)}
-                  className="w-8 h-8 rounded-full flex items-center justify-center hover:bg-red-50 text-gray-400 hover:text-red-500 transition-colors cursor-pointer shrink-0"
-                >
-                  <Trash2 className="w-4 h-4" />
-                </button>
-              </div>
-            ))}
+              ))}
 
-            {/* 3. New URL Links */}
-            {modelUrls.map((model, index) => (
-              <div
-                key={`new-url-${index}`}
-                className="border border-gray-100 bg-white hover:border-teal-200 transition-all rounded-lg p-3 flex items-center justify-between shadow-sm"
-              >
-                <div className="flex items-center gap-3 min-w-0">
-                  <div className="w-9 h-9 rounded-lg bg-indigo-50 flex items-center justify-center shrink-0">
-                    <LinkIcon className="w-4.5 h-4.5 text-indigo-650" />
-                  </div>
-                  <div className="min-w-0 flex-1">
-                    <p
-                      className="text-sm font-semibold text-gray-800 truncate max-w-[280px] sm:max-w-[380px]"
-                      title={model.url}
-                    >
-                      {getFileName(model.url)}
-                    </p>
-                    <div className="flex items-center gap-2 mt-0.5">
-                      <span className="text-[10px] font-bold uppercase tracking-wider px-2 py-0.5 rounded bg-gray-50 text-gray-500 border border-gray-100">
-                        {model.format}
-                      </span>
-                      <span className="text-[10px] font-bold uppercase tracking-wider px-2 py-0.5 rounded bg-amber-50 text-amber-700 border border-amber-100/50">
-                        New URL Link
-                      </span>
+              {/* 2. New Uploaded Files */}
+              {modelFiles.map((model, index) => (
+                <div
+                  key={`new-file-${index}`}
+                  className="border border-gray-100 bg-white hover:border-teal-200 transition-all rounded-lg p-3 flex items-center justify-between shadow-sm"
+                >
+                  <div className="flex items-center gap-3 min-w-0">
+                    <div className="w-9 h-9 rounded-lg bg-blue-50 flex items-center justify-center shrink-0">
+                      <Box className="w-4.5 h-4.5 text-blue-600" />
+                    </div>
+                    <div className="min-w-0 flex-1">
+                      <p
+                        className="text-sm font-semibold text-gray-800 truncate max-w-70 sm:max-w-95"
+                        title={model.name}
+                      >
+                        {model.name}
+                      </p>
+                      <div className="flex items-center gap-2 mt-0.5">
+                        <span className="text-[10px] font-bold uppercase tracking-wider px-2 py-0.5 rounded bg-gray-50 text-gray-500 border border-gray-100">
+                          {model.format}
+                        </span>
+                        <span className="text-[10px] font-bold uppercase tracking-wider px-2 py-0.5 rounded bg-amber-50 text-amber-700 border border-amber-100/50">
+                          New File
+                        </span>
+                        <span className="text-[10px] font-medium text-gray-400">
+                          {(model.size / (1024 * 1024)).toFixed(2)} MB
+                        </span>
+                      </div>
                     </div>
                   </div>
+                  <button
+                    type="button"
+                    onClick={() => removeModelFile(index, false)}
+                    className="w-8 h-8 rounded-full flex items-center justify-center hover:bg-red-50 text-gray-400 hover:text-red-500 transition-colors cursor-pointer shrink-0"
+                  >
+                    <Trash2 className="w-4 h-4" />
+                  </button>
                 </div>
-                <button
-                  type="button"
-                  onClick={() => removeModelFile(index, false, true)}
-                  className="w-8 h-8 rounded-full flex items-center justify-center hover:bg-red-50 text-gray-400 hover:text-red-500 transition-colors cursor-pointer shrink-0"
+              ))}
+
+              {/* 3. New URL Links */}
+              {modelUrls.map((model, index) => (
+                <div
+                  key={`new-url-${index}`}
+                  className="border border-gray-100 bg-white hover:border-teal-200 transition-all rounded-lg p-3 flex items-center justify-between shadow-sm"
                 >
-                  <Trash2 className="w-4 h-4" />
-                </button>
-              </div>
-            ))}
+                  <div className="flex items-center gap-3 min-w-0">
+                    <div className="w-9 h-9 rounded-lg bg-indigo-50 flex items-center justify-center shrink-0">
+                      <LinkIcon className="w-4.5 h-4.5 text-indigo-650" />
+                    </div>
+                    <div className="min-w-0 flex-1">
+                      <p
+                        className="text-sm font-semibold text-gray-800 truncate max-w-70 sm:max-w-95"
+                        title={model.url}
+                      >
+                        {getFileName(model.url)}
+                      </p>
+                      <div className="flex items-center gap-2 mt-0.5">
+                        <span className="text-[10px] font-bold uppercase tracking-wider px-2 py-0.5 rounded bg-gray-50 text-gray-500 border border-gray-100">
+                          {model.format}
+                        </span>
+                        <span className="text-[10px] font-bold uppercase tracking-wider px-2 py-0.5 rounded bg-amber-50 text-amber-700 border border-amber-100/50">
+                          New URL Link
+                        </span>
+                      </div>
+                    </div>
+                  </div>
+                  <button
+                    type="button"
+                    onClick={() => removeModelFile(index, false, true)}
+                    className="w-8 h-8 rounded-full flex items-center justify-center hover:bg-red-50 text-gray-400 hover:text-red-500 transition-colors cursor-pointer shrink-0"
+                  >
+                    <Trash2 className="w-4 h-4" />
+                  </button>
+                </div>
+              ))}
+            </div>
           </div>
-        </div>
-      )}
+        )}
 
       {/* Cross-platform AR Note */}
       <div className="bg-blue-50 border border-blue-200 rounded-xl p-4">

@@ -1,5 +1,6 @@
 import { Link } from "react-router-dom";
 import { MoveRight } from "lucide-react";
+import { safeActionUrl } from "../../utils/safeUrl";
 
 export default function PromoCard({
   className = "",
@@ -13,6 +14,12 @@ export default function PromoCard({
   compact = false,
 }) {
   const primary = variant === "primary";
+  // FE-03/FE-04: the CTA href runs through safeActionUrl — an unsafe
+  // href (javascript:, off-allowlist absolute, quote/whitespace tricks)
+  // yields null and renders inert text instead of a link (the contract
+  // pinned by tests/security/mediaSinkGuard.test.js's allowlist entry
+  // for this file and by tests/components/common/PromoCard.test.jsx).
+  const safeHref = ctaHref ? safeActionUrl(ctaHref) : null;
 
   return (
     <article
@@ -115,9 +122,9 @@ export default function PromoCard({
           </p>
         )}
 
-        {ctaLabel && ctaHref && (
+        {ctaLabel && safeHref && (
           <Link
-            to={ctaHref}
+            to={safeHref}
             className={`group mt-4 inline-flex min-h-[42px] items-center justify-center gap-3 rounded-md px-5 py-2.5 text-[13px] font-semibold transition-colors focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#F27318] ${
               primary
                 ? "bg-[#FF6500] text-white hover:bg-[#E85C00]"
@@ -131,6 +138,19 @@ export default function PromoCard({
               className="shrink-0 transition-transform duration-200 group-hover:translate-x-1"
             />
           </Link>
+        )}
+        {ctaLabel && ctaHref && !safeHref && (
+          <span
+            aria-disabled="true"
+            className={`mt-4 inline-flex min-h-[42px] items-center justify-center gap-3 rounded-md px-5 py-2.5 text-[13px] font-semibold ${
+              primary
+                ? "bg-[#FF6500] text-white"
+                : "bg-white text-[#1A1714]"
+            }`}
+          >
+            {ctaLabel}
+            <MoveRight size={16} strokeWidth={1.8} className="shrink-0" />
+          </span>
         )}
       </div>
     </article>

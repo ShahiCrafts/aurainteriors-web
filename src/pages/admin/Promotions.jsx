@@ -78,7 +78,7 @@ export default function Promotions() {
     isOpen: false,
     title: "",
     message: "",
-    onConfirm: () => {},
+    onConfirm: () => { },
     type: "danger",
     isLoading: false,
   });
@@ -233,10 +233,6 @@ export default function Promotions() {
         setConfirmModal((prev) => ({ ...prev, isLoading: true }));
         sendMutation.mutate(id, {
           onSuccess: (result) => {
-            // FE-41: a 202 queued body must not be reported as "sent" —
-            // reportSendOutcome toasts the queued state, polls the job,
-            // and reports the real sent/failed counts (or the failure).
-            // Inline 200 bodies keep showing the server message.
             void reportSendOutcome(result, { kind: "promotion", toast });
             setConfirmModal({
               ...confirmModal,
@@ -419,7 +415,7 @@ export default function Promotions() {
                 setStatusFilter(e.target.value);
                 setPage(1);
               }}
-              className="px-4 py-2.5 bg-white border border-gray-200 rounded-lg text-sm focus:outline-none focus:border-teal-500 focus:ring-2 focus:ring-teal-500/20 cursor-pointer min-w-[140px]"
+              className="px-4 py-2.5 bg-white border border-gray-200 rounded-lg text-sm focus:outline-none focus:border-teal-500 focus:ring-2 focus:ring-teal-500/20 cursor-pointer min-w-35"
             >
               <option value="all">All Status</option>
               <option value="draft">Draft</option>
@@ -430,8 +426,6 @@ export default function Promotions() {
           </div>
         </div>
 
-        {/* FE-28: the promotions API has no search parameter, so the
-            search filters only this page — say so while it is active. */}
         {searchQuery && (
           <p className="px-4 pt-3 text-xs text-gray-400">
             Showing matches from this page only — other pages are not searched.
@@ -494,10 +488,10 @@ export default function Promotions() {
                           <Megaphone size={18} className="text-teal-600" />
                         </div>
                         <div className="min-w-0">
-                          <p className="text-sm font-semibold text-gray-900 truncate max-w-[200px]">
+                          <p className="text-sm font-semibold text-gray-900 truncate max-w-50">
                             {promotion.title}
                           </p>
-                          <p className="text-xs text-gray-400 truncate max-w-[180px] mt-0.5">
+                          <p className="text-xs text-gray-400 truncate max-w-45 mt-0.5">
                             {promotion.shortDescription ||
                               promotion.description}
                           </p>
@@ -574,23 +568,23 @@ export default function Promotions() {
                         )}
                         {(promotion.status === "draft" ||
                           promotion.status === "scheduled") && (
-                          <>
-                            <button
-                              onClick={() => handleSendPromotion(promotion._id)}
-                              className="p-2 text-teal-600 hover:bg-teal-50 rounded-lg transition-colors"
-                              title="Send Now"
-                            >
-                              <Send className="w-4 h-4" />
-                            </button>
-                            <button
-                              onClick={() => handleOpenModal(promotion)}
-                              className="p-2 text-gray-500 hover:bg-gray-100 rounded-lg transition-colors"
-                              title="Edit"
-                            >
-                              <Edit className="w-4 h-4" />
-                            </button>
-                          </>
-                        )}
+                            <>
+                              <button
+                                onClick={() => handleSendPromotion(promotion._id)}
+                                className="p-2 text-teal-600 hover:bg-teal-50 rounded-lg transition-colors"
+                                title="Send Now"
+                              >
+                                <Send className="w-4 h-4" />
+                              </button>
+                              <button
+                                onClick={() => handleOpenModal(promotion)}
+                                className="p-2 text-gray-500 hover:bg-gray-100 rounded-lg transition-colors"
+                                title="Edit"
+                              >
+                                <Edit className="w-4 h-4" />
+                              </button>
+                            </>
+                          )}
                         {promotion.status !== "sending" && (
                           <button
                             onClick={() => handleDeletePromotion(promotion._id)}
@@ -722,8 +716,8 @@ export default function Promotions() {
                             const updated = e.target.checked
                               ? [...promotionForm.targetCategories, cat.value]
                               : promotionForm.targetCategories.filter(
-                                  (c) => c !== cat.value,
-                                );
+                                (c) => c !== cat.value,
+                              );
                             setPromotionForm({
                               ...promotionForm,
                               targetCategories: updated,

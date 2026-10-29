@@ -1,35 +1,29 @@
 import React from "react";
 import { Link } from "react-router-dom";
-import Lottie from "lottie-react";
 import { ArrowLeft } from "lucide-react";
 import Navbar from "../../layouts/customer/Navbar";
 import Footer from "../../layouts/customer/Footer";
 
-/**
- * The 264 KB Lottie JSON was previously a static import, which bundled it
- * inline into this chunk and ballooned the 404 page to ~589 KB.
- *
- * By using fetch() + useState we load it from the public directory at runtime
- * instead — keeping it out of any JS bundle entirely.
- */
 const NotFoundPage = () => {
-  const [animationData, setAnimationData] = React.useState(null);
-
-  React.useEffect(() => {
-    fetch("/not_found.json")
-      .then((r) => r.json())
-      .then(setAnimationData)
-      .catch(() => {}); // animation is purely cosmetic — silently swallow errors
-  }, []);
-
   return (
     <>
       <Navbar />
       <div className="py-20 flex flex-col items-center justify-center px-4 bg-neutral-50 font-dm-sans">
-        <div className="w-full max-w-xs mb-3">
-          {animationData && (
-            <Lottie animationData={animationData} loop={true} />
-          )}
+        <div className="w-full max-w-xs mb-3 flex justify-center" aria-hidden="true">
+          <svg viewBox="0 0 200 120" className="w-56 h-auto">
+            <style>{`
+              @keyframes aura-404-float { 0%,100% { transform: translateY(0); } 50% { transform: translateY(-8px); } }
+              @keyframes aura-404-fade { 0%,100% { opacity: .35; } 50% { opacity: 1; } }
+              .aura-404-float { animation: aura-404-float 3s ease-in-out infinite; }
+              .aura-404-dot { animation: aura-404-fade 1.6s ease-in-out infinite; }
+            `}</style>
+            <g className="aura-404-float">
+              <text x="100" y="72" textAnchor="middle" fontSize="56" fontWeight="700" fill="#0f766e" fontFamily="Georgia, serif">404</text>
+            </g>
+            <circle className="aura-404-dot" cx="52" cy="94" r="4" fill="#f27318" />
+            <circle className="aura-404-dot" cx="100" cy="100" r="4" fill="#0f766e" style={{ animationDelay: "0.3s" }} />
+            <circle className="aura-404-dot" cx="148" cy="94" r="4" fill="#f27318" style={{ animationDelay: "0.6s" }} />
+          </svg>
         </div>
 
         <h1 className="text-2xl md:text-3xl font-playfair font-semibold text-neutral-900 mb-4 text-center">

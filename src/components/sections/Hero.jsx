@@ -1,5 +1,13 @@
 import { shopCategoryUrl } from "../../utils/shopFilters";
-import { IMAGE_VARIANT_WIDTHS } from "../../utils/imageUrl";
+import heroFurniture600 from "../../assets/images/hero/hero-furniture-living-room-600w.webp";
+import heroFurniture1200 from "../../assets/images/hero/hero-furniture-living-room-1200w.webp";
+import heroFurniture1920 from "../../assets/images/hero/hero-furniture-living-room-1920w.webp";
+import heroBedroom600 from "../../assets/images/hero/hero-bedroom-comfort-600w.webp";
+import heroBedroom1200 from "../../assets/images/hero/hero-bedroom-comfort-1200w.webp";
+import heroBedroom1920 from "../../assets/images/hero/hero-bedroom-comfort-1920w.webp";
+import heroWorkspace1200 from "../../assets/images/hero/hero-workspace-office-1200w.webp";
+import heroDecor600 from "../../assets/images/hero/hero-decor-dining-room-600w.webp";
+import heroDecor1200 from "../../assets/images/hero/hero-decor-dining-room-1200w.webp";
 import { formatNPR } from "../../utils/formatCurrency";
 import { ArrowUpRight, Star } from "lucide-react";
 import { Link } from "react-router-dom";
@@ -13,7 +21,7 @@ const slides = [
     desc: "Discover our handpicked collection of timeless sofas and accent chairs — thoughtfully designed to bring warmth, character, and lasting comfort into every corner of your home.",
     price: 7499,
     cta: "Explore Now",
-    img: "https://plus.unsplash.com/premium_photo-1734549547878-9de3d46d8fc2?q=80&w=2071&auto=format&fit=crop&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D",
+    img: heroFurniture1200,
   },
   {
     id: 2,
@@ -23,7 +31,7 @@ const slides = [
     desc: "Our premium king-size beds and orthopedic mattresses are engineered with adaptive support layers — so every night feels like your best one yet.",
     price: 12999,
     cta: "Shop Beds",
-    img: "https://plus.unsplash.com/premium_photo-1661962771640-426ce94f16c6?q=80&w=3131&auto=format&fit=crop&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D",
+    img: heroBedroom1200,
   },
   {
     id: 3,
@@ -33,38 +41,16 @@ const slides = [
     desc: "From height-adjustable desks to cable-managed bookshelves, our workspace collection is built for deep focus, long hours, and a setup that actually inspires you.",
     price: 9299,
     cta: "View Office",
-    img: "https://images.unsplash.com/photo-1618220048045-10a6dbdf83e0?q=80&w=1480&auto=format&fit=crop&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D",
+    img: heroWorkspace1200,
   },
 ];
 
-const DECOR_IMAGE_URL =
-  "https://images.unsplash.com/photo-1524758631624-e2822e304c36?q=80&w=2070&auto=format&fit=crop";
-
-// FE-54: hero imagery ships as real WebP variants (600/1200/1920)
-// instead of the multi-thousand-pixel originals baked into the URLs.
-// The slide photos are compile-time static literals hosted on
-// plus.unsplash.com — a host the FE-03 media allowlist
-// (utils/safeUrl) does not include, so routing them through
-// getSizedImageUrl rejects them and silently swaps in the product
-// fallback image. They are not server data, so the imgix size /
-// format params are applied directly here; the photos themselves
-// are exactly the ones declared above.
-const sizedSlide = (url, width) => {
-  const u = new URL(url);
-  u.searchParams.set("w", String(width));
-  u.searchParams.set("fm", "webp");
-  u.searchParams.delete("auto");
-  return u.href;
-};
-const slideSrcSet = (url) =>
-  IMAGE_VARIANT_WIDTHS.map((w) => `${sizedSlide(url, w)} ${w}w`).join(", ");
-
-const mainSlideSrc = sizedSlide(slides[0].img, 1200);
-const mainSlideSrcSet = slideSrcSet(slides[0].img);
-const sideSlideSrc = sizedSlide(slides[1].img, 600);
-const sideSlideSrcSet = slideSrcSet(slides[1].img);
-const decorSlideSrc = sizedSlide(DECOR_IMAGE_URL, 600);
-const decorSlideSrcSet = slideSrcSet(DECOR_IMAGE_URL);
+const mainSlideSrc = heroFurniture1200;
+const mainSlideSrcSet = `${heroFurniture600} 600w, ${heroFurniture1200} 1200w, ${heroFurniture1920} 1920w`;
+const sideSlideSrc = heroBedroom600;
+const sideSlideSrcSet = `${heroBedroom600} 600w, ${heroBedroom1200} 1200w, ${heroBedroom1920} 1920w`;
+const decorSlideSrc = heroDecor600;
+const decorSlideSrcSet = `${heroDecor600} 600w, ${heroDecor1200} 1200w`;
 
 export default function Hero() {
   return (
@@ -72,20 +58,15 @@ export default function Hero() {
       {/* ── BENTO ── */}
       <div className="grid grid-cols-1 lg:grid-cols-[1.6fr_1fr] lg:grid-rows-[286px_286px] gap-2 sm:gap-3 px-2 md:px-6 lg:px-8 py-2 md:py-4 bg-white">
         {/* LEFT STATIC HERO — LCP image: eager load, high fetch priority */}
-        <div className="lg:col-start-1 lg:row-start-1 lg:row-span-2 h-[370px] sm:h-[450px] lg:h-auto rounded-sm md:rounded-2xl overflow-hidden relative shadow-[0_4px_28px_rgba(0,0,0,0.10)] group">
+        <div className="lg:col-start-1 lg:row-start-1 lg:row-span-2 h-92.5 sm:h-112.5 lg:h-auto rounded-sm md:rounded-2xl overflow-hidden relative shadow-[0_4px_28px_rgba(0,0,0,0.10)] group">
           <div className="min-w-full h-full rounded-sm md:rounded-2xl overflow-hidden relative after:content-[''] after:absolute after:inset-0 after:bg-linear-to-t after:from-black/70 after:from-15% after:via-black/35 after:via-70% after:to-transparent after:pointer-events-none">
-            {/*
-              LCP image optimizations:
-              - fetchPriority="high"  → browser allocates high network priority immediately
-              - loading="eager"       → never defer this image (it's above the fold)
-              - decoding="sync"       → decode synchronously so it appears as fast as possible
-              These three attributes together maximize LCP score.
-            */}
             <img
               src={mainSlideSrc}
               srcSet={mainSlideSrcSet}
               sizes="(max-width: 1024px) 100vw, 66vw"
               alt={slides[0].heading}
+              width={1920}
+              height={1279}
               fetchPriority="high"
               loading="eager"
               decoding="sync"
@@ -95,13 +76,13 @@ export default function Hero() {
 
           {/* Main Card Content Overlay */}
           <div className="absolute inset-0 p-6 sm:p-8 md:p-[42px_48px] pointer-events-none flex flex-col justify-end">
-            <h1 className="text-[40px] sm:text-[48px] md:text-[64px] font-semibold text-white tracking-wide leading-[1.05] mb-2 sm:mb-3 drop-shadow-md max-w-[800px]">
+            <h1 className="text-[40px] sm:text-[48px] md:text-[64px] font-semibold text-white tracking-wide leading-[1.05] mb-2 sm:mb-3 drop-shadow-md max-w-200">
               {slides[0].heading} <br />
-              <em className="text-[#F27318] font-semibold not-italic">
+              <em className="text-brand font-semibold not-italic">
                 {slides[0].highlight}
               </em>
             </h1>
-            <div className="text-[14px] sm:text-[15px] md:text-[15px] font-normal text-white/90 leading-normal sm:leading-[1.6] mb-5 sm:mb-8 max-w-[460px] drop-shadow-sm">
+            <div className="text-[14px] sm:text-[15px] md:text-[15px] font-normal text-white/90 leading-normal sm:leading-[1.6] mb-5 sm:mb-8 max-w-115 drop-shadow-sm">
               {slides[0].desc}
             </div>
             <div className="flex flex-col sm:flex-row items-start sm:items-center gap-4 sm:gap-6">
@@ -109,23 +90,18 @@ export default function Hero() {
                 to={shopCategoryUrl("living-room")}
                 className="pointer-events-auto"
               >
-                <button className="flex items-center justify-center gap-2 bg-[#F27318] text-white hover:bg-[#D9620E] shadow-sm rounded-lg px-8 sm:px-8 py-[11px] sm:py-[12px] font-sans text-[14px] sm:text-[16px] font-semibold cursor-pointer transition-colors duration-250">
+                <button className="flex items-center justify-center gap-2 bg-brand text-white hover:bg-brand-hover shadow-sm rounded-lg px-8 sm:px-8 py-2.75 sm:py-3 font-sans text-[14px] sm:text-[16px] font-semibold cursor-pointer transition-colors duration-250">
                   {slides[0].cta}
                 </button>
               </Link>
-              {/* Owner-restored (2026-10-26): the FE-14/FE-63
-                  remediation removed this aggregate rating and the
-                  "starting from" price as unsourced marketing copy;
-                  the owner directed they be restored as the hero's
-                  editorial content, matching the live site. */}
               <div className="flex flex-col">
                 <div className="flex items-center gap-1 mb-0.5 sm:mb-1">
-                  <div className="flex items-center gap-0.5 text-[#F27318]">
+                  <div className="flex items-center gap-0.5 text-brand">
                     {[1, 2, 3, 4, 5].map((s) => (
                       <Star
                         key={s}
                         size={10}
-                        className="fill-[#F27318] sm:w-[12px] sm:h-[12px]"
+                        className="fill-brand sm:w-3 sm:h-3"
                       />
                     ))}
                   </div>
@@ -147,13 +123,15 @@ export default function Hero() {
         </div>
 
         {/* RIGHT TOP: Static Banner — below-fold on mobile, load lazily */}
-        <div className="hidden md:block lg:col-start-2 lg:row-start-1 h-[250px] sm:h-[286px] rounded-sm md:rounded-2xl overflow-hidden relative group shadow-sm bg-[#F9F8F6]">
+        <div className="hidden md:block lg:col-start-2 lg:row-start-1 h-62.5 sm:h-71.5 rounded-sm md:rounded-2xl overflow-hidden relative group shadow-sm bg-[#F9F8F6]">
           <div className="absolute inset-0 after:content-[''] after:absolute after:inset-0 after:bg-linear-to-t after:from-black/70 after:from-15% after:via-black/35 after:via-70% after:to-transparent">
             <img
               src={sideSlideSrc}
               srcSet={sideSlideSrcSet}
               sizes="(max-width: 768px) 100vw, 33vw"
               alt={slides[1].heading}
+              width={1920}
+              height={1080}
               loading="lazy"
               decoding="async"
               className="w-full h-full object-cover transition-transform duration-800 group-hover:scale-105"
@@ -162,7 +140,7 @@ export default function Hero() {
           {/* Content */}
           <div className="absolute inset-0 p-5 sm:p-[28px_32px] flex flex-col justify-between pointer-events-none">
             <div className="flex justify-between items-start w-full">
-              <span className="bg-white/95 backdrop-blur-sm text-[#1A1714] text-[10px] sm:text-[11px] font-bold px-2.5 sm:px-3 py-1 sm:py-[5px] rounded-md tracking-wide uppercase shadow-sm">
+              <span className="bg-white/95 backdrop-blur-sm text-[#1A1714] text-[10px] sm:text-[11px] font-bold px-2.5 sm:px-3 py-1 sm:py-1.25 rounded-md tracking-wide uppercase shadow-sm">
                 {slides[1].tag}
               </span>
             </div>
@@ -173,12 +151,12 @@ export default function Hero() {
               <div className="text-[12.5px] sm:text-[13.5px] font-normal text-white/80 leading-[1.4] max-w-[320px] line-clamp-2">
                 {slides[1].desc}
               </div>
-              <div className="mt-3 sm:mt-[18px]">
+              <div className="mt-3 sm:mt-4.5">
                 <Link
                   to={shopCategoryUrl("bedroom")}
                   className="pointer-events-auto"
                 >
-                  <button className="flex items-center justify-center gap-1.5 bg-white text-[#1A1714] hover:bg-[#F27318] hover:text-white rounded-lg px-3.5 sm:px-4 py-[7px] sm:py-[9px] font-sans text-[12px] sm:text-[13px] font-bold cursor-pointer transition-colors duration-200 shadow-sm">
+                  <button className="flex items-center justify-center gap-1.5 bg-white text-[#1A1714] hover:bg-brand hover:text-white rounded-lg px-3.5 sm:px-4 py-1.75 sm:py-2.25 font-sans text-[12px] sm:text-[13px] font-bold cursor-pointer transition-colors duration-200 shadow-sm">
                     {slides[1].cta} <ArrowUpRight size={14} />
                   </button>
                 </Link>
@@ -188,13 +166,15 @@ export default function Hero() {
         </div>
 
         {/* RIGHT BOTTOM: Static Banner */}
-        <div className="hidden md:block lg:col-start-2 lg:row-start-2 h-[250px] sm:h-[286px] rounded-sm md:rounded-2xl overflow-hidden relative group shadow-sm bg-[#F9F8F6]">
+        <div className="hidden md:block lg:col-start-2 lg:row-start-2 h-62.5 sm:h-71.5 rounded-sm md:rounded-2xl overflow-hidden relative group shadow-sm bg-[#F9F8F6]">
           <div className="absolute inset-0 after:content-[''] after:absolute after:inset-0 after:bg-linear-to-t after:from-black/70 after:from-15% after:via-black/35 after:via-70% after:to-transparent">
             <img
               src={decorSlideSrc}
               srcSet={decorSlideSrcSet}
               sizes="(max-width: 768px) 100vw, 33vw"
               alt="Premium Decor"
+              width={1200}
+              height={800}
               loading="lazy"
               decoding="async"
               className="w-full h-full object-cover transition-transform duration-800 group-hover:scale-105"
@@ -206,13 +186,11 @@ export default function Hero() {
                 <div className="text-[20px] sm:text-[24px] font-bold text-white tracking-[-0.02em] leading-[1.15] mb-1 sm:mb-1.5 drop-shadow-sm">
                   Calmora Bed Frame
                 </div>
-                {/* Owner-restored (2026-10-26) with the main card's
-                    rating/price block — see the note there. */}
                 <div className="flex items-baseline gap-1.5 sm:gap-2">
                   <span className="text-[12px] sm:text-[13px] font-normal text-white/60 line-through">
                     {formatNPR(24999)}
                   </span>
-                  <span className="text-[16px] sm:text-[18px] font-bold text-[#F27318] drop-shadow-sm">
+                  <span className="text-[16px] sm:text-[18px] font-bold text-brand drop-shadow-sm">
                     {formatNPR(19999)}
                   </span>
                 </div>
@@ -225,12 +203,12 @@ export default function Hero() {
                 Handcrafted solid sheesham wood frame with a plush upholstered
                 headboard
               </div>
-              <div className="mt-3 sm:mt-[18px]">
+              <div className="mt-3 sm:mt-4.5">
                 <Link
                   to={shopCategoryUrl("bedroom")}
                   className="pointer-events-auto"
                 >
-                  <button className="flex items-center justify-center gap-1.5 bg-white text-[#1A1714] hover:bg-[#F27318] hover:text-white rounded-lg px-3.5 sm:px-4 py-[7px] sm:py-[9px] font-sans text-[12px] sm:text-[13px] font-bold cursor-pointer transition-colors duration-200 shadow-sm">
+                  <button className="flex items-center justify-center gap-1.5 bg-white text-[#1A1714] hover:bg-brand hover:text-white rounded-lg px-3.5 sm:px-4 py-1.75 sm:py-2.25 font-sans text-[12px] sm:text-[13px] font-bold cursor-pointer transition-colors duration-200 shadow-sm">
                     Shop Sale <ArrowUpRight size={14} />
                   </button>
                 </Link>

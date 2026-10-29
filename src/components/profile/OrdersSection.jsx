@@ -68,23 +68,17 @@ export default function OrdersSection() {
     }
   });
 
-  // FE-28: GET /orders/my-orders accepts only status/page/limit and
-  // always sorts newest-first (verified in the server tree) — there is
-  // no server search/sort to send, so search and sort are honestly
-  // scoped to the loaded page (see the note under the controls). The
-  // in-page search matches product names as well as order IDs, which
-  // its placeholder always promised but the old filter never did.
   const filteredOrders = searchQuery
     ? sortedOrders.filter((o) => {
-        const q = searchQuery.toLowerCase();
-        return (
-          o.orderId?.toLowerCase().includes(q) ||
-          o._id?.toLowerCase().includes(q) ||
-          (o.items || []).some((item) =>
-            (item.name || item.product?.name || "").toLowerCase().includes(q),
-          )
-        );
-      })
+      const q = searchQuery.toLowerCase();
+      return (
+        o.orderId?.toLowerCase().includes(q) ||
+        o._id?.toLowerCase().includes(q) ||
+        (o.items || []).some((item) =>
+          (item.name || item.product?.name || "").toLowerCase().includes(q),
+        )
+      );
+    })
     : sortedOrders;
 
   if (isLoading && !rawOrders.length) {
@@ -120,8 +114,8 @@ export default function OrdersSection() {
         {/* Controls Skeleton */}
         <div className="flex flex-col sm:flex-row gap-3 items-stretch sm:items-center sm:justify-end shrink-0">
           <Skeleton className="w-full sm:w-auto sm:max-w-xs h-11 rounded-xl" />
-          <Skeleton className="w-full sm:w-auto sm:min-w-[150px] h-11 rounded-xl" />
-          <Skeleton className="w-full sm:w-auto sm:min-w-[170px] h-11 rounded-xl" />
+          <Skeleton className="w-full sm:w-auto sm:min-w-37.5 h-11 rounded-xl" />
+          <Skeleton className="w-full sm:w-auto sm:min-w-42.5 h-11 rounded-xl" />
         </div>
 
         {/* Orders Skeleton */}
@@ -191,7 +185,7 @@ export default function OrdersSection() {
                 placeholder="Search this page by order ID or product…"
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
-                className="w-full pl-10 pr-9 py-3 border border-neutral-200 rounded-xl focus:border-[#F27318] outline-none text-sm text-[#1A1714] placeholder:text-neutral-400 bg-white font-medium transition-colors"
+                className="w-full pl-10 pr-9 py-3 border border-neutral-200 rounded-xl focus:border-brand outline-none text-sm text-[#1A1714] placeholder:text-neutral-400 bg-white font-medium transition-colors"
               />
               {searchQuery && (
                 <button
@@ -203,14 +197,14 @@ export default function OrdersSection() {
               )}
             </div>
 
-            <div className="relative min-w-[150px]">
+            <div className="relative min-w-37.5">
               <select
                 value={statusFilter}
                 onChange={(e) => {
                   setStatusFilter(e.target.value);
                   setPage(1);
                 }}
-                className="w-full pl-3.5 pr-9 py-3 border border-neutral-200 rounded-xl focus:border-[#F27318] outline-none text-sm text-[#1A1714] bg-white appearance-none cursor-pointer font-medium transition-colors"
+                className="w-full pl-3.5 pr-9 py-3 border border-neutral-200 rounded-xl focus:border-brand outline-none text-sm text-[#1A1714] bg-white appearance-none cursor-pointer font-medium transition-colors"
               >
                 {STATUS_OPTIONS.map((opt) => (
                   <option key={opt.value} value={opt.value}>
@@ -224,11 +218,11 @@ export default function OrdersSection() {
               />
             </div>
 
-            <div className="relative min-w-[170px]">
+            <div className="relative min-w-42.5">
               <select
                 value={sortBy}
                 onChange={(e) => setSortBy(e.target.value)}
-                className="w-full pl-3.5 pr-9 py-3 border border-neutral-200 rounded-xl focus:border-[#F27318] outline-none text-sm text-[#1A1714] bg-white appearance-none cursor-pointer font-medium transition-colors"
+                className="w-full pl-3.5 pr-9 py-3 border border-neutral-200 rounded-xl focus:border-brand outline-none text-sm text-[#1A1714] bg-white appearance-none cursor-pointer font-medium transition-colors"
               >
                 {SORT_OPTIONS.map((opt) => (
                   <option key={opt.value} value={opt.value}>
@@ -243,8 +237,6 @@ export default function OrdersSection() {
             </div>
           </div>
 
-          {/* FE-28: the server offers no search/sort for order history,
-              so say plainly that both operate on the loaded page. */}
           <p className="text-xs text-neutral-400 shrink-0 -mt-2">
             Search and sort apply only to the orders loaded on this page.
           </p>
@@ -288,7 +280,7 @@ export default function OrdersSection() {
         </>
       ) : (
         <div className="flex-1 min-h-0 flex flex-col items-center justify-center text-center bg-neutral-50 rounded-2xl">
-          <div className="w-16 h-16 rounded-2xl bg-white flex items-center justify-center mb-5 text-[#F27318]">
+          <div className="w-16 h-16 rounded-2xl bg-white flex items-center justify-center mb-5 text-brand">
             <Package size={26} />
           </div>
           <h3 className="text-[18px] font-semibold text-[#1A1714]">
@@ -300,7 +292,7 @@ export default function OrdersSection() {
           </p>
           <Link
             to="/shop"
-            className="inline-flex items-center gap-2 px-6 py-2.5 bg-[#F27318] hover:bg-[#D9620E] text-white text-[14px] font-medium rounded-lg transition-colors"
+            className="inline-flex items-center gap-2 px-6 py-2.5 bg-brand hover:bg-brand-hover text-white text-[14px] font-medium rounded-lg transition-colors"
           >
             Start Shopping
             <ArrowRight size={13} />

@@ -16,10 +16,6 @@ import {
   categoryParentId,
 } from "../../../utils/categoryTree";
 
-// Phase 7 split (from Categories.jsx) — the hierarchical tree
-// rendering: expand/collapse, subtree product counts, sibling
-// reorder and the row actions. Markup moved verbatim; tree state
-// comes from hooks/useCategoryTree in the page.
 export default function CategoryTree({
   treeRows,
   siblingIdsByParent,
@@ -98,11 +94,10 @@ export default function CategoryTree({
                 </p>
               </div>
               <span
-                className={`inline-flex items-center px-2.5 py-1 rounded-full text-[11px] font-semibold capitalize shrink-0 ${
-                  category.status === "active"
-                    ? "bg-emerald-50 text-emerald-700"
-                    : "bg-slate-100 text-slate-600"
-                }`}
+                className={`inline-flex items-center px-2.5 py-1 rounded-full text-[11px] font-semibold capitalize shrink-0 ${category.status === "active"
+                  ? "bg-emerald-50 text-emerald-700"
+                  : "bg-slate-100 text-slate-600"
+                  }`}
               >
                 {category.status === "active" ? "Active" : "Inactive"}
               </span>

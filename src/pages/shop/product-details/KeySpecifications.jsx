@@ -6,12 +6,8 @@ import {
   DoorClosed,
   ArrowRight,
 } from "lucide-react";
+import { groupSpecifications } from "../../../utils/variantSelection";
 
-// ---------------------------------------------------------------
-// Adapt this to your product schema. Each entry reads the first
-// non-empty value; entries with no value are hidden automatically.
-// A selected variant's fields win over the product's.
-// ---------------------------------------------------------------
 const present = (v) => v !== undefined && v !== null && String(v).trim() !== "";
 
 const formatDimensions = (d) => {
@@ -67,9 +63,11 @@ export default function KeySpecifications({
   product,
   selectedVariant,
   onViewAll,
+  definitions = {},
 }) {
   const specs = buildKeySpecs(product, selectedVariant);
-  if (specs.length === 0) return null;
+  const catalogGroups = groupSpecifications(product, definitions);
+  if (specs.length === 0 && catalogGroups.length === 0) return null;
 
   return (
     <section aria-labelledby="key-specs-heading" className="mb-10">
@@ -84,7 +82,7 @@ export default function KeySpecifications({
           <button
             type="button"
             onClick={onViewAll}
-            className="flex items-center gap-2 font-dm-sans text-sm font-semibold text-neutral-900 underline underline-offset-4 hover:text-[#F27318] focus:outline-none focus-visible:ring-2 focus-visible:ring-[#F27318]"
+            className="flex items-center gap-2 font-dm-sans text-sm font-semibold text-neutral-900 underline underline-offset-4 hover:text-brand focus:outline-none focus-visible:ring-2 focus-visible:ring-brand"
           >
             View All
             <ArrowRight size={16} aria-hidden="true" />
@@ -115,6 +113,26 @@ export default function KeySpecifications({
           </li>
         ))}
       </ul>
+
+      {catalogGroups.length > 0 && (
+        <div className="mt-10 grid grid-cols-1 gap-x-10 gap-y-7 lg:grid-cols-2">
+          {catalogGroups.map((group) => (
+            <div key={group.group}>
+              <h3 className="mb-2 text-[14px] font-bold uppercase tracking-widest text-[#1A1714]">
+                {group.group}
+              </h3>
+              <dl className="space-y-1.5">
+                {group.items.map((item) => (
+                  <div key={item.key} className="flex gap-2 text-[15px]">
+                    <dt className="font-medium text-black/45">{item.label}:</dt>
+                    <dd className="text-[#1A1714]">{item.value}</dd>
+                  </div>
+                ))}
+              </dl>
+            </div>
+          ))}
+        </div>
+      )}
     </section>
   );
 }

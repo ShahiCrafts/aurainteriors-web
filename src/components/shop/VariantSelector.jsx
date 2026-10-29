@@ -1,13 +1,3 @@
-// Phase 7 (catalog) — the product page variant selector. Option
-// groups come from the product's variantOptionKeys with labels
-// from the catalog schema; the per-value states come from
-// utils/variantSelection (the same-variant rule in UI form):
-//   - a value forming NO enabled combination with the other
-//     selected options is disabled ("combination unavailable")
-//   - a value whose combinations are all out of stock is
-//     disabled with out-of-stock styling
-// The parent owns the selection; this component only renders
-// and reports changes.
 import {
   optionValueStates,
   findVariantBySelection,
@@ -60,15 +50,13 @@ export default function VariantSelector({
                     onClick={() =>
                       onSelectionChange({ ...selection, [key]: entry.value })
                     }
-                    className={`px-4 py-2.5 rounded-lg border text-[14px] font-semibold transition-all ${
-                      entry.selected
-                        ? "border-[#F27318] bg-[#F27318]/[0.08] text-[#1A1714]"
-                        : "border-black/10 bg-white text-black/70 hover:border-black/30"
-                    } ${
-                      disabled
+                    className={`px-4 py-2.5 rounded-lg border text-[14px] font-semibold transition-all ${entry.selected
+                      ? "border-brand bg-brand/8 text-[#1A1714]"
+                      : "border-black/10 bg-white text-black/70 hover:border-black/30"
+                      } ${disabled
                         ? "opacity-45 cursor-not-allowed line-through decoration-black/40 hover:border-black/10"
                         : ""
-                    }`}
+                      }`}
                   >
                     {entry.value}
                   </button>

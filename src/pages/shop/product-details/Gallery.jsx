@@ -1,7 +1,7 @@
 import { motion, AnimatePresence } from "framer-motion";
 import { Star, ChevronLeft, ChevronRight, Maximize2, X } from "lucide-react";
 import ImageMagnifier from "../../../components/shop/ImageMagnifier";
-import arIcon from "../../../assets/icons/ar_icon.png";
+import arIcon from "../../../assets/icons/icon-ar-view.png";
 import Dialog from "../../../components/common/Dialog";
 
 export default function Gallery({
@@ -24,11 +24,10 @@ export default function Gallery({
             <button
               key={index}
               onClick={() => setSelectedImage(index)}
-              className={`relative shrink-0 w-20 h-20 rounded-lg overflow-hidden border-2 transition-all ${
-                selectedImage === index
-                  ? "border-[#F27318]"
+              className={`relative shrink-0 w-20 h-20 rounded-lg overflow-hidden border-2 transition-all ${selectedImage === index
+                  ? "border-brand"
                   : "border-transparent hover:border-black/10"
-              }`}
+                }`}
             >
               <img
                 src={getImageUrl(image)}
@@ -54,11 +53,11 @@ export default function Gallery({
       <div className="space-y-6 flex-1">
         {/* Main Image */}
         <div className="w-full overflow-hidden">
-          <div className="relative rounded-xl overflow-hidden bg-black/[0.02] border border-black/[0.05] w-full h-[444px]">
+          <div className="relative rounded-xl overflow-hidden bg-black/2 border border-black/5 w-full h-111">
             {/* Bestseller badge on image */}
             {product.isFeatured && (
               <div className="absolute top-4 left-4 z-10 flex items-center gap-1.5 bg-white text-[#1A1714] text-[13px] font-bold px-3 py-1.5 rounded-md shadow-sm">
-                <Star size={13} className="fill-[#F27318] text-[#F27318]" />
+                <Star size={13} className="fill-brand text-brand" />
                 Bestseller
               </div>
             )}
@@ -98,11 +97,10 @@ export default function Gallery({
               {images.map((_, index) => (
                 <div
                   key={index}
-                  className={`h-1.5 rounded-full transition-all duration-300 ${
-                    selectedImage === index
-                      ? "w-5 bg-[#F27318]"
+                  className={`h-1.5 rounded-full transition-all duration-300 ${selectedImage === index
+                      ? "w-5 bg-brand"
                       : "w-1.5 bg-neutral-300/60"
-                  }`}
+                    }`}
                 />
               ))}
             </div>
@@ -133,7 +131,7 @@ export function GalleryLightbox({
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
             transition={{ duration: 0.2 }}
-            className="fixed inset-0 z-[100] bg-black/90 flex items-center justify-center"
+            className="fixed inset-0 z-100 bg-black/90 flex items-center justify-center"
             onClick={() => setIsLightboxOpen(false)}
           >
             <Dialog
@@ -214,11 +212,10 @@ export function GalleryLightbox({
                     <button
                       key={index}
                       onClick={() => setSelectedImage(index)}
-                      className={`shrink-0 w-12 h-12 rounded-lg overflow-hidden border-2 transition-all ${
-                        selectedImage === index
+                      className={`shrink-0 w-12 h-12 rounded-lg overflow-hidden border-2 transition-all ${selectedImage === index
                           ? "border-white"
                           : "border-transparent opacity-60 hover:opacity-100"
-                      }`}
+                        }`}
                     >
                       <img
                         src={getImageUrl(image)}

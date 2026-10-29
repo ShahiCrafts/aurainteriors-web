@@ -35,10 +35,6 @@ export default function ReviewForm({
     },
   });
 
-  // FE-15: same captured-defaults defect as ReviewModal — defaultValues
-  // are read once at mount, so swapping the target review on the mounted
-  // form showed (and submitted) the previous review's values. Reset to
-  // the CURRENT target whenever it changes; blank for a new review.
   useEffect(() => {
     reset({
       rating: existingReview?.rating || 0,
@@ -130,11 +126,10 @@ export default function ReviewForm({
               >
                 <Star
                   size={28}
-                  className={`${
-                    star <= (hoveredRating || rating)
-                      ? "fill-amber-400 text-amber-400"
-                      : "text-neutral-300"
-                  } transition-colors`}
+                  className={`${star <= (hoveredRating || rating)
+                    ? "fill-amber-400 text-amber-400"
+                    : "text-neutral-300"
+                    } transition-colors`}
                 />
               </button>
             ))}

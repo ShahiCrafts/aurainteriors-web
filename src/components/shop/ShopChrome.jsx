@@ -12,9 +12,13 @@ export default function ShopChrome({ children }) {
         {/* AD BANNER */}
         <div className="w-full mb-6 md:mb-8">
           <img
-            src="/ad-banner.png"
+            src="/promo-ad-banner.webp"
             alt="Promotion"
-            className="w-full object-cover block shadow-sm h-[30px] md:h-[40px] lg:h-auto"
+            width={1915}
+            height={68}
+            loading="lazy"
+            decoding="async"
+            className="w-full object-cover block shadow-sm h-7.5 md:h-10 lg:h-auto"
             style={{ objectPosition: "center center" }}
           />
         </div>

@@ -1,10 +1,6 @@
 import { motion } from "framer-motion";
 import { Plus, X, Image } from "lucide-react";
 
-// Phase 7 split (from Products.jsx) — the product image picker in
-// the Basic Info tab: empty dropzone, previews with simulated
-// upload progress, +N overflow and remove. Markup moved verbatim;
-// state arrives from useProductFormState.
 export default function ProductImageUploader({
   imagePreviews,
   uploadProgress,
@@ -78,7 +74,7 @@ export default function ProductImageUploader({
                           stiffness: 350,
                           damping: 22,
                         }}
-                        className="relative w-[122px] h-[122px] rounded-xl overflow-hidden border border-gray-200 group bg-gray-50 shrink-0"
+                        className="relative w-30.5 h-30.5 rounded-xl overflow-hidden border border-gray-200 group bg-gray-50 shrink-0"
                       >
                         <img
                           src={preview.url}
@@ -139,7 +135,7 @@ export default function ProductImageUploader({
                     <button
                       type="button"
                       onClick={() => setShowAllImages(false)}
-                      className="w-[122px] h-[122px] rounded-xl border border-gray-200 bg-gray-50 flex flex-col items-center justify-center cursor-pointer hover:bg-gray-100 hover:border-gray-300 transition-all shrink-0 text-xs font-semibold text-gray-400"
+                      className="w-30.5 h-30.5 rounded-xl border border-gray-200 bg-gray-50 flex flex-col items-center justify-center cursor-pointer hover:bg-gray-100 hover:border-gray-300 transition-all shrink-0 text-xs font-semibold text-gray-400"
                     >
                       Show less
                     </button>
@@ -148,7 +144,7 @@ export default function ProductImageUploader({
                   {/* Add Image Dashed Card */}
                   <div
                     onClick={() => fileInputRef.current?.click()}
-                    className="w-[122px] h-[122px] rounded-xl border-2 border-dashed border-gray-300 hover:border-teal-400 bg-gray-50/50 flex flex-col items-center justify-center cursor-pointer transition-all hover:bg-teal-50/30 group shrink-0"
+                    className="w-30.5 h-30.5 rounded-xl border-2 border-dashed border-gray-300 hover:border-teal-400 bg-gray-50/50 flex flex-col items-center justify-center cursor-pointer transition-all hover:bg-teal-50/30 group shrink-0"
                     title="Upload more images"
                   >
                     <div className="w-8 h-8 rounded-lg bg-gray-100 group-hover:bg-teal-100 flex items-center justify-center transition-colors mb-1.5">

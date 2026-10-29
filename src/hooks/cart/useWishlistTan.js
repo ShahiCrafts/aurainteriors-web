@@ -17,10 +17,6 @@ const WISHLIST_KEYS = {
   ],
 };
 
-// Get user's wishlist.
-// staleTime: 5 min — all ProductCard instances subscribe to this same query
-// key, so one network request serves the entire page. Without staleTime every
-// remount would refetch even though the data is still fresh.
 export const useWishlist = (options = {}) => {
   const userId = useAuthStore((state) => state.user?._id);
   return useQuery({

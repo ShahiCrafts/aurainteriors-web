@@ -8,14 +8,6 @@ import { useCallback, useEffect, useRef, useState } from "react";
  *                          so data is never re-fetched when the user scrolls back up.
  * @returns {[React.RefCallback, boolean]}  [callback ref to attach to the element, isInView]
  *
- * FE-32: this returns a CALLBACK ref, not a RefObject. The old
- * implementation read ref.current once inside an effect with deps
- * [once]; when the element mounted later (conditional/async render)
- * ref.current was null at that moment, the effect early-returned, and
- * the element was NEVER observed — isInView stayed false forever and
- * the gated section stayed blank. A callback ref fires exactly when
- * the node attaches/detaches, so late-mounted and swapped elements are
- * observed as they appear. Callers use it identically: ref={ref}.
  */
 export default function useInView(options = {}, once = true) {
   const [isInView, setIsInView] = useState(false);

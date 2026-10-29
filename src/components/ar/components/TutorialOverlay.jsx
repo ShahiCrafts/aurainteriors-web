@@ -1,6 +1,6 @@
 import React from "react";
-import { BsArrowLeftRight } from "react-icons/bs";
-import { TbHandFinger } from "react-icons/tb";
+import { ArrowLeftRight, Hand } from "lucide-react";
+
 
 const TutorialOverlay = ({
   tutorialStep,
@@ -24,20 +24,20 @@ const TutorialOverlay = ({
         <div className="relative mb-6">
           <div className="flex items-center gap-8">
             <div className="flex flex-col items-center animate-pulse">
-              <TbHandFinger
+              <Hand
                 size={32}
                 className="text-teal-400 transform -rotate-12"
               />
               <div className="w-3 h-3 bg-teal-400 rounded-full mt-1" />
             </div>
             <div className="flex items-center gap-2">
-              <BsArrowLeftRight size={24} className="text-white/80" />
+              <ArrowLeftRight size={24} className="text-white/80" />
             </div>
             <div
               className="flex flex-col items-center animate-pulse"
               style={{ animationDelay: "0.15s" }}
             >
-              <TbHandFinger
+              <Hand
                 size={32}
                 className="text-teal-400 transform rotate-12"
               />

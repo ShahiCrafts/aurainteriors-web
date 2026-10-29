@@ -144,9 +144,9 @@ export default function CatalogListing({
 
   const priceBounds = facets?.price
     ? {
-        min: facets.price.min ?? DEFAULT_PRICE_BOUNDS.min,
-        max: facets.price.max ?? DEFAULT_PRICE_BOUNDS.max,
-      }
+      min: facets.price.min ?? DEFAULT_PRICE_BOUNDS.min,
+      max: facets.price.max ?? DEFAULT_PRICE_BOUNDS.max,
+    }
     : DEFAULT_PRICE_BOUNDS;
   const setPriceRange = (value) =>
     updateFilters(
@@ -259,11 +259,10 @@ export default function CatalogListing({
           {index > 0 && <span className="text-black/10">/</span>}
           <Link
             to={crumb.path}
-            className={`hover:text-[#F27318] transition-colors ${
-              index === breadcrumbs.length - 1
-                ? "text-black/60 font-semibold pointer-events-none"
-                : ""
-            }`}
+            className={`hover:text-brand transition-colors ${index === breadcrumbs.length - 1
+              ? "text-black/60 font-semibold pointer-events-none"
+              : ""
+              }`}
           >
             {crumb.name}
           </Link>
@@ -280,7 +279,7 @@ export default function CatalogListing({
   return (
     <>
       {header}
-      <div className="max-w-[1440px] mx-auto px-4 sm:px-5 md:px-6 lg:px-4">
+      <div className="max-w-360 mx-auto px-4 sm:px-5 md:px-6 lg:px-4">
         <div className="flex flex-col lg:flex-row gap-6 md:gap-8 lg:gap-12">
           <aside className="hidden lg:block lg:w-64 shrink-0">
             {breadcrumbNav(
@@ -309,7 +308,7 @@ export default function CatalogListing({
                       <span
                         role="status"
                         aria-label="Loading product count"
-                        className="inline-block align-middle h-[1lh] w-20 sm:w-24 rounded bg-[#F0EFED] motion-safe:animate-pulse"
+                        className="inline-block align-middle h-lh w-20 sm:w-24 rounded bg-[#F0EFED] motion-safe:animate-pulse"
                       />
                     ) : (
                       `(${totalProducts} items)`
@@ -321,12 +320,12 @@ export default function CatalogListing({
               <div className="flex items-center gap-2 sm:gap-3 flex-wrap">
                 <button
                   onClick={() => setShowMobileFilters(true)}
-                  className="lg:hidden relative flex items-center gap-2 px-4 py-2.5 rounded-md border border-black/[0.08] hover:border-[#F27318] bg-white text-[13px] sm:text-[14px] font-semibold text-[#1A1714] transition-all"
+                  className="lg:hidden relative flex items-center gap-2 px-4 py-2.5 rounded-md border border-black/8 hover:border-brand bg-white text-[13px] sm:text-[14px] font-semibold text-[#1A1714] transition-all"
                 >
                   <SlidersHorizontal size={16} className="text-black/40" />
                   <span>Filters</span>
                   {activeFilterCount > 0 && (
-                    <span className="ml-1 inline-flex items-center justify-center w-5 h-5 rounded-full bg-[#F27318] text-white text-[10px] font-bold">
+                    <span className="ml-1 inline-flex items-center justify-center w-5 h-5 rounded-full bg-brand text-white text-[10px] font-bold">
                       {activeFilterCount}
                     </span>
                   )}
@@ -335,19 +334,18 @@ export default function CatalogListing({
                 <div className="relative">
                   <button
                     onClick={() => setShowSortDropdown(!showSortDropdown)}
-                    className="flex items-center gap-2 sm:gap-3 px-3 sm:px-4 py-2.5 rounded-md border border-black/[0.08] hover:border-[#F27318] bg-white text-[13px] sm:text-[14px] font-semibold text-[#1A1714] transition-all"
+                    className="flex items-center gap-2 sm:gap-3 px-3 sm:px-4 py-2.5 rounded-md border border-black/8 hover:border-brand bg-white text-[13px] sm:text-[14px] font-semibold text-[#1A1714] transition-all"
                   >
                     <span className="hidden sm:inline text-black/40 font-medium">
                       Sort by:
                     </span>
-                    <span className="truncate max-w-[120px] sm:max-w-none">
+                    <span className="truncate max-w-30 sm:max-w-none">
                       {SORT_OPTIONS.find((opt) => opt.value === sortBy)?.label}
                     </span>
                     <ChevronDown
                       size={16}
-                      className={`text-black/20 transition-transform duration-300 shrink-0 ${
-                        showSortDropdown ? "rotate-180" : ""
-                      }`}
+                      className={`text-black/20 transition-transform duration-300 shrink-0 ${showSortDropdown ? "rotate-180" : ""
+                        }`}
                     />
                   </button>
 
@@ -359,16 +357,15 @@ export default function CatalogListing({
                         className="fixed inset-0 z-10 cursor-default"
                         onClick={() => setShowSortDropdown(false)}
                       />
-                      <div className="absolute right-0 top-full mt-2 w-64 bg-white border border-black/[0.08] rounded-md shadow-[0_10px_30px_rgba(0,0,0,0.08)] z-20 py-1 overflow-hidden">
+                      <div className="absolute right-0 top-full mt-2 w-64 bg-white border border-black/8 rounded-md shadow-[0_10px_30px_rgba(0,0,0,0.08)] z-20 py-1 overflow-hidden">
                         {SORT_OPTIONS.map((option) => (
                           <button
                             key={option.value}
                             onClick={() => handleSortChange(option.value)}
-                            className={`w-full text-left px-5 py-3 text-[14px] font-medium transition-colors ${
-                              sortBy === option.value
-                                ? "text-[#F27318] bg-[#F27318]/5"
-                                : "text-[#1A1714] hover:bg-black/[0.02]"
-                            }`}
+                            className={`w-full text-left px-5 py-3 text-[14px] font-medium transition-colors ${sortBy === option.value
+                              ? "text-brand bg-brand/5"
+                              : "text-[#1A1714] hover:bg-black/2"
+                              }`}
                           >
                             {option.label}
                           </button>
@@ -378,26 +375,24 @@ export default function CatalogListing({
                   )}
                 </div>
 
-                <div className="flex items-center border border-black/[0.08] rounded-md p-1 bg-white">
+                <div className="flex items-center border border-black/8 rounded-md p-1 bg-white">
                   <button
                     onClick={() => setViewMode("grid")}
                     aria-label="Grid view"
-                    className={`p-2 rounded-[4px] transition-all ${
-                      viewMode === "grid"
-                        ? "bg-[#F27318] text-white shadow-sm"
-                        : "text-black/30 hover:text-black/60"
-                    }`}
+                    className={`p-2 rounded-sm transition-all ${viewMode === "grid"
+                      ? "bg-brand text-white shadow-sm"
+                      : "text-black/30 hover:text-black/60"
+                      }`}
                   >
                     <Grid3X3 size={16} />
                   </button>
                   <button
                     onClick={() => setViewMode("list")}
                     aria-label="List view"
-                    className={`p-2 rounded-[4px] transition-all ${
-                      viewMode === "list"
-                        ? "bg-[#F27318] text-white shadow-sm"
-                        : "text-black/30 hover:text-black/60"
-                    }`}
+                    className={`p-2 rounded-sm transition-all ${viewMode === "list"
+                      ? "bg-brand text-white shadow-sm"
+                      : "text-black/30 hover:text-black/60"
+                      }`}
                   >
                     <List size={16} />
                   </button>
@@ -415,7 +410,7 @@ export default function CatalogListing({
                   type="button"
                   onClick={handleClearSearch}
                   aria-label="Clear search"
-                  className="inline-flex items-center gap-1 rounded-full border border-[#F0EFED] px-2.5 py-1 hover:text-[#F27318]"
+                  className="inline-flex items-center gap-1 rounded-full border border-[#F0EFED] px-2.5 py-1 hover:text-brand"
                 >
                   <X size={13} aria-hidden="true" /> Clear
                 </button>
@@ -491,7 +486,7 @@ export default function CatalogListing({
                 </div>
 
                 {pagination.pages > 1 && (
-                  <div className="flex flex-col sm:flex-row items-center justify-between gap-4 mt-12 sm:mt-16 pt-8 border-t border-black/[0.03]">
+                  <div className="flex flex-col sm:flex-row items-center justify-between gap-4 mt-12 sm:mt-16 pt-8 border-t border-black/3">
                     <span className="text-[11px] font-bold text-black/20 uppercase tracking-widest order-2 sm:order-1">
                       Page {pagination.page} / {pagination.pages}
                     </span>
@@ -528,12 +523,12 @@ export default function CatalogListing({
             label="Filters"
             className="absolute right-0 top-0 h-full w-[88%] max-w-sm bg-white shadow-xl overflow-y-auto"
           >
-            <div className="flex items-center justify-between px-5 py-4 border-b border-black/[0.06] sticky top-0 bg-white z-10">
+            <div className="flex items-center justify-between px-5 py-4 border-b border-black/6 sticky top-0 bg-white z-10">
               <h3 className="text-[16px] font-bold text-[#1A1714]">Filters</h3>
               <button
                 onClick={() => setShowMobileFilters(false)}
                 aria-label="Close filters"
-                className="p-2 rounded-full hover:bg-black/[0.04] transition-colors"
+                className="p-2 rounded-full hover:bg-black/4 transition-colors"
               >
                 <X size={20} />
               </button>
@@ -545,7 +540,7 @@ export default function CatalogListing({
                 sidebar
               )}
             </div>
-            <div className="sticky bottom-0 bg-white border-t border-black/[0.06] p-4">
+            <div className="sticky bottom-0 bg-white border-t border-black/6 p-4">
               <button
                 onClick={() => setShowMobileFilters(false)}
                 className="w-full py-3 bg-[#1A1714] text-white rounded-lg text-[13px] font-bold"

@@ -10,12 +10,6 @@ import { useReorderCategories } from "../../../../hooks/catalog/useCatalogTan";
 import { toast } from "../../../../lib/toast";
 import formatError from "../../../../utils/errorHandler";
 
-// Phase 7 split (from Categories.jsx) — the category-tree state
-// machine over the EXISTING src/utils/categoryTree.js pure helpers:
-// expansion state (the tree starts fully expanded), tree building,
-// visible-row flattening, sibling grouping, the parent-picker
-// options (excluding the edited category and its descendants) and
-// sibling reorder. Logic moved verbatim from the page.
 export default function useCategoryTree(categories, editingCategory) {
   const [expandedCategories, setExpandedCategories] = useState([]);
   const [expandedInitialized, setExpandedInitialized] = useState(false);
@@ -46,10 +40,6 @@ export default function useCategoryTree(categories, editingCategory) {
     );
   };
 
-  // Phase 6 — hierarchical tree view, built client-side from the
-  // flat list (which includes inactive categories, unlike the
-  // server's active-only tree endpoint). Subtree product counts
-  // roll up from the flat list's direct productCount values.
   const treeRoots = useMemo(() => buildCategoryTree(categories), [categories]);
   const treeRows = useMemo(
     () =>
@@ -80,10 +70,6 @@ export default function useCategoryTree(categories, editingCategory) {
     });
   };
 
-  // Parent picker options: the whole tree, minus — when editing —
-  // the category itself and its descendants (the server rejects
-  // cycles with a 400; excluding them keeps the invalid choice
-  // unselectable in the first place).
   const parentOptions = useMemo(() => {
     const excluded = editingCategory
       ? descendantIdSet(categories, editingCategory._id)

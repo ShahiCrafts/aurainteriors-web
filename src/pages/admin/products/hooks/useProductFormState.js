@@ -12,16 +12,6 @@ import { getImageUrl as getImageUrlUtil } from "../../../../utils/imageUrl";
 import formatError from "../../../../utils/errorHandler";
 import { parseProductPriceStock } from "../../../../utils/adminForms";
 
-// Phase 7 split (from Products.jsx) — the product form state
-// machine: form values, image list, model list, catalog-attribute
-// state, open/edit seeding, and submit payload construction. Logic
-// moved verbatim from the page; the payload shape is pinned by
-// tests/pages/admin/Products.formSubmission.test.jsx and
-// ProductForm.catalog.test.jsx.
-//
-// Dead code NOT carried over (verified unused in the original
-// file by grep — defined once, never referenced): the
-// `colorOptions` and `materialOptions` arrays.
 export default function useProductFormState({ categories }) {
   const fileInputRef = useRef(null);
   const modelFileInputRef = useRef(null);
@@ -62,9 +52,6 @@ export default function useProductFormState({ categories }) {
     roomSlugs: [],
   });
 
-  // Phase 6 (catalog): the dynamic attributes section reports its
-  // resolution + values up here so Save can validate and build the
-  // catalogAttributes payload with the shared catalog utils.
   const [catalogAttrState, setCatalogAttrState] = useState({
     resolved: [],
     values: {},
@@ -436,20 +423,12 @@ export default function useProductFormState({ categories }) {
       return;
     }
 
-    // FE-45: price/stock go to the server as NUMBERS within its
-    // bounds (price positive, stock integer >= 0 — product.validator).
-    // The old code sent the raw input strings.
     const parsed = parseProductPriceStock(productForm);
     if (!parsed.ok) {
       toast.error(parsed.error);
       return;
     }
 
-    // Phase 6 (catalog): dynamic attributes validate client-side
-    // with the same rules the server applies (required, bounds,
-    // enum membership). A failure blocks the save, jumps to the
-    // Attributes tab and shows the per-field errors there; the
-    // server's own 400s still surface through the catch below.
     const missingAttrs = missingRequiredAttributes(
       catalogAttrState.resolved,
       catalogAttrState.values,

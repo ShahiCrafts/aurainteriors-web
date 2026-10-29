@@ -2,9 +2,6 @@ import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import announcementApi from "../../api/announcementApi";
 import { scopedAdminKey } from "../../lib/adminScope";
 
-// FE-08: admin keys are scoped to the signed-in admin's id (read at
-// call time). The public variants serve public data and deliberately
-// keep their identity-free keys so both bundles share one cache entry.
 export const ANNOUNCEMENT_KEYS = {
   all: () => scopedAdminKey("announcements"),
   list: (params) => [...ANNOUNCEMENT_KEYS.all(), "list", params],
@@ -14,12 +11,6 @@ export const ANNOUNCEMENT_KEYS = {
   publicDetail: (id) => ["announcements", "public", "detail", id],
 };
 
-// FE-55: mutations invalidate the narrowest keys that changed —
-// the list prefix (every list-param variant, nothing else) plus the
-// specific detail/stats keys below — never ANNOUNCEMENT_KEYS.all(),
-// whose prefix also matched every other announcement's detail and
-// the public variants' admin siblings. The old code invalidated
-// all() and then detail(id) again, a redundant subset call.
 const announcementListKey = () => [...ANNOUNCEMENT_KEYS.all(), "list"];
 
 // ==================== ADMIN HOOKS ====================
@@ -58,8 +49,6 @@ export const useCreateAnnouncement = () => {
   return useMutation({
     mutationFn: (data) => announcementApi.create(data),
     onSuccess: () => {
-      // FE-55: a new announcement appears in lists and changes the
-      // status counts on the same admin screen — nothing else.
       queryClient.invalidateQueries({ queryKey: announcementListKey() });
       queryClient.invalidateQueries({ queryKey: ANNOUNCEMENT_KEYS.stats() });
     },

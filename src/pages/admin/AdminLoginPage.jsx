@@ -18,25 +18,28 @@ import useAuthStore, { getAuthRevision } from "../../store/authStore";
 import { useShallow } from "zustand/react/shallow";
 import { toast } from "../../lib/toast";
 import formatError from "../../utils/errorHandler";
+import adminLoginWorkspace from "../../assets/images/admin/admin-login-workspace.webp";
+import adminLoginSofa from "../../assets/images/admin/admin-login-sofa.webp";
+import adminLoginLivingRoom from "../../assets/images/admin/admin-login-living-room.webp";
 
 const CAROUSEL_SLIDES = [
   {
     image:
-      "https://images.unsplash.com/photo-1618220048045-10a6dbdf83e0?q=80&w=1480&auto=format&fit=crop",
+      adminLoginWorkspace,
     title: "Curating Space, Elevating Lifestyles",
     subtitle:
       "Manage luxury showroom collections, real-time client consultations, and digital interior catalogs.",
   },
   {
     image:
-      "https://images.unsplash.com/photo-1555041469-a586c61ea9bc?q=80&w=1480&auto=format&fit=crop",
+      adminLoginSofa,
     title: "Every Detail, Perfectly Placed",
     subtitle:
       "From product inventory to client orders — everything you need to run a world-class interiors brand.",
   },
   {
     image:
-      "https://images.unsplash.com/photo-1616486338812-3dadae4b4ace?q=80&w=1480&auto=format&fit=crop",
+      adminLoginLivingRoom,
     title: "Where Design Meets Intelligence",
     subtitle:
       "Real-time analytics, team tools, and seamless operations all in one secure administrative suite.",
@@ -314,11 +317,11 @@ export default function AdminLoginPage() {
         ))}
 
         {/* Overlay */}
-        <div className="absolute inset-0 bg-gradient-to-t from-[#0A0A0A]/90 via-[#1A1714]/40 to-black/10 z-0" />
+        <div className="absolute inset-0 bg-linear-to-t from-[#0A0A0A]/90 via-[#1A1714]/40 to-black/10 z-0" />
 
         {/* Bottom content */}
         <div className="relative z-10 p-12 pb-10">
-          <div className="max-w-[480px]">
+          <div className="max-w-120">
             <h1
               key={activeSlide + "-title"}
               className="text-[36px] font-bold text-white leading-tight tracking-tight mb-3 transition-all duration-700"
@@ -376,11 +379,11 @@ export default function AdminLoginPage() {
 
       {/* RIGHT PANEL: Authentication Form */}
       <div className="w-full lg:w-1/2 flex items-center justify-center p-8 md:p-16 relative bg-white">
-        <div className="w-full max-w-[420px] relative z-10 flex flex-col">
+        <div className="w-full max-w-105 relative z-10 flex flex-col">
           {/* Form Header */}
           <div className="mb-8">
             <img
-              src="/logo.png"
+              src="/logo-aura-interiors.webp"
               alt="Aura Interiors"
               className="h-10 w-auto object-contain mb-6 select-none"
             />
@@ -406,7 +409,7 @@ export default function AdminLoginPage() {
                     type="email"
                     value={email}
                     onChange={(e) => setEmail(e.target.value)}
-                    className="w-full h-[48px] pl-11 pr-4 bg-[#F0F5FF] hover:bg-[#E5EEFF] border border-transparent rounded-[8px] focus:border-[#0066FF] focus:ring-1 focus:ring-[#0066FF] outline-none transition-all duration-200 text-[15px] text-[#1A1714] placeholder-neutral-400"
+                    className="w-full h-12 pl-11 pr-4 bg-[#F0F5FF] hover:bg-[#E5EEFF] border border-transparent rounded-lg focus:border-[#0066FF] focus:ring-1 focus:ring-[#0066FF] outline-none transition-all duration-200 text-[15px] text-[#1A1714] placeholder-neutral-400"
                     placeholder="admin@aurainteriors.com"
                     required
                   />
@@ -426,7 +429,7 @@ export default function AdminLoginPage() {
                     type={showPassword ? "text" : "password"}
                     value={password}
                     onChange={(e) => setPassword(e.target.value)}
-                    className="w-full h-[48px] pl-11 pr-11 bg-[#F0F5FF] hover:bg-[#E5EEFF] border border-transparent rounded-[8px] focus:border-[#0066FF] focus:ring-1 focus:ring-[#0066FF] outline-none transition-all duration-200 text-[15px] text-[#1A1714] placeholder-neutral-400"
+                    className="w-full h-12 pl-11 pr-11 bg-[#F0F5FF] hover:bg-[#E5EEFF] border border-transparent rounded-lg focus:border-[#0066FF] focus:ring-1 focus:ring-[#0066FF] outline-none transition-all duration-200 text-[15px] text-[#1A1714] placeholder-neutral-400"
                     placeholder="••••••••••••"
                     required
                   />
@@ -465,7 +468,7 @@ export default function AdminLoginPage() {
               <button
                 type="submit"
                 disabled={isLoggingIn}
-                className="w-full h-[48px] bg-[#0066FF] hover:bg-[#0052CC] text-white font-bold text-[14px] tracking-wide rounded-[8px] mt-4 transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed border-none cursor-pointer flex items-center justify-center gap-2"
+                className="w-full h-12 bg-[#0066FF] hover:bg-[#0052CC] text-white font-bold text-[14px] tracking-wide rounded-lg mt-4 transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed border-none cursor-pointer flex items-center justify-center gap-2"
               >
                 {isLoggingIn ? "Authenticating..." : "Continue"}
               </button>
@@ -491,7 +494,7 @@ export default function AdminLoginPage() {
                       value={val}
                       onChange={(e) => handleOtpChange(i, e.target.value)}
                       onKeyDown={(e) => handleOtpKeyDown(i, e)}
-                      className="w-12 h-14 text-center text-[22px] font-bold bg-[#F0F5FF] hover:bg-[#E5EEFF] border border-transparent rounded-[8px] focus:bg-white focus:border-[#0066FF] focus:ring-1 focus:ring-[#0066FF] outline-none transition-all duration-200 text-[#1A1714]"
+                      className="w-12 h-14 text-center text-[22px] font-bold bg-[#F0F5FF] hover:bg-[#E5EEFF] border border-transparent rounded-lg focus:bg-white focus:border-[#0066FF] focus:ring-1 focus:ring-[#0066FF] outline-none transition-all duration-200 text-[#1A1714]"
                       required
                     />
                   ))}
@@ -520,7 +523,7 @@ export default function AdminLoginPage() {
               <button
                 type="submit"
                 disabled={isVerifying || otp.length !== 6}
-                className="w-full h-[48px] bg-[#0066FF] hover:bg-[#0052CC] text-white font-bold text-[14px] tracking-wide rounded-[8px] transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed border-none cursor-pointer flex items-center justify-center gap-2"
+                className="w-full h-12 bg-[#0066FF] hover:bg-[#0052CC] text-white font-bold text-[14px] tracking-wide rounded-lg transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed border-none cursor-pointer flex items-center justify-center gap-2"
               >
                 {isVerifying ? "Verifying..." : "Verify & Log In"}
               </button>

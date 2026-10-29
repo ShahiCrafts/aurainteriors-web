@@ -6,18 +6,9 @@ import ChatConversation from "../../components/admin/chat/ChatConversation";
 import AiAssistantPanel from "../../components/admin/chat/AiAssistantPanel";
 
 const SupportChats = () => {
-  // FE-25: selection is stored as an ID and the open chat is DERIVED
-  // from the latest polled list. The old code stored a snapshot object:
-  // polling updated the list but the open conversation kept rendering
-  // the snapshot's status/metadata, and the auto-select effect re-ran
-  // whenever selectedChat became null — so tapping Back instantly
-  // re-selected chats[0] and the list was unreachable on mobile.
   const [selectedChatId, setSelectedChatId] = useState(null);
   const [statusFilter, setStatusFilter] = useState("all");
   const [page, setPage] = useState(1);
-  // FE-25: AI-panel replies are delivered to the composer as a draft
-  // (nonce-keyed so the same text can be inserted twice) instead of
-  // the old console.log stubs.
   const [draftReply, setDraftReply] = useState(null);
 
   const {
@@ -35,8 +26,6 @@ const SupportChats = () => {
   const selectedChat =
     chats.find((c) => (c._id ?? c.id) === selectedChatId) ?? null;
 
-  // Auto-select the first chat ONCE, on first load only — never again
-  // after the user navigates back to the list.
   const hasAutoSelectedRef = useRef(false);
   useEffect(() => {
     if (
@@ -68,9 +57,8 @@ const SupportChats = () => {
       <div className="flex-1 flex overflow-hidden gap-4 min-h-0">
         {/* Sidebar: Chat List */}
         <div
-          className={`w-full lg:w-86 flex-col flex shrink-0 min-h-0 ${
-            selectedChat ? "hidden lg:flex" : "flex"
-          }`}
+          className={`w-full lg:w-86 flex-col flex shrink-0 min-h-0 ${selectedChat ? "hidden lg:flex" : "flex"
+            }`}
         >
           <div className="flex-1 overflow-hidden flex flex-col min-h-0 border-r border-r-gray-100">
             <ChatList
@@ -90,9 +78,8 @@ const SupportChats = () => {
 
         {/* Conversation Area */}
         <div
-          className={`flex-1 bg-white border border-gray-100 overflow-hidden flex flex-col min-h-0 ${
-            !selectedChat ? "hidden lg:flex" : "flex"
-          }`}
+          className={`flex-1 bg-white border border-gray-100 overflow-hidden flex flex-col min-h-0 ${!selectedChat ? "hidden lg:flex" : "flex"
+            }`}
         >
           {selectedChat ? (
             <div className="flex flex-col h-full min-h-0">
@@ -119,7 +106,7 @@ const SupportChats = () => {
           ) : (
             /* Empty State */
             <div className="flex items-center justify-center h-full text-gray-500 w-full relative overflow-hidden bg-gray-50/30">
-              <div className="absolute inset-0 opacity-[0.03] bg-[radial-gradient(#0066ff_1px,transparent_1px)] [background-size:20px_20px]" />
+              <div className="absolute inset-0 opacity-[0.03] bg-[radial-gradient(#0066ff_1px,transparent_1px)] [bg-size:20px_20px]" />
               <div className="text-center p-8 relative z-10 max-w-sm">
                 <div className="w-20 h-20 rounded-3xl bg-white shadow-sm border border-gray-100 flex items-center justify-center mx-auto mb-6 transform rotate-3">
                   <MessageCircle className="w-10 h-10 text-teal-600" />

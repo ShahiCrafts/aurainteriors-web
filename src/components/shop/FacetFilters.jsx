@@ -1,11 +1,3 @@
-// Phase 7 (catalog) — facet-driven filter sections + selected-
-// filter chips for the storefront listing engine. Every control
-// here renders FROM the Phase 5 facets payload the server returns
-// with GET /products?facets=1 (disjunctive counts: each facet's
-// counts exclude its own filter), and every interaction writes
-// back into the URL in the server's grammar via the page's
-// updateFilters patch. No facet data is invented client-side.
-// Styling matches FilterSidebar (the sections render inside it).
 import { useMemo, useState } from "react";
 import { Search, Star, X } from "lucide-react";
 import { FilterCheckbox } from "./FilterSidebar";
@@ -14,11 +6,6 @@ import {
   facetGroupVisible,
 } from "../../utils/catalogListing";
 
-// Post-delivery fix (catalog): options the payload carries PLUS
-// any selected values it no longer lists (a group kept visible
-// because its filter is active must show the applied values so
-// they can be unchecked in place; synthesized entries carry no
-// count — none is invented for them).
 function withSelectedOptions(facet, entry) {
   const base = facet.options || [];
   const known = new Set(base.map((option) => String(option.value)));
@@ -37,16 +24,11 @@ const SectionLabel = ({ children }) => (
 const optionCount = (option) =>
   option?.count === undefined ? undefined : option.count;
 
-// Boolean facet → a single toggle row (the server emits the
-// option with value true/"true"; the URL selection is "true").
 function BooleanFacet({ facet, entry, onToggle }) {
   const option = (facet.options || []).find(
     (item) => String(item.value) === "true",
   );
   const checked = (entry?.values || []).includes("true");
-  // No "true" option and nothing applied: nothing to offer. An
-  // applied boolean stays rendered (count-less) so it can be
-  // unchecked in place.
   if (!option && !checked) return null;
   return (
     <div>
@@ -61,9 +43,6 @@ function BooleanFacet({ facet, entry, onToggle }) {
   );
 }
 
-// Color facet → swatch chips with counts. Stored color values
-// are display names or hex; a hex value paints its own swatch,
-// names fall back to a neutral tile with the name beside it.
 function ColorFacet({ facet, entry, onToggle }) {
   const selected = new Set(entry?.values || []);
   const options = withSelectedOptions(facet, entry);
@@ -86,11 +65,10 @@ function ColorFacet({ facet, entry, onToggle }) {
                   ? value
                   : `${value} (${option.count})`
               }
-              className={`flex items-center gap-1.5 rounded-full border py-1 pl-1 pr-2.5 text-xs font-dm-sans transition-all ${
-                active
-                  ? "border-[#F27318] bg-[#F27318]/10 text-[#1A1714]"
-                  : "border-neutral-200 bg-white text-neutral-700 hover:border-[#F27318]"
-              }`}
+              className={`flex items-center gap-1.5 rounded-full border py-1 pl-1 pr-2.5 text-xs font-dm-sans transition-all ${active
+                ? "border-brand bg-brand/10 text-[#1A1714]"
+                : "border-neutral-200 bg-white text-neutral-700 hover:border-brand"
+                }`}
             >
               <span
                 className="h-4 w-4 rounded-full border border-black/10"
@@ -110,9 +88,6 @@ function ColorFacet({ facet, entry, onToggle }) {
   );
 }
 
-// Range facet (integer / decimal / measurement / money) →
-// min/max inputs; the hint shows the bounds the facet actually
-// holds (facet option values), never invented limits.
 function RangeFacet({ facet, entry, onRange }) {
   const numeric = (facet.options || [])
     .map((option) => Number(option.value))
@@ -123,9 +98,6 @@ function RangeFacet({ facet, entry, onRange }) {
       : null;
   const [min, setMin] = useState(entry?.min ?? "");
   const [max, setMax] = useState(entry?.max ?? "");
-  // Resync during render when the applied range changes (the
-  // FE-23 pattern from FilterSidebar): typing never touches the
-  // prop (commit happens on blur), so this cannot fight the user.
   const [prevEntry, setPrevEntry] = useState({
     min: entry?.min ?? null,
     max: entry?.max ?? null,
@@ -151,7 +123,7 @@ function RangeFacet({ facet, entry, onRange }) {
           onChange={(event) => setMin(event.target.value)}
           onBlur={commit}
           placeholder={bounds ? String(bounds.min) : "Min"}
-          className="w-full min-w-0 rounded-lg border border-neutral-200 px-2.5 py-2 text-xs font-dm-sans outline-none transition-all focus:border-[#F27318] focus:ring-1 focus:ring-[#F27318]"
+          className="w-full min-w-0 rounded-lg border border-neutral-200 px-2.5 py-2 text-xs font-dm-sans outline-none transition-all focus:border-brand focus:ring-1 focus:ring-brand"
         />
         <span className="text-neutral-300">–</span>
         <input
@@ -161,7 +133,7 @@ function RangeFacet({ facet, entry, onRange }) {
           onChange={(event) => setMax(event.target.value)}
           onBlur={commit}
           placeholder={bounds ? String(bounds.max) : "Max"}
-          className="w-full min-w-0 rounded-lg border border-neutral-200 px-2.5 py-2 text-xs font-dm-sans outline-none transition-all focus:border-[#F27318] focus:ring-1 focus:ring-[#F27318]"
+          className="w-full min-w-0 rounded-lg border border-neutral-200 px-2.5 py-2 text-xs font-dm-sans outline-none transition-all focus:border-brand focus:ring-1 focus:ring-brand"
         />
       </div>
       {bounds && (
@@ -174,8 +146,6 @@ function RangeFacet({ facet, entry, onRange }) {
   );
 }
 
-// Checkbox facet (enum / multi-enum / string) with counts; a
-// search box appears when the facet carries more than 8 values.
 function CheckboxFacet({ facet, entry, onToggle }) {
   const [query, setQuery] = useState("");
   const options = useMemo(
@@ -202,7 +172,7 @@ function CheckboxFacet({ facet, entry, onToggle }) {
             value={query}
             onChange={(event) => setQuery(event.target.value)}
             placeholder={`Search ${facet.label.toLowerCase()}…`}
-            className="w-full rounded-lg border border-neutral-200 bg-white py-2 pl-8 pr-2.5 text-xs font-dm-sans outline-none transition-all focus:border-[#F27318] focus:ring-1 focus:ring-[#F27318]"
+            className="w-full rounded-lg border border-neutral-200 bg-white py-2 pl-8 pr-2.5 text-xs font-dm-sans outline-none transition-all focus:border-brand focus:ring-1 focus:ring-brand"
           />
         </div>
       )}
@@ -230,10 +200,6 @@ function CheckboxFacet({ facet, entry, onToggle }) {
 }
 
 export function AttributeFacet({ facet, entry, onToggle, onRange }) {
-  // Post-delivery fix (catalog): a group with nothing selectable
-  // and nothing applied does not render at all — no header over
-  // an empty list. (Defect 2: the seeded catalogue carries no
-  // attribute values, so most groups were empty shells.)
   if (!facet || !facetGroupVisible(facet, entry)) return null;
   if (facet.type === "boolean") {
     return <BooleanFacet facet={facet} entry={entry} onToggle={onToggle} />;
@@ -247,13 +213,6 @@ export function AttributeFacet({ facet, entry, onToggle, onRange }) {
   return <CheckboxFacet facet={facet} entry={entry} onToggle={onToggle} />;
 }
 
-// The colors/materials attribute facets are skipped here — the
-// legacy Colors/Materials sections in FilterSidebar drive those
-// same fields (the server treats both spellings as one facet;
-// LEGACY_FACET_KEYS lives in utils/catalogListing).
-
-// The facet sections block rendered inside FilterSidebar: room
-// dimension, availability, then one control per attribute facet.
 export default function FacetSections({
   facets,
   selection = {},
@@ -323,12 +282,6 @@ export default function FacetSections({
   );
 }
 
-// Selected-filter chips with per-chip removal + clear-all. Chips
-// are sized like the (removed) subcategory pills — px-4 py-2,
-// 13px semibold — and carry an adornment when the chip builder
-// supplies one: a color dot for color filters, a star for the
-// rating threshold. Price/range chips read pre-formatted labels
-// (formatNPR) from the builder.
 export function FilterChips({ chips = [], onRemove, onClearAll }) {
   if (chips.length === 0) return null;
   return (
@@ -339,7 +292,7 @@ export function FilterChips({ chips = [], onRemove, onClearAll }) {
       {chips.map((chip) => (
         <span
           key={chip.id}
-          className="inline-flex items-center gap-2 rounded-full border border-black/[0.08] bg-white px-4 py-2 text-[13px] font-semibold text-[#1A1714] shadow-[0_1px_2px_rgba(26,23,20,0.05)] transition-colors hover:border-[#F27318] font-dm-sans"
+          className="inline-flex items-center gap-2 rounded-full border border-black/8 bg-white px-4 py-2 text-[13px] font-semibold text-[#1A1714] shadow-[0_1px_2px_rgba(26,23,20,0.05)] transition-colors hover:border-brand font-dm-sans"
         >
           {chip.swatch && (
             <span
@@ -352,7 +305,7 @@ export function FilterChips({ chips = [], onRemove, onClearAll }) {
           {chip.kind === "rating" && (
             <Star
               aria-hidden="true"
-              className="h-4 w-4 shrink-0 fill-[#F27318] text-[#F27318]"
+              className="h-4 w-4 shrink-0 fill-brand text-brand"
             />
           )}
           {chip.label}
@@ -360,7 +313,7 @@ export function FilterChips({ chips = [], onRemove, onClearAll }) {
             type="button"
             onClick={() => onRemove(chip)}
             aria-label={`Remove filter ${chip.label}`}
-            className="-mr-1.5 flex h-5 w-5 items-center justify-center rounded-full text-neutral-400 transition-colors hover:bg-[#F27318]/10 hover:text-[#1A1714] focus-visible:outline-2 focus-visible:outline-[#F27318]"
+            className="-mr-1.5 flex h-5 w-5 items-center justify-center rounded-full text-neutral-400 transition-colors hover:bg-brand/10 hover:text-[#1A1714] focus-visible:outline-2 focus-visible:outline-brand"
           >
             <X className="h-3.5 w-3.5" />
           </button>
@@ -369,7 +322,7 @@ export function FilterChips({ chips = [], onRemove, onClearAll }) {
       <button
         type="button"
         onClick={onClearAll}
-        className="px-1 text-[13px] font-bold text-[#F27318] hover:text-[#D9620E] font-dm-sans underline underline-offset-4 focus-visible:outline-2 focus-visible:outline-[#F27318]"
+        className="px-1 text-[13px] font-bold text-brand hover:text-brand-hover font-dm-sans underline underline-offset-4 focus-visible:outline-2 focus-visible:outline-brand"
       >
         Clear all filters
       </button>

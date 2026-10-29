@@ -65,20 +65,8 @@ export const useToggleBlogLike = () => {
   return useMutation({
     mutationFn: (id) => blogApi.toggleLike(id),
     onSuccess: (data, id) => {
-      // FE-55: the old code invalidated BLOG_KEYS.all for a single
-      // like — every blog list, detail, categories, popular and
-      // featured query refetched. The server returns the
-      // authoritative count ({ data: { likes } }, blog.controller
-      // likeBlog), so patch the affected post directly in every
-      // cached blog surface instead and invalidate nothing.
-      // Surfaces whose payload has no post collection (categories,
-      // stats, sources) are returned untouched by the updater.
       const likes = data?.data?.likes;
       if (!Number.isFinite(likes)) {
-        // No usable count in the response: a direct update is not
-        // safe, so fall back to the narrowest invalidation that
-        // covers the visible like counts — this post's detail and
-        // the blog lists — never the whole domain.
         queryClient.invalidateQueries({ queryKey: BLOG_KEYS.detail(id) });
         queryClient.invalidateQueries({ queryKey: [...BLOG_KEYS.all, "list"] });
         return;

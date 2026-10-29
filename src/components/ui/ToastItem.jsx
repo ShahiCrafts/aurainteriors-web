@@ -7,14 +7,6 @@ import {
   Heart,
   X,
 } from "lucide-react";
-
-/**
- * Type tokens — tuned to sit naturally on this app's white background.
- *
- * Icon colours follow UX conventions (green=success, red=error, amber=warning)
- * but the icon itself is rendered inline (no background badge) to keep the
- * card light and consistent with the app's minimal component style.
- */
 const TYPE = {
   success: {
     Icon: CheckCircle2,
@@ -38,23 +30,6 @@ const TYPE = {
   },
 };
 
-/**
- * ToastItem
- *
- * Design mirrors the app's ProductCard / TrustBanner card style exactly:
- *  - White background
- *  - rounded-xl  (12px — same as action buttons and modal cards)
- *  - 1px border rgba(0,0,0,0.08)  — same as neutral-200 cards
- *  - Shadow: 0 4px 20px rgba(0,0,0,0.08)  — identical to ProductCard
- *  - Inline coloured icon — no background badge
- *  - 2.5px progress bar at bottom (scaleX, GPU composited)
- *  - Slides up 12px on enter, fades+slides down on exit
- *
- *  ╭──────────────────────────────────────╮
- *  │  ✓   Added to cart              ✕   │
- *  │▓▓▓▓▓░░░░░░░░░░░░░░░░░░░░░░░░░░░░░  │
- *  ╰──────────────────────────────────────╯
- */
 export default function ToastItem({
   id,
   type = "info",

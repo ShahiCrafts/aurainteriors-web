@@ -1,4 +1,5 @@
 import { useState } from "react";
+import { salesReportData, downloadExcel } from "../../utils/adminExcelExport";
 import {
   TrendingUp,
   TrendingDown,
@@ -37,6 +38,51 @@ import {
 import { getImageUrl } from "../../utils/imageUrl";
 import { formatNPR } from "../../utils/formatCurrency";
 
+
+const StatCard = ({
+  title,
+  value,
+  growth,
+  icon: Icon,
+  suffix = "",
+  prefix = "",
+}) => (
+  <motion.div
+    initial={{ opacity: 0, y: 20 }}
+    animate={{ opacity: 1, y: 0 }}
+    className="bg-white p-6 rounded-3xl border border-neutral-100 shadow-sm shadow-black/5"
+  >
+    <div className="flex items-start justify-between">
+      <div className="p-3 bg-teal-50 rounded-2xl">
+        <Icon className="text-teal-600" size={24} />
+      </div>
+      {growth !== undefined && (
+        <div
+          className={`flex items-center gap-1 text-xs font-bold px-2.5 py-1 rounded-full ${growth >= 0
+            ? "bg-green-50 text-green-600"
+            : "bg-red-50 text-red-600"
+            }`}
+        >
+          {growth >= 0 ? (
+            <TrendingUp size={12} />
+          ) : (
+            <TrendingDown size={12} />
+          )}
+          {Math.abs(growth)}%
+        </div>
+      )}
+    </div>
+    <div className="mt-4">
+      <p className="text-sm font-medium text-neutral-500">{title}</p>
+      <h3 className="text-2xl font-bold text-neutral-900 mt-1">
+        {prefix}
+        {typeof value === "number" ? value.toLocaleString() : value}
+        {suffix}
+      </h3>
+    </div>
+  </motion.div>
+);
+
 export default function SalesReports() {
   const [range, setRange] = useState("month");
 
@@ -64,73 +110,14 @@ export default function SalesReports() {
     if (!chartData.length) return;
 
     try {
-      // PERF-F-002: dynamic import — see Dashboard.jsx.
-      const XLSX = await import("xlsx");
-
-      const ws = XLSX.utils.json_to_sheet(
-        chartData.map((item) => ({
-          Date: item._id,
-          Revenue: item.revenue,
-          Orders: item.orders,
-          ItemsSold: item.items,
-        })),
-      );
-
-      const wb = XLSX.utils.book_new();
-      XLSX.utils.book_append_sheet(wb, ws, "Sales Report");
-      XLSX.writeFile(
-        wb,
+      await downloadExcel(
+        salesReportData(chartData),
         `Aura_Sales_Report_${range}_${new Date().toISOString().split("T")[0]}.xlsx`,
       );
     } catch (error) {
       console.error("Error generating report:", error);
     }
   };
-
-  const StatCard = ({
-    title,
-    value,
-    growth,
-    icon: Icon,
-    suffix = "",
-    prefix = "",
-  }) => (
-    <motion.div
-      initial={{ opacity: 0, y: 20 }}
-      animate={{ opacity: 1, y: 0 }}
-      className="bg-white p-6 rounded-3xl border border-neutral-100 shadow-sm shadow-black/5"
-    >
-      <div className="flex items-start justify-between">
-        <div className="p-3 bg-teal-50 rounded-2xl">
-          <Icon className="text-teal-600" size={24} />
-        </div>
-        {growth !== undefined && (
-          <div
-            className={`flex items-center gap-1 text-xs font-bold px-2.5 py-1 rounded-full ${
-              growth >= 0
-                ? "bg-green-50 text-green-600"
-                : "bg-red-50 text-red-600"
-            }`}
-          >
-            {growth >= 0 ? (
-              <TrendingUp size={12} />
-            ) : (
-              <TrendingDown size={12} />
-            )}
-            {Math.abs(growth)}%
-          </div>
-        )}
-      </div>
-      <div className="mt-4">
-        <p className="text-sm font-medium text-neutral-500">{title}</p>
-        <h3 className="text-2xl font-bold text-neutral-900 mt-1">
-          {prefix}
-          {typeof value === "number" ? value.toLocaleString() : value}
-          {suffix}
-        </h3>
-      </div>
-    </motion.div>
-  );
 
   if (reportsLoading || categoryLoading || topProductsLoading) {
     return (
@@ -162,11 +149,10 @@ export default function SalesReports() {
               <button
                 key={r}
                 onClick={() => setRange(r)}
-                className={`px-4 py-1.5 text-xs font-bold rounded-lg transition-all capitalize ${
-                  range === r
-                    ? "bg-white text-teal-700 shadow-sm"
-                    : "text-neutral-500 hover:text-neutral-700"
-                }`}
+                className={`px-4 py-1.5 text-xs font-bold rounded-lg transition-all capitalize ${range === r
+                  ? "bg-white text-teal-700 shadow-sm"
+                  : "text-neutral-500 hover:text-neutral-700"
+                  }`}
               >
                 {r}
               </button>
@@ -218,7 +204,7 @@ export default function SalesReports() {
               Daily Revenue
             </div>
           </div>
-          <div className="h-[350px]">
+          <div className="h-87.5">
             <ResponsiveContainer width="100%" height="100%">
               <AreaChart data={chartData}>
                 <defs>
@@ -270,7 +256,7 @@ export default function SalesReports() {
           <h3 className="text-lg font-bold text-neutral-900 mb-8">
             Categories Impact
           </h3>
-          <div className="h-[350px]">
+          <div className="h-87.5">
             <ResponsiveContainer width="100%" height="100%">
               <PieChart>
                 <Pie
@@ -339,7 +325,7 @@ export default function SalesReports() {
                     />
                   </div>
                   <div>
-                    <p className="text-sm font-bold text-neutral-900 truncate max-w-[200px]">
+                    <p className="text-sm font-bold text-neutral-900 truncate max-w-50">
                       {product.name}
                     </p>
                     <p className="text-xs text-neutral-500 mt-0.5">
@@ -365,7 +351,7 @@ export default function SalesReports() {
           <h3 className="text-lg font-bold text-neutral-900 mb-8">
             Order Velocity
           </h3>
-          <div className="h-[300px]">
+          <div className="h-75">
             <ResponsiveContainer width="100%" height="100%">
               <BarChart data={chartData}>
                 <XAxis

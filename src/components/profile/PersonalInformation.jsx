@@ -95,9 +95,6 @@ export default function PersonalInformation() {
       dateOfBirth: data.dateOfBirth || null,
     };
 
-    // FE-18: capture the auth revision as the mutation STARTS; if the
-    // user signs out while it is in flight, the completion must not
-    // resurrect the session via signIn.
     const revisionAtStart = getAuthRevision();
     updateProfile(updateData, {
       onSuccess: (resData) => {
@@ -231,9 +228,9 @@ export default function PersonalInformation() {
               <div className="space-y-2">
                 <Skeleton className="w-20 h-4 rounded mb-2" />
                 <div className="flex flex-wrap gap-2">
-                  <Skeleton className="flex-1 sm:flex-none min-w-[80px] h-10 rounded-lg" />
-                  <Skeleton className="flex-1 sm:flex-none min-w-[80px] h-10 rounded-lg" />
-                  <Skeleton className="flex-1 sm:flex-none min-w-[80px] h-10 rounded-lg" />
+                  <Skeleton className="flex-1 sm:flex-none min-w-20 h-10 rounded-lg" />
+                  <Skeleton className="flex-1 sm:flex-none min-w-20 h-10 rounded-lg" />
+                  <Skeleton className="flex-1 sm:flex-none min-w-20 h-10 rounded-lg" />
                 </div>
               </div>
               <div className="space-y-2">
@@ -296,7 +293,7 @@ export default function PersonalInformation() {
               <button
                 onClick={handleAvatarClick}
                 disabled={isUploadingAvatar}
-                className="flex items-center gap-2 px-4 py-2.5 bg-[#F27318] hover:bg-[#D96515] disabled:bg-[#F27318]/70 text-white text-sm font-semibold rounded-lg transition-all font-dm-sans"
+                className="flex items-center gap-2 px-4 py-2.5 bg-brand hover:bg-[#D96515] disabled:bg-brand/70 text-white text-sm font-semibold rounded-lg transition-all font-dm-sans"
               >
                 <>
                   <Upload size={16} />
@@ -344,7 +341,7 @@ export default function PersonalInformation() {
                 id="profile-firstName"
                 type="text"
                 {...register("firstName")}
-                className={`w-full px-4 py-2.5 rounded-lg border focus:ring-1 outline-none transition-all font-dm-sans text-neutral-900 ${errors.firstName ? "border-red-500 focus:border-red-500 focus:ring-red-500/20" : "border-neutral-200 focus:border-[#F27318] focus:ring-[#F27318]"}`}
+                className={`w-full px-4 py-2.5 rounded-lg border focus:ring-1 outline-none transition-all font-dm-sans text-neutral-900 ${errors.firstName ? "border-red-500 focus:border-red-500 focus:ring-red-500/20" : "border-neutral-200 focus:border-brand focus:ring-brand"}`}
               />
               {errors.firstName && (
                 <p className="text-xs text-red-500 mt-1 font-dm-sans">
@@ -363,7 +360,7 @@ export default function PersonalInformation() {
                 id="profile-lastName"
                 type="text"
                 {...register("lastName")}
-                className={`w-full px-4 py-2.5 rounded-lg border focus:ring-1 outline-none transition-all font-dm-sans text-neutral-900 ${errors.lastName ? "border-red-500 focus:border-red-500 focus:ring-red-500/20" : "border-neutral-200 focus:border-[#F27318] focus:ring-[#F27318]"}`}
+                className={`w-full px-4 py-2.5 rounded-lg border focus:ring-1 outline-none transition-all font-dm-sans text-neutral-900 ${errors.lastName ? "border-red-500 focus:border-red-500 focus:ring-red-500/20" : "border-neutral-200 focus:border-brand focus:ring-brand"}`}
               />
               {errors.lastName && (
                 <p className="text-xs text-red-500 mt-1 font-dm-sans">
@@ -390,14 +387,14 @@ export default function PersonalInformation() {
                   className="w-full px-4 py-2.5 rounded-lg border border-neutral-200 bg-neutral-50 text-neutral-500 font-dm-sans cursor-not-allowed"
                 />
                 {user?.isEmailVerified && (
-                  <div className="absolute right-3 top-1/2 -translate-y-1/2 flex items-center gap-1 text-[#F27318]">
+                  <div className="absolute right-3 top-1/2 -translate-y-1/2 flex items-center gap-1 text-brand">
                     <Check size={14} />
                     <span className="text-xs font-medium">Verified</span>
                   </div>
                 )}
               </div>
               {user?.isEmailVerified && (
-                <p className="text-xs text-[#F27318] mt-1 flex items-center gap-1 font-dm-sans">
+                <p className="text-xs text-brand mt-1 flex items-center gap-1 font-dm-sans">
                   <Check size={12} />
                   Email verified
                 </p>
@@ -413,7 +410,7 @@ export default function PersonalInformation() {
               <div className="flex gap-2">
                 <select
                   aria-label="Phone country code"
-                  className="px-3 py-2.5 rounded-lg border border-neutral-200 focus:border-[#F27318] focus:ring-1 focus:ring-[#F27318] outline-none transition-all font-dm-sans text-neutral-900 bg-white"
+                  className="px-3 py-2.5 rounded-lg border border-neutral-200 focus:border-brand focus:ring-1 focus:ring-brand outline-none transition-all font-dm-sans text-neutral-900 bg-white"
                   defaultValue="+977"
                 >
                   <option value="+977">+977</option>
@@ -423,7 +420,7 @@ export default function PersonalInformation() {
                   type="tel"
                   {...register("phone")}
                   placeholder="98XXXXXXXX"
-                  className={`flex-1 px-4 py-2.5 rounded-lg border focus:ring-1 outline-none transition-all font-dm-sans text-neutral-900 ${errors.phone ? "border-red-500 focus:border-red-500 focus:ring-red-500/20" : "border-neutral-200 focus:border-[#F27318] focus:ring-[#F27318]"}`}
+                  className={`flex-1 px-4 py-2.5 rounded-lg border focus:ring-1 outline-none transition-all font-dm-sans text-neutral-900 ${errors.phone ? "border-red-500 focus:border-red-500 focus:ring-red-500/20" : "border-neutral-200 focus:border-brand focus:ring-brand"}`}
                 />
               </div>
               {errors.phone && (
@@ -448,11 +445,10 @@ export default function PersonalInformation() {
                     onClick={() =>
                       setValue("gender", option, { shouldDirty: true })
                     }
-                    className={`px-4 py-2.5 rounded-lg border-2 text-sm font-medium transition-all font-dm-sans capitalize flex-1 sm:flex-none min-w-[80px] ${
-                      gender === option
-                        ? "border-[#F27318] bg-[#F27318]/5 text-[#F27318]"
-                        : "border-neutral-200 text-neutral-600 hover:border-neutral-300"
-                    }`}
+                    className={`px-4 py-2.5 rounded-lg border-2 text-sm font-medium transition-all font-dm-sans capitalize flex-1 sm:flex-none min-w-20 ${gender === option
+                      ? "border-brand bg-brand/5 text-brand"
+                      : "border-neutral-200 text-neutral-600 hover:border-neutral-300"
+                      }`}
                   >
                     {option}
                   </button>
@@ -477,7 +473,7 @@ export default function PersonalInformation() {
                 type="date"
                 {...register("dateOfBirth")}
                 max={new Date().toISOString().split("T")[0]}
-                className={`w-full px-4 py-2.5 rounded-lg border focus:ring-1 outline-none transition-all font-dm-sans text-neutral-900 bg-white ${errors.dateOfBirth ? "border-red-500 focus:border-red-500 focus:ring-red-500/20" : "border-neutral-200 focus:border-[#F27318] focus:ring-[#F27318]"}`}
+                className={`w-full px-4 py-2.5 rounded-lg border focus:ring-1 outline-none transition-all font-dm-sans text-neutral-900 bg-white ${errors.dateOfBirth ? "border-red-500 focus:border-red-500 focus:ring-red-500/20" : "border-neutral-200 focus:border-brand focus:ring-brand"}`}
               />
               {errors.dateOfBirth && (
                 <p className="text-xs text-red-500 mt-1 font-dm-sans">
@@ -499,7 +495,7 @@ export default function PersonalInformation() {
             <button
               type="submit"
               disabled={isUpdating || !isDirty}
-              className="w-full sm:w-auto flex items-center justify-center gap-2 px-6 py-3 sm:py-2.5 bg-[#F27318] hover:bg-[#D96515] disabled:bg-[#F27318]/70 disabled:cursor-not-allowed text-white font-semibold rounded-lg transition-all font-dm-sans"
+              className="w-full sm:w-auto flex items-center justify-center gap-2 px-6 py-3 sm:py-2.5 bg-brand hover:bg-[#D96515] disabled:bg-brand/70 disabled:cursor-not-allowed text-white font-semibold rounded-lg transition-all font-dm-sans"
             >
               <>
                 <Check size={16} />

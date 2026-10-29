@@ -5,7 +5,7 @@
 // null (getModelUrl), NEVER to the raw value or a URL on the
 // attacker's host. Positive controls pin the legitimate flows the
 // audit's W11 behaviour table documented (Cloudinary, S3 GLBs,
-// API-origin uploads, relative paths, Unsplash photo-ids, fallbacks).
+// API-origin uploads, relative paths, legacy photo-ids, fallbacks).
 //
 // Test env config: VITE_API_BASE_URL=http://localhost:3001, so the
 // app's own configured origin is http://localhost:3001 (dev-style) —
@@ -56,7 +56,7 @@ const ATTACKS = [
   ["scheme without authority slashes", "https:evil.com/x.png"],
   ["own host, wrong port", "//localhost:3002/x.png"],
   ["own host, wrong port absolute", "http://localhost:3002/uploads/x.png"],
-  ["unsplash subdomain trick", "https://images.unsplash.com.evil.com/x.png"],
+  ["dicebear subdomain trick", "https://api.dicebear.com.evil.com/x.png"],
   [
     "s3 lookalike suffix",
     "https://fabritor.s3.ap-southeast-1.amazonaws.com.evil.com/x.glb",
@@ -130,10 +130,6 @@ describe("FE-03 validateMediaUrl — positive controls", () => {
       "API-origin over https (upgrade of own host)",
       "https://localhost:3001/uploads/products/a.jpg",
     ],
-    [
-      "unsplash https image",
-      "https://images.unsplash.com/photo-1555041469-a586c61ea9bc?w=800&auto=format&fit=crop",
-    ],
     ["fallback constant", FALLBACK_IMAGES.product],
   ];
   for (const [name, url] of POSITIVES) {
@@ -165,9 +161,9 @@ describe("FE-03 validateMediaUrl — positive controls", () => {
     );
   });
 
-  it("chat restriction: unsplash/S3 are NOT allowed when allowedHosts is set", () => {
+  it("chat restriction: external-photo/S3 hosts are NOT allowed when allowedHosts is set", () => {
     const chat = { fallback: FB, allowedHosts: ["res.cloudinary.com"] };
-    expect(validateMediaUrl("https://images.unsplash.com/x.jpg", chat)).toBe(
+    expect(validateMediaUrl("https://api.dicebear.com/x.jpg", chat)).toBe(
       FB,
     );
     expect(
@@ -217,8 +213,10 @@ describe("FE-03 getImageUrl — W11 behaviour table, hardened rows", () => {
   });
 
   it("rows 8/10/11/12: legitimate flows unchanged", () => {
+    // Phase 2: bare legacy photo IDs no longer expand to an external
+    // host — they resolve to the local fallback.
     expect(getImageUrl("photo-1555041469-a586c61ea9bc", "products")).toBe(
-      "https://images.unsplash.com/photo-1555041469-a586c61ea9bc?auto=format&fit=crop&w=800&q=80",
+      FALLBACK_IMAGES.product,
     );
     expect(getImageUrl("uploads/foo.jpg", "products")).toBe(
       "http://localhost:3001/uploads/foo.jpg",

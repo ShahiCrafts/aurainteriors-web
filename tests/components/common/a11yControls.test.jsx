@@ -15,7 +15,7 @@ vi.mock("../../../src/hooks/product/useCategoryTan", () => ({
 // FE-38: CategoryBar now consumes useArCatalogProducts (a React Query
 // hook) to find a real AR-capable product — mock it the same way the
 // FE-38 CategoryBar tests do (tests/components/navigation/
-// CategoryBar.fe38.test.jsx): a catalog whose first AR-capable
+// CategoryBar.test.jsx): a catalog whose first AR-capable
 // product carries a .glb model, so 'Try AR View' renders.
 vi.mock("../../../src/hooks/product/useArCatalogTan", () => ({
   useArCatalogProducts: () => ({

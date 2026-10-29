@@ -1,9 +1,3 @@
-// Phase 7 (catalog) — room landing page. Rooms are an
-// independent axis (a product appears in every room it suits);
-// the page is the shared CatalogListing with the room dimension
-// pinned, plus a hero from the room registry record. Filters stay
-// fully functional inside the room scope; the room facet itself
-// is hidden (the scope IS the room).
 import { Link, useParams } from "react-router-dom";
 import Navbar from "../../layouts/customer/Navbar";
 import Footer from "../../layouts/customer/Footer";
@@ -19,7 +13,7 @@ export default function RoomPage() {
   const room = rooms.find((entry) => entry.slug === slug) || null;
 
   const hero = room ? (
-    <div className="max-w-[1440px] mx-auto px-4 sm:px-5 md:px-6 lg:px-4 mb-8">
+    <div className="max-w-360 mx-auto px-4 sm:px-5 md:px-6 lg:px-4 mb-8">
       {room.image && (
         <img
           src={getImageUrl(room.image, "categories")}
@@ -41,7 +35,7 @@ export default function RoomPage() {
       <CategoryBar />
       <main className="min-h-screen bg-white pb-12 md:pb-20 font-dm-sans pt-6">
         {!isLoading && !room ? (
-          <div className="max-w-[1440px] mx-auto px-4 sm:px-5 md:px-6 lg:px-4">
+          <div className="max-w-360 mx-auto px-4 sm:px-5 md:px-6 lg:px-4">
             <div className="text-center py-16 sm:py-24 bg-[#F9F8F6] rounded-2xl px-4">
               <h1 className="text-[18px] font-bold text-[#1A1714]">
                 Room not found

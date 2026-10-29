@@ -87,10 +87,6 @@ export default function Contacts() {
       toast.error(formatError(err, "Update failed"));
     }
   };
-
-  // FE-37: no pending guard existed — a double-click on Delete fired
-  // duplicate DELETE mutations (the second erroring after the first
-  // succeeded). Guard re-entry and disable while pending.
   const [isDeleting, setIsDeleting] = useState(false);
   const deletingRef = useRef(false);
   const handleDelete = async () => {
@@ -181,7 +177,7 @@ export default function Contacts() {
                   setFilterStatus(e.target.value);
                   setPage(1);
                 }}
-                className="px-4 py-2.5 bg-white border border-gray-200 rounded-lg text-sm focus:outline-none focus:border-teal-500 cursor-pointer min-w-[130px]"
+                className="px-4 py-2.5 bg-white border border-gray-200 rounded-lg text-sm focus:outline-none focus:border-teal-500 cursor-pointer min-w-32.5"
               >
                 <option value="all">All Status</option>
                 <option value="new">New</option>
@@ -194,7 +190,7 @@ export default function Contacts() {
                   setFilterCategory(e.target.value);
                   setPage(1);
                 }}
-                className="px-4 py-2.5 bg-white border border-gray-200 rounded-lg text-sm focus:outline-none focus:border-teal-500 cursor-pointer min-w-[130px]"
+                className="px-4 py-2.5 bg-white border border-gray-200 rounded-lg text-sm focus:outline-none focus:border-teal-500 cursor-pointer min-w-32.5"
               >
                 <option value="all">All Categories</option>
                 {Object.keys(categoryLabels).map((cat) => (
@@ -252,28 +248,25 @@ export default function Contacts() {
                     key={contact._id}
                     initial={{ opacity: 0 }}
                     animate={{ opacity: 1 }}
-                    className={`hover:bg-gray-50/50 transition-colors ${
-                      !contact.isRead ? "bg-teal-50/20" : ""
-                    }`}
+                    className={`hover:bg-gray-50/50 transition-colors ${!contact.isRead ? "bg-teal-50/20" : ""
+                      }`}
                   >
                     <td className="px-6 py-4">
                       <div className="flex items-center gap-3">
                         <div
-                          className={`w-8 h-8 rounded-full flex items-center justify-center font-bold text-xs ${
-                            !contact.isRead
-                              ? "bg-teal-100 text-teal-700"
-                              : "bg-gray-100 text-gray-500"
-                          }`}
+                          className={`w-8 h-8 rounded-full flex items-center justify-center font-bold text-xs ${!contact.isRead
+                            ? "bg-teal-100 text-teal-700"
+                            : "bg-gray-100 text-gray-500"
+                            }`}
                         >
                           {(contact.name || "?")[0].toUpperCase()}
                         </div>
                         <div className="min-w-0">
                           <p
-                            className={`text-sm truncate ${
-                              !contact.isRead
-                                ? "font-bold text-gray-900"
-                                : "font-medium text-gray-700"
-                            }`}
+                            className={`text-sm truncate ${!contact.isRead
+                              ? "font-bold text-gray-900"
+                              : "font-medium text-gray-700"
+                              }`}
                           >
                             {contact.name}
                           </p>
@@ -284,13 +277,12 @@ export default function Contacts() {
                       </div>
                     </td>
                     <td className="px-6 py-4">
-                      <div className="max-w-[200px]">
+                      <div className="max-w-50">
                         <p
-                          className={`text-sm truncate ${
-                            !contact.isRead
-                              ? "text-gray-900 font-semibold"
-                              : "text-gray-600"
-                          }`}
+                          className={`text-sm truncate ${!contact.isRead
+                            ? "text-gray-900 font-semibold"
+                            : "text-gray-600"
+                            }`}
                         >
                           {contact.subject}
                         </p>
@@ -358,11 +350,10 @@ export default function Contacts() {
                               `Marked as ${contact.isRead ? "unread" : "read"}`,
                             );
                           }}
-                          className={`p-2 rounded-lg transition-colors ${
-                            !contact.isRead
-                              ? "text-teal-600 hover:bg-teal-50"
-                              : "text-gray-400 hover:bg-gray-100"
-                          }`}
+                          className={`p-2 rounded-lg transition-colors ${!contact.isRead
+                            ? "text-teal-600 hover:bg-teal-50"
+                            : "text-gray-400 hover:bg-gray-100"
+                            }`}
                         >
                           {contact.isRead ? (
                             <MailOpen size={16} />

@@ -183,7 +183,7 @@ export default function Wishlist() {
                 )}
               </div>
 
-              <div className="relative min-w-[150px]">
+              <div className="relative min-w-37.5">
                 <select
                   value={categoryFilter}
                   onChange={(e) => {
@@ -205,7 +205,7 @@ export default function Wishlist() {
                 />
               </div>
 
-              <div className="relative min-w-[150px]">
+              <div className="relative min-w-37.5">
                 <select
                   value={sortBy}
                   onChange={(e) => {
@@ -275,12 +275,10 @@ export default function Wishlist() {
                 </div>
               )}
 
-              {totalPages > 1 && (
-                <p className="text-[11px] text-neutral-400 text-center tracking-wide">
-                  Showing page {page} of {totalPages || 1} ·{" "}
-                  {filteredItems.length} total items
-                </p>
-              )}
+              <p className="text-[11px] text-neutral-400 text-center tracking-wide">
+                Showing page {page} of {totalPages || 1} ·{" "}
+                {filteredItems.length} total items
+              </p>
             </div>
           )}
         </>

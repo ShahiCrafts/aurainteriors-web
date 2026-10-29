@@ -1,25 +1,3 @@
-/**
- * Web-vitals reporting (remediation Phase 8, PERF-F-008).
- *
- * OFF by default. Nothing in this module — including the `web-vitals`
- * package itself — is loaded unless the build sets:
- *
- *   VITE_WEB_VITALS=1
- *
- * When enabled, CLS / INP / LCP / FCP / TTFB are collected via a dynamic
- * import (so the library ships as its own lazy chunk, never in the entry
- * graph) and each metric is handed to a minimal sink:
- *
- *   - if VITE_WEB_VITALS_ENDPOINT is set and navigator.sendBeacon is
- *     available, the metric is beaconed there as JSON;
- *   - otherwise it is logged with console.debug (dev inspection only).
- *
- * There is deliberately no backend work here: choosing/hosting an
- * ingestion endpoint is an operations decision. With the flag off this
- * module is a strict no-op and safe to call unconditionally from
- * main.jsx.
- */
-
 let started = false;
 
 export function isWebVitalsEnabled() {

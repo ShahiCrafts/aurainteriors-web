@@ -17,8 +17,6 @@ import {
 import useAuthStore from "../../store/authStore";
 import { useShallow } from "zustand/react/shallow";
 import ConfirmationDialog from "../modals/ConfirmationDialog";
-// FE-06: the getAvatarUrl import that used to sit here was dead
-// (imported, never called in this file) and is removed.
 import { toast } from "../../lib/toast";
 import formatError from "../../utils/errorHandler";
 import { formatDate as formatDateShared } from "../../utils/formatDate";
@@ -91,8 +89,8 @@ export default function ReviewSection({
                         size={20}
                         className={
                           i < Math.round(stats.average)
-                            ? "fill-[#F27318] text-[#F27318]"
-                            : "fill-black/[0.08] text-transparent"
+                            ? "fill-brand text-brand"
+                            : "fill-black/8 text-transparent"
                         }
                       />
                     ))}
@@ -126,11 +124,11 @@ export default function ReviewSection({
                   </span>
                   <Star
                     size={16}
-                    className="fill-[#F27318] text-[#F27318] shrink-0"
+                    className="fill-brand text-brand shrink-0"
                   />
-                  <div className="flex-1 h-[6px] bg-black/[0.04] rounded-full overflow-hidden">
+                  <div className="flex-1 h-1.5 bg-black/4 rounded-full overflow-hidden">
                     <div
-                      className={`h-full rounded-full transition-all duration-700 ease-out ${filter.rating === item.stars ? "bg-[#1A1714]" : "bg-[#F27318]"}`}
+                      className={`h-full rounded-full transition-all duration-700 ease-out ${filter.rating === item.stars ? "bg-[#1A1714]" : "bg-brand"}`}
                       style={{
                         width:
                           stats.total > 0
@@ -152,7 +150,7 @@ export default function ReviewSection({
             {filter.rating && (
               <button
                 onClick={() => handleFilterChange({ rating: undefined })}
-                className="mt-4 text-[12px] font-bold text-[#F27318] hover:underline underline-offset-2 bg-transparent border-none cursor-pointer p-0 font-dm-sans"
+                className="mt-4 text-[12px] font-bold text-brand hover:underline underline-offset-2 bg-transparent border-none cursor-pointer p-0 font-dm-sans"
               >
                 Clear filter
               </button>
@@ -211,7 +209,7 @@ export default function ReviewSection({
                   <button
                     onClick={handleLoadMore}
                     disabled={isFetching}
-                    className="inline-flex items-center justify-center gap-2 text-[13px] font-bold text-[#F27318] hover:underline underline-offset-4 transition-all disabled:opacity-50 cursor-pointer bg-transparent border-none p-0 font-dm-sans"
+                    className="inline-flex items-center justify-center gap-2 text-[13px] font-bold text-brand hover:underline underline-offset-4 transition-all disabled:opacity-50 cursor-pointer bg-transparent border-none p-0 font-dm-sans"
                   >
                     {isFetching ? "Loading..." : "Show more reviews"}
                   </button>
@@ -293,7 +291,7 @@ function ReviewCard({ review, productId, isOwner, onEdit, isLast }) {
 
   return (
     <div
-      className={`py-6 font-dm-sans ${!isLast ? "border-b border-black/[0.05]" : ""}`}
+      className={`py-6 font-dm-sans ${!isLast ? "border-b border-black/5" : ""}`}
     >
       {/* Row 1: Stars */}
       <div className="flex items-center gap-1 mb-2.5">
@@ -303,8 +301,8 @@ function ReviewCard({ review, productId, isOwner, onEdit, isLast }) {
             size={18}
             className={
               i < review.rating
-                ? "fill-[#F27318] text-[#F27318]"
-                : "fill-black/[0.06] text-transparent"
+                ? "fill-brand text-brand"
+                : "fill-black/6 text-transparent"
             }
           />
         ))}
@@ -342,11 +340,10 @@ function ReviewCard({ review, productId, isOwner, onEdit, isLast }) {
           <button
             onClick={handleMarkHelpful}
             disabled={isMarkingHelpful}
-            className={`inline-flex items-center gap-1.5 text-[14px] font-medium transition-colors bg-transparent border-none cursor-pointer p-0 font-dm-sans ${
-              hasVoted ? "text-[#F27318]" : "text-black/25 hover:text-[#F27318]"
-            }`}
+            className={`inline-flex items-center gap-1.5 text-[14px] font-medium transition-colors bg-transparent border-none cursor-pointer p-0 font-dm-sans ${hasVoted ? "text-brand" : "text-black/25 hover:text-brand"
+              }`}
           >
-            <ThumbsUp size={14} className={hasVoted ? "fill-[#F27318]" : ""} />
+            <ThumbsUp size={14} className={hasVoted ? "fill-brand" : ""} />
             Helpful ({review.helpfulCount || 0})
           </button>
 
@@ -364,13 +361,13 @@ function ReviewCard({ review, productId, isOwner, onEdit, isLast }) {
                     className="fixed inset-0 z-10"
                     onClick={() => setShowMenu(false)}
                   />
-                  <div className="absolute right-0 top-full mt-1 bg-white border border-black/[0.06] rounded-lg shadow-lg shadow-black/[0.06] z-20 py-1 min-w-[120px]">
+                  <div className="absolute right-0 top-full mt-1 bg-white border border-black/6 rounded-lg shadow-lg shadow-black/6 z-20 py-1 min-w-30">
                     <button
                       onClick={() => {
                         onEdit?.(review);
                         setShowMenu(false);
                       }}
-                      className="w-full flex items-center gap-2 px-3.5 py-2 text-[12px] font-medium text-[#1A1714] hover:bg-black/[0.02] bg-transparent border-none cursor-pointer font-dm-sans"
+                      className="w-full flex items-center gap-2 px-3.5 py-2 text-[12px] font-medium text-[#1A1714] hover:bg-black/2 bg-transparent border-none cursor-pointer font-dm-sans"
                     >
                       <Edit2 size={11} /> Edit
                     </button>
@@ -394,8 +391,8 @@ function ReviewCard({ review, productId, isOwner, onEdit, isLast }) {
 
       {/* Admin Response */}
       {review.adminResponse?.comment && (
-        <div className="bg-[#FAFAFA] rounded-lg p-4 mt-4 border-l-[3px] border-[#F27318]/30 font-dm-sans">
-          <p className="text-[11px] font-bold text-[#F27318] mb-1 uppercase tracking-wider font-dm-sans">
+        <div className="bg-[#FAFAFA] rounded-lg p-4 mt-4 border-l-[3px] border-brand/30 font-dm-sans">
+          <p className="text-[11px] font-bold text-brand mb-1 uppercase tracking-wider font-dm-sans">
             Aura Interiors
           </p>
           <p className="text-[13px] text-black/55 leading-[1.65] font-medium font-dm-sans">

@@ -2,7 +2,6 @@ import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import contactApi from "../../api/contactApi";
 import { scopedAdminKey } from "../../lib/adminScope";
 
-// FE-08: keys are scoped to the signed-in admin's id (read at call time).
 export const CONTACT_KEYS = {
   all: () => scopedAdminKey("contacts"),
   list: (params) => [...CONTACT_KEYS.all(), "list", params],
@@ -10,23 +9,12 @@ export const CONTACT_KEYS = {
   stats: () => [...CONTACT_KEYS.all(), "stats"],
 };
 
-// FE-55: mutations invalidate the narrowest keys that changed —
-// the list prefix (every list-param variant, nothing else) plus
-// the mutated contact's detail — never CONTACT_KEYS.all(), whose
-// prefix also matched every other contact's detail and the stats
-// query. Contact stats are deliberately NOT invalidated: no page
-// consumes useContactStats (grep-verified), so refetching it was
-// pure storm. The old code also invalidated detail(id) redundantly
-// after all(), a subset of the first call.
 const contactListKey = () => [...CONTACT_KEYS.all(), "list"];
 
 // Public: Submit contact form
 export const useSubmitContact = () => {
   return useMutation({
     mutationFn: (data) => contactApi.submit(data),
-    // FE-47: ContactPage (the sole call site) passes its own per-call
-    // onError toast, so opt out of the QueryClient global error toast
-    // to avoid double-toasting (see src/lib/queryClient.js).
     meta: { suppressGlobalErrorToast: true },
   });
 };

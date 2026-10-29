@@ -2,18 +2,13 @@ import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import promotionApi from "../../api/promotionApi";
 import { scopedAdminKey } from "../../lib/adminScope";
 
-// FE-08: keys are scoped to the signed-in admin's id (read at call time).
 export const PROMOTION_KEYS = {
   all: () => scopedAdminKey("promotions"),
   list: (params) => [...PROMOTION_KEYS.all(), "list", params],
   detail: (id) => [...PROMOTION_KEYS.all(), "detail", id],
   analytics: (id) => [...PROMOTION_KEYS.all(), "analytics", id],
 };
-// FE-55: mutations invalidate the narrowest keys that changed —
-// the list prefix plus the mutated promotion's detail (and its
-// analytics on send, which changes engagement state) — never
-// PROMOTION_KEYS.all(), whose prefix also matched every other
-// promotion's detail and analytics.
+
 const promotionListKey = () => [...PROMOTION_KEYS.all(), "list"];
 
 // Get all promotions (Admin)

@@ -40,9 +40,9 @@ export default function OrderTrackingTimeline({
         </p>
       )}
       <div className="flex items-start justify-between relative">
-        <div className="absolute left-[18px] right-[18px] top-[17px] h-[2px] bg-neutral-100 -z-0" />
+        <div className="absolute left-4.5 right-4.5 top-4.25 h-0.5 bg-neutral-100 z-0" />
         <div
-          className="absolute left-[18px] top-[17px] h-[2px] bg-[#F27318] transition-all duration-700 -z-0"
+          className="absolute left-4.5 top-4.25 h-0.5 bg-brand transition-all duration-700 z-0"
           style={{
             width:
               currentIdx >= 0
@@ -64,31 +64,28 @@ export default function OrderTrackingTimeline({
               className="flex flex-col items-center flex-1 relative z-10"
             >
               <div
-                className={`w-9 h-9 rounded-full flex items-center justify-center border-1 transition-all duration-500 ${
-                  isActive
-                    ? "border-[#F27318] bg-white text-[#F27318]"
-                    : isPast
-                      ? "border-[#F27318] bg-[#F27318] text-white"
-                      : "border-neutral-400 bg-white text-neutral-400"
-                }`}
+                className={`w-9 h-9 rounded-full flex items-center justify-center border transition-all duration-500 ${isActive
+                  ? "border-brand bg-white text-brand"
+                  : isPast
+                    ? "border-brand bg-brand text-white"
+                    : "border-neutral-400 bg-white text-neutral-400"
+                  }`}
               >
                 <Icon size={15} />
               </div>
               <span
-                className={`text-[12px] font-semibold uppercase tracking-wide mt-2 text-center ${
-                  isActive
-                    ? "text-[#F27318]"
-                    : isPast
-                      ? "text-neutral-900"
-                      : "text-neutral-400"
-                }`}
+                className={`text-[12px] font-semibold uppercase tracking-wide mt-2 text-center ${isActive
+                  ? "text-brand"
+                  : isPast
+                    ? "text-neutral-900"
+                    : "text-neutral-400"
+                  }`}
               >
                 {step.label}
               </span>
               <span
-                className={`text-[12px] font-semibold mt-0.5 ${
-                  isReached ? "text-neutral-600" : "text-neutral-400"
-                }`}
+                className={`text-[12px] font-semibold mt-0.5 ${isReached ? "text-neutral-600" : "text-neutral-400"
+                  }`}
               >
                 {isReached ? formatShortDate(dates[stepId]) : "—"}
               </span>

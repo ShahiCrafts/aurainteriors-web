@@ -24,9 +24,6 @@ import { yupResolver } from "@hookform/resolvers/yup";
 import { contactSchema } from "../../utils/validationSchemas";
 import { buildContactPayload } from "../../utils/contactContract";
 
-// FE-44: the full server category enum (validators/contact.validator.js)
-// — the old list silently omitted "feedback" and "other", and no control
-// rendered any of it, so every web enquiry was filed as "general".
 const contactCategories = [
   {
     value: "general",
@@ -80,10 +77,6 @@ export default function ContactPage() {
   });
 
   const onSubmit = (data) => {
-    // FE-44: send exactly the server schema's fields
-    // ({name, email, phone, subject, message, category}) — the old
-    // payload sent BOTH `name` and the non-schema `fullName` plus
-    // every other form key, and never sent a category at all.
     submitContact(buildContactPayload(data), {
       onSuccess: () => {
         toast.success("Message sent successfully! We'll get back to you soon.");
@@ -118,7 +111,7 @@ export default function ContactPage() {
               <div className="space-y-5 sm:space-y-5 lg:space-y-6 inline-block mx-auto lg:mx-0">
                 <div className="flex items-center gap-4 sm:gap-5">
                   <div className="w-12 h-12 sm:w-12 sm:h-12 rounded-full bg-teal-50 border border-teal-200/30 flex items-center justify-center shrink-0 text-teal-700">
-                    <Mail size={20} className="sm:w-[22px] sm:h-[22px]" />
+                    <Mail size={20} className="sm:w-5.5 sm:h-5.5" />
                   </div>
                   <div className="text-left">
                     <p className="text-xs text-zinc-500 uppercase tracking-wider font-bold mb-0.5">
@@ -132,7 +125,7 @@ export default function ContactPage() {
 
                 <div className="flex items-center gap-4 sm:gap-5">
                   <div className="w-12 h-12 sm:w-12 sm:h-12 rounded-full bg-teal-50 border border-teal-200/30 flex items-center justify-center shrink-0 text-teal-700">
-                    <Phone size={20} className="sm:w-[22px] sm:h-[22px]" />
+                    <Phone size={20} className="sm:w-5.5 sm:h-5.5" />
                   </div>
                   <div className="text-left">
                     <p className="text-xs text-zinc-500 uppercase tracking-wider font-bold mb-0.5">
@@ -146,7 +139,7 @@ export default function ContactPage() {
 
                 <div className="flex items-center gap-4 sm:gap-5">
                   <div className="w-12 h-12 sm:w-12 sm:h-12 rounded-full bg-teal-50 border border-teal-200/30 flex items-center justify-center shrink-0 text-teal-700">
-                    <MapPin size={20} className="sm:w-[22px] sm:h-[22px]" />
+                    <MapPin size={20} className="sm:w-5.5 sm:h-5.5" />
                   </div>
                   <div className="text-left">
                     <p className="text-xs text-zinc-500 uppercase tracking-wider font-bold mb-0.5">

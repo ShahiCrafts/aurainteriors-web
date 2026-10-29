@@ -35,7 +35,7 @@ import Pagination from "../../components/common/Pagination";
 
 export default function Reviews() {
   const [searchQuery, setSearchQuery] = useState("");
-  const debouncedSearchQuery = useDebounce(searchQuery, 300); // PERF-F-007: input stays immediate; only the query-param value is debounced
+  const debouncedSearchQuery = useDebounce(searchQuery, 300);
   const [filterRating, setFilterRating] = useState("all");
   const [filterStatus, setFilterStatus] = useState("all");
   const [page, setPage] = useState(1);
@@ -75,9 +75,6 @@ export default function Reviews() {
     }
   };
 
-  // FE-37: no pending guard existed — a double-click on Delete
-  // Permanently fired duplicate DELETE mutations (the second erroring
-  // after the first succeeded). Guard re-entry and disable while pending.
   const [isDeleting, setIsDeleting] = useState(false);
   const deletingRef = useRef(false);
   const handleDeleteReview = async () => {
@@ -171,7 +168,7 @@ export default function Reviews() {
                 setFilterRating(e.target.value);
                 setPage(1);
               }}
-              className="px-4 py-2.5 bg-white border border-gray-200 rounded-lg text-sm focus:outline-none focus:border-teal-500 cursor-pointer min-w-[140px]"
+              className="px-4 py-2.5 bg-white border border-gray-200 rounded-lg text-sm focus:outline-none focus:border-teal-500 cursor-pointer min-w-35"
             >
               <option value="all">All Ratings</option>
               {[5, 4, 3, 2, 1].map((n) => (
@@ -186,7 +183,7 @@ export default function Reviews() {
                 setFilterStatus(e.target.value);
                 setPage(1);
               }}
-              className="px-4 py-2.5 bg-white border border-gray-200 rounded-lg text-sm focus:outline-none focus:border-teal-500 cursor-pointer min-w-[140px]"
+              className="px-4 py-2.5 bg-white border border-gray-200 rounded-lg text-sm focus:outline-none focus:border-teal-500 cursor-pointer min-w-35"
             >
               <option value="all">All Status</option>
               <option value="approved">Approved</option>
@@ -207,24 +204,24 @@ export default function Reviews() {
             <h3 className="text-lg font-semibold text-gray-900">
               No reviews found
             </h3>
-            <p className="text-gray-500 text-sm max-w-[250px] text-center mt-1">
+            <p className="text-gray-500 text-sm max-w-62.5 text-center mt-1">
               We couldn't find any reviews matching your current filters or
               search criteria.
             </p>
             {(searchQuery ||
               filterRating !== "all" ||
               filterStatus !== "all") && (
-              <button
-                onClick={() => {
-                  setSearchQuery("");
-                  setFilterRating("all");
-                  setFilterStatus("all");
-                }}
-                className="mt-6 text-sm font-medium text-teal-600 hover:text-teal-700"
-              >
-                Clear all filters
-              </button>
-            )}
+                <button
+                  onClick={() => {
+                    setSearchQuery("");
+                    setFilterRating("all");
+                    setFilterStatus("all");
+                  }}
+                  className="mt-6 text-sm font-medium text-teal-600 hover:text-teal-700"
+                >
+                  Clear all filters
+                </button>
+              )}
           </div>
         ) : (
           <div className="overflow-x-auto">
@@ -261,9 +258,6 @@ export default function Reviews() {
                   >
                     <td className="px-6 py-4">
                       <div className="flex items-center gap-3">
-                        {/* FE-06: real avatar img or local initials —
-                            never an external placeholder URL built
-                            from the reviewer's name. */}
                         <UserAvatar
                           user={review.user}
                           className="w-9 h-9 rounded-full text-xs ring-2 ring-gray-100"
@@ -285,14 +279,14 @@ export default function Reviews() {
                           <img
                             src={getImageUrl(
                               review.product.images[0].url ||
-                                review.product.images[0],
+                              review.product.images[0],
                               "products",
                             )}
                             className="w-8 h-8 rounded bg-gray-50 object-cover"
                             alt=""
                           />
                         )}
-                        <p className="text-sm text-gray-600 max-w-[120px] truncate font-medium">
+                        <p className="text-sm text-gray-600 max-w-30 truncate font-medium">
                           {review.product?.name}
                         </p>
                       </div>
@@ -304,7 +298,7 @@ export default function Reviews() {
                       </p>
                     </td>
                     <td className="px-6 py-4">
-                      <div className="max-w-[200px]">
+                      <div className="max-w-50">
                         <p className="text-sm text-gray-900 line-clamp-1 font-semibold">
                           {review.title || "Untitled"}
                         </p>
@@ -316,16 +310,14 @@ export default function Reviews() {
                     <td className="px-6 py-4">
                       <div className="flex flex-col gap-1">
                         <span
-                          className={`inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-[10px] font-bold uppercase tracking-wider w-fit ${
-                            review.isApproved
-                              ? "bg-teal-50 text-teal-700"
-                              : "bg-amber-50 text-amber-700"
-                          }`}
+                          className={`inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-[10px] font-bold uppercase tracking-wider w-fit ${review.isApproved
+                            ? "bg-teal-50 text-teal-700"
+                            : "bg-amber-50 text-amber-700"
+                            }`}
                         >
                           <span
-                            className={`w-1 h-1 rounded-full ${
-                              review.isApproved ? "bg-teal-500" : "bg-amber-500"
-                            }`}
+                            className={`w-1 h-1 rounded-full ${review.isApproved ? "bg-teal-500" : "bg-amber-500"
+                              }`}
                           ></span>
                           {review.isApproved ? "Approved" : "Pending"}
                         </span>
@@ -361,11 +353,10 @@ export default function Reviews() {
                         </button>
                         <button
                           onClick={() => handleToggleApproval(review)}
-                          className={`p-2 rounded-lg transition-colors ${
-                            review.isApproved
-                              ? "text-gray-500 hover:bg-amber-50 hover:text-amber-600"
-                              : "text-teal-600 hover:bg-teal-50"
-                          }`}
+                          className={`p-2 rounded-lg transition-colors ${review.isApproved
+                            ? "text-gray-500 hover:bg-amber-50 hover:text-amber-600"
+                            : "text-teal-600 hover:bg-teal-50"
+                            }`}
                         >
                           {review.isApproved ? (
                             <XCircle size={16} />
@@ -412,7 +403,7 @@ export default function Reviews() {
                 <img
                   src={getImageUrl(
                     selectedReview.product?.images?.[0]?.url ||
-                      selectedReview.product?.images?.[0],
+                    selectedReview.product?.images?.[0],
                     "products",
                   )}
                   className="w-12 h-12 rounded-lg object-cover shadow-sm"

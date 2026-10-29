@@ -14,15 +14,6 @@ import {
 } from "../../hooks/catalog/useCatalogTan";
 import formatError from "../../utils/errorHandler";
 
-// Phase 6 (catalog) — product types admin.
-//
-// A product type contributes its attributeKeys at the type level
-// of attribute resolution for every category that carries it. The
-// key is immutable (the server 400s a change), delete is guarded
-// by the categories using the type, and — same recorded API gap as
-// rooms — the list is the public active-only one, so the form
-// warns before a deactivation hides the type from this page.
-
 const inputClass =
   "w-full px-4 h-10 rounded-lg border border-gray-200 focus:border-teal-500 focus:ring-2 focus:ring-teal-500/10 outline-none text-sm transition-all bg-white";
 const labelClass = "block text-sm font-medium text-gray-700 mb-2";
@@ -117,8 +108,6 @@ export default function ProductTypes() {
       toast.success("Product type deleted");
       setDeleteTarget(null);
     } catch (err) {
-      // e.g. "Cannot delete product type used by N categories.
-      // Deactivate it instead." — shown verbatim.
       toast.error(formatError(err, "Failed to delete product type"));
       setDeleteTarget(null);
     }

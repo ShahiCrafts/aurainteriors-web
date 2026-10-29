@@ -84,13 +84,13 @@ const ALLOWLIST = [
     file: "src/components/sections/Hero.jsx",
     expr: "slides[",
     reason:
-      "In-file static slide literals (Unsplash URLs hardcoded in the component), not server data. FE-06-adjacent editorial content.",
+      "In-file static slide literals (bundled local WebP variant imports, Phase 2 self-hosted), not server data. FE-06-adjacent editorial content.",
   },
   {
     file: "src/components/sections/Hero.jsx",
     expr: "SlideSrc",
     reason:
-      "Local consts (mainSlideSrc / sideSlideSrc / decorSlideSrc) assigned from getSizedImageUrl in utils/imageUrl over the same in-file static slide literals: getSizedImageUrl resolves through getImageUrl, so every value is validateMediaUrl-checked (FE-03) before the FE-54 WebP/size transform is applied.",
+      "Local consts (mainSlideSrc / sideSlideSrc / decorSlideSrc) built from bundled local WebP variant imports in the same file (Phase 2 self-hosted hero imagery); compile-time constants, not server data.",
   },
   {
     file: "src/components/sections/Testimonials.jsx",
@@ -138,14 +138,14 @@ const ALLOWLIST = [
     file: "src/pages/admin/AdminLoginPage.jsx",
     expr: "s.image",
     reason:
-      "CSS url() over CAROUSEL_SLIDES — in-file static Unsplash literals, not server data (passthrough-pattern allowlist).",
+      "CSS url() over CAROUSEL_SLIDES — in-file static bundled local asset imports (Phase 2 self-hosted), not server data (passthrough-pattern allowlist).",
     pattern: "css-url-interpolation",
   },
   {
     file: "src/pages/blog/BlogDetailsPage.jsx",
     expr: "section.id",
     reason:
-      "FE-67: TOC anchor href={`#${section.id}`} — a same-page FRAGMENT built only from page-generated ids (section-1, section-2, … assigned by src/utils/blogToc.js to headings in the SANITIZED DOM). section.id never carries author/server data (proven by tests/pages/blog/BlogDetailsPage.toc.fe67.test.jsx, including author-id and __proto__ pen tests), and a fragment href cannot navigate off-page or carry a scheme.",
+      "FE-67: TOC anchor href={`#${section.id}`} — a same-page FRAGMENT built only from page-generated ids (section-1, section-2, … assigned by src/utils/blogToc.js to headings in the SANITIZED DOM). section.id never carries author/server data (proven by tests/pages/blog/BlogDetailsPage.toc.test.jsx, including author-id and __proto__ pen tests), and a fragment href cannot navigate off-page or carry a scheme.",
   },
   {
     file: "src/components/common/PromoCard.jsx",
@@ -158,6 +158,19 @@ const ALLOWLIST = [
     expr: "safeHref",
     reason:
       "Phase 4 primitive, same pattern as PromoCard: local const assigned from safeActionUrl(item.href) in the same file — the project's safe-URL helper itself; a null result renders inert text, never the anchor (pinned by tests/components/ui/Breadcrumbs.test.jsx, including a javascript: href case).",
+  },
+  {
+    file: "src/components/modals/AuthModal.jsx",
+    expr: "authPremiumInteriors",
+    reason:
+      "Bundled static asset import (Phase 2 self-hosted photo), compile-time constant — same class as the arIcon bundled-icon entry.",
+  },
+  {
+    file: "src/layouts/customer/Footer.jsx",
+    expr: "promoNewsletterInspiration",
+    reason:
+      "CSS url() over a bundled static asset import (Phase 2 self-hosted newsletter photo), not server data.",
+    pattern: "css-url-interpolation",
   },
   {
     file: "src/components/common/PromoCard.jsx",

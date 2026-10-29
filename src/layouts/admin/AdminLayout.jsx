@@ -304,14 +304,10 @@ export default function AdminLayout() {
 
       {/* Main Content Area - no padding here, each page controls its own */}
       <div
-        className={`min-h-screen pt-20 transition-all duration-300 ease-in-out ${
-          isCollapsed ? "lg:ml-20" : "lg:ml-72"
-        }`}
+        className={`min-h-screen pt-20 transition-all duration-300 ease-in-out ${isCollapsed ? "lg:ml-20" : "lg:ml-72"
+          }`}
       >
         <main className="min-h-[calc(100vh-5rem)]">
-          {/* Route-level boundary (FE-56/FE-17): wraps the Outlet so a
-              crashed admin page degrades in place while the admin shell
-              (sidebar/header) stays alive; reset on navigation. */}
           <ErrorBoundary resetKey={location.pathname}>
             <Outlet />
           </ErrorBoundary>
@@ -462,7 +458,7 @@ export default function AdminLayout() {
                 Privacy & Policies
               </h3>
             </div>
-            <div className="space-y-4 text-xs text-gray-600 overflow-y-auto max-h-[300px] pr-2 leading-relaxed">
+            <div className="space-y-4 text-xs text-gray-600 overflow-y-auto max-h-75 pr-2 leading-relaxed">
               <section>
                 <h4 className="font-bold text-gray-800 mb-1">
                   1. Data Confidentiality

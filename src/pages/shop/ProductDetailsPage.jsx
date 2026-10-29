@@ -36,6 +36,7 @@ import FeatureHighlights from "./product-details/FeatureHighlights";
 import ProductDescription from "./product-details/ProductDescription";
 import KeySpecifications from "./product-details/KeySpecifications";
 import useVariantPurchase from "./product-details/hooks/useVariantPurchase";
+import placeholderProductSofa from "../../assets/images/placeholders/placeholder-product-sofa.webp";
 
 export default function ProductDetailsPage() {
   const { productSlug } = useParams();
@@ -193,7 +194,7 @@ export default function ProductDetailsPage() {
     if (!product?.images?.length) {
       return [
         {
-          url: "https://images.unsplash.com/photo-1555041469-a586c61ea9bc?w=800&auto=format&fit=crop",
+          url: placeholderProductSofa,
         },
       ];
     }
@@ -293,7 +294,7 @@ export default function ProductDetailsPage() {
                   />
                 )}
                 {index === breadcrumbs.length - 1 ? (
-                  <span className="text-neutral-500 truncate max-w-[150px] sm:max-w-[300px]">
+                  <span className="text-neutral-500 truncate max-w-37.5 sm:max-w-75">
                     {crumb.name}
                   </span>
                 ) : (
@@ -351,6 +352,7 @@ export default function ProductDetailsPage() {
           <KeySpecifications
             product={product}
             selectedVariant={selectedVariant}
+            definitions={definitions}
           />
 
           {/* Reviews */}

@@ -1,7 +1,7 @@
 import React from "react";
-import { IoCheckmarkCircle } from "react-icons/io5";
-import { MdOutlineViewInAr } from "react-icons/md";
-import { HiOutlineCube } from "react-icons/hi2";
+import { CircleCheck, Scan, Box } from "lucide-react";
+
+
 
 const ScanningOverlay = ({ hasPlacedModel, surfaceDetected, isPlacing }) => {
   if (!hasPlacedModel && !surfaceDetected) {
@@ -14,7 +14,7 @@ const ScanningOverlay = ({ hasPlacedModel, surfaceDetected, isPlacing }) => {
             <div className="absolute inset-4 w-24 h-24 rounded-full border border-white/20" />
             <div className="absolute inset-4 w-24 h-24 rounded-full border border-transparent border-t-white/60 motion-safe:animate-pulse" />
             <div className="absolute inset-0 flex items-center justify-center">
-              <MdOutlineViewInAr size={28} className="text-white/80" />
+              <Scan size={28} className="text-white/80" />
             </div>
           </div>
           <div className="text-center">
@@ -34,7 +34,7 @@ const ScanningOverlay = ({ hasPlacedModel, surfaceDetected, isPlacing }) => {
     return (
       <div className="absolute bottom-48 left-0 right-0 flex justify-center pointer-events-none">
         <div className="bg-black/60 backdrop-blur-xl rounded-full px-5 py-2.5 flex items-center gap-2">
-          <IoCheckmarkCircle size={18} className="text-teal-400" />
+          <CircleCheck size={18} className="text-teal-400" />
           <p className="text-white text-sm font-medium">
             Tap to place furniture
           </p>
@@ -53,7 +53,7 @@ const PlacingIndicator = ({ isPlacing }) => {
     <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 flex flex-col items-center gap-4 pointer-events-none">
       <div className="w-20 h-20 bg-white rounded-full shadow-xl flex items-center justify-center">
         <div className="absolute w-16 h-16 border-2 border-gray-100 border-t-teal-600 rounded-full motion-safe:animate-pulse" />
-        <HiOutlineCube size={24} className="text-teal-600" />
+        <Box size={24} className="text-teal-600" />
       </div>
     </div>
   );

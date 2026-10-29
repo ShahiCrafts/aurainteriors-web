@@ -28,26 +28,12 @@ const labelIcons = {
 };
 
 const labelColors = {
-  home: "bg-orange-50 text-[#F27318]",
+  home: "bg-orange-50 text-brand",
   office: "bg-blue-50 text-blue-700",
   family: "bg-purple-50 text-purple-700",
   other: "bg-neutral-100 text-neutral-600",
 };
 
-/**
- * Phase 6 (REUSE-013) — the saved-address card, extracted verbatim
- * from SavedAddresses (label icon/colour maps and display-label
- * rule included). Pure presentation + callbacks; the parent owns
- * the modal/delete/default state.
- *
- * ShippingStep's checkout address renderings were NOT folded into
- * this card: the summary card (label pill + phone row + edit
- * affordance, different line composition) and the drawer item (a
- * selectable <button> with its own selected check) differ
- * materially from this profile card — see the Phase 6 log.
- *
- * @param {AddressCardProps} props
- */
 export default function AddressCard({
   address,
   onEdit,
@@ -84,7 +70,7 @@ export default function AddressCard({
             </div>
           </div>
           {address.isDefault && (
-            <span className="px-2 py-1 bg-[#F27318] text-white text-[11px] font-semibold uppercase tracking-wider rounded shrink-0">
+            <span className="px-2 py-1 bg-brand text-white text-[11px] font-semibold uppercase tracking-wider rounded shrink-0">
               Default
             </span>
           )}
@@ -95,7 +81,7 @@ export default function AddressCard({
           )}
         </div>
 
-        <div className="space-y-2 pl-[52px]">
+        <div className="space-y-2 pl-13">
           <p className="font-semibold text-[#1A1714] text-[16px] capitalize">
             {address.fullName}
           </p>
@@ -124,7 +110,7 @@ export default function AddressCard({
             <button
               onClick={() => onSetDefault(address._id)}
               disabled={isSettingDefault}
-              className="text-[13px] font-semibold text-[#F27318] hover:text-[#E6651B] transition-colors"
+              className="text-[13px] font-semibold text-brand hover:text-[#E6651B] transition-colors"
             >
               Set as Default
             </button>

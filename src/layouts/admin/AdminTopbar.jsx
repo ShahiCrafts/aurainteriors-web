@@ -9,10 +9,6 @@ import {
 } from "lucide-react";
 import NotificationBell from "../../components/common/NotificationBell";
 
-// Phase 7 split (from AdminLayout.jsx) — the admin topbar: mobile
-// menu toggle, search, online-status menu, notification bell and
-// the profile menu (Help / Privacy / Sign Out open the layout's
-// Dialog modals via the setter props). Markup moved verbatim.
 export default function AdminTopbar({
   isCollapsed,
   mobileMenuOpen,
@@ -38,9 +34,8 @@ export default function AdminTopbar({
     <>
       {/* Top Navbar - sits only to the right of the sidebar, not full width */}
       <header
-        className={`fixed top-0 right-0 left-0 h-20 bg-white border-b border-gray-100 z-30 flex items-center gap-4 px-4 sm:px-6 transition-all duration-300 ease-in-out ${
-          isCollapsed ? "lg:left-20" : "lg:left-72"
-        }`}
+        className={`fixed top-0 right-0 left-0 h-20 bg-white border-b border-gray-100 z-30 flex items-center gap-4 px-4 sm:px-6 transition-all duration-300 ease-in-out ${isCollapsed ? "lg:left-20" : "lg:left-72"
+          }`}
       >
         {/* Mobile menu toggle */}
         <button
@@ -80,9 +75,8 @@ export default function AdminTopbar({
               className="flex items-center gap-2 px-3 py-2 rounded-lg bg-gray-100/90 transition-colors"
             >
               <span
-                className={`w-2 h-2 rounded-full ${
-                  onlineStatus === "online" ? "bg-emerald-500" : "bg-gray-400"
-                }`}
+                className={`w-2 h-2 rounded-full ${onlineStatus === "online" ? "bg-emerald-500" : "bg-gray-400"
+                  }`}
               />
               <span className="text-sm font-medium text-gray-700 capitalize">
                 {onlineStatus}

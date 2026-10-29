@@ -18,16 +18,26 @@
 //   admin_sidebar_collapsed    AdminLayout UI preference
 //   aura-ar-tutorial-dismissed NativeARView UI preference
 //
-// sessionStorage: NOTHING in src/ uses it — the allowed set is empty.
+// sessionStorage: exactly ONE sanctioned key —
+//   buy_now_item               buyNowStore (direct-checkout line;
+//                              session-scoped BY DESIGN, see the
+//                              store's own header: a buy-now intent
+//                              must survive the navigation/refresh at
+//                              /checkout but never resurface days
+//                              later the way a persisted cart does).
 //
 // Inventory verification (done for this test, and re-done
 // permanently by the source-census test below): every
 // localStorage/sessionStorage getItem/setItem/removeItem call in
-// src/ was grepped; the only keys are the seven above (three via
+// src/ was grepped; the only keys are the ones above (several via
 // constants — GUEST_CART_KEY="guest_cart",
 // GUEST_SESSION_KEY="aura_guest_session_id",
-// GUEST_EMAIL_KEY="aura_guest_email") plus removeItem("token") /
+// GUEST_EMAIL_KEY="aura_guest_email", BUY_NOW_KEY="buy_now_item")
+// plus removeItem("token") /
 // removeItem("user") legacy cleanup in authStore/AuthCallback.
+// The census below resolves key constants generically (any
+// `const X = "…"` in src/), so a new constant-backed key is judged
+// by its literal value instead of reported as unresolved.
 // No dynamic/computed storage keys exist in src/. No discrepancy
 // vs the §7 inventory was found. (Post-VULN-009, guestSessionStorage
 // mirrors only the guest EMAIL into a cookie; the guestSessionId
@@ -128,7 +138,9 @@ function expectStorageClean() {
       /* not JSON — the shape checks above already ran */
     }
   }
-  // (4) sessionStorage: allowed set is empty.
+  // (4) sessionStorage: this flow never starts a buy-now checkout,
+  // so it must still hold nothing at all (the one sanctioned
+  // session key, buy_now_item, is exercised by the buy-now suites).
   expect(storageEntries(sessionStorage)).toEqual([]);
   // (3) legacy keys absent.
   expect(localStorage.getItem("token")).toBeNull();
@@ -165,11 +177,7 @@ describe("storage audit — source census (inventory verification)", () => {
     "../..",
   );
   const SRC = path.join(ROOT, "src");
-  const CONSTANTS = {
-    GUEST_CART_KEY: "guest_cart",
-    GUEST_SESSION_KEY: "aura_guest_session_id",
-    GUEST_EMAIL_KEY: "aura_guest_email",
-  };
+  const ALLOWED_SESSION_KEYS = new Set(["buy_now_item"]);
 
   function collect(dir, out = []) {
     for (const entry of readdirSync(dir)) {
@@ -180,15 +188,35 @@ describe("storage audit — source census (inventory verification)", () => {
     return out;
   }
 
+  // Resolve storage-key constants generically: any top-level
+  // `const NAME = "literal"` in src/ may name a storage key (the
+  // previous hard-coded table missed BUY_NOW_KEY and reported the
+  // legitimate "buy_now_item" key as <unresolved:BUY_NOW_KEY>).
+  function collectStringConstants(files) {
+    const map = new Map();
+    for (const file of files) {
+      const text = readFileSync(file, "utf8");
+      for (const m of text.matchAll(
+        /(?:const|let|var)\s+([A-Z][A-Z0-9_]*)\s*=\s*(?:"([^"]+)"|'([^']+)')/g,
+      )) {
+        const value = m[2] ?? m[3];
+        if (!map.has(m[1])) map.set(m[1], value);
+      }
+    }
+    return map;
+  }
+
   it("every storage key used in src/ is on the allowed list (or a legacy removal)", () => {
+    const files = collect(SRC);
+    const constants = collectStringConstants(files);
     const used = new Set();
     const sessionUsed = new Set();
-    for (const file of collect(SRC)) {
+    for (const file of files) {
       const text = readFileSync(file, "utf8");
       for (const m of text.matchAll(
         /(localStorage|sessionStorage)\.(?:getItem|setItem|removeItem)\(\s*(?:"([^"]+)"|'([^']+)'|([A-Z_]+))/g,
       )) {
-        const key = m[2] ?? m[3] ?? CONSTANTS[m[4]] ?? `<unresolved:${m[4]}>`;
+        const key = m[2] ?? m[3] ?? constants.get(m[4]) ?? `<unresolved:${m[4]}>`;
         (m[1] === "sessionStorage" ? sessionUsed : used).add(key);
       }
     }
@@ -197,7 +225,7 @@ describe("storage audit — source census (inventory verification)", () => {
     expect([...used].sort()).toEqual(
       [...ALLOWED_LOCAL_KEYS, ...REMOVAL_ONLY_KEYS].sort(),
     );
-    expect([...sessionUsed]).toEqual([]);
+    expect([...sessionUsed].sort()).toEqual([...ALLOWED_SESSION_KEYS].sort());
   });
 });
 

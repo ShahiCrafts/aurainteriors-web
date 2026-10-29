@@ -25,13 +25,9 @@ import {
   ChevronDown,
 } from "lucide-react";
 import { useCategoryTree } from "../../hooks/product/useCategoryTan";
+import { CategoryBarSkeletonContent } from "../common/Skeleton";
 import { useArCatalogProducts } from "../../hooks/product/useArCatalogTan";
 import { hasArModel } from "../../utils/arProducts";
-
-const categoryItemClasses =
-  "flex items-center gap-1.5 md:gap-2 pr-4 md:pr-9 py-2.5 md:py-3 text-[14px] md:text-[15px] whitespace-nowrap shrink-0";
-
-const skeletonLabelWidths = [64, 72, 56, 80, 68, 76, 60];
 
 const ARViewModal = lazy(() => import("../modals/ARViewModal"));
 
@@ -78,15 +74,14 @@ export default function CategoryBar() {
   const categoryData = categoryTreeData?.data?.categories;
   const categories = Array.isArray(categoryData)
     ? categoryData.filter(
-        (item) => item && typeof item.slug === "string" && item.slug,
-      )
+      (item) => item && typeof item.slug === "string" && item.slug,
+    )
     : [];
   const { data: arCatalogData } = useArCatalogProducts();
   const products = arCatalogData?.data?.products;
   const arProduct =
     (Array.isArray(products) ? products : []).find(hasArModel) || null;
   const openCategory = categories.find((item) => item.slug === openSlug);
-  // "All" is current only on the bare shop page (no category picked).
   const isAllActive =
     location.pathname === "/shop" && selectedCategories.length === 0;
   const childrenOf = (item) => {
@@ -96,8 +91,8 @@ export default function CategoryBar() {
         : item?.children;
     return Array.isArray(nested)
       ? nested.filter(
-          (child) => child && typeof child.slug === "string" && child.slug,
-        )
+        (child) => child && typeof child.slug === "string" && child.slug,
+      )
       : [];
   };
   const categoryPath = (item) => shopCategoryUrl(item.slug);
@@ -108,11 +103,6 @@ export default function CategoryBar() {
   const groups = childrenOf(openCategory);
   const isGrouped = groups.some((item) => childrenOf(item).length > 0);
 
-  // The taxonomy can run 4-5 levels deep (group > subcategory > type >
-  // finish > colour), so the popup renders the subtree recursively:
-  // every level below the group headings is a link, nested levels get
-  // an indented guide rail. Rendering only two levels here silently
-  // hid the deepest categories from the menu.
   const renderDescendants = (items, nested = false) => (
     <ul
       className={
@@ -131,7 +121,7 @@ export default function CategoryBar() {
               aria-current={
                 selectedCategories.includes(item.slug) ? "page" : undefined
               }
-              className={`block py-0.5 text-sm transition-colors hover:text-[#F27318] focus-visible:outline-2 focus-visible:outline-[#F27318] ${containsActive(item) ? "text-[#F27318]" : "text-[#7A7068]"}`}
+              className={`block py-0.5 text-sm transition-colors hover:text-brand focus-visible:outline-2 focus-visible:outline-brand ${containsActive(item) ? "text-brand" : "text-[#7A7068]"}`}
             >
               {item.name}
               {typeof item.productCount === "number" && (
@@ -175,8 +165,8 @@ export default function CategoryBar() {
       );
       setPopupLayout((previous) =>
         previous.left === left &&
-        previous.width === width &&
-        previous.columns === columns
+          previous.width === width &&
+          previous.columns === columns
           ? previous
           : { left, width, columns },
       );
@@ -230,27 +220,22 @@ export default function CategoryBar() {
             className="flex flex-1 items-center overflow-x-auto no-scrollbar px-4 md:px-6 lg:px-8"
             aria-busy={isLoading}
           >
-            {/* "All" — the whole shop, ahead of the departments.
-                Its right padding carries +10px over the department
-                items': a department's chevron sits left-aligned in
-                a 24px button, leaving 10px of visual space after
-                the arrow before the item's own padding — "All" has
-                no arrow, so the padding absorbs that space and the
-                gap after "All" matches the gap after each arrow. */}
-            <div
-              className="flex shrink-0 items-center whitespace-nowrap pr-[26px] py-2.5 text-[14px] md:pr-[34px] md:py-3 md:text-[15px]"
-              onMouseEnter={() => setOpenSlug(null)}
-            >
-              <Link
-                to="/shop"
-                onClick={() => setOpenSlug(null)}
-                aria-current={isAllActive ? "page" : undefined}
-                className={`flex items-center gap-1.5 md:gap-2 py-1 font-medium transition-colors duration-300 focus-visible:outline-2 focus-visible:outline-[#F27318] ${isAllActive ? "text-[#F27318]" : "text-[#7A7068] hover:text-[#1A1714]"}`}
+            {!isLoading && (
+              <div
+                className="flex shrink-0 items-center whitespace-nowrap pr-6.5 py-2.5 text-[14px] md:pr-8.5 md:py-3 md:text-[15px]"
+                onMouseEnter={() => setOpenSlug(null)}
               >
-                <LayoutGrid size={15} />
-                <span>All</span>
-              </Link>
-            </div>
+                <Link
+                  to="/shop"
+                  onClick={() => setOpenSlug(null)}
+                  aria-current={isAllActive ? "page" : undefined}
+                  className={`flex items-center gap-1.5 md:gap-2 py-1 font-medium transition-colors duration-300 focus-visible:outline-2 focus-visible:outline-brand ${isAllActive ? "text-brand" : "text-[#7A7068] hover:text-[#1A1714]"}`}
+                >
+                  <LayoutGrid size={15} />
+                  <span>All</span>
+                </Link>
+              </div>
+            )}
             {categories.map((category) => {
               const expanded = openSlug === category.slug;
               return (
@@ -267,7 +252,7 @@ export default function CategoryBar() {
                         ? "page"
                         : undefined
                     }
-                    className={`flex items-center gap-1.5 md:gap-2 py-1 font-medium transition-colors duration-300 focus-visible:outline-2 focus-visible:outline-[#F27318] ${containsActive(category) || expanded ? "text-[#F27318]" : "text-[#7A7068] hover:text-[#1A1714]"}`}
+                    className={`flex items-center gap-1.5 md:gap-2 py-1 font-medium transition-colors duration-300 focus-visible:outline-2 focus-visible:outline-brand ${containsActive(category) || expanded ? "text-brand" : "text-[#7A7068] hover:text-[#1A1714]"}`}
                   >
                     {getCategoryIcon(category.name)}
                     <span>{category.name}</span>
@@ -292,7 +277,7 @@ export default function CategoryBar() {
                         );
                       }
                     }}
-                    className={`relative ml-1 inline-flex h-8 w-6 shrink-0 items-center justify-start rounded cursor-pointer transition-colors duration-300 focus-visible:outline-2 focus-visible:outline-[#F27318] ${expanded ? "text-[#F27318]" : "text-[#7A7068] hover:text-[#1A1714]"}`}
+                    className={`relative ml-1 inline-flex h-8 w-6 shrink-0 items-center justify-start rounded cursor-pointer transition-colors duration-300 focus-visible:outline-2 focus-visible:outline-brand ${expanded ? "text-brand" : "text-[#7A7068] hover:text-[#1A1714]"}`}
                   >
                     <ChevronDown
                       size={14}
@@ -308,19 +293,7 @@ export default function CategoryBar() {
                 <span className="sr-only" role="status">
                   Loading categories
                 </span>
-                {skeletonLabelWidths.map((width, index) => (
-                  <div
-                    key={index}
-                    className={categoryItemClasses}
-                    aria-hidden="true"
-                  >
-                    <span className="h-[15px] w-[15px] rounded bg-[#F0EFED] motion-safe:animate-pulse shrink-0" />
-                    <span
-                      style={{ width }}
-                      className="h-3 rounded bg-[#F0EFED] motion-safe:animate-pulse"
-                    />
-                  </div>
-                ))}
+                <CategoryBarSkeletonContent />
               </>
             )}
           </div>
@@ -331,7 +304,7 @@ export default function CategoryBar() {
                 setOpenSlug(null);
                 setIsArModalOpen(true);
               }}
-              className="flex shrink-0 items-center gap-1.5 border-l border-[#F0EFED] px-4 py-2.5 text-xs font-semibold text-[#F27318] hover:text-[#D9620E] focus-visible:outline-2 focus-visible:outline-[#F27318]"
+              className="flex shrink-0 items-center gap-1.5 border-l border-[#F0EFED] px-4 py-2.5 text-xs font-semibold text-brand hover:text-brand-hover focus-visible:outline-2 focus-visible:outline-brand"
             >
               <Scan size={16} />
               <span className="hidden sm:inline">Try AR View</span>
@@ -355,8 +328,8 @@ export default function CategoryBar() {
                 style={
                   isGrouped
                     ? {
-                        gridTemplateColumns: `repeat(${popupLayout.columns}, minmax(0, 1fr))`,
-                      }
+                      gridTemplateColumns: `repeat(${popupLayout.columns}, minmax(0, 1fr))`,
+                    }
                     : undefined
                 }
               >
@@ -365,7 +338,7 @@ export default function CategoryBar() {
                     <Link
                       to={categoryPath(child)}
                       onClick={() => setOpenSlug(null)}
-                      className={`${isGrouped ? "mb-2 font-semibold" : "py-2 font-medium"} block text-sm hover:text-[#F27318] ${containsActive(child) ? "text-[#F27318]" : "text-[#1A1714]"}`}
+                      className={`${isGrouped ? "mb-2 font-semibold" : "py-2 font-medium"} block text-sm hover:text-brand ${containsActive(child) ? "text-brand" : "text-[#1A1714]"}`}
                     >
                       {child.name}
                       {typeof child.productCount === "number" && (

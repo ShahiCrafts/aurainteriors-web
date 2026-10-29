@@ -1,7 +1,5 @@
 import { Leaf, Boxes, ShieldCheck, Home } from "lucide-react";
 
-// Default copy mirrors the design. Pass `features` to override
-// per product/category.
 const DEFAULT_FEATURES = [
   {
     icon: Leaf,

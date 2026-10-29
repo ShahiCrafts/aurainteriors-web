@@ -187,7 +187,7 @@ export default function PurchasePanel({
       )}
       {/* Quantity + Add to Cart + Buy Now — same row */}
       <div className="flex flex-col sm:flex-row items-stretch gap-3 mb-5">
-        <div className="flex items-center h-[52px] shrink-0 justify-center sm:justify-start">
+        <div className="flex items-center h-13 shrink-0 justify-center sm:justify-start">
           <QuantitySelector
             value={quantity}
             onChange={setQuantity}
@@ -202,7 +202,7 @@ export default function PurchasePanel({
           id="main-add-to-cart"
           onClick={handleAddToCart}
           disabled={isAddingToCart || isOutOfStock}
-          className="flex-2 bg-brand text-white h-[52px] rounded-lg font-bold text-[16px] hover:bg-brand-hover transition-all duration-300 flex items-center justify-center gap-2.5 disabled:bg-neutral-200"
+          className="flex-2 bg-brand text-white h-13 rounded-lg font-bold text-[16px] hover:bg-brand-hover transition-all duration-300 flex items-center justify-center gap-2.5 disabled:bg-neutral-200"
         >
           <ShoppingCart size={18} />
           {isOutOfStock
@@ -215,7 +215,7 @@ export default function PurchasePanel({
         <button
           onClick={handleBuyNow}
           disabled={isAddingToCart || isOutOfStock}
-          className="flex-1 bg-white text-[#1A1714] border border-black/15 h-[52px] rounded-lg font-bold text-[16px] hover:border-black/30 transition-all duration-300 disabled:opacity-50"
+          className="flex-1 bg-white text-[#1A1714] border border-black/15 h-13 rounded-lg font-bold text-[16px] hover:border-black/30 transition-all duration-300 disabled:opacity-50"
         >
           Buy Now
         </button>

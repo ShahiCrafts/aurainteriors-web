@@ -41,9 +41,6 @@ import { yupResolver } from "@hookform/resolvers/yup";
 import { shippingSchema } from "../../utils/validationSchemas";
 import { formatNPR } from "../../utils/formatCurrency";
 
-// Custom checkbox: native checkboxes can't guarantee a white tick across
-// browsers (accent-color styling of the check glyph itself isn't
-// controllable), so this renders the tick as an actual white SVG icon.
 function SelectionCheckbox({ checked, indeterminate, onChange, ariaLabel }) {
   return (
     <button
@@ -52,11 +49,10 @@ function SelectionCheckbox({ checked, indeterminate, onChange, ariaLabel }) {
       aria-checked={indeterminate ? "mixed" : checked}
       aria-label={ariaLabel}
       onClick={onChange}
-      className={`w-[18px] h-[18px] rounded-[5px] flex items-center justify-center border transition-colors shrink-0 ${
-        checked || indeterminate
-          ? "bg-[#F27318] border-[#F27318]"
-          : "bg-white border-neutral-300 hover:border-neutral-400"
-      }`}
+      className={`w-4.5 h-4.5 rounded-[5px] flex items-center justify-center border transition-colors shrink-0 ${checked || indeterminate
+        ? "bg-brand border-brand"
+        : "bg-white border-neutral-300 hover:border-neutral-400"
+        }`}
     >
       {indeterminate ? (
         <Minus size={12} strokeWidth={3} className="text-white" />
@@ -117,9 +113,6 @@ export default function CheckoutPage() {
     })),
   );
 
-  // Buy-now mode: a direct checkout for the buy-now line only. The
-  // cart is not even fetched in this mode — nothing in it is listed,
-  // ordered or removed by a buy-now checkout.
   const { buyNowItem, updateBuyNowQuantity, clearBuyNowItem } = useBuyNowStore(
     useShallow((state) => ({
       buyNowItem: state.item,
@@ -189,9 +182,6 @@ export default function CheckoutPage() {
   const [addr1, cty, zip, cntry, st] = watchedShippingFields;
 
   const cart = cartData?.data?.cart;
-  // Memoized: the selection effect below keys off this array's
-  // identity — a fresh [buyNowItem] literal every render would
-  // re-run it (and its setState) forever.
   const cartItems = useMemo(
     () =>
       isBuyNow
@@ -202,10 +192,6 @@ export default function CheckoutPage() {
     [isBuyNow, buyNowItem, isAuthenticated, cart, guestCartItems],
   );
 
-  // ---- Item selection (checkbox) state ----
-  // Everything starts checked by default. Once initialized, any item id
-  // that's newly seen (e.g. added later) also defaults to checked; ids no
-  // longer present in the cart are dropped from the selection.
   const [selectedItemIds, setSelectedItemIds] = useState(() => new Set());
   const initializedSelectionRef = useRef(false);
   const seenItemIdsRef = useRef(new Set());
@@ -263,9 +249,6 @@ export default function CheckoutPage() {
     );
   };
 
-  // Phase 6 (REUSE-010): the totals arithmetic lives in
-  // hooks/useCheckoutTotals — characterization-tested bit-for-bit
-  // (a variant line prices at its variant, never the product scalar).
   const { subtotal, promoDiscount, shippingCost, taxAmount, total } =
     useCheckoutTotals(selectedCartItems, appliedDiscount);
 
@@ -277,8 +260,6 @@ export default function CheckoutPage() {
     setPaymentMethod("cod");
   }, []);
 
-  // Phase 6 (REUSE-013): account/default-address -> form sync
-  // lives in hooks/useShippingFormSync (effects moved verbatim).
   useShippingFormSync({
     isAuthenticated,
     user,
@@ -292,8 +273,6 @@ export default function CheckoutPage() {
     setValue,
   });
 
-  // Set when the shopper removes the buy-now line: that exit goes
-  // back to the product, not through the empty-cart redirect below.
   const buyNowExitRef = useRef(false);
 
   useEffect(() => {
@@ -343,16 +322,9 @@ export default function CheckoutPage() {
     }
     removeFromCart(itemId, {
       onSuccess: () => toast.success("Item removed"),
-      // FE-47: no per-call onError — the cart hook reports errors.
     });
   };
 
-  // The selected lines as a direct-items payload ({ productId,
-  // quantity, variant, variantId?, sku? }): what guest checkout has
-  // always sent, what buy-now checkout sends for signed-in users
-  // too, and what promo preview accepts when there is no cart line
-  // to reference. Variant lines name their exact variant so the
-  // server revalidates and prices that variant.
   const directItemsPayload = () =>
     selectedCartItems.map((item) => ({
       productId: item.product._id,
@@ -392,15 +364,12 @@ export default function CheckoutPage() {
     }
     const selectionKey = promoSelectionKey;
     const requestId = ++promoRequestRef.current;
-    // Cart checkout (signed-in) previews by cart-line id; guest and
-    // buy-now checkouts preview by the items themselves — a buy-now
-    // line has no cart line to reference.
     const preview =
       isAuthenticated && !isBuyNow
         ? {
-            code: promoCode,
-            selectedItemIds: selectedCartItems.map((item) => item._id),
-          }
+          code: promoCode,
+          selectedItemIds: selectedCartItems.map((item) => item._id),
+        }
         : { code: promoCode, items: directItemsPayload() };
     applyDiscountMutation.mutate(preview, {
       onSuccess: (data) => {
@@ -470,12 +439,11 @@ export default function CheckoutPage() {
         result = await authenticatedCheckoutMutation.mutateAsync(
           keyedCheckout(
             isBuyNow
-              ? // Buy Now: order this line directly from its items —
-                // the server cart is neither read nor cleared.
-                getAuthenticatedCheckoutData({ items: directItemsPayload() })
+              ?
+              getAuthenticatedCheckoutData({ items: directItemsPayload() })
               : getAuthenticatedCheckoutData(
-                  selectedCartItems.map((item) => item._id),
-                ),
+                selectedCartItems.map((item) => item._id),
+              ),
           ),
         );
       } else {
@@ -501,9 +469,6 @@ export default function CheckoutPage() {
         return;
       }
       if (isBuyNow) {
-        // The ordered line was never in a cart — just end the
-        // direct checkout. Any real cart items stay exactly as
-        // they were.
         clearBuyNowItem();
       } else if (!isAuthenticated) {
         selectedCartItems.forEach((item) => removeGuestCartItem(item._id));
@@ -535,7 +500,7 @@ export default function CheckoutPage() {
                 <Skeleton className="w-full h-16 rounded-xl" />
               </div>
             </div>
-            <div className="w-full lg:w-[380px] xl:w-[512px] p-6 lg:p-12 bg-gray-100 space-y-6">
+            <div className="w-full lg:w-95 xl:w-lg p-6 lg:p-12 bg-gray-100 space-y-6">
               <Skeleton className="w-40 h-7 rounded-lg" />
               <Skeleton className="w-full h-64 rounded-xl" />
             </div>
@@ -561,29 +526,27 @@ export default function CheckoutPage() {
                   <div key={n} className="flex items-center gap-3">
                     <div className="flex items-center gap-2">
                       <div
-                        className={`w-7 h-7 rounded-full flex items-center justify-center text-[14px] font-bold transition-all ${
-                          currentStep === n
-                            ? "bg-[#F27318] text-white"
-                            : currentStep > n
-                              ? "bg-[#F27318]/20 text-[#F27318]"
-                              : "bg-gray-100 text-neutral-500"
-                        }`}
+                        className={`w-7 h-7 rounded-full flex items-center justify-center text-[14px] font-bold transition-all ${currentStep === n
+                          ? "bg-brand text-white"
+                          : currentStep > n
+                            ? "bg-brand/20 text-brand"
+                            : "bg-gray-100 text-neutral-500"
+                          }`}
                       >
                         {currentStep > n ? "✓" : n}
                       </div>
                       <span
-                        className={`text-[16px] font-semibold ${
-                          currentStep === n
-                            ? "text-[#1A1714]"
-                            : "text-neutral-500"
-                        }`}
+                        className={`text-[16px] font-semibold ${currentStep === n
+                          ? "text-[#1A1714]"
+                          : "text-neutral-500"
+                          }`}
                       >
                         {label}
                       </span>
                     </div>
                     {i === 0 && (
                       <div
-                        className={`h-px w-10 ${currentStep > 1 ? "bg-[#F27318]/40" : "bg-neutral-200"}`}
+                        className={`h-px w-10 ${currentStep > 1 ? "bg-brand/40" : "bg-neutral-200"}`}
                       />
                     )}
                   </div>
@@ -599,7 +562,7 @@ export default function CheckoutPage() {
                         Review your items
                       </h2>
                       {isBuyNow && (
-                        <span className="bg-[#F27318]/[0.08] text-[#F27318] px-2.5 py-1 rounded text-[12px] font-bold uppercase tracking-wide">
+                        <span className="bg-brand/8 text-brand px-2.5 py-1 rounded text-[12px] font-bold uppercase tracking-wide">
                           Buy Now · this item only
                         </span>
                       )}
@@ -683,10 +646,6 @@ export default function CheckoutPage() {
                               </div>
                             </div>
 
-                            {/* Qty — Phase 6 (REUSE-010): shared
-                                QuantitySelector; same per-click update
-                                path and the same clamps (min 1, disabled
-                                while an update is pending). */}
                             <div className="flex justify-center">
                               <QuantitySelector
                                 size="sm"
@@ -763,10 +722,6 @@ export default function CheckoutPage() {
             </div>
           </div>
 
-          {/* Right Side: Order Summary (Sidepanel) — Phase 6
-              (REUSE-010): the panel is components/checkout/
-              OrderSummary; the promo block and CTA stay here as its
-              children so their order in the panel is unchanged. */}
           <OrderSummary
             itemCount={selectedCartItems.length}
             subtotal={subtotal}
@@ -797,7 +752,7 @@ export default function CheckoutPage() {
                   {!showPromoInput ? (
                     <button
                       onClick={() => setShowPromoInput(true)}
-                      className="flex items-center gap-2 text-[15px] text-neutral-400 hover:text-[#F27318] transition-colors w-full py-2"
+                      className="flex items-center gap-2 text-[15px] text-neutral-400 hover:text-brand transition-colors w-full py-2"
                     >
                       <Tag size={14} />
                       Have a promo code?
@@ -812,13 +767,13 @@ export default function CheckoutPage() {
                           e.key === "Enter" && handleApplyPromo()
                         }
                         placeholder="Enter code"
-                        className="flex-1 px-4 py-2.5 bg-neutral-50 border border-neutral-200 rounded-md text-[14px] focus:outline-none focus:border-[#F27318] transition-all"
+                        className="flex-1 px-4 py-2.5 bg-neutral-50 border border-neutral-200 rounded-md text-[14px] focus:outline-none focus:border-brand transition-all"
                         autoFocus
                       />
                       <button
                         onClick={handleApplyPromo}
                         disabled={applyDiscountMutation.isPending}
-                        className="px-4 py-2.5 bg-[#F27318] hover:bg-[#cd5704] text-white rounded-md text-[13px] font-bold transition-all disabled:opacity-50 shrink-0"
+                        className="px-4 py-2.5 bg-brand hover:bg-[#cd5704] text-white rounded-md text-[13px] font-bold transition-all disabled:opacity-50 shrink-0"
                       >
                         {"Apply"}
                       </button>
@@ -845,7 +800,7 @@ export default function CheckoutPage() {
                   currentStep === 1 ? handleGoToPayment() : handlePlaceOrder();
                 }}
                 disabled={isSubmitting || selectedCartItems.length === 0}
-                className="flex-1 bg-[#F27318] hover:bg-[#cd5704] text-white h-12 rounded-xl font-medium text-[15px] transition-all flex items-center justify-center gap-2 disabled:opacity-50 group"
+                className="flex-1 bg-brand hover:bg-[#cd5704] text-white h-12 rounded-xl font-medium text-[15px] transition-all flex items-center justify-center gap-2 disabled:opacity-50 group"
               >
                 {isSubmitting ? (
                   <span>Processing...</span>

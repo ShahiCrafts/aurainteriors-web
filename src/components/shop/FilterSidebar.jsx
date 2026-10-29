@@ -9,16 +9,7 @@ import {
 } from "../../utils/categoryScope";
 import { COLOR_SWATCHES } from "../../utils/colorSwatches";
 
-// FE-23: Checkbox lives at module level. Defined inside the render it
-// was a brand-new component type on every render, so React unmounted
-// and remounted every checkbox subtree on each keystroke (focus loss).
 function Checkbox({ checked, onChange, label, count }) {
-  // FE-65: a real <input type="checkbox"> — the previous version was a
-  // <label onClick> wrapping a styled div: no input, no role, no
-  // tabIndex, no aria-checked, so filters could not be toggled by
-  // keyboard or announced by a screen reader. The input is visually
-  // hidden (sr-only) but focusable; the styled box mirrors its state
-  // and shows a focus ring via peer-focus-visible.
   return (
     <label className="flex items-center gap-3 py-1.5 cursor-pointer group">
       <input
@@ -29,11 +20,10 @@ function Checkbox({ checked, onChange, label, count }) {
       />
       <div
         aria-hidden="true"
-        className={`w-5 h-5 rounded border-2 flex items-center justify-center transition-all peer-focus-visible:ring-2 peer-focus-visible:ring-[#F27318] peer-focus-visible:ring-offset-2 ${
-          checked
-            ? "bg-[#F27318] border-[#F27318]"
-            : "border-neutral-300 group-hover:border-neutral-400"
-        }`}
+        className={`w-5 h-5 rounded border-2 flex items-center justify-center transition-all peer-focus-visible:ring-2 peer-focus-visible:ring-brand peer-focus-visible:ring-offset-2 ${checked
+          ? "bg-brand border-brand"
+          : "border-neutral-300 group-hover:border-neutral-400"
+          }`}
       >
         {checked && <Check size={14} className="text-white" strokeWidth={3} />}
       </div>
@@ -49,19 +39,10 @@ function Checkbox({ checked, onChange, label, count }) {
   );
 }
 
-// Phase 7 (catalog): the facet sections reuse this exact checkbox
-// (one accessible implementation, FE-65) instead of a copy.
 export { Checkbox as FilterCheckbox };
 
-// The Colors filter offers the first six entries of the shared
-// swatch list (utils/colorSwatches) — the same names the chips
-// resolve their dots from.
 const colorOptions = COLOR_SWATCHES.slice(0, 6);
 
-// FE-14: material names only — this list previously carried hardcoded
-// counts (Velvet 12, Leather 19, …) that were displayed whenever the
-// server supplied none. A count badge is rendered only from the
-// server-supplied `materialCounts` prop.
 const materialOptions = [
   { name: "Velvet" },
   { name: "Leather" },
@@ -85,9 +66,6 @@ export default function FilterSidebar({
   onRatingChange,
   onResetFilters,
   materialCounts = {},
-  // Phase 7 (catalog) — optional facets payload from GET
-  // /products?facets=1 plus the facet interaction handlers. When
-  // absent, the sidebar renders exactly the legacy sections.
   facets = null,
   facetSelection = {},
   selectedRooms = [],
@@ -98,10 +76,6 @@ export default function FilterSidebar({
   onRoomToggle,
   onInStockToggle,
 }) {
-  // Facet counts are disjunctive and scope-aware, so when the
-  // payload is present they win over the tree's static rollups
-  // (category) and add counts the legacy payload never had
-  // (rating thresholds).
   const facetCategoryCounts = new Map(
     (facets?.category?.options || []).map((option) => [
       String(option.value),
@@ -118,11 +92,6 @@ export default function FilterSidebar({
     hideRoom: hideRoomFacet,
     selection: facetSelection,
   });
-  // FE-23: the displayed range IS the applied range. One sentinel for
-  // "no price filter" — the catalogue bounds (priceRange, {0, 500000}
-  // from the shop page) — read nullishly so an applied min of 0 displays
-  // as 0, never as a hardcoded 5,000. Locals resync whenever the applied
-  // range changes (URL edits, back/forward, the other sidebar instance).
   const [localMinPrice, setLocalMinPrice] = useState(
     selectedPriceRange?.min ?? priceRange.min,
   );
@@ -130,9 +99,6 @@ export default function FilterSidebar({
     selectedPriceRange?.max ?? priceRange.max,
   );
 
-  // Resync during render when the applied range changes (the React
-  // "adjust state when a prop changes" pattern): typing never touches
-  // the prop (submit happens on blur), so this cannot fight the user.
   const appliedMin = selectedPriceRange?.min ?? priceRange.min;
   const appliedMax = selectedPriceRange?.max ?? priceRange.max;
   const [prevApplied, setPrevApplied] = useState({
@@ -145,18 +111,12 @@ export default function FilterSidebar({
     setLocalMaxPrice(appliedMax);
   }
 
-  // Post-delivery fix (catalog): toggling goes through the
-  // department scope — selecting a node subsumes its selected
-  // ancestors and descendants, so drill-in actually narrows.
   const handleCategoryToggle = (categorySlug) => {
     onCategoryChange(
       categoryToggleSelection(categories, selectedCategories, categorySlug),
     );
   };
 
-  // FE-23: clamp into the catalogue bounds and order the pair so min
-  // never exceeds max; a blur with no real change applies nothing (the
-  // old code silently applied the displayed-but-never-chosen range).
   const normalizePriceRange = (min, max) => {
     const clamp = (v) =>
       Math.min(priceRange.max, Math.max(priceRange.min, Number(v) || 0));
@@ -200,14 +160,8 @@ export default function FilterSidebar({
     }
   };
 
-  // Post-delivery fix (catalog): the CATEGORIES group is scoped
-  // to the shopper's current department (roots / children /
-  // siblings — see utils/categoryScope) instead of flattening
-  // the whole tree into one list.
   const scopedCategories = categoryScopeOptions(categories, selectedCategories);
 
-  // FE-23: slider fill/thumb percentages are clamped to 0–100 so an
-  // out-of-range local value can never paint a >100% or negative fill.
   const pctOf = (value) => {
     if (!priceRange.max) return 0;
     return Math.min(100, Math.max(0, (value / priceRange.max) * 100));
@@ -249,7 +203,7 @@ export default function FilterSidebar({
           </h3>
           <button
             onClick={handlePriceReset}
-            className="text-[11px] text-[#F27318] hover:text-[#D9620E] font-bold font-dm-sans underline underline-offset-4"
+            className="text-[11px] text-brand hover:text-brand-hover font-bold font-dm-sans underline underline-offset-4"
           >
             RESET
           </button>
@@ -276,7 +230,7 @@ export default function FilterSidebar({
                   setLocalMinPrice(Number(val) || 0);
                 }}
                 onBlur={handlePriceSubmit}
-                className="w-full pl-10 pr-3 py-2 rounded-lg border border-neutral-200 text-xs font-dm-sans focus:border-[#F27318] focus:ring-1 focus:ring-[#F27318] outline-none transition-all"
+                className="w-full pl-10 pr-3 py-2 rounded-lg border border-neutral-200 text-xs font-dm-sans focus:border-brand focus:ring-1 focus:ring-brand outline-none transition-all"
               />
             </div>
           </div>
@@ -300,16 +254,16 @@ export default function FilterSidebar({
                   setLocalMaxPrice(Number(val) || 0);
                 }}
                 onBlur={handlePriceSubmit}
-                className="w-full pl-10 pr-3 py-2 rounded-lg border border-neutral-200 text-xs font-dm-sans focus:border-[#F27318] focus:ring-1 focus:ring-[#F27318] outline-none transition-all"
+                className="w-full pl-10 pr-3 py-2 rounded-lg border border-neutral-200 text-xs font-dm-sans focus:border-brand focus:ring-1 focus:ring-brand outline-none transition-all"
               />
             </div>
           </div>
         </div>
 
         <div className="relative px-1 h-6">
-          <div className="absolute top-1/2 left-0 right-0 h-[3px] bg-neutral-100 rounded-full -translate-y-1/2">
+          <div className="absolute top-1/2 left-0 right-0 h-0.75 bg-neutral-100 rounded-full -translate-y-1/2">
             <div
-              className="absolute h-full bg-[#F27318] rounded-full"
+              className="absolute h-full bg-brand rounded-full"
               style={{
                 left: `${pctOf(localMinPrice)}%`,
                 right: `${100 - pctOf(localMaxPrice)}%`,
@@ -328,7 +282,7 @@ export default function FilterSidebar({
             className="absolute inset-0 w-full h-full opacity-0 cursor-pointer z-10"
           />
           <div
-            className="absolute top-1/2 -translate-y-1/2 w-4 h-4 bg-white border-2 border-[#F27318] rounded-full shadow-sm pointer-events-none transition-transform group-hover:scale-110"
+            className="absolute top-1/2 -translate-y-1/2 w-4 h-4 bg-white border-2 border-brand rounded-full shadow-sm pointer-events-none transition-transform group-hover:scale-110"
             style={{
               left: `${pctOf(localMaxPrice)}%`,
               marginLeft: "-8px",
@@ -355,11 +309,10 @@ export default function FilterSidebar({
                 onClick={() => handleColorToggle(color.name)}
                 aria-label={`Filter by color ${color.name}`}
                 aria-pressed={isSelected}
-                className={`w-6 h-6 rounded-full transition-all focus-visible:outline-2 focus-visible:outline-[#F27318] focus-visible:outline-offset-2 ${
-                  isSelected
-                    ? "ring-2 ring-offset-2 ring-[#F27318] scale-110"
-                    : "hover:scale-105"
-                } ${isWhite ? "border border-neutral-200" : ""}`}
+                className={`w-6 h-6 rounded-full transition-all focus-visible:outline-2 focus-visible:outline-brand focus-visible:outline-offset-2 ${isSelected
+                  ? "ring-2 ring-offset-2 ring-brand scale-110"
+                  : "hover:scale-105"
+                  } ${isWhite ? "border border-neutral-200" : ""}`}
                 style={{ backgroundColor: color.hex }}
                 title={color.name}
               />
@@ -390,9 +343,6 @@ export default function FilterSidebar({
 
       <div className="w-full h-px bg-neutral-100" />
 
-      {/* Rating — FE-23: selectedRating/onRatingChange were accepted
-          but never rendered, so a ?rating= deep link filtered
-          invisibly with no way to see or clear it. */}
       <div>
         <h3 className="text-sm font-bold text-[#1A1714] font-dm-sans mb-4 uppercase tracking-wider">
           Rating
@@ -403,11 +353,10 @@ export default function FilterSidebar({
             onClick={() => onRatingChange?.(0)}
             aria-label="Any rating"
             aria-pressed={!selectedRating}
-            className={`block w-full text-left px-2 py-1.5 rounded-lg text-sm font-dm-sans transition-colors ${
-              !selectedRating
-                ? "bg-[#F27318]/10 text-[#1A1714] font-bold"
-                : "text-neutral-700 hover:bg-neutral-50"
-            }`}
+            className={`block w-full text-left px-2 py-1.5 rounded-lg text-sm font-dm-sans transition-colors ${!selectedRating
+              ? "bg-brand/10 text-[#1A1714] font-bold"
+              : "text-neutral-700 hover:bg-neutral-50"
+              }`}
           >
             Any rating
           </button>
@@ -418,11 +367,10 @@ export default function FilterSidebar({
               onClick={() => onRatingChange?.(rating)}
               aria-label={`${rating} stars & up`}
               aria-pressed={selectedRating === rating}
-              className={`flex w-full items-center gap-2 px-2 py-1.5 rounded-lg transition-colors ${
-                selectedRating === rating
-                  ? "bg-[#F27318]/10"
-                  : "hover:bg-neutral-50"
-              }`}
+              className={`flex w-full items-center gap-2 px-2 py-1.5 rounded-lg transition-colors ${selectedRating === rating
+                ? "bg-brand/10"
+                : "hover:bg-neutral-50"
+                }`}
             >
               <span className="flex items-center gap-0.5">
                 {[...Array(5)].map((_, i) => (
@@ -431,7 +379,7 @@ export default function FilterSidebar({
                     size={13}
                     className={
                       i < rating
-                        ? "fill-[#F27318] text-[#F27318]"
+                        ? "fill-brand text-brand"
                         : "fill-black/10 text-transparent"
                     }
                   />
@@ -450,8 +398,6 @@ export default function FilterSidebar({
         </div>
       </div>
 
-      {/* Phase 7 (catalog): facet sections (room, availability,
-          attribute facets) rendered from the facets payload. */}
       {showFacets && (
         <>
           <div className="w-full h-px bg-neutral-100" />

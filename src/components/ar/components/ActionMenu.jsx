@@ -1,9 +1,5 @@
 import React from "react";
-import {
-  IoColorPaletteOutline,
-  IoCameraOutline,
-  IoTrashOutline,
-} from "react-icons/io5";
+import { Palette, Camera, Trash2 } from "lucide-react";
 
 const ActionMenu = ({
   show,
@@ -15,9 +11,9 @@ const ActionMenu = ({
   if (!show || !hasPlacedModel) return null;
 
   const actions = [
-    { icon: IoColorPaletteOutline, label: "Style", onClick: onCustomize },
-    { icon: IoCameraOutline, label: "Save", onClick: onCapture },
-    { icon: IoTrashOutline, label: "Remove", onClick: onRemove, danger: true },
+    { icon: Palette, label: "Style", onClick: onCustomize },
+    { icon: Camera, label: "Save", onClick: onCapture },
+    { icon: Trash2, label: "Remove", onClick: onRemove, danger: true },
   ];
 
   return (

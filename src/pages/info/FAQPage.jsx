@@ -110,7 +110,7 @@ export default function FAQPage() {
               animate={{ opacity: 1, y: 0 }}
               className="text-[32px] sm:text-[44px] md:text-[52px] font-bold text-[#1A1714] mb-3 tracking-tight leading-[1.1]"
             >
-              Frequently Asked <span className="text-[#F27318]">Questions</span>
+              Frequently Asked <span className="text-brand">Questions</span>
             </motion.h1>
             <p className="text-gray-500 text-[14px] sm:text-[16px] max-w-xl mx-auto leading-relaxed mb-8">
               Find answers to common questions about our products, ordering
@@ -123,7 +123,7 @@ export default function FAQPage() {
             {faqData.map((category) => (
               <div key={category.category} className="space-y-4">
                 <div className="flex items-center gap-3">
-                  <div className="w-9 h-9 rounded-xl bg-[#F27318]/10 flex items-center justify-center text-[#F27318]">
+                  <div className="w-9 h-9 rounded-xl bg-brand/10 flex items-center justify-center text-brand">
                     <category.icon size={18} />
                   </div>
                   <h2 className="text-lg sm:text-xl font-bold text-[#1A1714]">
@@ -142,12 +142,12 @@ export default function FAQPage() {
                         className="w-full px-5 py-4.5 flex items-start justify-between text-left group hover:bg-[#FFF8F3]/40 transition-colors"
                       >
                         <span
-                          className={`text-[15px] font-semibold transition-colors duration-300 pr-4 leading-normal ${activeId === item.id ? "text-[#F27318]" : "text-gray-800"}`}
+                          className={`text-[15px] font-semibold transition-colors duration-300 pr-4 leading-normal ${activeId === item.id ? "text-brand" : "text-gray-800"}`}
                         >
                           {item.q}
                         </span>
                         <div
-                          className={`shrink-0 w-6 h-6 flex items-center justify-center transition-all duration-300 ${activeId === item.id ? "text-[#F27318] rotate-180" : "text-gray-400 group-hover:text-[#F27318]"}`}
+                          className={`shrink-0 w-6 h-6 flex items-center justify-center transition-all duration-300 ${activeId === item.id ? "text-brand rotate-180" : "text-gray-400 group-hover:text-brand"}`}
                         >
                           <ChevronDown size={18} />
                         </div>

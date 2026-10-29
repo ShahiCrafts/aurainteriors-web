@@ -1,5 +1,5 @@
 import React from "react";
-import { IoClose, IoFilter } from "react-icons/io5";
+import { X, SlidersHorizontal } from "lucide-react";
 import Dialog from "../../common/Dialog";
 import { formatNPR, formatNPRNumber } from "../../../utils/formatCurrency";
 
@@ -60,7 +60,7 @@ const FilterModal = ({
           <div className="absolute top-2 left-1/2 -translate-x-1/2 w-10 h-1 bg-white/30 rounded-full" />
           <div className="flex items-center gap-3">
             <div className="w-9 h-9 bg-teal-500/20 rounded-full flex items-center justify-center">
-              <IoFilter size={16} className="text-teal-400" />
+              <SlidersHorizontal size={16} className="text-teal-400" />
             </div>
             <h2
               id="ar-filter-title"
@@ -74,7 +74,7 @@ const FilterModal = ({
             aria-label="Close dialog"
             className="w-8 h-8 rounded-full bg-white/10 text-white/70 flex items-center justify-center active:scale-95 transition-all"
           >
-            <IoClose size={16} />
+            <X size={16} />
           </button>
         </div>
 

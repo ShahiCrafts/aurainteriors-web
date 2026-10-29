@@ -3,8 +3,9 @@ import { beforeEach, describe, expect, it, vi } from "vitest";
 import { MemoryRouter } from "react-router-dom";
 
 // REUSE-001 (Phase 5) — ProductCard variant coverage. The canonical
-// card now serves grid / list / wishlist / compact / ar-thumb from
-// one component; these tests pin the structural markers and the
+// card now serves grid / list / compact / ar-thumb from
+// one component (the wishlist variant was later removed; the
+// profile Wishlist renders its own rows); these tests pin the structural markers and the
 // interaction contract of each variant (price + rating text, cart
 // action kind, remove/select callbacks). Behavioural history
 // (FE-12/14/54/62/63) stays covered by ProductCard.test.jsx and
@@ -152,19 +153,17 @@ describe("ProductCard variant: list", () => {
 });
 
 describe("ProductCard variant: wishlist", () => {
-  it("renders price, rating and a remove button wired to onRemove(productId)", () => {
-    const onRemove = vi.fn();
-    renderCard(simpleProduct, { variant: "wishlist", onRemove });
-    expect(screen.getByText(/NPR\s12,000/)).toBeInTheDocument();
-    expect(screen.getByText("4.5")).toBeInTheDocument();
-    expect(screen.getByText("(12)")).toBeInTheDocument();
-    fireEvent.click(
-      screen.getByRole("button", { name: "Remove Simple Chair from wishlist" }),
-    );
-    expect(onRemove).toHaveBeenCalledTimes(1);
-    expect(onRemove).toHaveBeenCalledWith("p-simple");
-  });
-
+  // DELETED (testing Phase 4, obsolete): "renders price, rating and
+  // a remove button wired to onRemove(productId)" — the wishlist
+  // variant and the onRemove prop no longer exist in ProductCard.jsx
+  // (repo-wide grep: no src caller passes either), its price/rating
+  // assertions duplicated the grid/list cases above, and the
+  // remove-from-wishlist behaviour itself is covered where it now
+  // lives, in tests/components/profile/Wishlist.canonicalAdd.test.jsx
+  // ("remove still routes through the page's own remove handler").
+  // The two cases below keep the "wishlist" render prop because they
+  // pin live behaviour (guest add path / select-options guard) that
+  // passes through the card's default rendering.
   it("simple product: the cart button adds through the canonical guest path", () => {
     renderCard(simpleProduct, { variant: "wishlist", onRemove: vi.fn() });
     fireEvent.click(

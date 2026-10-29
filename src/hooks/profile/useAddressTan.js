@@ -11,13 +11,6 @@ import {
 } from "../../api/addressApi";
 import { addressKeys } from "../queryKeys";
 
-// FE-55: the mutation hooks below used to invalidate ["addresses"]
-// and ["address"] — the latter prefix-matches EVERY cached address
-// detail (every id, every user). Mutations now invalidate the
-// caller's list key plus only the mutated address's own detail key,
-// built with the exact shapes useAddresses/useAddress use.
-// Phase 6: the shapes come from hooks/queryKeys (addressKeys) —
-// identical arrays, one construction site.
 const addressListKey = () =>
   addressKeys.list(useAuthStore.getState().user?._id);
 const addressDetailKey = (id) =>
@@ -42,8 +35,6 @@ export const useAddress = (id) => {
   return useQuery({
     queryKey: addressKeys.detail(id, userId),
     queryFn: async () => {
-      // Phase 6: the api resolves to the body — the same value this
-      // hook used to derive via response.data.
       return getAddress(id);
     },
     enabled: !!id && !!userId,
@@ -99,8 +90,6 @@ export const useDeleteAddress = () => {
     },
     onSuccess: (_, id) => {
       queryClient.invalidateQueries({ queryKey: addressListKey() });
-      // FE-55: the deleted address's detail is removed outright —
-      // invalidating it would refetch a 404 if it were mounted.
       queryClient.removeQueries({ queryKey: addressDetailKey(id) });
     },
   });

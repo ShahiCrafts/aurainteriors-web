@@ -12,15 +12,25 @@ import { useAllOrders } from "../../hooks/order/useOrderTan";
 import useAuthStore from "../../store/authStore";
 import { useShallow } from "zustand/react/shallow";
 import { formatNPR } from "../../utils/formatCurrency";
+import {
+  dashboardReportData,
+  downloadExcel,
+} from "../../utils/adminExcelExport";
+import { Suspense, lazy } from "react";
 
 // Extracted Components
 import StatCard from "../../components/admin/dashboard/StatCard";
-import RevenueChart from "../../components/admin/dashboard/RevenueChart";
+// PERF-021: recharts (vendor-charts) loads after the dashboard shell paints.
+const RevenueChart = lazy(
+  () => import("../../components/admin/dashboard/RevenueChart"),
+);
 import {
   revenuePeriodDays,
   DEFAULT_REVENUE_PERIOD,
 } from "../../utils/revenuePeriod";
-import CategorySalesChart from "../../components/admin/dashboard/CategorySalesChart";
+const CategorySalesChart = lazy(
+  () => import("../../components/admin/dashboard/CategorySalesChart"),
+);
 import SupportOverview from "../../components/admin/dashboard/SupportOverview";
 import RecentOrdersTable from "../../components/admin/dashboard/RecentOrdersTable";
 import AIInsights from "../../components/admin/dashboard/AIInsights";
@@ -29,9 +39,6 @@ import QuickActions from "../../components/admin/dashboard/QuickActions";
 export default function Dashboard() {
   const { user } = useAuthStore(useShallow((state) => ({ user: state.user })));
   const { data: statsData, isLoading: statsLoading } = useDashboardStats();
-  // FE-38: the RevenueChart period select is wired to this state —
-  // picking a period re-queries the revenue endpoint with that
-  // window's day count (the server honours ?days=, clamped 1..365).
   const [revenuePeriod, setRevenuePeriod] = useState(DEFAULT_REVENUE_PERIOD);
   const { data: revenueData, isLoading: revenueLoading } = useRevenueAnalytics(
     revenuePeriodDays(revenuePeriod),
@@ -63,43 +70,15 @@ export default function Dashboard() {
 
   const handleDownloadReport = async () => {
     try {
-      // PERF-F-002: xlsx is loaded on demand — a static import pulled
-      // the vendor-xlsx chunk into the admin index route graph even
-      // when the report was never exported.
-      const XLSX = await import("xlsx");
-      const overviewData = [
-        { Metric: "Net Revenue", Value: stats.totalRevenue },
-        { Metric: "Total Orders", Value: stats.totalOrders },
-        { Metric: "Total Products", Value: stats.totalProducts },
-        { Metric: "Total Customers", Value: stats.totalUsers },
-      ];
-
       const topProducts = topProductsData?.data?.topProducts || [];
-      const productsData = topProducts.map((p) => ({
-        Name: p.name,
-        Deals: p.sales,
-        "Total Value": p.revenue,
-      }));
-
-      const ordersData = recentOrders.map((o) => ({
-        "Order ID": o.orderId,
-        Customer: o.user?.fullName || o.guestInfo?.firstName || "Guest",
-        Status: o.orderStatus,
-        Total: o.total,
-        Date: formatDate(o.createdAt),
-      }));
-
-      const wb = XLSX.utils.book_new();
-      const wsOverview = XLSX.utils.json_to_sheet(overviewData);
-      const wsProducts = XLSX.utils.json_to_sheet(productsData);
-      const wsOrders = XLSX.utils.json_to_sheet(ordersData);
-
-      XLSX.utils.book_append_sheet(wb, wsOverview, "Overview");
-      XLSX.utils.book_append_sheet(wb, wsProducts, "Top Products");
-      XLSX.utils.book_append_sheet(wb, wsOrders, "Recent Orders");
-
+      const sheets = dashboardReportData({
+        stats,
+        topProducts,
+        recentOrders,
+        formatDate,
+      });
       const fileName = `Aura_Interiors_Report_${new Date().toISOString().split("T")[0]}.xlsx`;
-      XLSX.writeFile(wb, fileName);
+      await downloadExcel(sheets, fileName);
     } catch (error) {
       console.error("Error generating report:", error);
       alert("Failed to generate report. Please try again.");
@@ -114,12 +93,6 @@ export default function Dashboard() {
     }
     return formatNPR(amount);
   };
-
-  // FE-14: the analytics API returns no trend/growth fields for these
-  // metrics (GET /analytics/stats returns only the four totals, and the
-  // revenue endpoint's chartData series is already rendered by
-  // RevenueChart below), so the cards render their real values with no
-  // trend indicator or sparkline rather than invented ones.
   const statCards = [
     {
       label: "Net Revenue",
@@ -163,7 +136,7 @@ export default function Dashboard() {
 
   if (!statsData || !revenueData) {
     return (
-      <div className="flex flex-col items-center justify-center min-h-[400px] text-gray-500">
+      <div className="flex flex-col items-center justify-center min-h-100 text-gray-500">
         <p>Failed to load dashboard data.</p>
         <button
           onClick={() => window.location.reload()}
@@ -206,15 +179,25 @@ export default function Dashboard() {
         ))}
       </div>
 
-      {/* Main Charts Section - Sales Overview, Sales by Category, Support Overview */}
-      {/* Main Charts Section - Sales Overview, Sales by Category, Support Overview */}
       <div className="grid grid-cols-1 lg:grid-cols-[1.4fr_1fr_1fr] gap-5">
-        <RevenueChart
-          data={chartData}
-          period={revenuePeriod}
-          onPeriodChange={setRevenuePeriod}
-        />
-        <CategorySalesChart data={pieData} />
+        <Suspense
+          fallback={
+            <div className="animate-pulse bg-neutral-100 rounded-xl min-h-64" aria-hidden="true" />
+          }
+        >
+          <RevenueChart
+            data={chartData}
+            period={revenuePeriod}
+            onPeriodChange={setRevenuePeriod}
+          />
+        </Suspense>
+        <Suspense
+          fallback={
+            <div className="animate-pulse bg-neutral-100 rounded-xl min-h-64" aria-hidden="true" />
+          }
+        >
+          <CategorySalesChart data={pieData} />
+        </Suspense>
         <SupportOverview />
       </div>
 

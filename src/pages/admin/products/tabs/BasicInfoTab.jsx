@@ -1,9 +1,6 @@
 import CatalogProductFields from "../../../../components/admin/catalog/CatalogProductFields";
 import ProductImageUploader from "../ProductImageUploader";
 
-// Phase 7 split (from Products.jsx) — the Basic Info tab of the
-// product form drawer. Markup moved verbatim; all state arrives
-// via the useProductFormState return (`form`).
 const styleOptions = [
   "Modern",
   "Contemporary",

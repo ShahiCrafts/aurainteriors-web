@@ -1,10 +1,20 @@
-// Catalog Phase 8 (VOCABULARY §4) — footer "Popular Categories"
-// links must target categories that exist in the canonical seed
-// taxonomy. The old hard-coded slugs (sofas / beds / wardrobes /
-// tv-units) exist nowhere in the seed, so those listings were
-// always empty. Mapping: sofas -> upholstered-sofas, beds ->
-// bed-frames, wardrobes -> bedroom-storage; "TV Units" is hidden
-// (FE-16 rule) because no TV-unit category or product exists yet.
+// Footer shop links — the footer was redesigned from the Phase-8
+// "Popular Categories" merchandising labels (Sofas & Couches /
+// King Size Beds / Dining Table Sets / Wardrobes) to a "Shop" column
+// of ROOM links built with shopCategoryUrl(). The merchandising-
+// label case below was rewritten to pin the current room-link
+// contract: every label renders a link to /shop, and the hrefs of
+// the slugs corroborated by in-repo canonical fixtures (seeded-
+// taxonomy mirrors: living-room, bedroom; the Phase-8 contract
+// itself: dining; admin category fixtures + live use: lighting)
+// are pinned exactly. The remaining slugs (home-office, kids-room,
+// decor, outdoor) have NO canonical evidence anywhere in this repo
+// (home-office/kids-room occur only in Footer.jsx) — their exact
+// hrefs are deliberately NOT blessed here; they must be verified
+// against the server seed taxonomy by the owner, and if they are
+// not seed categories the Footer links (not this test) are wrong.
+// The Phase-8 guard that no dead hard-coded slug (sofas / beds /
+// wardrobes / tv-units) is emitted still stands in the second case.
 
 import { describe, it, expect, vi } from "vitest";
 import { render, screen } from "@testing-library/react";
@@ -22,19 +32,25 @@ import Footer from "../../src/layouts/customer/Footer";
 const hrefOf = (name) =>
   screen.getByRole("link", { name }).getAttribute("href");
 
-describe("Phase 8 — footer category links point at canonical seed categories", () => {
-  it("maps the merchandising labels onto real seed category slugs", () => {
+describe("footer Shop column — room links", () => {
+  it("maps each room label onto its shop categories URL", () => {
     render(
       <MemoryRouter>
         <Footer />
       </MemoryRouter>,
     );
-    expect(hrefOf("Sofas & Couches")).toBe(
-      "/shop?categories=upholstered-sofas",
-    );
-    expect(hrefOf("King Size Beds")).toBe("/shop?categories=bed-frames");
-    expect(hrefOf("Dining Table Sets")).toBe("/shop?categories=dining");
-    expect(hrefOf("Wardrobes")).toBe("/shop?categories=bedroom-storage");
+    // Corroborated slugs: hrefs pinned exactly.
+    expect(hrefOf("Living Room")).toBe("/shop?categories=living-room");
+    expect(hrefOf("Bedroom")).toBe("/shop?categories=bedroom");
+    expect(hrefOf("Dining")).toBe("/shop?categories=dining");
+    expect(hrefOf("Lighting")).toBe("/shop?categories=lighting");
+    expect(hrefOf("All Products")).toBe("/shop");
+    // Unverified slugs (see header): the labels must render shop
+    // links, but their category values are not blessed until the
+    // owner verifies them against the server seed taxonomy.
+    for (const label of ["Home Office", "Outdoor", "Decor", "Kids Room"]) {
+      expect(hrefOf(label)).toMatch(/^\/shop\?categories=.+/);
+    }
   });
 
   it("renders no link with a non-existent seed slug, and no TV Units link", () => {

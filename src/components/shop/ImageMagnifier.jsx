@@ -1,4 +1,18 @@
 import { useRef, useState } from "react";
+import { validateMediaUrl } from "../../utils/safeUrl";
+
+function sanitizeSrcSet(srcSet) {
+  if (typeof srcSet !== "string" || !srcSet.trim()) return undefined;
+  const entries = [];
+  for (const part of srcSet.split(",")) {
+    const trimmed = part.trim();
+    if (!trimmed) continue;
+    const [url, ...descriptor] = trimmed.split(/\s+/);
+    const safe = validateMediaUrl(url, { fallback: null });
+    if (safe) entries.push([safe, ...descriptor].join(" "));
+  }
+  return entries.length > 0 ? entries.join(", ") : undefined;
+}
 
 export default function ImageMagnifier({
   src,
@@ -10,6 +24,8 @@ export default function ImageMagnifier({
   className = "",
   ...rest
 }) {
+  const safeSrc = validateMediaUrl(src, { fallback: null });
+  const safeSrcSet = safeSrc ? sanitizeSrcSet(srcSet) : undefined;
   const wrapRef = useRef(null);
   const [pos, setPos] = useState(null); // { x, y, w, h } relative to wrapper
 
@@ -37,8 +53,8 @@ export default function ImageMagnifier({
       onPointerLeave={() => setPos(null)}
     >
       <img
-        src={src}
-        srcSet={srcSet}
+        src={safeSrc ?? undefined}
+        srcSet={safeSrcSet}
         sizes={sizes}
         alt={alt}
         draggable={false}
@@ -57,7 +73,7 @@ export default function ImageMagnifier({
           }}
         >
           <img
-            src={src}
+            src={safeSrc ?? undefined}
             alt=""
             draggable={false}
             style={{

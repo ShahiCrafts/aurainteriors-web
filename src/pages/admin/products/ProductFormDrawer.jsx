@@ -14,10 +14,6 @@ import ModelTab from "./tabs/ModelTab";
 import DetailsTab from "./tabs/DetailsTab";
 import VariantsTab from "./tabs/VariantsTab";
 
-// Phase 7 split (from Products.jsx) — the create/edit product
-// drawer shell: Dialog + tab navigation + footer, orchestrating
-// the tab components. Shell markup moved verbatim; all form state
-// arrives via the useProductFormState return (`form`).
 export default function ProductFormDrawer({ form, categories }) {
   const {
     modalOpen,

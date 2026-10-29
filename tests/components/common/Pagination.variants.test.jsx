@@ -3,7 +3,7 @@
 // onto it: variant="simple" (KnowledgeBase / Announcements /
 // Notifications) and theme="customer" numbered (Wishlist /
 // OrdersSection). The FE-34 admin-numbered contract lives in
-// Pagination.fe34.test.jsx and is unchanged.
+// Pagination.clamping.test.jsx and is unchanged.
 
 import { describe, it, expect, vi } from "vitest";
 import { render, screen, fireEvent } from "@testing-library/react";

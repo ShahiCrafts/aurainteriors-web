@@ -1,17 +1,6 @@
 import { useEffect, useRef, useCallback, useState } from "react";
 import { useQueryClient } from "@tanstack/react-query";
 
-/**
- * useChatSocket
- *
- * Manages all real-time socket events for a chat session.
- *
- * FIX 1: Typing indicator is now event-driven (ai:thinking_start / ai:thinking_stop /
- *         ai:error) — NOT a client-side setTimeout. A one-second recovery deadline reconciles persisted messages and clears stale typing.
- *
- * AI output is rendered only from canonical persisted chat:message:new events.
- * Token streaming is intentionally not rendered to prevent duplicate assistant messages.
- */
 const useChatSocket = (socket, chatId) => {
   const queryClient = useQueryClient();
 

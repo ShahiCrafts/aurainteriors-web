@@ -1,14 +1,6 @@
 import { useEffect, useMemo, useState } from "react";
 import { Truck, ShieldCheck, Home } from "lucide-react";
 
-// SALE countdown card — restored at the owner's request. History:
-// the original card (FE-14) restarted from a hardcoded start value
-// on every page load and was removed as fabrication. This version
-// keeps the original design but counts against a REAL target
-// instant: pass `saleEndsAt` (Date or ISO string) once the sale
-// feature lands and it will drive the card. Until then the target
-// defaults to the end of the current day, so the timer genuinely
-// ticks instead of replaying invented numbers.
 function endOfToday() {
   const end = new Date();
   end.setHours(23, 59, 59, 999);
@@ -41,11 +33,11 @@ export default function TrustBanner({ saleEndsAt } = {}) {
 
   return (
     <section className="font-dm-sans px-2 md:px-6 lg:px-8 py-2 md:py-4 bg-[#f6f6f6]">
-      <div className="max-w-[1440px] mx-auto flex flex-col lg:flex-row gap-2 md:gap-4 items-stretch">
+      <div className="max-w-360 mx-auto flex flex-col lg:flex-row gap-2 md:gap-4 items-stretch">
         {/* CARD 1 (LEFT): SALE COUNTDOWN */}
         <div className="bg-white rounded-lg shadow-[0_4px_25px_rgba(0,0,0,0.06)] flex items-center gap-6 p-4 lg:px-8 shrink-0">
           <div className="flex flex-col">
-            <span className="text-[#F27318] text-[22px] font-bold tracking-tight leading-none">
+            <span className="text-brand text-[22px] font-bold tracking-tight leading-none">
               SALE
             </span>
             <span className="text-black/40 text-[12px] font-medium mt-1 whitespace-nowrap">
@@ -76,8 +68,8 @@ export default function TrustBanner({ saleEndsAt } = {}) {
         <div className="flex-1 bg-white rounded-lg shadow-[0_4px_25px_rgba(0,0,0,0.06)] flex flex-col xl:flex-row items-center overflow-hidden">
           {/* VALUE PROPS */}
           <div className="flex-1 grid grid-cols-1 md:grid-cols-3 gap-4 md:gap-0 p-4 lg:px-6 w-full">
-            <div className="flex items-center gap-4 lg:justify-center md:border-r border-black/[0.05]">
-              <div className="w-9 h-9 rounded-full bg-black/[0.03] flex items-center justify-center text-[#F27318]">
+            <div className="flex items-center gap-4 lg:justify-center md:border-r border-black/5">
+              <div className="w-9 h-9 rounded-full bg-black/3 flex items-center justify-center text-brand">
                 <Home size={18} strokeWidth={2.5} />
               </div>
               <div className="flex flex-col gap-0.5">
@@ -88,8 +80,8 @@ export default function TrustBanner({ saleEndsAt } = {}) {
               </div>
             </div>
 
-            <div className="flex items-center gap-4 lg:justify-center md:border-r border-black/[0.05]">
-              <div className="w-9 h-9 rounded-full bg-black/[0.03] flex items-center justify-center text-[#F27318]">
+            <div className="flex items-center gap-4 lg:justify-center md:border-r border-black/5">
+              <div className="w-9 h-9 rounded-full bg-black/3 flex items-center justify-center text-brand">
                 <Truck size={18} strokeWidth={2.5} />
               </div>
               <div className="flex flex-col gap-0.5">
@@ -101,7 +93,7 @@ export default function TrustBanner({ saleEndsAt } = {}) {
             </div>
 
             <div className="flex items-center gap-4 lg:justify-center">
-              <div className="w-9 h-9 rounded-full bg-black/[0.03] flex items-center justify-center text-[#F27318]">
+              <div className="w-9 h-9 rounded-full bg-black/3 flex items-center justify-center text-brand">
                 <ShieldCheck size={18} strokeWidth={2.5} />
               </div>
               <div className="flex flex-col gap-0.5">
@@ -114,7 +106,7 @@ export default function TrustBanner({ saleEndsAt } = {}) {
           </div>
 
           {/* APP DOWNLOAD (NOW LAST) */}
-          <div className="hidden md:flex p-0.5 px-2.5 lg:px-4 py-3 xl:py-0 border-t xl:border-t-0 xl:border-l border-black/[0.05] shrink-0 items-center justify-center gap-3 xl:self-stretch">
+          <div className="hidden md:flex p-0.5 px-2.5 lg:px-4 py-3 xl:py-0 border-t xl:border-t-0 xl:border-l border-black/5 shrink-0 items-center justify-center gap-3 xl:self-stretch">
             <img
               src="https://upload.wikimedia.org/wikipedia/commons/thumb/7/78/Google_Play_Store_badge_EN.svg/3840px-Google_Play_Store_badge_EN.svg.png"
               alt="Get it on Google Play"

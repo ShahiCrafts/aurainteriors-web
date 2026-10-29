@@ -16,17 +16,6 @@ import {
 import { useProducts } from "../../hooks/product/useProductTan";
 import formatError from "../../utils/errorHandler";
 
-// Phase 6 (catalog) — collections admin.
-//
-// Manual collections hold an explicit ordered product list (the
-// picker below searches the product catalog; the server verifies
-// every id exists and dedupes). Rule collections are evaluated at
-// read time from their rule type + params — new-arrivals takes a
-// window in days, best-sellers a limit, attribute-match an
-// attribute key + scalar value taken from the definition registry.
-// The slug is immutable on edit. Same recorded API gap as rooms
-// and product types: the list is the public active-only one.
-
 const inputClass =
   "w-full px-4 h-10 rounded-lg border border-gray-200 focus:border-teal-500 focus:ring-2 focus:ring-teal-500/10 outline-none text-sm transition-all bg-white";
 const labelClass = "block text-sm font-medium text-gray-700 mb-2";
@@ -69,11 +58,6 @@ function ManualProductPicker({ selectedIds, onChange, seedNames }) {
   const [names, setNames] = useState({});
   const [appliedSeed, setAppliedSeed] = useState(null);
 
-  // Names for already-selected products arrive from the collection
-  // detail (resolved products); names of products added here are
-  // learned from the search results. Unknown ids show the raw id.
-  // (Render-phase adjustment: merge each new seed once, never
-  // clobbering names learned in this session.)
   if (seedNames && seedNames !== appliedSeed) {
     setNames((prev) => ({ ...seedNames, ...prev }));
     setAppliedSeed(seedNames);
@@ -196,9 +180,6 @@ export default function Collections() {
   const [form, setForm] = useState(EMPTY_FORM);
   const [formError, setFormError] = useState("");
   const [deleteTarget, setDeleteTarget] = useState(null);
-
-  // Resolved products of the collection being edited — the source
-  // of display names for its stored productIds.
   const { data: detailData } = useCollection(editing?.slug || null, {
     limit: 100,
   });
@@ -248,7 +229,7 @@ export default function Collections() {
       attrKey: collection.rule?.params?.key || "",
       attrValue:
         collection.rule?.params?.value !== undefined &&
-        collection.rule?.params?.value !== null
+          collection.rule?.params?.value !== null
           ? String(collection.rule.params.value)
           : "",
     });
@@ -394,11 +375,10 @@ export default function Collections() {
                     {collection.slug}
                   </span>
                   <span
-                    className={`px-2 py-0.5 rounded-full text-[10px] font-bold uppercase tracking-wider ${
-                      collection.kind === "rule"
-                        ? "bg-indigo-50 text-indigo-700 border border-indigo-100"
-                        : "bg-slate-100 text-slate-600"
-                    }`}
+                    className={`px-2 py-0.5 rounded-full text-[10px] font-bold uppercase tracking-wider ${collection.kind === "rule"
+                      ? "bg-indigo-50 text-indigo-700 border border-indigo-100"
+                      : "bg-slate-100 text-slate-600"
+                      }`}
                   >
                     {collection.kind === "rule" ? "Rule" : "Manual"}
                   </span>
@@ -687,7 +667,7 @@ export default function Collections() {
                               Value
                             </label>
                             {attrDefinition &&
-                            (attrDefinition.allowedValues || []).length > 0 ? (
+                              (attrDefinition.allowedValues || []).length > 0 ? (
                               <select
                                 id="collection-attr-value"
                                 value={form.attrValue}
@@ -732,11 +712,11 @@ export default function Collections() {
                       )}
                       {(form.ruleType === "featured" ||
                         form.ruleType === "on-sale") && (
-                        <p className="text-xs text-gray-400">
-                          This rule needs no parameters — it is evaluated from
-                          product flags and prices at read time.
-                        </p>
-                      )}
+                          <p className="text-xs text-gray-400">
+                            This rule needs no parameters — it is evaluated from
+                            product flags and prices at read time.
+                          </p>
+                        )}
                     </div>
                   )}
 

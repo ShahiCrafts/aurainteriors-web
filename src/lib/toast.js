@@ -1,18 +1,3 @@
-/**
- * Custom toast singleton — drop-in API replacement for react-toastify.
- *
- * Usage (unchanged from before):
- *   import { toast } from "<relative>/lib/toast";  // REUSE-015: direct imports only — the former Vite alias from "react-toastify" was removed with the dependency
- *   toast.success("Added to cart");
- *   toast.error("Something went wrong");
- *   toast.info("Just so you know");
- *   toast.warning("Be careful");
- *
- * The ToastProvider in src/components/ui/ToastProvider.jsx calls
- * _registerDispatch() on mount and stores the setter reference here.
- * All toast() calls push into that setter.
- */
-
 let _dispatch = null;
 
 /** Called once by ToastProvider on mount. */
@@ -53,12 +38,6 @@ toastFn.info = (message, options) => push("info", message, options);
 toastFn.warning = (message, options) => push("warning", message, options);
 
 export const toast = toastFn;
-
-/**
- * ToastContainer — exported as a no-op so that any leftover
- * `import { ToastContainer } from "react-toastify"` compiles without error.
- * The real container is in ToastProvider.jsx.
- */
 export const ToastContainer = () => null;
 
 export default toast;

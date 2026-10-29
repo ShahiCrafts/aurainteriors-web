@@ -9,11 +9,6 @@ const CATEGORY_KEYS = {
   products: (id, params) => [...CATEGORY_KEYS.all, "products", id, params],
 };
 
-// FE-55: mutations invalidate the narrowest keys that changed —
-// the list prefix + the category tree (names/hierarchy render in
-// nav and admin lists) + the mutated category's detail — never
-// CATEGORY_KEYS.all, whose prefix also matched every other
-// category's detail and every per-category product list.
 const categoryListKey = () => [...CATEGORY_KEYS.all, "list"];
 
 export const useCategories = (params = {}) => {
@@ -27,12 +22,7 @@ export const useCategoryTree = (options = {}) => {
   return useQuery({
     queryKey: CATEGORY_KEYS.tree(),
     queryFn: () => categoryApi.getTree(),
-    // Categories rarely change. Cache for 10 min so CategoryBar (mounted on
-    // every page) never triggers a network request on navigation or tab focus.
     staleTime: 10 * 60 * 1000,
-    // FE-32: callers may gate the fetch (e.g. ShopByCategory passes
-    // { enabled: isInView } so the request waits for the viewport).
-    // Default stays enabled, so existing callers are unaffected.
     ...options,
   });
 };

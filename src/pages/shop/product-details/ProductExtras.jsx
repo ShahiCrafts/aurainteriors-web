@@ -18,7 +18,7 @@ import {
 } from "lucide-react";
 
 const iconWrap =
-  "flex h-12 w-12 items-center justify-center rounded-full bg-[#FDE8D7] text-[#F27318]";
+  "flex h-12 w-12 items-center justify-center rounded-full bg-[#FDE8D7] text-brand";
 
 export function TrustBar() {
   const items = [
@@ -41,7 +41,7 @@ export function TrustBar() {
         <div key={title} className="flex items-center justify-center gap-3">
           <Icon
             size={26}
-            className="shrink-0 text-[#F27318]"
+            className="shrink-0 text-brand"
             strokeWidth={1.5}
           />
           <div>
@@ -123,7 +123,7 @@ export function StyledInRealHomes({ product, images, getImageUrl }) {
         </p>
         <Link
           to="#reviews"
-          className="inline-flex items-center gap-2 rounded-lg border border-[#F27318] px-4 py-2 text-[13px] font-medium text-[#F27318] hover:bg-white"
+          className="inline-flex items-center gap-2 rounded-lg border border-brand px-4 py-2 text-[13px] font-medium text-brand hover:bg-white"
         >
           View Customer Photos <ArrowRight size={14} />
         </Link>
@@ -134,7 +134,7 @@ export function StyledInRealHomes({ product, images, getImageUrl }) {
             key={i}
             src={getImageUrl(img)}
             alt=""
-            className="aspect-[4/3] w-full rounded-lg object-cover"
+            className="aspect-4/3 w-full rounded-lg object-cover"
             loading="lazy"
           />
         ))}
@@ -187,7 +187,7 @@ export function ProductFAQ({ product, images, getImageUrl }) {
   return (
     <section className="mb-10 grid gap-6 rounded-2xl bg-[#FDF3EA] p-6 lg:grid-cols-[1fr_1.6fr]">
       <div className="flex flex-col">
-        <p className="mb-2 text-[10px] font-semibold uppercase tracking-widest text-[#F27318]">
+        <p className="mb-2 text-[10px] font-semibold uppercase tracking-widest text-brand">
           FAQ
         </p>
         <h2 className="mb-3 font-playfair text-[30px] leading-tight text-neutral-900">
@@ -221,7 +221,7 @@ export function ProductFAQ({ product, images, getImageUrl }) {
                 aria-expanded={isOpen}
               >
                 <span
-                  className={`flex h-5 w-5 shrink-0 items-center justify-center rounded-full text-[11px] font-semibold ${isOpen ? "bg-[#F27318] text-white" : "bg-[#FDE8D7] text-[#F27318]"}`}
+                  className={`flex h-5 w-5 shrink-0 items-center justify-center rounded-full text-[11px] font-semibold ${isOpen ? "bg-brand text-white" : "bg-[#FDE8D7] text-brand"}`}
                 >
                   {i + 1}
                 </span>
@@ -230,7 +230,7 @@ export function ProductFAQ({ product, images, getImageUrl }) {
                 </span>
                 <ChevronDown
                   size={16}
-                  className={`transition-transform ${isOpen ? "rotate-180 text-[#F27318]" : ""}`}
+                  className={`transition-transform ${isOpen ? "rotate-180 text-brand" : ""}`}
                 />
               </button>
               {isOpen && (
@@ -272,7 +272,7 @@ export function SupportSection() {
   ];
   return (
     <section className="mb-10 rounded-2xl bg-[#FDF3EA] p-6">
-      <p className="mb-1 text-[10px] font-semibold uppercase tracking-widest text-[#F27318]">
+      <p className="mb-1 text-[10px] font-semibold uppercase tracking-widest text-brand">
         Support
       </p>
       <h2 className="mb-1 font-playfair text-[24px] text-neutral-900">
@@ -288,7 +288,7 @@ export function SupportSection() {
             key={title}
             className="relative flex gap-3 rounded-xl bg-white p-4 shadow-sm"
           >
-            <div className={`${iconWrap} !h-10 !w-10 shrink-0`}>
+            <div className={`${iconWrap} h-10! w-10! shrink-0`}>
               <Icon size={18} strokeWidth={1.5} />
             </div>
             <div>
@@ -301,7 +301,7 @@ export function SupportSection() {
             </div>
             <ArrowRight
               size={12}
-              className="absolute right-3 top-3 text-[#F27318]"
+              className="absolute right-3 top-3 text-brand"
             />
           </div>
         ))}

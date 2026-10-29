@@ -1,15 +1,15 @@
 import React from "react";
-import { TbRotate360, TbHandFinger } from "react-icons/tb";
-import { HiOutlineArrowsPointingOut } from "react-icons/hi2";
+import { Rotate3d, Hand, Expand } from "lucide-react";
+
 import Dialog from "../../common/Dialog";
 
 const InfoModal = ({ show, onClose }) => {
   if (!show) return null;
 
   const gestures = [
-    { icon: TbRotate360, gesture: "2 fingers", action: "Rotate" },
-    { icon: HiOutlineArrowsPointingOut, gesture: "Pinch", action: "Scale" },
-    { icon: TbHandFinger, gesture: "1 finger", action: "Move" },
+    { icon: Rotate3d, gesture: "2 fingers", action: "Rotate" },
+    { icon: Expand, gesture: "Pinch", action: "Scale" },
+    { icon: Hand, gesture: "1 finger", action: "Move" },
   ];
 
   return (

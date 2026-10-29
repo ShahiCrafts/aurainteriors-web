@@ -128,7 +128,7 @@ export default function SavedAddresses() {
           <button
             onClick={handleAddNew}
             aria-label="Add new address"
-            className="flex items-center gap-1.5 px-3 py-3 bg-[#F27318] rounded-lg text-[14px] font-medium text-white transition-all"
+            className="flex items-center gap-1.5 px-3 py-3 bg-brand rounded-lg text-[14px] font-medium text-white transition-all"
           >
             <Plus size={16} />
           </button>
@@ -138,7 +138,7 @@ export default function SavedAddresses() {
       {isEmpty ? (
         /* Empty State */
         <div className="flex-1 min-h-0 flex flex-col items-center justify-center text-center bg-neutral-50 rounded-2xl">
-          <div className="w-16 h-16 rounded-2xl bg-white flex items-center justify-center mb-5 text-[#F27318]">
+          <div className="w-16 h-16 rounded-2xl bg-white flex items-center justify-center mb-5 text-brand">
             <Map size={26} />
           </div>
           <h3 className="text-[18px] font-semibold text-[#1A1714]">
@@ -150,7 +150,7 @@ export default function SavedAddresses() {
           </p>
           <button
             onClick={handleAddNew}
-            className="inline-flex items-center gap-2 px-6 py-2.5 bg-[#F27318] hover:bg-[#E6651B] text-white text-[14px] font-medium rounded-lg transition-all"
+            className="inline-flex items-center gap-2 px-6 py-2.5 bg-brand hover:bg-[#E6651B] text-white text-[14px] font-medium rounded-lg transition-all"
           >
             Add First Address
             <Plus size={14} />
@@ -158,9 +158,6 @@ export default function SavedAddresses() {
         </div>
       ) : (
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-          {/* Phase 6 (REUSE-013): the card is components/profile/
-              AddressCard; this page owns the modal/delete/default
-              state and passes callbacks down. */}
           {addresses.map((address) => (
             <AddressCard
               key={address._id}

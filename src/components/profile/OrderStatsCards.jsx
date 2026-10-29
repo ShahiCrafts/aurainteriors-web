@@ -1,13 +1,5 @@
 import { ShoppingBag, Clock, Truck, CheckCircle2 } from "lucide-react";
 
-// FE-28: pending/processing/delivered counts are derived from the
-// orders currently loaded on this page, and the labels say so — the old
-// labels presented page counts as account totals (and the mapping
-// folds confirmed→Pending and shipped→Processing, so the cards needn't
-// sum to the total). Only "Total Orders" is an account total, and it
-// comes from the server pagination. For fully accurate per-status
-// totals, expose an orders-summary endpoint from the API and pass those
-// numbers in via props instead.
 export default function OrderStatsCards({ orders = [], totalCount }) {
   const stats = orders.reduce(
     (acc, o) => {

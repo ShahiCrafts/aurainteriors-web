@@ -1,6 +1,6 @@
 import React from "react";
-import { IoClose, IoCheckmarkCircle } from "react-icons/io5";
-import { HiOutlineCube } from "react-icons/hi2";
+import { X, CircleCheck, Box } from "lucide-react";
+
 import Dialog from "../../common/Dialog";
 import { formatNPR } from "../../../utils/formatCurrency";
 
@@ -84,7 +84,7 @@ const CustomizeSheet = ({
                 />
               ) : (
                 <div className="w-full h-full bg-white/10 flex items-center justify-center">
-                  <HiOutlineCube size={16} className="text-white/40" />
+                  <Box size={16} className="text-white/40" />
                 </div>
               )}
             </div>
@@ -100,7 +100,7 @@ const CustomizeSheet = ({
               onClick={onClose}
               className="w-8 h-8 rounded-full bg-white/10 text-white/70 flex items-center justify-center"
             >
-              <IoClose size={16} />
+              <X size={16} />
             </button>
           </div>
 
@@ -128,7 +128,7 @@ const CustomizeSheet = ({
                   <div
                     className={`w-10 h-10 rounded-full flex items-center justify-center active:scale-95 transition-all border-2 bg-[conic-gradient(#d6c7b4_0_25%,#4f5b4d_0_50%,#8d6e63_0_75%,#ece8e1_0)] ${!customization?.color ? "ring-2 ring-offset-2 ring-offset-black/80 ring-teal-400 scale-110 border-white/50" : "border-white/20"}`}
                   >
-                    {!customization?.color && <IoCheckmarkCircle size={18} />}
+                    {!customization?.color && <CircleCheck size={18} />}
                   </div>
                   <span className="text-[9px] text-white/50 mt-1 block text-center">
                     Original
@@ -169,7 +169,7 @@ const CustomizeSheet = ({
                         }`}
                       >
                         {customization?.color === color && (
-                          <IoCheckmarkCircle size={18} />
+                          <CircleCheck size={18} />
                         )}
                       </div>
                       <span className="text-[9px] text-white/50 mt-1 block text-center capitalize">

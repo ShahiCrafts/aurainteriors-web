@@ -121,13 +121,6 @@ export default function OrderCard({ order, defaultExpanded = false }) {
     setTimeout(() => setCopied(false), 1500);
   };
 
-  // ── FE-38: the action row below used to render four controls with
-  // no wiring at all. Each is now dispositioned against its backing
-  // surface (see the actions JSX): Buy Again re-adds via the cart
-  // hooks, Write Review links to the product page's review form,
-  // Request Return uses useRequestReturn (delivered orders only —
-  // the server rejects returns for any other status), and Invoice
-  // was removed (no invoice endpoint exists in the client API).
   const { isAuthenticated } = useAuthStore(
     useShallow((state) => ({ isAuthenticated: state.isAuthenticated })),
   );
@@ -282,14 +275,14 @@ export default function OrderCard({ order, defaultExpanded = false }) {
             {itemNamesSummary}
           </p>
           {isTrackable ? (
-            <div className="flex items-center gap-2 max-w-[232px]">
+            <div className="flex items-center gap-2 max-w-58">
               {TRACK_STEPS.map((step, idx) => {
                 const stepIdx = TRACK_STEPS.indexOf(order.orderStatus);
                 const filled = idx <= stepIdx;
                 return (
                   <span
                     key={step}
-                    className={`h-2 flex-1 rounded-full ${filled ? "bg-[#F27318]" : "bg-neutral-150 bg-neutral-200"}`}
+                    className={`h-2 flex-1 rounded-full ${filled ? "bg-brand" : "bg-neutral-150 bg-neutral-200"}`}
                   />
                 );
               })}
@@ -343,7 +336,7 @@ export default function OrderCard({ order, defaultExpanded = false }) {
               {items.map((item, idx) => (
                 <div
                   key={idx}
-                  className="flex gap-4 min-w-[450px] max-w-[380px] shrink-0 bg-white border border-neutral-200 rounded-xl p-4"
+                  className="flex gap-4 min-w-112.5 max-w-95 shrink-0 bg-white border border-neutral-200 rounded-xl p-4"
                 >
                   <div className="w-24 h-24 bg-white rounded-lg overflow-hidden shrink-0 border border-neutral-100">
                     <ImageWithFallback
@@ -374,7 +367,7 @@ export default function OrderCard({ order, defaultExpanded = false }) {
                         ))}
                       </div>
                     )}
-                    <p className="text-[16px] font-bold text-[#F27318] mt-1.5">
+                    <p className="text-[16px] font-bold text-brand mt-1.5">
                       {formatNPR(item.price || 0)}
                     </p>
                   </div>

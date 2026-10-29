@@ -17,12 +17,7 @@ import ReviewSection from "../../../components/shop/ReviewSection";
 import useAuthStore from "../../../store/authStore";
 import { groupSpecifications } from "../../../utils/variantSelection";
 
-// Simple line-art dimension diagram, driven by the product's dimensions data.
 function DimensionDiagram({ dimensions }) {
-  // Phase 7 split note: the original's unused `unit` local (never
-  // referenced — the diagram labels hardcode "cm") was dropped here;
-  // it offsets the per-file `motion` unused-import lint quirk that
-  // the split would otherwise duplicate. No behaviour change.
   const width = dimensions.width || "–";
   const height = dimensions.height || "–";
   const depth = dimensions.depth || "–";
@@ -163,10 +158,6 @@ function DimensionDiagram({ dimensions }) {
   );
 }
 
-// Phase 7 split (from ProductDetailsPage.jsx) — the description /
-// specifications / materials / reviews / delivery tab section. It
-// wraps the existing ReviewSection (not a rewrite). Tab state and
-// the specifications derivation moved verbatim from the page.
 export default function ProductTabs({
   product,
   definitions,
@@ -220,11 +211,6 @@ export default function ProductTabs({
     },
   ].filter(Boolean);
 
-  // Phase 7: stored catalog attributes for the specifications
-  // tab — definition labels, grouped by displayGroup, values
-  // formatted per type; attributes with no stored value are
-  // omitted (groupSpecifications). The first-class weight field
-  // joins the general group (dimensions already render above).
   const catalogSpecGroups = groupSpecifications(product, definitions);
   if (product?.weight?.value) {
     const weightItem = {
@@ -246,7 +232,7 @@ export default function ProductTabs({
     <>
       {/* Tabs + Content — full width */}
       <div className="mb-16">
-        <div className="border-b border-black/[0.08] flex items-center justify-between">
+        <div className="border-b border-black/8 flex items-center justify-between">
           <div className="flex gap-0 overflow-x-auto min-w-min">
             {[
               { id: "description", label: "Description", Icon: FileText },
@@ -274,13 +260,13 @@ export default function ProductTabs({
                   <Icon
                     size={16}
                     strokeWidth={isActive ? 2.5 : 2}
-                    className={`transition-all ${isActive ? "text-[#F27318]" : "text-black/40 group-hover:text-black/60"}`}
+                    className={`transition-all ${isActive ? "text-brand" : "text-black/40 group-hover:text-black/60"}`}
                   />
                   {tab.label}
                   {isActive && (
                     <motion.div
                       layoutId="activeMainTabUnderline"
-                      className="absolute bottom-0 left-0 right-0 h-0.5 bg-[#F27318]"
+                      className="absolute bottom-0 left-0 right-0 h-0.5 bg-brand"
                       transition={{
                         type: "spring",
                         bounce: 0.2,
@@ -304,7 +290,7 @@ export default function ProductTabs({
                 hasReviewed ? (
                   <button
                     onClick={() => handleOpenReviewModal(userReview)}
-                    className="inline-flex items-center gap-2 text-[#F27318] text-[14px] font-semibold hover:underline underline-offset-4 transition-all cursor-pointer bg-transparent border-none p-0 whitespace-nowrap"
+                    className="inline-flex items-center gap-2 text-brand text-[14px] font-semibold hover:underline underline-offset-4 transition-all cursor-pointer bg-transparent border-none p-0 whitespace-nowrap"
                   >
                     <Edit2 size={14} />
                     Edit Your Review
@@ -312,7 +298,7 @@ export default function ProductTabs({
                 ) : (
                   <button
                     onClick={() => handleOpenReviewModal()}
-                    className="inline-flex items-center gap-2 text-[#F27318] text-[14px] font-semibold hover:underline underline-offset-4 transition-all cursor-pointer bg-transparent border-none p-0 whitespace-nowrap"
+                    className="inline-flex items-center gap-2 text-brand text-[14px] font-semibold hover:underline underline-offset-4 transition-all cursor-pointer bg-transparent border-none p-0 whitespace-nowrap"
                   >
                     <PenLine size={15} />
                     Write a Review
@@ -321,7 +307,7 @@ export default function ProductTabs({
               ) : (
                 <button
                   onClick={() => useAuthStore.getState().openAuthModal("login")}
-                  className="inline-flex items-center gap-2 text-[#F27318] text-[14px] font-semibold hover:underline underline-offset-4 transition-all cursor-pointer bg-transparent border-none p-0 whitespace-nowrap"
+                  className="inline-flex items-center gap-2 text-brand text-[14px] font-semibold hover:underline underline-offset-4 transition-all cursor-pointer bg-transparent border-none p-0 whitespace-nowrap"
                 >
                   <PenLine size={14} />
                   Write a Review
@@ -357,8 +343,8 @@ export default function ProductTabs({
                           const Icon = detailIcons[idx % detailIcons.length];
                           return (
                             <li key={idx} className="flex items-start gap-4">
-                              <div className="flex items-center justify-center w-14 h-14 rounded-full bg-[#F27318]/8 shrink-0">
-                                <Icon size={22} className="text-[#F27318]" />
+                              <div className="flex items-center justify-center w-14 h-14 rounded-full bg-brand/8 shrink-0">
+                                <Icon size={22} className="text-brand" />
                               </div>
                               <div>
                                 <p className="text-[15px] font-semibold text-[#1A1714] mb-0.5 capitalize">
@@ -380,9 +366,9 @@ export default function ProductTabs({
                     (product.dimensions.width ||
                       product.dimensions.height ||
                       product.dimensions.depth) && (
-                      <div className="flex flex-col bg-[#F27318]/4 rounded-2xl p-8">
+                      <div className="flex flex-col bg-brand/4 rounded-2xl p-8">
                         <h4 className="text-[15px] font-bold text-[#1A1714] mb-0 flex items-center gap-2.5">
-                          <Edit2 size={16} className="text-[#F27318]" />
+                          <Edit2 size={16} className="text-brand" />
                           Dimensions
                         </h4>
                         <div className="w-full">
@@ -468,8 +454,8 @@ export default function ProductTabs({
                           return (
                             <div key={idx} className="flex gap-4">
                               {/* Material Image Placeholder */}
-                              <div className="w-28 h-28 rounded-lg bg-gradient-to-br from-orange-100 to-orange-50 shrink-0 flex items-center justify-center border border-black/5">
-                                <Icon size={32} className="text-[#F27318]/40" />
+                              <div className="w-28 h-28 rounded-lg bg-linear-to-br from-orange-100 to-orange-50 shrink-0 flex items-center justify-center border border-black/5">
+                                <Icon size={32} className="text-brand/40" />
                               </div>
                               {/* Material Info */}
                               <div className="flex-1">
@@ -485,14 +471,14 @@ export default function ProductTabs({
                                       <div className="flex items-center gap-1.5 text-black/60">
                                         <Sparkles
                                           size={14}
-                                          className="text-[#F27318]"
+                                          className="text-brand"
                                         />
                                         <span>Breathable</span>
                                       </div>
                                       <div className="flex items-center gap-1.5 text-black/60">
                                         <ShieldCheck
                                           size={14}
-                                          className="text-[#F27318]"
+                                          className="text-brand"
                                         />
                                         <span>Stain-Resistant</span>
                                       </div>
@@ -503,14 +489,14 @@ export default function ProductTabs({
                                       <div className="flex items-center gap-1.5 text-black/60">
                                         <Hammer
                                           size={14}
-                                          className="text-[#F27318]"
+                                          className="text-brand"
                                         />
                                         <span>Solid & Durable</span>
                                       </div>
                                       <div className="flex items-center gap-1.5 text-black/60">
                                         <Layers
                                           size={14}
-                                          className="text-[#F27318]"
+                                          className="text-brand"
                                         />
                                         <span>Sustainably Sourced</span>
                                       </div>
@@ -521,14 +507,14 @@ export default function ProductTabs({
                                       <div className="flex items-center gap-1.5 text-black/60">
                                         <Sparkles
                                           size={14}
-                                          className="text-[#F27318]"
+                                          className="text-brand"
                                         />
                                         <span>High Resilience</span>
                                       </div>
                                       <div className="flex items-center gap-1.5 text-black/60">
                                         <RotateCcw
                                           size={14}
-                                          className="text-[#F27318]"
+                                          className="text-brand"
                                         />
                                         <span>Lasting Comfort</span>
                                       </div>
@@ -596,10 +582,10 @@ export default function ProductTabs({
 
                     {/* Benefits Row */}
                     <div className="grid grid-cols-2 gap-4">
-                      <div className="flex flex-col items-center text-center p-4 bg-black/[0.02] rounded-lg">
+                      <div className="flex flex-col items-center text-center p-4 bg-black/2 rounded-lg">
                         <ShieldCheck
                           size={24}
-                          className="text-[#F27318] mb-2"
+                          className="text-brand mb-2"
                         />
                         <p className="text-[12px] font-bold text-[#1A1714] mb-1">
                           Built to Last
@@ -608,8 +594,8 @@ export default function ProductTabs({
                           Premium materials for long-lasting durability.
                         </p>
                       </div>
-                      <div className="flex flex-col items-center text-center p-4 bg-black/[0.02] rounded-lg">
-                        <Sparkles size={24} className="text-[#F27318] mb-2" />
+                      <div className="flex flex-col items-center text-center p-4 bg-black/2 rounded-lg">
+                        <Sparkles size={24} className="text-brand mb-2" />
                         <p className="text-[12px] font-bold text-[#1A1714] mb-1">
                           Easy to Maintain
                         </p>
@@ -617,8 +603,8 @@ export default function ProductTabs({
                           Materials chosen for easy cleaning and care.
                         </p>
                       </div>
-                      <div className="flex flex-col items-center text-center p-4 bg-black/[0.02] rounded-lg">
-                        <Layers size={24} className="text-[#F27318] mb-2" />
+                      <div className="flex flex-col items-center text-center p-4 bg-black/2 rounded-lg">
+                        <Layers size={24} className="text-brand mb-2" />
                         <p className="text-[12px] font-bold text-[#1A1714] mb-1">
                           Sustainably Sourced
                         </p>
@@ -626,8 +612,8 @@ export default function ProductTabs({
                           Responsibly sourced wood for a better future.
                         </p>
                       </div>
-                      <div className="flex flex-col items-center text-center p-4 bg-black/[0.02] rounded-lg">
-                        <Star size={24} className="text-[#F27318] mb-2" />
+                      <div className="flex flex-col items-center text-center p-4 bg-black/2 rounded-lg">
+                        <Star size={24} className="text-brand mb-2" />
                         <p className="text-[12px] font-bold text-[#1A1714] mb-1">
                           Quality Assured
                         </p>

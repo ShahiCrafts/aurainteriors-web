@@ -117,7 +117,7 @@ export default function Announcements() {
     isOpen: false,
     title: "",
     message: "",
-    onConfirm: () => {},
+    onConfirm: () => { },
     type: "danger",
     isLoading: false,
   });
@@ -197,10 +197,6 @@ export default function Announcements() {
       return;
     }
 
-    // FE-04: validate the stored URL fields on WRITE, with the same
-    // helpers the consumers use. Both fields are optional — empty is
-    // allowed; a non-empty value that the helpers reject blocks the
-    // save with an inline error (nothing is submitted).
     const nextUrlErrors = {};
     if (
       announcementForm.actionUrl?.trim() &&
@@ -214,7 +210,7 @@ export default function Announcements() {
       !validateMediaUrl(announcementForm.imageUrl, { fallback: null })
     ) {
       nextUrlErrors.imageUrl =
-        "Use an image URL on an allowed host (this site, Cloudinary, Unsplash or an S3 bucket).";
+        "Use an image URL on an allowed host (this site, Cloudinary or an S3 bucket).";
     }
     setUrlErrors(nextUrlErrors);
     if (Object.keys(nextUrlErrors).length > 0) {
@@ -239,9 +235,9 @@ export default function Announcements() {
         : undefined,
       tags: announcementForm.tags
         ? announcementForm.tags
-            .split(",")
-            .map((t) => t.trim())
-            .filter(Boolean)
+          .split(",")
+          .map((t) => t.trim())
+          .filter(Boolean)
         : undefined,
     };
 
@@ -273,11 +269,6 @@ export default function Announcements() {
         try {
           setConfirmModal((prev) => ({ ...prev, isLoading: true }));
           const result = await publishMutation.mutateAsync(id);
-          // FE-41: in queue mode the announcement IS published but its
-          // notifications are only queued (202) — reportSendOutcome says
-          // exactly that, polls the job, and reports completion without
-          // inventing counts (the server records none for announcements).
-          // Inline 200 keeps the "published successfully" message.
           void reportSendOutcome(result, { kind: "announcement", toast });
           setConfirmModal({ ...confirmModal, isOpen: false, isLoading: false });
         } catch (err) {
@@ -452,8 +443,6 @@ export default function Announcements() {
         </select>
       </div>
 
-      {/* FE-28: the announcements API has no search parameter, so the
-          search filters only this page — say so while it is active. */}
       {searchQuery && (
         <p className="text-xs text-gray-400">
           Showing matches from this page only — other pages are not searched.

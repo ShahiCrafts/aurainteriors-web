@@ -1,6 +1,3 @@
-/* Google Fonts are loaded via <link> in index.html with preconnect hints.
-   Keeping the @import here would block CSS parsing — the <link> approach
-   is fetched in parallel with HTML parsing, saving one full round-trip. */
 @import "tailwindcss";
 
 html {
@@ -20,13 +17,6 @@ html::-webkit-scrollbar {
   --font-lato: "Lato", sans-serif;
   --font-playfair: "Playfair Display", serif;
   --font-dm-sans: "DM Sans", sans-serif;
-
-  /* Brand tokens (Phase 4, REUSE-003): the storefront primary was typed
-     as the raw hex #F27318 in 100+ places. New primitives in
-     components/ui use these tokens (bg-brand, hover:bg-brand-hover,
-     text-brand, fill-brand, …) instead of raw hex. brand-hover is
-     #D9620E — the majority hover value (ProductCard, CartSlider); the
-     Wishlist outlier #E6651B was NOT adopted (see phase4 log). */
   --color-brand: #f27318;
   --color-brand-hover: #d9620e;
 }
@@ -50,9 +40,7 @@ html::-webkit-scrollbar {
   display: none;
 }
 
-/* ── Custom toast progress bar ───────────────────────────────────────────────
-   Used by ToastItem.jsx. scaleX is GPU-composited (no layout/paint cost).
-   transform-origin: left center on the element lets it shrink left→right.     */
+/* ── Custom toast progress bar */
 @keyframes toast-shrink {
   from {
     transform: scaleX(1);
@@ -62,7 +50,6 @@ html::-webkit-scrollbar {
   }
 }
 
-/* Admin Theme Override (changes all teal elements to blue) */
 /* Shimmer overlay animation for skeleton loading elements */
 @keyframes shimmer-sweep {
   0% {

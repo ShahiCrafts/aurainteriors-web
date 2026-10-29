@@ -1,7 +1,7 @@
 // Landing product section (owner's uploaded variant, adopted
 // 2026-10-26): header, two static rows of products (five per row
 // on desktop — no category tabs, no paging), and the two promo
-// cards (tables PromoCard + lighting card).
+// cards (sofa collection PromoCard + lighting card).
 import { render, screen } from "@testing-library/react";
 import { describe, expect, it, vi, beforeEach } from "vitest";
 import { MemoryRouter } from "react-router-dom";
@@ -105,13 +105,14 @@ describe("FeaturedPieces (uploaded variant)", () => {
 
   it("renders the two promo cards with shop links", () => {
     renderSection();
-    // The wide slot is the shared PromoCard (tables edit); its CTA
-    // filters the shop to the three table categories.
-    expect(screen.getByRole("link", { name: /Shop Tables/ })).toHaveAttribute(
+    // Current promo content (the tables-edit card was replaced):
+    // the wide primary slot is the sofa collection, the secondary
+    // slot is lighting. Each CTA filters the shop to its category.
+    expect(screen.getByRole("link", { name: /Shop Sofas/ })).toHaveAttribute(
       "href",
-      "/shop?categories=coffee-tables%2Cside-tables%2Cdining-tables",
+      "/shop?categories=living-room",
     );
-    expect(screen.getByText(/Tables That/)).toBeInTheDocument();
+    expect(screen.getByText(/Discover Comfort/)).toBeInTheDocument();
     expect(screen.getByRole("link", { name: /Shop Lighting/ })).toHaveAttribute(
       "href",
       "/shop?categories=lighting",

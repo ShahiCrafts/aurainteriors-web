@@ -1,9 +1,12 @@
-// PromoCard (Part 2 of the components program) — layout and
-// safety pins: the text block is first in the DOM and the card is
-// a column on small screens (text first, image below) and a row
-// from md up, with imagePosition flipping the row direction only;
-// the CTA runs through safeActionUrl, so an unsafe href renders
-// inert text instead of a link.
+// PromoCard — layout and safety pins for the current design: a
+// full-bleed background image (absolute inset-0 layer) under a
+// gradient, with the text block overlaid (relative z-10). The old
+// flex-row layout contract (flex-col / md:flex-row, and the
+// imagePosition prop that flipped the row) was replaced by this
+// overlay design — those two cases were rewritten to pin the new
+// contract (variant-driven image placement) instead. The CTA runs
+// through safeActionUrl, so an unsafe href renders inert text
+// instead of a link.
 
 import { describe, it, expect } from "vitest";
 import { render, screen } from "@testing-library/react";
@@ -37,31 +40,44 @@ function renderCard(props = {}) {
 }
 
 describe("PromoCard", () => {
-  it("renders text left / image right by default and stacks on small screens", () => {
+  it("renders a full-bleed background image with the text overlaid", () => {
     const { container } = renderCard();
     const card = container.querySelector("article");
-    // Column (stacked) by default, row from md up.
-    expect(card.className).toContain("flex-col");
-    expect(card.className).toContain("md:flex-row");
-    expect(card.className).not.toContain("md:flex-row-reverse");
-    // Text block precedes the image in the DOM, so the mobile
-    // stack reads text first and the desktop row starts with it.
-    const text = screen.getByText("Tables That Anchor the Room");
+    // Overlay design: the card is a positioned, clipped surface —
+    // there is no flex row to flip any more.
+    expect(card.className).toContain("relative");
+    expect(card.className).toContain("overflow-hidden");
+    expect(card.className).not.toContain("md:flex-row");
+    // The image sits in an absolutely-positioned full-bleed layer…
     const img = screen.getByAltText(image.alt);
-    expect(
-      text.compareDocumentPosition(img) & Node.DOCUMENT_POSITION_FOLLOWING,
-    ).toBeTruthy();
+    const imageLayer = img.closest("div");
+    expect(imageLayer.className).toContain("absolute");
+    expect(imageLayer.className).toContain("inset-0");
+    // …and the text block paints above it (relative + z-10).
+    const heading = screen.getByRole("heading", {
+      name: "Tables That Anchor the Room",
+    });
+    const textBlock = heading.parentElement;
+    expect(textBlock.className).toContain("relative");
+    expect(textBlock.className).toContain("z-10");
+    // Default (primary) variant gives the text the wide column.
+    expect(textBlock.className).toContain("max-w-[520px]");
   });
 
-  it("imagePosition='left' flips the desktop row but keeps the DOM order", () => {
-    const { container } = renderCard({ imagePosition: "left" });
-    const card = container.querySelector("article");
-    expect(card.className).toContain("md:flex-row-reverse");
-    const text = screen.getByText("Tables That Anchor the Room");
+  it("variant='secondary' confines the image to a right-side panel and narrows the text", () => {
+    const { container } = renderCard({ variant: "secondary" });
     const img = screen.getByAltText(image.alt);
-    expect(
-      text.compareDocumentPosition(img) & Node.DOCUMENT_POSITION_FOLLOWING,
-    ).toBeTruthy();
+    // Secondary: image lives in a right-anchored 85%-width panel
+    // instead of the primary full-bleed layer.
+    const panel = img.parentElement;
+    expect(panel.className).toContain("absolute");
+    expect(panel.className).toContain("right-0");
+    expect(panel.className).toContain("w-[85%]");
+    const heading = screen.getByRole("heading", {
+      name: "Tables That Anchor the Room",
+    });
+    expect(heading.parentElement.className).toContain("max-w-[310px]");
+    expect(container.querySelector("article")).not.toBeNull();
   });
 
   it("renders the image with explicit dimensions, srcSet and lazy loading", () => {

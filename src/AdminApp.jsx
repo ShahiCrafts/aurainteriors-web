@@ -2,11 +2,6 @@ import { Routes, Route, Navigate } from "react-router-dom";
 import { Suspense, lazy } from "react";
 import "./styles/index.css";
 
-// ─── Admin components — only imported in this file ───────────────────────────
-// This file is ONLY loaded by the admin entry point (main.admin.jsx).
-// The customer entry point (main.jsx) never references this file,
-// so Rollup emits zero bytes of these modules into the customer bundle.
-// ─────────────────────────────────────────────────────────────────────────────
 import AdminRoute from "./components/auth/AdminRoute";
 
 import AdminLoginPage from "./pages/admin/AdminLoginPage";
@@ -203,7 +198,6 @@ export default function AdminApp() {
           />
         </Route>
 
-        {/* Catch-all 404 */}
         <Route
           path="*"
           element={

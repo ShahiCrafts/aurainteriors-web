@@ -136,13 +136,6 @@ export default function Users() {
         onError: (err) => {
           toast.error(formatError(err, "Failed to update password"));
         },
-        // FE-09: the mutation's variables hold the plaintext password;
-        // once the reset settles (success OR failure) drop the settled
-        // mutation from the cache so no password lingers there. (The
-        // observer's reset() alone only detaches the observer — the
-        // Mutation object, variables included, stays in the cache —
-        // so the cache clear is what actually evicts it, the first
-        // option named in the finding.)
         onSettled: () => {
           queryClient.getMutationCache().clear();
           resetMutation.reset();
@@ -153,7 +146,7 @@ export default function Users() {
 
   if (error) {
     return (
-      <div className="flex items-center justify-center min-h-[400px]">
+      <div className="flex items-center justify-center min-h-100">
         <div className="text-center">
           <h2 className="text-xl font-semibold text-gray-900 mb-2">
             Error Loading Users
@@ -200,7 +193,7 @@ export default function Users() {
                 setRole(e.target.value);
                 setPage(1);
               }}
-              className="px-4 py-2.5 bg-white border border-gray-200 rounded-lg text-sm focus:outline-none focus:border-teal-500 focus:ring-2 focus:ring-teal-500/20 cursor-pointer min-w-[140px]"
+              className="px-4 py-2.5 bg-white border border-gray-200 rounded-lg text-sm focus:outline-none focus:border-teal-500 focus:ring-2 focus:ring-teal-500/20 cursor-pointer min-w-35"
             >
               <option value="all">All Roles</option>
               <option value="customer">Customer</option>
@@ -212,7 +205,7 @@ export default function Users() {
                 setStatus(e.target.value);
                 setPage(1);
               }}
-              className="px-4 py-2.5 bg-white border border-gray-200 rounded-lg text-sm focus:outline-none focus:border-teal-500 focus:ring-2 focus:ring-teal-500/20 cursor-pointer min-w-[140px]"
+              className="px-4 py-2.5 bg-white border border-gray-200 rounded-lg text-sm focus:outline-none focus:border-teal-500 focus:ring-2 focus:ring-teal-500/20 cursor-pointer min-w-35"
             >
               <option value="all">All Status</option>
               <option value="active">Active</option>
@@ -327,9 +320,6 @@ export default function Users() {
                     <td className="px-6 py-4">
                       <div className="flex items-center gap-3">
                         <div className="shrink-0">
-                          {/* FE-06: real avatar img or local initials
-                              (UserAvatar) — never an external
-                              placeholder URL built from the name. */}
                           <UserAvatar
                             user={user}
                             alt=""
@@ -342,7 +332,7 @@ export default function Users() {
                           </p>
                           <div className="flex items-center gap-1 text-xs text-gray-400 mt-0.5">
                             <Mail size={12} className="shrink-0" />
-                            <span className="truncate max-w-[150px]">
+                            <span className="truncate max-w-37.5">
                               {user.email}
                             </span>
                           </div>
@@ -357,11 +347,10 @@ export default function Users() {
                     </td>
                     <td className="px-6 py-4">
                       <span
-                        className={`inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-[10px] font-bold uppercase tracking-wider ${
-                          user.role === "admin"
-                            ? "bg-purple-50 text-purple-700"
-                            : "bg-blue-50 text-blue-700"
-                        }`}
+                        className={`inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-[10px] font-bold uppercase tracking-wider ${user.role === "admin"
+                          ? "bg-purple-50 text-purple-700"
+                          : "bg-blue-50 text-blue-700"
+                          }`}
                       >
                         {user.role === "admin" ? (
                           <Shield size={10} />
@@ -374,17 +363,16 @@ export default function Users() {
                     <td className="px-6 py-4">
                       <div className="flex flex-col gap-1">
                         <span
-                          className={`inline-flex items-center w-fit px-2.5 py-1 rounded-full text-[10px] font-bold uppercase tracking-wider ${
-                            user.isActive
-                              ? "bg-teal-50 text-teal-700"
-                              : "bg-red-50 text-red-700"
-                          }`}
+                          className={`inline-flex items-center w-fit px-2.5 py-1 rounded-full text-[10px] font-bold uppercase tracking-wider ${user.isActive
+                            ? "bg-teal-50 text-teal-700"
+                            : "bg-red-50 text-red-700"
+                            }`}
                         >
                           {user.isActive ? "Active" : "Inactive"}
                         </span>
                         {!user.isActive && user.deactivationReason && (
                           <span
-                            className="text-[10px] text-red-400 italic truncate max-w-[120px]"
+                            className="text-[10px] text-red-400 italic truncate max-w-30"
                             title={user.deactivationReason}
                           >
                             {user.deactivationReason}
@@ -430,11 +418,10 @@ export default function Users() {
                         </button>
                         <button
                           onClick={() => handleOpenStatusModal(user)}
-                          className={`p-2 rounded-lg transition-colors ${
-                            user.isActive
-                              ? "text-gray-500 hover:bg-red-50 hover:text-red-600"
-                              : "text-teal-600 hover:bg-teal-50"
-                          }`}
+                          className={`p-2 rounded-lg transition-colors ${user.isActive
+                            ? "text-gray-500 hover:bg-red-50 hover:text-red-600"
+                            : "text-teal-600 hover:bg-teal-50"
+                            }`}
                           title={
                             user.isActive
                               ? "Deactivate User"

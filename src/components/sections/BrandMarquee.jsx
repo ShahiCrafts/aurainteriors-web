@@ -1,11 +1,11 @@
 import React, { useEffect, useRef, useState } from "react";
 
 const BRANDS = [
-  { name: "Kantipur", logo: "/brands/kantipur.svg" },
-  { name: "Onlinekhabar", logo: "/brands/onlinekhabar.png" },
-  { name: "Techpana", logo: "/brands/techpana.png" },
-  { name: "Codavatar", logo: "/brands/codavatar.svg" },
-  { name: "Setopati", logo: "/brands/setopati.svg" },
+  { name: "Kantipur", logo: "/brands/brand-kantipur.svg", width: 300, height: 93 },
+  { name: "Onlinekhabar", logo: "/brands/brand-onlinekhabar.webp", width: 508, height: 59 },
+  { name: "Techpana", logo: "/brands/brand-techpana.webp", width: 900, height: 244 },
+  { name: "Codavatar", logo: "/brands/brand-codavatar.svg", width: 196, height: 33 },
+  { name: "Setopati", logo: "/brands/brand-setopati.svg", width: 300, height: 93 },
 ];
 
 const SPEED_PX_PER_SECOND = 60;
@@ -73,6 +73,10 @@ export default function BrandMarquee() {
             key={brand.name}
             src={brand.logo}
             alt={setIndex === 0 ? brand.name : ""}
+            width={brand.width}
+            height={brand.height}
+            loading="lazy"
+            decoding="async"
             draggable={false}
             className="h-6 md:h-7 w-auto shrink-0 object-contain grayscale opacity-60 hover:grayscale-0 hover:opacity-100 transition-all duration-500 cursor-default select-none"
           />
@@ -89,7 +93,7 @@ export default function BrandMarquee() {
   );
 
   return (
-    <section className="py-6 bg-white border-y border-black/[0.03] overflow-hidden">
+    <section className="py-6 bg-white border-y border-black/3 overflow-hidden">
       <style>{MARQUEE_CSS}</style>
       <div
         ref={viewportRef}
@@ -102,8 +106,8 @@ export default function BrandMarquee() {
           {Array.from({ length: setsPerHalf * 2 }, (_, i) => renderSet(i))}
         </div>
 
-        <div className="absolute inset-y-0 left-0 w-24 md:w-48 bg-gradient-to-r from-white to-transparent z-10 pointer-events-none" />
-        <div className="absolute inset-y-0 right-0 w-24 md:w-48 bg-gradient-to-l from-white to-transparent z-10 pointer-events-none" />
+        <div className="absolute inset-y-0 left-0 w-24 md:w-48 bg-linear-to-r from-white to-transparent z-10 pointer-events-none" />
+        <div className="absolute inset-y-0 right-0 w-24 md:w-48 bg-linear-to-l from-white to-transparent z-10 pointer-events-none" />
       </div>
     </section>
   );

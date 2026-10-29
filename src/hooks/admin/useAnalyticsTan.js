@@ -2,7 +2,6 @@ import { useQuery } from "@tanstack/react-query";
 import analyticsApi from "../../api/analyticsApi";
 import { scopedAdminKey } from "../../lib/adminScope";
 
-// FE-08: keys are scoped to the signed-in admin's id (read at call time).
 export const ANALYTICS_KEYS = {
   all: () => scopedAdminKey("analytics"),
   stats: () => [...ANALYTICS_KEYS.all(), "stats"],

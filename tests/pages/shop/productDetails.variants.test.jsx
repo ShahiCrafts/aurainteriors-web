@@ -126,7 +126,7 @@ const variantProduct = {
   price: 60000,
   originalPrice: 75000,
   stock: 12,
-  images: [{ url: "https://images.unsplash.com/photo-product-main?w=800" }],
+  images: [{ url: "https://res.cloudinary.com/demo/image/upload/photo-product-main?w=800" }],
   category: { name: "Corner Sofas", slug: "corner-sofas" },
   hasVariants: true,
   priceFrom: 700,
@@ -143,7 +143,7 @@ const variantProduct = {
       stock: 3,
       reservedStock: 1,
       enabled: true,
-      images: ["https://images.unsplash.com/photo-variant-red?w=800"],
+      images: ["https://res.cloudinary.com/demo/image/upload/photo-variant-red?w=800"],
       modelUrl: "https://cdn.example/red.glb",
     },
     {
@@ -338,7 +338,10 @@ describe("ProductDetailsPage variant flow (Phase 7)", () => {
 
   it("specifications render stored attributes grouped, and omit unset ones", async () => {
     renderPage();
-    fireEvent.click(screen.getByRole("button", { name: /Specifications/ }));
+    // The redesigned page has no Specifications tab (ProductTabs is
+    // unmounted); the grouped catalog attributes render inline in
+    // the KeySpecifications section, which the page feeds with the
+    // schema definitions. Assert the section content directly.
     expect(await screen.findByText("Dimensions")).toBeInTheDocument();
     expect(screen.getByText("Seat height:")).toBeInTheDocument();
     expect(screen.getByText("45 cm")).toBeInTheDocument();

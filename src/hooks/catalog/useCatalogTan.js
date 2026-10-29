@@ -3,18 +3,6 @@ import catalogApi from "../../api/catalogApi";
 import categoryApi from "../../api/categoryApi";
 import productApi from "../../api/productApi";
 
-// Phase 6 (catalog) — React Query hooks for the catalog registries
-// (product types, rooms, collections, attribute definitions), the
-// attribute resolution reads, category attribute assignments,
-// category reorder, and product variants.
-//
-// Invalidation follows the FE-55 rule used by the other hook
-// modules: invalidate the narrowest keys that changed — the
-// resource's own list/detail keys, plus the resolution keys whose
-// inputs changed (a definition or assignment change can alter any
-// category's resolved set, so resolution keys are invalidated as a
-// family; they are cheap public reads).
-
 export const CATALOG_KEYS = {
   productTypes: ["catalog", "product-types"],
   productType: (key) => ["catalog", "product-types", key],
@@ -29,10 +17,6 @@ export const CATALOG_KEYS = {
   schema: ["catalog", "schema"],
 };
 
-// ── Public schema (Phase 7 storefront) ───────────────────────────
-// Attribute definitions for variant option labels + specification
-// rendering on the product page. A slow-changing registry read, so
-// it rides the global staleTime.
 export const useCatalogSchema = (options = {}) =>
   useQuery({
     queryKey: CATALOG_KEYS.schema,

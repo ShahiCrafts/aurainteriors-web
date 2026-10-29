@@ -28,15 +28,12 @@ import { formatNPR } from "../../utils/formatCurrency";
 
 export default function Orders() {
   const [searchQuery, setSearchQuery] = useState("");
-  const debouncedSearchQuery = useDebounce(searchQuery, 300); // PERF-F-007: input stays immediate; only the query-param value is debounced
+  const debouncedSearchQuery = useDebounce(searchQuery, 300);
   const [filterStatus, setFilterStatus] = useState("all");
   const [filterPaymentStatus, setFilterPaymentStatus] = useState("all");
   const [page, setPage] = useState(1);
   const [pageSize] = useState(10);
   const [selectedOrder, setSelectedOrder] = useState(null);
-  // FE-38: 'View details' state — the row order opens the dialog
-  // immediately; useOrderAdmin (GET /orders/admin/:id) refreshes it
-  // with the full record.
   const [detailsOrder, setDetailsOrder] = useState(null);
   const [showStatusModal, setShowStatusModal] = useState(false);
   const [showReturnModal, setShowReturnModal] = useState(false);
@@ -217,7 +214,7 @@ export default function Orders() {
 
   if (error) {
     return (
-      <div className="flex items-center justify-center min-h-[400px]">
+      <div className="flex items-center justify-center min-h-100">
         <div className="text-center">
           <h2 className="text-xl font-semibold text-gray-900 mb-2">
             Error Loading Orders
@@ -460,9 +457,9 @@ export default function Orders() {
                         {order.refundRequest?.status === "pending"
                           ? "Refund pending"
                           : (order.paymentStatus || "")
-                              .charAt(0)
-                              .toUpperCase() +
-                            (order.paymentStatus || "").slice(1)}
+                            .charAt(0)
+                            .toUpperCase() +
+                          (order.paymentStatus || "").slice(1)}
                       </span>
                     </td>
                     <td className="px-6 py-4">
@@ -507,10 +504,6 @@ export default function Orders() {
           onPageChange={setPage}
         />
       </div>
-
-      {/* Order Details Modal — FE-38: opened by the 'View details' eye
-          button; fed by useOrderAdmin (GET /orders/admin/:id), falling
-          back to the row's own record while the detail loads. */}
       <AnimatePresence>
         {detailsOrder && (
           <motion.div
@@ -568,15 +561,15 @@ export default function Orders() {
                         </span>
                         {(detailOrder.user?.email ||
                           detailOrder.guestInfo?.email) && (
-                          <>
-                            {" "}
-                            ·{" "}
-                            <span className="text-gray-900">
-                              {detailOrder.user?.email ||
-                                detailOrder.guestInfo?.email}
-                            </span>
-                          </>
-                        )}
+                            <>
+                              {" "}
+                              ·{" "}
+                              <span className="text-gray-900">
+                                {detailOrder.user?.email ||
+                                  detailOrder.guestInfo?.email}
+                              </span>
+                            </>
+                          )}
                       </p>
                       <p className="text-gray-500 mt-1">
                         Placed:{" "}
@@ -844,21 +837,19 @@ export default function Orders() {
                   <div className="flex gap-3">
                     <button
                       onClick={() => setReturnDecision("approved")}
-                      className={`flex-1 px-4 py-2.5 rounded-lg border-2 text-sm font-medium transition-all ${
-                        returnDecision === "approved"
-                          ? "border-teal-500 bg-teal-50 text-teal-700"
-                          : "border-gray-200 text-gray-600 hover:border-teal-300"
-                      }`}
+                      className={`flex-1 px-4 py-2.5 rounded-lg border-2 text-sm font-medium transition-all ${returnDecision === "approved"
+                        ? "border-teal-500 bg-teal-50 text-teal-700"
+                        : "border-gray-200 text-gray-600 hover:border-teal-300"
+                        }`}
                     >
                       Approve
                     </button>
                     <button
                       onClick={() => setReturnDecision("rejected")}
-                      className={`flex-1 px-4 py-2.5 rounded-lg border-2 text-sm font-medium transition-all ${
-                        returnDecision === "rejected"
-                          ? "border-red-500 bg-red-50 text-red-700"
-                          : "border-gray-200 text-gray-600 hover:border-red-300"
-                      }`}
+                      className={`flex-1 px-4 py-2.5 rounded-lg border-2 text-sm font-medium transition-all ${returnDecision === "rejected"
+                        ? "border-red-500 bg-red-50 text-red-700"
+                        : "border-gray-200 text-gray-600 hover:border-red-300"
+                        }`}
                     >
                       Reject
                     </button>

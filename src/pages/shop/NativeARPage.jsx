@@ -9,6 +9,7 @@ import useAuthStore from "../../store/authStore";
 import { useShallow } from "zustand/react/shallow";
 import useGuestCartStore from "../../store/guestCartStore";
 import { hasArModel, isIntroProduct } from "../../utils/arProducts";
+import productArSofaLifestyle from "../../assets/images/products/product-ar-sofa-lifestyle.webp";
 
 const INTRO_PRODUCT = {
   _id: "intro",
@@ -17,11 +18,11 @@ const INTRO_PRODUCT = {
   description:
     "Experience modern luxury with our signature handcrafted sofa piece.",
   price: 45000,
-  modelFiles: [{ format: "glb", url: "/sofa_chair.glb" }],
-  modelUrl: "/sofa_chair.glb",
+  modelFiles: [{ format: "glb", url: "/sofa-chair.glb" }],
+  modelUrl: "/sofa-chair.glb",
   images: [
     {
-      url: "https://images.unsplash.com/photo-1567016376408-0226e4d0c1ea?w=800",
+      url: productArSofaLifestyle,
     },
   ],
 };
@@ -42,13 +43,6 @@ export default function NativeARPage() {
   const [userSelectedProduct, setUserSelectedProduct] = useState(null);
   const [customization, setCustomization] = useState({});
   const addInFlightRef = useRef(false);
-
-  // FE-30: a deep link (?select=<slug>) is resolved by fetching THAT
-  // product directly. Previously the page waited for a limit:100
-  // catalog fetch and ran a selection effect over an array rebuilt on
-  // every render: the effect selected the intro product before the
-  // data arrived and the !selectedProduct guard then blocked the real
-  // target forever, so QR/deep links always opened the demo sofa.
   const wantsLinked = !!initialProductSlug && initialProductSlug !== "intro";
   const {
     data: linkedData,
@@ -57,9 +51,6 @@ export default function NativeARPage() {
   } = useProduct(wantsLinked ? initialProductSlug : null);
   const linkedProduct = linkedData?.data?.product || null;
 
-  // The picker catalog (walks every server page — see
-  // useArCatalogProducts) and the category tree stream in behind the
-  // AR experience; neither gates rendering or session start.
   const { data: catalogData, isLoading: catalogLoading } =
     useArCatalogProducts();
   const { data: categoriesData } = useCategories();
@@ -84,21 +75,12 @@ export default function NativeARPage() {
     return [INTRO_PRODUCT, ...arProducts];
   }, [arProducts, linkedProduct]);
 
-  // FE-30: the initial selection is DERIVED, not set by an effect.
-  // An effect over a rebuilt-every-render array was the original bug:
-  // it fired with only the intro product present and latched it. The
-  // derived value tracks the deep-link fetch as it settles; an
-  // explicit user pick (catalog tap, or an FE-21 rollback) wins.
   const resolvedProduct = useMemo(() => {
     if (!wantsLinked) return INTRO_PRODUCT;
     if (linkedProduct) {
-      // A linked product with no AR model is absent from the AR
-      // catalog by definition; fall back to the intro.
       return hasArModel(linkedProduct) ? linkedProduct : INTRO_PRODUCT;
     }
-    if (linkedLoading) return null; // Wait for the direct fetch to settle.
-    // The direct lookup settled without a product (e.g. 404): the
-    // catalog may still know the slug; otherwise fall back to intro.
+    if (linkedLoading) return null;
     const found = arProducts.find(
       (p) => p.slug === initialProductSlug || p._id === initialProductSlug,
     );
@@ -130,12 +112,8 @@ export default function NativeARPage() {
   };
 
   const handleAddToCart = (product) => {
-    // FE-30: the synthetic intro product is not purchasable, and a
-    // rapid double-tap must submit at most one mutation.
     if (!product || isIntroProduct(product)) return;
     if (addInFlightRef.current || isAddingToCart) return;
-    // FE-30: guests use the guest cart (the same path the product
-    // page offers) instead of being silently bounced to /shop.
     if (!isAuthenticated) {
       addGuestItem(product, 1);
       return;
@@ -154,8 +132,6 @@ export default function NativeARPage() {
     );
   };
 
-  // FE-30: only the deep-linked product's own fetch may block the AR
-  // entry; the catalog and categories load in the background.
   const isLoading = wantsLinked && linkedLoading;
 
   return (

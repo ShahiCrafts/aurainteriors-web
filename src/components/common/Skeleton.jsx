@@ -46,19 +46,28 @@ export default function Skeleton({
 
 export function CategoryCardSkeleton({ className = "" }) {
   return (
-    <div className={`flex flex-col ${className}`}>
-      <Skeleton className="w-full rounded-lg" style={{ height: "160px" }} />
-      <Skeleton className="w-3/4 h-4 mx-auto mt-3 mb-2 rounded" />
-      <Skeleton className="w-1/2 h-3 mx-auto rounded" />
+    <div
+      aria-hidden="true"
+      className={`flex aspect-square flex-col overflow-hidden rounded-sm border border-black/6 bg-white md:rounded-lg ${className}`}
+    >
+      <div className="shimmer-element relative min-h-0 w-full flex-1 overflow-hidden bg-gray-100" />
+
+      <div className="flex shrink-0 items-center justify-between gap-2 p-3">
+        <div className="min-w-0">
+          <div className="flex h-[19.25px] items-center">
+            <div className="shimmer-element relative h-3.25 w-24 max-w-full overflow-hidden rounded-[3px] bg-gray-100" />
+          </div>
+          <div className="flex h-[16.5px] items-center">
+            <div className="shimmer-element relative h-2.75 w-14 max-w-full overflow-hidden rounded-[3px] bg-gray-100" />
+          </div>
+        </div>
+
+        <div className="shimmer-element relative h-8 w-8 shrink-0 overflow-hidden rounded-md bg-gray-100" />
+      </div>
     </div>
   );
 }
 
-/*
- * ProductCardSkeleton now delegates to ListingCardSkeleton (defined below) so
- * every product-card placeholder in the app shares one geometry. Function
- * declarations are hoisted, so the order in the file does not matter.
- */
 export function ProductCardSkeleton({ className = "" }) {
   return <ListingCardSkeleton viewMode="grid" className={className} />;
 }
@@ -84,7 +93,7 @@ export function OrderItemSkeleton() {
 
         <div className="hidden md:flex flex-col justify-center min-w-0 pl-6 border-l border-neutral-100 gap-4">
           <Skeleton className="w-full h-4 rounded" />
-          <div className="flex items-center gap-2 max-w-[232px]">
+          <div className="flex items-center gap-2 max-w-58">
             <Skeleton className="flex-1 h-2 rounded-full" />
             <Skeleton className="flex-1 h-2 rounded-full" />
             <Skeleton className="flex-1 h-2 rounded-full" />
@@ -168,7 +177,7 @@ export function ChatMessageSkeleton({ isUser = false }) {
     >
       {!isUser && <Skeleton className="w-10 h-10 rounded-full shrink-0" />}
       <div
-        className={`flex flex-col gap-2 p-3 rounded-xl max-w-[75%] ${isUser ? "bg-[#F27318]/10" : "bg-gray-100"}`}
+        className={`flex flex-col gap-2 p-3 rounded-xl max-w-[75%] ${isUser ? "bg-brand/10" : "bg-gray-100"}`}
       >
         <Skeleton className="w-48 h-3 rounded" />
         <Skeleton className="w-40 h-3 rounded" />
@@ -194,7 +203,7 @@ export function AddressSkeleton() {
           <Skeleton className="w-16 h-6 rounded shrink-0" />
         </div>
 
-        <div className="space-y-2 pl-[52px]">
+        <div className="space-y-2 pl-13">
           <Skeleton className="w-32 h-4 rounded" />
           <div className="space-y-1.5">
             <Skeleton className="w-full h-3 rounded" />
@@ -262,8 +271,8 @@ export function WishlistSkeleton() {
       <div className="flex flex-col md:flex-row gap-4 items-stretch md:items-center justify-between bg-neutral-50 p-4 rounded-xl shrink-0">
         <div className="flex flex-col sm:flex-row gap-3 items-stretch sm:items-center flex-1">
           <Skeleton className="flex-1 max-w-sm h-9 rounded-lg" />
-          <Skeleton className="min-w-[150px] h-9 rounded-lg" />
-          <Skeleton className="min-w-[150px] h-9 rounded-lg" />
+          <Skeleton className="min-w-37.5 h-9 rounded-lg" />
+          <Skeleton className="min-w-37.5 h-9 rounded-lg" />
         </div>
         <Skeleton className="w-32 h-9 rounded-lg" />
       </div>
@@ -279,46 +288,29 @@ export function WishlistSkeleton() {
   );
 }
 
-/* ------------------------------------------------------------------ */
-/* Catalog / listing skeletons                                         */
-/*                                                                     */
-/* Rules used here so the skeleton lands on the same pixels as the     */
-/* real UI:                                                            */
-/*  1. Static chrome (breadcrumbs, sort bar, view toggle, icons) is    */
-/*     rendered with the SAME classes and the SAME icons as the real   */
-/*     page. Only backend-driven content is a grey block.              */
-/*  2. Text-shaped blocks use the real element's typography classes    */
-/*     on a wrapper and `h-[1lh]` on the block, so the height always   */
-/*     equals the real line-height (never a hand-typed px value).      */
-/*  3. Price / rating, whose height is decided inside their own        */
-/*     components, are measured by rendering the real component with   */
-/*     `visibility:hidden` inside the grey block (MeasuredBlock).      */
-/* ------------------------------------------------------------------ */
-
 const ListingBlock = ({ className = "" }) => (
   <div
     aria-hidden="true"
-    className={`rounded bg-[#F0EFED] motion-safe:animate-pulse ${className}`}
+    className={`relative overflow-hidden rounded bg-gray-100 shimmer-element ${className}`}
   />
 );
 
 const MeasuredBlock = ({ className = "", innerClassName = "", children }) => (
   <div
     aria-hidden="true"
-    className={`overflow-hidden rounded bg-[#F0EFED] motion-safe:animate-pulse ${className}`}
+    className={`relative overflow-hidden rounded bg-gray-100 shimmer-element ${className}`}
   >
     <div className={`invisible ${innerClassName}`}>{children}</div>
   </div>
 );
 
-/* Mirrors the <span> that wraps the "(N items)" text in CatalogListing. */
 export function CatalogCountSkeleton() {
   return (
     <span
       aria-hidden="true"
       className="ml-3 sm:ml-5 text-[13px] sm:text-[15px] font-semibold text-black/40 tracking-normal lowercase"
     >
-      <span className="inline-block align-middle h-[1lh] w-20 sm:w-24 rounded bg-[#F0EFED] motion-safe:animate-pulse" />
+      <span className="relative inline-block align-middle h-lh w-20 sm:w-24 overflow-hidden rounded bg-gray-100 shimmer-element" />
     </span>
   );
 }
@@ -331,28 +323,23 @@ export function ListingCardSkeleton({ viewMode = "grid", className = "" }) {
         aria-hidden="true"
         className={`flex flex-col sm:flex-row gap-3 sm:gap-4 bg-white rounded-sm md:rounded-lg border border-black/6 p-3 sm:p-4 ${className}`}
       >
-        <div className="relative w-full sm:w-40 lg:w-52 shrink-0 aspect-video sm:aspect-auto sm:h-32 lg:h-40 rounded-sm md:rounded-md bg-[#F0EFED] motion-safe:animate-pulse">
+        <div className="relative w-full sm:w-40 lg:w-52 shrink-0 aspect-video sm:aspect-auto sm:h-32 lg:h-40 overflow-hidden rounded-sm md:rounded-md bg-gray-100 shimmer-element">
           <div className="absolute top-2 right-2 sm:top-2.5 sm:right-2.5 w-7 h-7 sm:w-8 sm:h-8 rounded-full bg-white/80" />
         </div>
         <div className="flex flex-col flex-1 min-w-0">
-          {/* category label */}
           <div className="text-[11px] sm:text-[12px] mb-2">
-            <ListingBlock className="h-[1lh] w-20 max-w-full" />
+            <ListingBlock className="h-lh w-20 max-w-full" />
           </div>
-          {/* name */}
           <div className="text-[13px] sm:text-[15px] mb-2 sm:mb-3">
-            <ListingBlock className="h-[1lh] w-3/4" />
+            <ListingBlock className="h-lh w-3/4" />
           </div>
-          {/* 2-line description: 0.8lh + 0.4lh gap + 0.8lh = exactly 2 lines */}
           <div className="text-[11px] sm:text-[13px] leading-snug mb-2 sm:mb-3">
             <ListingBlock className="h-[0.8lh] w-full mb-[0.4lh]" />
             <ListingBlock className="h-[0.8lh] w-4/5" />
           </div>
-          {/* "No reviews yet" row */}
           <div className="flex items-center gap-1.5 sm:gap-2 mb-3 sm:mb-4 text-[10px] sm:text-[11px]">
-            <ListingBlock className="h-[1lh] w-16" />
+            <ListingBlock className="h-lh w-16" />
           </div>
-          {/* price: measured from the real <Price> */}
           <div className="mt-auto">
             <div className="flex items-center gap-2 sm:gap-3">
               <MeasuredBlock
@@ -373,21 +360,18 @@ export function ListingCardSkeleton({ viewMode = "grid", className = "" }) {
       className={`group relative flex h-full flex-col overflow-hidden rounded-sm md:rounded-lg border border-black/6 bg-white ${className}`}
     >
       <div className="p-2 pb-0 sm:p-2.5 sm:pb-0">
-        <div className="relative aspect-2/1 overflow-hidden rounded-md bg-[#F0EFED] motion-safe:animate-pulse">
-          <div className="absolute left-3 top-3 h-[22px] w-16 rounded-md bg-white/70" />
+        <div className="relative aspect-2/1 overflow-hidden rounded-md bg-gray-100 shimmer-element">
+          <div className="absolute left-3 top-3 h-5.5 w-16 rounded-md bg-white/70" />
           <div className="absolute right-3 top-3 h-9 w-9 rounded-full bg-white/80" />
         </div>
       </div>
       <div className="flex flex-1 flex-col p-4">
-        {/* name  (text-[15px] leading-snug) */}
         <div className="text-[15px] leading-snug">
-          <ListingBlock className="h-[1lh] w-3/4" />
+          <ListingBlock className="h-lh w-3/4" />
         </div>
-        {/* short description  (mt-0.5 text-[13px] leading-snug) */}
         <div className="mt-0.5 text-[13px] leading-snug">
-          <ListingBlock className="h-[1lh] w-full" />
+          <ListingBlock className="h-lh w-full" />
         </div>
-        {/* rating row: measured from the real <Rating> */}
         <div className="mt-1.5">
           <MeasuredBlock className="w-24">
             <Rating value={4} count={1} size="md" />
@@ -395,14 +379,13 @@ export function ListingCardSkeleton({ viewMode = "grid", className = "" }) {
         </div>
         <div className="mt-auto flex items-end justify-between gap-3 pt-2">
           <div className="min-w-0">
-            {/* price: measured from the real <Price> */}
             <MeasuredBlock className="w-24">
               <Price amount={0} size="md" />
             </MeasuredBlock>
             <div className="mt-3 flex items-center gap-1.5 pb-1">
-              <ListingBlock className="h-[18px] w-[18px] rounded-full" />
-              <ListingBlock className="h-[18px] w-[18px] rounded-full" />
-              <ListingBlock className="h-[18px] w-[18px] rounded-full" />
+              <ListingBlock className="h-4.5 w-4.5 rounded-full" />
+              <ListingBlock className="h-4.5 w-4.5 rounded-full" />
+              <ListingBlock className="h-4.5 w-4.5 rounded-full" />
             </div>
           </div>
           <ListingBlock className="h-9 w-9 shrink-0 rounded-md" />
@@ -426,9 +409,9 @@ export function ProductDetailsSkeleton() {
           aria-hidden="true"
           className="flex flex-wrap items-center gap-y-1 gap-x-2 text-[14px] font-medium mb-5"
         >
-          <ListingBlock className="h-[1lh] w-12" />
-          <ListingBlock className="h-[1lh] w-20" />
-          <ListingBlock className="h-[1lh] w-36" />
+          <ListingBlock className="h-lh w-12" />
+          <ListingBlock className="h-lh w-20" />
+          <ListingBlock className="h-lh w-36" />
         </nav>
         <div className="flex gap-10 mb-14" aria-hidden="true">
           <div className="flex-[1.2] flex gap-3 justify-end overflow-hidden">
@@ -441,7 +424,7 @@ export function ProductDetailsSkeleton() {
               ))}
             </div>
             <div className="space-y-6 flex-1">
-              <ListingBlock className="w-full h-[444px] rounded-xl border border-[#F0EFED]" />
+              <ListingBlock className="w-full h-111 rounded-xl border border-[#F0EFED]" />
             </div>
           </div>
           <div className="flex-1 min-w-0">
@@ -451,15 +434,15 @@ export function ProductDetailsSkeleton() {
               <ListingBlock className="w-24 h-5" />
               <ListingBlock className="w-32 h-5" />
             </div>
-            <ListingBlock className="w-44 h-[45px] mb-1.5" />
+            <ListingBlock className="w-44 h-11.25 mb-1.5" />
             <ListingBlock className="w-36 h-5 mb-4" />
             <div className="mb-6 space-y-2">
-              <ListingBlock className="w-full h-[21px]" />
-              <ListingBlock className="w-full h-[21px]" />
-              <ListingBlock className="w-3/4 h-[21px]" />
+              <ListingBlock className="w-full h-5.25" />
+              <ListingBlock className="w-full h-5.25" />
+              <ListingBlock className="w-3/4 h-5.25" />
             </div>
             <div className="mb-5">
-              <ListingBlock className="w-32 h-[22px] mb-3" />
+              <ListingBlock className="w-32 h-5.5 mb-3" />
               <div className="flex flex-wrap gap-3">
                 {Array.from({ length: 4 }, (_, i) => (
                   <ListingBlock key={i} className="w-10 h-10 rounded-full" />
@@ -467,9 +450,9 @@ export function ProductDetailsSkeleton() {
               </div>
             </div>
             <div className="flex flex-col sm:flex-row items-stretch gap-3 mb-5">
-              <ListingBlock className="h-[52px] sm:w-[116px] shrink-0 rounded-lg" />
-              <ListingBlock className="h-[52px] flex-2 rounded-lg" />
-              <ListingBlock className="h-[52px] flex-1 rounded-lg" />
+              <ListingBlock className="h-13 sm:w-29 shrink-0 rounded-lg" />
+              <ListingBlock className="h-13 flex-2 rounded-lg" />
+              <ListingBlock className="h-13 flex-1 rounded-lg" />
             </div>
             <div className="flex items-start gap-12 mt-10">
               <ListingBlock className="w-32 h-5" />
@@ -496,7 +479,7 @@ export function ProductDetailsSkeleton() {
 
 const FilterBlock = ({ className = "" }) => (
   <div
-    className={`rounded bg-[#F0EFED] motion-safe:animate-pulse ${className}`}
+    className={`relative overflow-hidden rounded bg-gray-100 shimmer-element ${className}`}
   />
 );
 const FilterRows = ({ count }) => (
@@ -519,7 +502,6 @@ export function FilterSidebarSkeleton() {
       <span className="sr-only" role="status">
         Loading filters
       </span>
-      {/* Categories: the store has 8 top-level categories (same as the category bar) */}
       <div aria-hidden="true">
         <FilterBlock className="w-28 h-5 mb-4" />
         <FilterRows count={8} />
@@ -533,13 +515,13 @@ export function FilterSidebarSkeleton() {
         <div className="flex items-center gap-4 mb-6">
           {[0, 1].map((i) => (
             <div key={i} className="flex-1">
-              <FilterBlock className="w-7 h-[15px] mb-1.5" />
-              <FilterBlock className="w-full h-[34px] rounded-lg" />
+              <FilterBlock className="w-7 h-3.75 mb-1.5" />
+              <FilterBlock className="w-full h-8.5 rounded-lg" />
             </div>
           ))}
         </div>
         <div className="relative px-1 h-6">
-          <FilterBlock className="absolute top-1/2 w-full h-[3px] -translate-y-1/2" />
+          <FilterBlock className="absolute top-1/2 w-full h-0.75 -translate-y-1/2" />
           <FilterBlock className="absolute top-1/2 right-0 w-4 h-4 rounded-full -translate-y-1/2" />
         </div>
       </div>
@@ -583,7 +565,7 @@ export function FilterSidebarSkeleton() {
 export function RouteSkeleton() {
   return (
     <div
-      className="mx-auto w-full max-w-[1440px] px-4 sm:px-5 md:px-6 lg:px-4 py-8"
+      className="mx-auto w-full max-w-360 px-4 sm:px-5 md:px-6 lg:px-4 py-8"
       aria-busy="true"
     >
       <span role="status" className="sr-only">
@@ -608,9 +590,9 @@ const actionButtonClasses =
 export function WishlistActionSkeleton() {
   return (
     <div className={actionButtonClasses} aria-hidden="true">
-      <Skeleton className="w-5 h-5 md:w-[22px] md:h-[22px] rounded-full" />
+      <Skeleton className="w-5 h-5 md:w-5.5 md:h-5.5 rounded-full" />
       <span className="hidden md:block text-[12px] font-medium whitespace-nowrap">
-        <Skeleton className="h-[1lh] w-[66px] rounded" />
+        <Skeleton className="h-lh w-16.5 rounded" />
       </span>
     </div>
   );
@@ -619,11 +601,11 @@ export function WishlistActionSkeleton() {
 export function CartActionSkeleton() {
   return (
     <div className={actionButtonClasses} aria-hidden="true">
-      <Skeleton className="w-5 h-5 md:w-[22px] md:h-[22px] rounded-full" />
+      <Skeleton className="w-5 h-5 md:w-5.5 md:h-5.5 rounded-full" />
       <span className="hidden md:block text-[12px] font-medium whitespace-nowrap">
-        <Skeleton className="h-[1lh] w-[44px] rounded" />
+        <Skeleton className="h-lh w-11 rounded" />
       </span>
-      <div className="absolute -top-1 right-1 w-[15px] h-[15px] md:w-[17px] md:h-[17px]">
+      <div className="absolute -top-1 right-1 w-3.75 h-3.75 md:w-4.25 md:h-4.25">
         <Skeleton className="w-full h-full rounded-full border-2 border-white" />
       </div>
     </div>
@@ -635,7 +617,6 @@ export function ProfileActionSkeleton() {
     <div className={actionButtonClasses} aria-hidden="true">
       <div className="flex items-center gap-1">
         <Skeleton className="w-10 h-10 rounded-full shrink-0" />
-        {/* static icon: same chevron the real button renders */}
         <ChevronDown size={12} className="text-[#6A6058]" />
       </div>
     </div>
@@ -651,10 +632,10 @@ export function ProfileMenuHeaderSkeleton() {
       <Skeleton className="w-10 h-10 rounded-full shrink-0 border border-neutral-100" />
       <div className="min-w-0 flex-1">
         <div className="text-[14px] mb-0.5">
-          <Skeleton className="h-[1lh] w-32 rounded" />
+          <Skeleton className="h-lh w-32 rounded" />
         </div>
         <div className="text-[12px]">
-          <Skeleton className="h-[1lh] w-40 rounded" />
+          <Skeleton className="h-lh w-40 rounded" />
         </div>
       </div>
     </div>
@@ -668,42 +649,42 @@ export function NavbarSkeleton() {
       aria-hidden="true"
     >
       <div className="px-4 md:px-6 lg:px-8 h-16 md:h-20 flex items-center justify-between gap-3 md:gap-6">
-        <div className="flex items-center gap-2 md:gap-[11px] shrink-0 select-none">
+        <div className="flex items-center gap-2 md:gap-2.75 shrink-0 select-none">
           <img
-            src="/logo.png"
+            src="/logo-aura-interiors.webp"
             alt="AuraInteriors Logo"
             className="h-8 md:h-10 w-auto object-contain"
           />
         </div>
 
-        <div className="hidden md:block flex-1 max-w-[560px] relative">
+        <div className="hidden md:block flex-1 max-w-140 relative">
           <div className="relative">
             <Search
               size={16}
-              className="absolute left-[14px] top-1/2 -translate-y-1/2 text-neutral-400 pointer-events-none"
+              className="absolute left-3.5 top-1/2 -translate-y-1/2 text-neutral-400 pointer-events-none"
             />
             <input
               type="text"
               readOnly
               tabIndex={-1}
               placeholder="Search furniture, décor, colours…"
-              className="w-full py-[11px] pr-[100px] pl-[44px] border-[1.5px] border-neutral-300 rounded-[10px] bg-[#FAFAFA] font-sans text-[14px] text-neutral-400 focus:outline-none placeholder:text-[#B8B4AE]"
+              className="w-full py-2.75 pr-25 pl-11 border-[1.5px] border-neutral-300 rounded-[10px] bg-[#FAFAFA] font-sans text-[14px] text-neutral-400 focus:outline-none placeholder:text-[#B8B4AE]"
             />
-            <div className="absolute right-[5px] top-1/2 -translate-y-1/2 flex items-center gap-2">
-              <div className="bg-[#F27318] text-white rounded-[8px] px-[18px] py-[7px] font-sans text-[13.5px] font-semibold">
+            <div className="absolute right-1.25 top-1/2 -translate-y-1/2 flex items-center gap-2">
+              <div className="bg-brand text-white rounded-lg px-4.5 py-1.75 font-sans text-[13.5px] font-semibold">
                 Search
               </div>
             </div>
           </div>
         </div>
 
-        <div className="flex md:hidden items-center gap-[18px] shrink-0 text-[#1A1714]">
+        <div className="flex md:hidden items-center gap-4.5 shrink-0 text-[#1A1714]">
           <Bell size={22} />
           <Search size={22} />
           <Menu size={24} />
         </div>
 
-        <div className="hidden md:flex items-start gap-[6px] shrink-0">
+        <div className="hidden md:flex items-start gap-1.5 shrink-0">
           <WishlistActionSkeleton />
           <CartActionSkeleton />
           <ProfileActionSkeleton />
@@ -713,30 +694,86 @@ export function NavbarSkeleton() {
   );
 }
 
+const categoryBarItemClasses =
+  "flex items-center gap-1.5 md:gap-2 pr-4 md:pr-9 py-2.5 md:py-3 text-[14px] md:text-[15px] whitespace-nowrap shrink-0";
+
+const categoryBarLabelWidths = [64, 72, 56, 80, 68, 76, 60, 72];
+
+export function CategoryBarSkeletonItems() {
+  return (
+    <>
+      {categoryBarLabelWidths.map((width, i) => (
+        <div key={i} className={categoryBarItemClasses} aria-hidden="true">
+          <Skeleton className="h-3.75 w-3.75 shrink-0 rounded-sm" />
+          <Skeleton className="h-lh rounded" style={{ width }} />
+        </div>
+      ))}
+    </>
+  );
+}
+
+export function CategoryBarSkeletonContent() {
+  return (
+    <>
+      <div
+        className="flex shrink-0 items-center whitespace-nowrap pr-6.5 py-2.5 text-[14px] md:pr-8.5 md:py-3 md:text-[15px]"
+        aria-hidden="true"
+      >
+        <div className="flex items-center gap-1.5 md:gap-2 py-1">
+          <Skeleton className="h-3.75 w-3.75 shrink-0 rounded-sm" />
+          <Skeleton className="h-lh w-8 rounded" />
+        </div>
+      </div>
+      <CategoryBarSkeletonItems />
+    </>
+  );
+}
+
 export function CategoryBarSkeleton() {
   return (
-    <div className="bg-white border-b border-[#F0EFED]" aria-hidden="true">
+    <div
+      className="bg-white border-b border-[#F0EFED] font-dm-sans"
+      aria-hidden="true"
+    >
       <div className="flex items-center overflow-hidden px-4 md:px-6 lg:px-8">
-        {[
-          "w-10",
-          "w-24",
-          "w-20",
-          "w-16",
-          "w-24",
-          "w-20",
-          "w-20",
-          "w-16",
-          "w-20",
-        ].map((w, i) => (
-          <div
-            key={i}
-            className="flex shrink-0 items-center gap-1.5 pr-[26px] md:pr-[34px] py-2.5 md:py-3"
-          >
-            <Skeleton className="h-[15px] w-[15px] rounded-sm" />
-            <Skeleton className={`h-4 ${w} rounded`} />
-          </div>
-        ))}
+        <CategoryBarSkeletonContent />
       </div>
+    </div>
+  );
+}
+
+export function HeroSkeleton() {
+  return (
+    <div
+      className="grid grid-cols-1 lg:grid-cols-[1.6fr_1fr] lg:grid-rows-[286px_286px] gap-2 sm:gap-3 px-2 md:px-6 lg:px-8 py-2 md:py-4 bg-white"
+      aria-hidden="true"
+    >
+      <div className="relative lg:row-span-2 h-92.5 sm:h-112.5 lg:h-auto rounded-sm md:rounded-2xl overflow-hidden">
+        <div className="absolute inset-0 bg-gray-100 shimmer-element" />
+        <div className="absolute inset-0 flex flex-col justify-end p-6 md:p-10">
+          <Skeleton className="h-10 md:h-14 w-3/5 rounded bg-white/70" />
+          <Skeleton className="mt-2 h-10 md:h-14 w-2/5 rounded bg-white/70" />
+          <Skeleton className="mt-4 h-4 w-1/2 max-w-full rounded bg-white/70" />
+          <Skeleton className="mt-2 h-4 w-2/5 rounded bg-white/70" />
+          <div className="mt-6 flex items-center gap-6">
+            <Skeleton className="h-12 w-36 rounded-lg bg-white/70" />
+            <Skeleton className="h-6 w-44 max-w-full rounded bg-white/70" />
+          </div>
+        </div>
+      </div>
+      {[0, 1].map((i) => (
+        <div
+          key={i}
+          className="relative hidden md:block h-62.5 sm:h-71.5 rounded-sm md:rounded-2xl overflow-hidden"
+        >
+          <div className="absolute inset-0 bg-gray-100 shimmer-element" />
+          <div className="absolute inset-0 flex flex-col justify-end p-5 sm:p-[28px_32px]">
+            <Skeleton className="h-7 w-1/2 rounded bg-white/70" />
+            <Skeleton className="mt-2 h-4 w-3/5 rounded bg-white/70" />
+            <Skeleton className="mt-4 h-10 w-28 rounded-lg bg-white/70" />
+          </div>
+        </div>
+      ))}
     </div>
   );
 }
@@ -748,7 +785,7 @@ export function HomeSkeleton() {
         Loading…
       </span>
       <div
-        className="hidden md:flex bg-[#f6f6f6] px-4 md:px-6 lg:px-8 h-10 md:h-11 items-center justify-between"
+        className="hidden md:flex bg-gray-100 px-4 md:px-6 lg:px-8 h-10 md:h-11 items-center justify-between"
         aria-hidden="true"
       >
         <Skeleton className="h-4 w-44 rounded" />
@@ -757,48 +794,18 @@ export function HomeSkeleton() {
       </div>
       <NavbarSkeleton />
       <CategoryBarSkeleton />
-      <div
-        className="grid grid-cols-1 lg:grid-cols-[1.6fr_1fr] lg:grid-rows-[286px_286px] gap-2 sm:gap-3 px-2 md:px-6 lg:px-8 py-2 md:py-4 bg-white"
-        aria-hidden="true"
-      >
-        <div className="relative lg:row-span-2 h-[370px] sm:h-[450px] lg:h-auto rounded-sm md:rounded-2xl overflow-hidden">
-          <div className="absolute inset-0 bg-gray-100 shimmer-element" />
-          <div className="absolute inset-0 flex flex-col justify-end p-6 md:p-10">
-            <Skeleton className="h-10 md:h-14 w-3/5 rounded bg-white/70" />
-            <Skeleton className="mt-2 h-10 md:h-14 w-2/5 rounded bg-white/70" />
-            <Skeleton className="mt-4 h-4 w-1/2 max-w-full rounded bg-white/70" />
-            <Skeleton className="mt-2 h-4 w-2/5 rounded bg-white/70" />
-            <div className="mt-6 flex items-center gap-6">
-              <Skeleton className="h-12 w-36 rounded-lg bg-white/70" />
-              <Skeleton className="h-6 w-44 max-w-full rounded bg-white/70" />
-            </div>
-          </div>
-        </div>
-        {[0, 1].map((i) => (
-          <div
-            key={i}
-            className="relative hidden md:block h-[250px] sm:h-[286px] rounded-sm md:rounded-2xl overflow-hidden"
-          >
-            <div className="absolute inset-0 bg-gray-100 shimmer-element" />
-            <div className="absolute inset-0 flex flex-col justify-end p-5 sm:p-[28px_32px]">
-              <Skeleton className="h-7 w-1/2 rounded bg-white/70" />
-              <Skeleton className="mt-2 h-4 w-3/5 rounded bg-white/70" />
-              <Skeleton className="mt-4 h-10 w-28 rounded-lg bg-white/70" />
-            </div>
-          </div>
-        ))}
-      </div>
+      <HeroSkeleton />
       <div aria-hidden="true">
         <div
-          className="animate-pulse bg-neutral-100 w-full"
+          className="relative w-full overflow-hidden bg-gray-100 shimmer-element"
           style={{ minHeight: "120px" }}
         />
         <div
-          className="animate-pulse bg-neutral-100 w-full"
+          className="relative w-full overflow-hidden bg-gray-100 shimmer-element"
           style={{ minHeight: "300px" }}
         />
         <div
-          className="animate-pulse bg-neutral-100 w-full"
+          className="relative w-full overflow-hidden bg-gray-100 shimmer-element"
           style={{ minHeight: "400px" }}
         />
       </div>
@@ -844,7 +851,7 @@ export function CheckoutSkeleton() {
             </div>
           </div>
         </div>
-        <div className="w-full lg:w-[420px] shrink-0 bg-neutral-50 border-t lg:border-t-0 lg:border-l border-[#F0EFED] px-6 py-12 space-y-4">
+        <div className="w-full lg:w-105 shrink-0 bg-neutral-50 border-t lg:border-t-0 lg:border-l border-[#F0EFED] px-6 py-12 space-y-4">
           <Skeleton className="h-6 w-40 rounded" />
           {[0, 1, 2].map((row) => (
             <div key={row} className="flex items-center gap-3">
@@ -876,7 +883,7 @@ export function ProfileSkeleton() {
       <NavbarSkeleton />
       <CategoryBarSkeleton />
       <div className="flex flex-col lg:flex-row" aria-hidden="true">
-        <div className="w-full lg:w-[320px] xl:w-[380px] shrink-0 bg-white p-6 lg:p-8 space-y-8">
+        <div className="w-full lg:w-[320px] xl:w-95 shrink-0 bg-white p-6 lg:p-8 space-y-8">
           <div className="flex items-center gap-4">
             <Skeleton className="h-16 w-16 rounded-full shrink-0" />
             <div className="flex-1 space-y-2">
@@ -918,12 +925,12 @@ export function BlogListSkeleton() {
         <div className="pt-12 sm:pt-14 md:pt-16 pb-8 sm:pb-12 px-4 sm:px-6 lg:px-8 max-w-7xl mx-auto">
           <div className="max-w-3xl space-y-4">
             <Skeleton className="h-10 w-96 max-w-full rounded" />
-            <Skeleton className="h-5 w-[480px] max-w-full rounded" />
+            <Skeleton className="h-5 w-120 max-w-full rounded" />
           </div>
         </div>
         <div className="px-4 sm:px-6 lg:px-8 max-w-7xl mx-auto mb-8 sm:mb-12">
           <div className="grid md:grid-cols-2 gap-6 items-stretch">
-            <Skeleton className="aspect-[16/10] md:aspect-auto md:h-full w-full rounded-2xl" />
+            <Skeleton className="aspect-16/10 md:aspect-auto md:h-full w-full rounded-2xl" />
             <div className="space-y-4 py-2">
               <Skeleton className="h-6 w-24 rounded-full" />
               <Skeleton className="h-8 w-full rounded" />
@@ -937,7 +944,7 @@ export function BlogListSkeleton() {
         <div className="px-4 sm:px-6 lg:px-8 max-w-7xl mx-auto pb-16 grid sm:grid-cols-2 lg:grid-cols-3 gap-6">
           {[0, 1, 2, 3, 4, 5].map((card) => (
             <div key={card} className="space-y-3">
-              <Skeleton className="aspect-[16/10] w-full rounded-xl" />
+              <Skeleton className="aspect-16/10 w-full rounded-xl" />
               <Skeleton className="h-5 w-20 rounded-full" />
               <Skeleton className="h-6 w-full rounded" />
               <Skeleton className="h-6 w-3/4 rounded" />
@@ -972,7 +979,7 @@ export function BlogPostSkeleton() {
             <Skeleton className="h-4 w-32 rounded" />
             <Skeleton className="h-4 w-24 rounded" />
           </div>
-          <Skeleton className="aspect-[21/9] w-full rounded-2xl" />
+          <Skeleton className="aspect-21/9 w-full rounded-2xl" />
           <div className="space-y-3 pt-2">
             <Skeleton className="h-4 w-full rounded" />
             <Skeleton className="h-4 w-full rounded" />
@@ -1042,7 +1049,7 @@ export function FaqSkeleton() {
       >
         <div className="text-center space-y-4 mb-10">
           <Skeleton className="h-10 w-72 max-w-full rounded mx-auto" />
-          <Skeleton className="h-5 w-[420px] max-w-full rounded mx-auto" />
+          <Skeleton className="h-5 w-105 max-w-full rounded mx-auto" />
         </div>
         <div className="space-y-4 max-w-2xl mx-auto">
           {[0, 1, 2, 3, 4].map((row) => (
@@ -1109,7 +1116,7 @@ export function OrderConfirmationSkeleton() {
         <div className="flex flex-col items-center text-center space-y-4">
           <Skeleton className="h-20 w-20 rounded-full" />
           <Skeleton className="h-9 w-80 max-w-full rounded" />
-          <Skeleton className="h-5 w-[420px] max-w-full rounded" />
+          <Skeleton className="h-5 w-105 max-w-full rounded" />
         </div>
         <div className="mt-10 rounded-2xl border border-black/6 p-6 space-y-4">
           {[0, 1, 2, 3].map((row) => (
@@ -1236,7 +1243,6 @@ export function ListingGridSkeleton({ viewMode = "grid", count = 12 }) {
   );
 }
 
-/* Static breadcrumbs: identical classes to the nav rendered in CatalogListing. */
 function CatalogBreadcrumbsStatic({ crumbs, className }) {
   return (
     <nav className={className}>
@@ -1262,7 +1268,7 @@ export function CatalogPageSkeleton({
 }) {
   return (
     <div
-      className="max-w-[1440px] mx-auto px-4 sm:px-5 md:px-6 lg:px-4"
+      className="max-w-360 mx-auto px-4 sm:px-5 md:px-6 lg:px-4"
       aria-busy="true"
     >
       <span role="status" className="sr-only">
@@ -1297,31 +1303,28 @@ export function CatalogPageSkeleton({
               className="flex items-center gap-2 sm:gap-3 flex-wrap"
               aria-hidden="true"
             >
-              {/* mobile-only Filters button */}
-              <div className="lg:hidden relative flex items-center gap-2 px-4 py-2.5 rounded-md border border-black/[0.08] bg-white text-[13px] sm:text-[14px] font-semibold text-[#1A1714]">
+              <div className="lg:hidden relative flex items-center gap-2 px-4 py-2.5 rounded-md border border-black/8 bg-white text-[13px] sm:text-[14px] font-semibold text-[#1A1714]">
                 <SlidersHorizontal size={16} className="text-black/40" />
                 <span>Filters</span>
               </div>
 
-              {/* sort */}
               <div className="relative">
-                <div className="flex items-center gap-2 sm:gap-3 px-3 sm:px-4 py-2.5 rounded-md border border-black/[0.08] bg-white text-[13px] sm:text-[14px] font-semibold text-[#1A1714]">
+                <div className="flex items-center gap-2 sm:gap-3 px-3 sm:px-4 py-2.5 rounded-md border border-black/8 bg-white text-[13px] sm:text-[14px] font-semibold text-[#1A1714]">
                   <span className="hidden sm:inline text-black/40 font-medium">
                     Sort by:
                   </span>
-                  <span className="truncate max-w-[120px] sm:max-w-none">
+                  <span className="truncate max-w-30 sm:max-w-none">
                     Featured
                   </span>
                   <ChevronDown size={16} className="text-black/20 shrink-0" />
                 </div>
               </div>
 
-              {/* view toggle: same icons + classes as the real buttons */}
-              <div className="flex items-center border border-black/[0.08] rounded-md p-1 bg-white">
-                <div className="p-2 rounded-[4px] bg-[#F27318] text-white shadow-sm">
+              <div className="flex items-center border border-black/8 rounded-md p-1 bg-white">
+                <div className="p-2 rounded-sm bg-brand text-white shadow-sm">
                   <Grid3X3 size={16} />
                 </div>
-                <div className="p-2 rounded-[4px] text-black/30">
+                <div className="p-2 rounded-sm text-black/30">
                   <List size={16} />
                 </div>
               </div>

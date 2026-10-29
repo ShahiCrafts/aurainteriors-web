@@ -45,15 +45,6 @@ export default function ProductListPage() {
   const [stockFilter, setStockFilter] = useState("all");
   const [modelFilter, setModelFilter] = useState("all");
   const [statusFilter, setStatusFilter] = useState("all");
-
-  // FE-51: the products list is server-driven. The API already
-  // supports page/limit/search/category/status (verified in the server
-  // tree: product.controller getAllProducts), so the request carries
-  // them and the pager reports the server's totals. The old code
-  // fetched limit:1000 (silently capped to 100 server-side) and did
-  // everything client-side. "status: all" must be sent explicitly —
-  // for an admin the server treats it as "no status filter", while an
-  // omitted status defaults to active + out_of_stock only.
   const { data: productsData, isLoading } = useProducts({
     page,
     limit: pageSize,
@@ -70,9 +61,6 @@ export default function ProductListPage() {
   };
   const totalPages = serverPagination.pages || 1;
 
-  // Stats that the API can total exactly are read from server
-  // pagination totals via limit:1 probes — never from a fetched
-  // array's length or full-array filter passes.
   const { data: totalStatsData } = useProducts({ status: "all", limit: 1 });
   const { data: activeStatsData } = useProducts({ status: "active", limit: 1 });
   const { data: outOfStockStatsData } = useProducts({
@@ -83,11 +71,6 @@ export default function ProductListPage() {
   const activeProductsCount = activeStatsData?.data?.pagination?.total ?? 0;
   const outOfStockCount = outOfStockStatsData?.data?.pagination?.total ?? 0;
 
-  // The API has no stock-band or 3D-model parameter, so those two
-  // filters honestly refine only the loaded page (their labels say
-  // "(this page)"), and the low-stock / model counts below are
-  // page-scoped and labelled as such. Memoised — the old code re-ran
-  // four full-array filter passes on every render.
   const pageStats = useMemo(() => {
     return {
       lowStockCount: pageProducts.filter((p) => p.stock > 0 && p.stock < 10)
@@ -128,10 +111,6 @@ export default function ProductListPage() {
   const { data: categoriesData } = useCategories();
   const categories = categoriesData?.data?.categories || [];
 
-  // Phase 7 split: the create/edit form state machine (values,
-  // images, models, catalog attributes, submit payload) lives in
-  // products/hooks/useProductFormState.js; the drawer + tabs under
-  // products/ render it.
   const form = useProductFormState({ categories });
   const { handleOpenModal } = form;
 
@@ -511,13 +490,12 @@ export default function ProductListPage() {
                     </td>
                     <td className="px-6 py-4">
                       <span
-                        className={`font-semibold ${
-                          product.stock === 0
-                            ? "text-red-500"
-                            : product.stock < 10
-                              ? "text-amber-500"
-                              : "text-gray-600"
-                        }`}
+                        className={`font-semibold ${product.stock === 0
+                          ? "text-red-500"
+                          : product.stock < 10
+                            ? "text-amber-500"
+                            : "text-gray-600"
+                          }`}
                       >
                         {product.stock} units
                       </span>
@@ -527,9 +505,8 @@ export default function ProductListPage() {
                         <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-[10px] font-bold uppercase tracking-wider bg-violet-50 text-violet-700 border border-violet-100">
                           <Box className="w-3.5 h-3.5" />
                           {product.modelFiles?.length > 0
-                            ? `${product.modelFiles.length} Model${
-                                product.modelFiles.length > 1 ? "s" : ""
-                              }`
+                            ? `${product.modelFiles.length} Model${product.modelFiles.length > 1 ? "s" : ""
+                            }`
                             : "Available"}
                         </span>
                       ) : (
@@ -540,13 +517,12 @@ export default function ProductListPage() {
                     </td>
                     <td className="px-6 py-4">
                       <span
-                        className={`inline-flex items-center px-3 py-1 rounded-full text-xs font-semibold capitalize ${
-                          product.status === "active"
-                            ? "bg-emerald-50 text-emerald-700"
-                            : product.status === "out_of_stock"
-                              ? "bg-red-50 text-red-700"
-                              : "bg-slate-100 text-slate-600"
-                        }`}
+                        className={`inline-flex items-center px-3 py-1 rounded-full text-xs font-semibold capitalize ${product.status === "active"
+                          ? "bg-emerald-50 text-emerald-700"
+                          : product.status === "out_of_stock"
+                            ? "bg-red-50 text-red-700"
+                            : "bg-slate-100 text-slate-600"
+                          }`}
                       >
                         {getStatusLabel(product.status)}
                       </span>

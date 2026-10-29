@@ -3,7 +3,7 @@
 // shopper as the server's specific message, NOT the AR-26
 // "cart changed, refreshed" handling; a non-variant 409 keeps
 // the AR-26 behaviour exactly (pinned by
-// tests/hooks/mutationErrorPolicy.fe47.test.jsx for the generic
+// tests/hooks/mutationErrorPolicy.test.jsx for the generic
 // case — this file pins the variant carve-out).
 import { describe, it, expect, vi, beforeEach } from "vitest";
 import { renderHook, act } from "@testing-library/react";

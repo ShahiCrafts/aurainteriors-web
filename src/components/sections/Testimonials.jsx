@@ -54,9 +54,6 @@ export default function Testimonials() {
   const [visibleCount, setVisibleCount] = useState(3);
 
   useEffect(() => {
-    // Debounce the resize handler to avoid a state update (and re-render) on
-    // every pixel of window resize. The 150ms delay is imperceptible to users
-    // but dramatically reduces how often the component re-renders during resize.
     let rafId;
     const updateVisible = () => {
       cancelAnimationFrame(rafId);
@@ -93,14 +90,14 @@ export default function Testimonials() {
 
   return (
     <section className="py-8 md:py-12 bg-white font-dm-sans overflow-hidden">
-      <div className="max-w-[1440px] mx-auto px-2 md:px-6 lg:px-8 relative">
+      <div className="max-w-360 mx-auto px-2 md:px-6 lg:px-8 relative">
         {/* HEADER */}
         <div className="flex flex-col items-center text-center mb-6">
           <h2 className="text-[28px] md:text-[36px] font-semibold text-[#1A1714]">
             Voices of Aura{" "}
-            <em className="text-[#F27318] not-italic">Interiors</em>
+            <em className="text-brand not-italic">Interiors</em>
           </h2>
-          <p className="text-[15px] text-black/40 max-w-[500px]">
+          <p className="text-[15px] text-black/40 max-w-125">
             Hear from our global community about their journey in creating a
             curated, soul-filled home.
           </p>
@@ -109,16 +106,16 @@ export default function Testimonials() {
         {/* CAROUSEL CONTAINER */}
         <div className="relative">
           {/* NAVIGATION BUTTONS */}
-          <div className="absolute top-1/2 -left-4 -right-4 -translate-y-1/2 flex justify-between pointer-events-none z-10 hidden lg:flex">
+          <div className="absolute top-1/2 -left-4 -right-4 -translate-y-1/2 justify-between pointer-events-none z-10 hidden lg:flex">
             <button
               onClick={prevSlide}
-              className={`w-12 h-12 rounded-full bg-white shadow-lg border border-black/5 flex items-center justify-center text-black/40 hover:text-[#F27318] hover:scale-110 transition-all pointer-events-auto ${currentIndex === 0 ? "opacity-30 pointer-events-none" : ""}`}
+              className={`w-12 h-12 rounded-full bg-white shadow-lg border border-black/5 flex items-center justify-center text-black/40 hover:text-brand hover:scale-110 transition-all pointer-events-auto ${currentIndex === 0 ? "opacity-30 pointer-events-none" : ""}`}
             >
               <ChevronLeft size={20} />
             </button>
             <button
               onClick={nextSlide}
-              className={`w-12 h-12 rounded-full bg-white shadow-lg border border-black/5 flex items-center justify-center text-black/40 hover:text-[#F27318] hover:scale-110 transition-all pointer-events-auto ${currentIndex >= maxIndex ? "opacity-30 pointer-events-none" : ""}`}
+              className={`w-12 h-12 rounded-full bg-white shadow-lg border border-black/5 flex items-center justify-center text-black/40 hover:text-brand hover:scale-110 transition-all pointer-events-auto ${currentIndex >= maxIndex ? "opacity-30 pointer-events-none" : ""}`}
             >
               <ChevronRight size={20} />
             </button>
@@ -135,7 +132,7 @@ export default function Testimonials() {
               {testimonials.map((item) => (
                 <div
                   key={item.id}
-                  className="min-w-[calc(100%-0px)] md:min-w-[calc(50%-8px)] lg:min-w-[calc(33.333%-22px)] bg-white p-4 md:p-6 rounded-lg border border-black/[0.04] shadow-[0_15px_45px_rgba(0,0,0,0.07)] hover:shadow-[0_20px_60px_rgba(0,0,0,0.1)] transition-all duration-500 relative flex flex-col group"
+                  className="min-w-[calc(100%-0px)] md:min-w-[calc(50%-8px)] lg:min-w-[calc(33.333%-22px)] bg-white p-4 md:p-6 rounded-lg border border-black/4 shadow-[0_15px_45px_rgba(0,0,0,0.07)] hover:shadow-[0_20px_60px_rgba(0,0,0,0.1)] transition-all duration-500 relative flex flex-col group"
                 >
                   {/* QUOTE ICON ACCENT */}
                   <div className="absolute top-4 right-6 opacity-[0.05] group-hover:opacity-[0.1] transition-opacity duration-500">
@@ -148,7 +145,7 @@ export default function Testimonials() {
                       <Star
                         key={i}
                         size={12}
-                        className="fill-[#F27318] text-[#F27318]"
+                        className="fill-brand text-brand"
                       />
                     ))}
                   </div>
@@ -159,7 +156,7 @@ export default function Testimonials() {
                   </p>
 
                   {/* CLIENT INFO & DATE */}
-                  <div className="flex items-center justify-between pt-4 border-t border-black/[0.03]">
+                  <div className="flex items-center justify-between pt-4 border-t border-black/3">
                     <div className="flex items-center gap-3">
                       <div className="w-9 h-9 rounded-full overflow-hidden bg-[#f6f6f6] border border-black/5">
                         <img
@@ -198,7 +195,7 @@ export default function Testimonials() {
             <button
               key={i}
               onClick={() => setCurrentIndex(i)}
-              className={`w-2 h-2 rounded-full transition-all ${currentIndex === i ? "bg-[#F27318] w-6" : "bg-black/10"}`}
+              className={`w-2 h-2 rounded-full transition-all ${currentIndex === i ? "bg-brand w-6" : "bg-black/10"}`}
             />
           ))}
         </div>

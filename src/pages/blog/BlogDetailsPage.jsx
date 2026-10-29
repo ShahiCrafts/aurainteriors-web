@@ -34,12 +34,6 @@ export default function BlogDetailsPage() {
   const { data: relatedData } = useRelatedBlogs(blog?._id, 3);
   const relatedBlogs = relatedData?.data?.blogs || [];
 
-  // FE-67: the article body and its TOC are built together from the
-  // SANITIZED output — buildBlogContent sanitizes first, then assigns
-  // page-generated ids (section-1, section-2, …) to the headings in
-  // the sanitized DOM and derives the TOC entries from them, so every
-  // TOC fragment has a live target. (The old flow injected the ids
-  // before sanitizing and the sanitizer stripped them.)
   const rawContent =
     blog?.content ||
     (blog
@@ -74,8 +68,6 @@ export default function BlogDetailsPage() {
   }, [sections]);
 
   const scrollToSection = (event, sectionId) => {
-    // The TOC entry is a real fragment link (#section-N); keep the
-    // offset smooth-scroll instead of the browser's instant jump.
     event.preventDefault();
     const element = document.getElementById(sectionId);
     if (element) {
@@ -137,7 +129,7 @@ export default function BlogDetailsPage() {
             </h1>
             <Link
               to="/blog"
-              className="text-[#F27318] hover:underline flex items-center justify-center gap-2"
+              className="text-brand hover:underline flex items-center justify-center gap-2"
             >
               <ArrowLeft size={16} />
               Back to Blog
@@ -149,11 +141,6 @@ export default function BlogDetailsPage() {
     );
   }
 
-  // FE-04 (sibling): the source logo and the "Read Original"
-  // attribution link point off-site BY DESIGN (any publisher host is
-  // legitimate), so they are scheme-validated, not host-allowlisted:
-  // only a clean https: URL survives validateExternalUrl; a
-  // javascript:/data:/http: value renders nothing at all.
   const validatedSourceLogo = validateExternalUrl(blog.source?.logo);
   const validatedOriginalUrl = validateExternalUrl(blog.originalUrl);
 
@@ -173,7 +160,7 @@ export default function BlogDetailsPage() {
           <div className="flex items-center gap-2 mb-6">
             <Link
               to="/blog"
-              className="text-neutral-500 hover:text-[#F27318] text-sm flex items-center gap-1"
+              className="text-neutral-500 hover:text-brand text-sm flex items-center gap-1"
             >
               <ArrowLeft size={16} />
               Back to Blog
@@ -181,7 +168,7 @@ export default function BlogDetailsPage() {
           </div>
 
           {/* Category Badge */}
-          <span className="inline-block px-3 py-1 bg-[#F27318] text-white text-xs font-semibold rounded-full uppercase tracking-wide mb-4">
+          <span className="inline-block px-3 py-1 bg-brand text-white text-xs font-semibold rounded-full uppercase tracking-wide mb-4">
             {blog.categoryName || blog.category}
           </span>
 
@@ -243,7 +230,7 @@ export default function BlogDetailsPage() {
               </button>
               <button
                 onClick={copyLink}
-                className="w-8 h-8 rounded-full bg-neutral-100 hover:bg-orange-50 hover:text-[#F27318] flex items-center justify-center transition-colors relative"
+                className="w-8 h-8 rounded-full bg-neutral-100 hover:bg-orange-50 hover:text-brand flex items-center justify-center transition-colors relative"
               >
                 <LinkIcon size={16} />
                 {copied && (
@@ -262,7 +249,7 @@ export default function BlogDetailsPage() {
             <img
               src={getImageUrl(blog.featuredImage)}
               alt={blog.title}
-              className="w-full max-h-[540px] aspect-[16/9] object-cover rounded-2xl"
+              className="w-full max-h-135 aspect-video object-cover rounded-2xl"
             />
           </section>
         )}
@@ -279,13 +266,11 @@ export default function BlogDetailsPage() {
                   prose-h2:text-2xl prose-h2:mt-8 prose-h2:mb-4
                   prose-h3:text-xl prose-h3:mt-6 prose-h3:mb-3
                   prose-p:mb-4
-                  prose-a:text-[#F27318] prose-a:no-underline hover:prose-a:underline
+                  prose-a:text-brand prose-a:no-underline hover:prose-a:underline
                   prose-strong:text-neutral-800
                   prose-ul:my-4 prose-li:my-1
-                  prose-img:rounded-xl prose-img:my-6 prose-img:max-w-full prose-img:h-auto prose-figure:my-8 prose-blockquote:border-[#F27318] break-words [&_iframe]:max-w-full [&_p]:leading-8"
+                  prose-img:rounded-xl prose-img:my-6 prose-img:max-w-full prose-img:h-auto prose-figure:my-8 prose-blockquote:border-brand wrap-break-word [&_iframe]:max-w-full [&_p]:leading-8"
                 dangerouslySetInnerHTML={{
-                  // FE-67: sanitizer output + page-generated heading
-                  // ids only (see buildBlogContent).
                   __html: articleHtml,
                 }}
               />
@@ -338,7 +323,7 @@ export default function BlogDetailsPage() {
                         href={validatedOriginalUrl}
                         target="_blank"
                         rel="noopener noreferrer"
-                        className="text-sm text-[#F27318] hover:underline"
+                        className="text-sm text-brand hover:underline"
                       >
                         Read Original
                       </a>
@@ -348,9 +333,6 @@ export default function BlogDetailsPage() {
 
                 {/* Author Info */}
                 <div className="flex items-center gap-4">
-                  {/* FE-06: real avatar img or local initials
-                      (UserAvatar) — never an external placeholder
-                      URL built from the author's name. */}
                   <UserAvatar
                     user={blog.author}
                     name={blog.author?.name || "Editorial Team"}
@@ -385,11 +367,10 @@ export default function BlogDetailsPage() {
                           onClick={(event) =>
                             scrollToSection(event, section.id)
                           }
-                          className={`block w-full text-left px-3 py-2 text-sm rounded-lg transition-all duration-200 ${
-                            activeSection === section.id
-                              ? "bg-orange-50 text-[#F27318] font-medium border-l-2 border-[#F27318]"
-                              : "text-neutral-600 hover:bg-neutral-50 hover:text-[#1A1714]"
-                          }`}
+                          className={`block w-full text-left px-3 py-2 text-sm rounded-lg transition-all duration-200 ${activeSection === section.id
+                            ? "bg-orange-50 text-brand font-medium border-l-2 border-brand"
+                            : "text-neutral-600 hover:bg-neutral-50 hover:text-[#1A1714]"
+                            }`}
                         >
                           {section.title}
                         </a>
@@ -422,7 +403,7 @@ export default function BlogDetailsPage() {
                       className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
                     />
                   </div>
-                  <h3 className="font-semibold text-[#1A1714] group-hover:text-[#F27318] transition-colors line-clamp-2 mb-2">
+                  <h3 className="font-semibold text-[#1A1714] group-hover:text-brand transition-colors line-clamp-2 mb-2">
                     {relatedBlog.title}
                   </h3>
                   <p className="text-sm text-neutral-500">
@@ -433,7 +414,6 @@ export default function BlogDetailsPage() {
             </div>
           </section>
         )}
-
         <Footer />
       </main>
     </>

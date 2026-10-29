@@ -1,18 +1,6 @@
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import notificationApi from "../../api/notificationApi";
 
-/**
- * REUSE-016 / PERF-F-007 — notifications server state lives here, in
- * React Query, following the repo's *Tan.js conventions. Before this
- * hook, NotificationBell and NotificationsPage each hand-rolled the
- * same fetching (sequence refs, manual merges, separate caches that
- * could disagree); both now consume this module.
- *
- * Key layout (house style, cf. useCartTan CART_KEYS):
- *   ['notifications']                    — everything notification
- *   ['notifications', 'list', page, limit, filters]
- *   ['notifications', 'unreadCount']
- */
 export const NOTIFICATION_KEYS = {
   all: ["notifications"],
   lists: () => [...NOTIFICATION_KEYS.all, "list"],
@@ -27,11 +15,6 @@ export const NOTIFICATION_KEYS = {
 
 const notifId = (n) => n?._id ?? n?.id;
 
-/**
- * FE-24 merge (moved verbatim from NotificationBell): socket-delivered
- * items that are not in the fetched page are the NEWEST arrivals and
- * stay at the front; items present in both keep the fresher REST copy.
- */
 export const mergeNotificationsById = (fetchedList, existingList) => {
   const fetchedIds = new Set(
     (fetchedList || []).map(notifId).filter((id) => id != null),
@@ -145,11 +128,6 @@ export const useArchiveNotification = () => {
   });
 };
 
-/**
- * Collect the ids of ALL unread notifications (paging the
- * isRead=false filter) — the NotificationBell "mark all read" command
- * (FE-24: not just the visible first page). Capped at 20 pages.
- */
 export const collectUnreadNotificationIds = async () => {
   const ids = [];
   let page = 1;

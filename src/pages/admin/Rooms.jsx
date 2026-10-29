@@ -15,17 +15,6 @@ import {
 } from "../../hooks/catalog/useCatalogTan";
 import formatError from "../../utils/errorHandler";
 
-// Phase 6 (catalog) — rooms admin.
-//
-// Rooms are assigned to categories and products by slug, so the
-// slug is immutable (the server 400s a change) and delete is
-// guarded by the products still assigned to the room — both
-// surface with the server's wording. Known API gap (recorded in
-// docs/catalog/PHASE6_NOTES.md): the only rooms list endpoint is
-// the public active-only one, so a deactivated room disappears
-// from this page until an admin list endpoint ships; the form
-// warns about that next to the Active toggle.
-
 const inputClass =
   "w-full px-4 h-10 rounded-lg border border-gray-200 focus:border-teal-500 focus:ring-2 focus:ring-teal-500/10 outline-none text-sm transition-all bg-white";
 const labelClass = "block text-sm font-medium text-gray-700 mb-2";
@@ -107,8 +96,6 @@ export default function Rooms() {
       toast.success("Room deleted");
       setDeleteTarget(null);
     } catch (err) {
-      // e.g. "Cannot delete room assigned to N products…" — shown
-      // verbatim, never masked as success.
       toast.error(formatError(err, "Failed to delete room"));
       setDeleteTarget(null);
     }

@@ -20,12 +20,6 @@ import {
   retryDocument,
 } from "../../api/documentApi";
 import { validateMediaUrl } from "../../utils/safeUrl";
-
-// FE-42: with DOCUMENT_DELETE_HONEST_STATUS=on the server answers a
-// document delete whose cleanup partly failed with HTTP 200
-// { status:'partial', message, data:{ outcomes } } (server
-// controllers/document.controller.js:146-156). Outcomes are per-system:
-// 'ok' | 'failed' | 'skipped' — only 'failed' is a cleanup failure.
 const CLEANUP_SYSTEM_LABELS = {
   qdrant: "vector index",
   cloudinary: "file storage",
@@ -93,9 +87,6 @@ const KnowledgeBase = () => {
     }
   };
 
-  // FE-37: the delete button had no pending guard — a double-click
-  // fired duplicate DELETE calls. Track the in-flight delete (guard
-  // first, before the confirm prompt) and disable that row's button.
   const [deletingId, setDeletingId] = useState(null);
   const deletingRef = useRef(null);
 
@@ -111,9 +102,6 @@ const KnowledgeBase = () => {
     deletingRef.current = id;
     setDeletingId(id);
     try {
-      // FE-42: use the resolved value — a 'partial' status means the DB
-      // record is deleted but some cleanup failed; claiming full success
-      // would hide orphaned vectors/files from the admin.
       const result = await deleteDocument(id);
       if (result?.status === "partial") {
         setSuccessMsg(null);
@@ -140,13 +128,6 @@ const KnowledgeBase = () => {
       setDeletingId(null);
     }
   };
-
-  // FE-42: "Retry cleanup" re-calls deleteDocument once per click and
-  // reports exactly what the server answers — success upgrades the
-  // warning, another partial refreshes the failed systems, and a 404
-  // means the record is already deleted (the server has no cleanup-retry
-  // endpoint; the failed cleanups are logged for support). A cleanup is
-  // never claimed successful unless the server response says so.
   const handleRetryCleanup = async () => {
     if (!partialDelete || retryingCleanup) return;
     const { id } = partialDelete;
@@ -178,9 +159,9 @@ const KnowledgeBase = () => {
         setPartialDelete((prev) =>
           prev
             ? {
-                ...prev,
-                retryError: err.displayMessage || "Cleanup retry failed",
-              }
+              ...prev,
+              retryError: err.displayMessage || "Cleanup retry failed",
+            }
             : prev,
         );
       }
@@ -246,8 +227,6 @@ const KnowledgeBase = () => {
         </div>
       )}
 
-      {/* FE-42: partial-delete warning — stays until dismissed, names the
-          failed cleanup systems, and offers one honest retry per click. */}
       {partialDelete && (
         <div
           data-testid="partial-delete-warning"
@@ -492,8 +471,6 @@ const KnowledgeBase = () => {
         )}
       </div>
 
-      {/* Pagination Controls — the shared Pagination, simple
-          variant (Wave A); it renders nothing at one page. */}
       <div className="mt-2">
         <Pagination
           variant="simple"

@@ -36,11 +36,10 @@ export default function CategorySidebar({
             <Link
               key={category._id}
               to={shopCategoryUrl(category.slug)}
-              className={`flex items-center justify-between px-3 py-2.5 rounded-lg transition-all font-dm-sans text-sm ${
-                isActive
+              className={`flex items-center justify-between px-3 py-2.5 rounded-lg transition-all font-dm-sans text-sm ${isActive
                   ? "bg-teal-50 text-teal-700 font-medium"
                   : "text-neutral-600 hover:bg-neutral-50 hover:text-neutral-900"
-              }`}
+                }`}
             >
               <div className="flex items-center gap-2">
                 {isActive && (
@@ -49,9 +48,8 @@ export default function CategorySidebar({
                 <span>{category.name}</span>
               </div>
               <span
-                className={`text-xs ${
-                  isActive ? "text-teal-600" : "text-neutral-400"
-                }`}
+                className={`text-xs ${isActive ? "text-teal-600" : "text-neutral-400"
+                  }`}
               >
                 {count}
               </span>

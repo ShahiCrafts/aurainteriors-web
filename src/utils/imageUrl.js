@@ -1,4 +1,6 @@
 import { API_V1_URL, SOCKET_URL } from "../config/constants";
+import placeholderProduct from "../assets/images/placeholders/placeholder-product-sofa.webp";
+import placeholderBlog from "../assets/images/placeholders/placeholder-blog-interior.webp";
 import {
   validateMediaUrl,
   isAbsoluteUrlCandidate,
@@ -7,7 +9,7 @@ import {
 
 /**
  * Centralized image URL construction utility
- * Handles external URLs, Unsplash photo IDs, and local uploads
+ * Handles external URLs, legacy photo IDs, and local uploads
  *
  * FE-03: every absolute URL now routes through validateMediaUrl
  * (src/utils/safeUrl.js) — https + host allowlist, never a verbatim
@@ -16,23 +18,23 @@ import {
 
 const API_BASE_URL = API_V1_URL;
 const UPLOADS_BASE_URL = SOCKET_URL;
-const UNSPLASH_BASE_URL = "https://images.unsplash.com";
-
 // Default fallback images
 export const FALLBACK_IMAGES = {
-  product:
-    "https://images.unsplash.com/photo-1555041469-a586c61ea9bc?w=800&auto=format&fit=crop",
+  // Phase 2: fallbacks are self-hosted bundled WebP assets (formerly
+  // hot-linked external photo URLs — see ATTRIBUTION.md).
+  product: placeholderProduct,
   avatar: null, // FE-06: no placeholder service — InitialsAvatar renders locally
-  blog: "https://images.unsplash.com/photo-1618221195710-dd6b41faaea6?w=800&q=80",
-  category:
-    "https://images.unsplash.com/photo-1555041469-a586c61ea9bc?w=400&auto=format&fit=crop",
+  blog: placeholderBlog,
+  category: placeholderProduct,
   chat: null,
 };
 
 /**
- * Check if URL is an Unsplash photo ID
+ * Legacy bare photo IDs (a "photo-…" slug with no host) can no longer
+ * be resolved: the external photo host they were expanded against was
+ * removed in Phase 2. Such values resolve to the local fallback.
  */
-const isUnsplashPhotoId = (url) => {
+const isLegacyPhotoId = (url) => {
   return typeof url === "string" && url.startsWith("photo-");
 };
 
@@ -75,12 +77,25 @@ export const getImageUrl = (path, type = "products", fallback = null) => {
     return validateMediaUrl(candidate, { fallback: resolveFallback() });
   }
 
-  // If it's an Unsplash photo ID, construct full Unsplash URL
-  if (isUnsplashPhotoId(path)) {
-    if (path.includes("?")) {
-      return `${UNSPLASH_BASE_URL}/${path}`;
-    }
-    return `${UNSPLASH_BASE_URL}/${path}?auto=format&fit=crop&w=800&q=80`;
+  // Legacy bare photo IDs have no local resolution — use the fallback.
+  if (isLegacyPhotoId(path)) {
+    return resolveFallback();
+  }
+
+  // Bundled Vite assets (the local FALLBACK_IMAGES imports and other
+  // compile-time asset URLs, "/assets/…" in builds, "/src/assets/…"
+  // in dev/test) are already final URLs — never join them onto the
+  // uploads origin. The same holds for web-public assets: the Phase 6
+  // seed catalogue stores site-relative "/images/seed/…" paths whose
+  // files live in the web app's public/ folder and are served by the
+  // web origin — joining them onto the API's /uploads/ prefix 404s.
+  if (
+    path.startsWith("/assets/") ||
+    path.startsWith("/src/assets/") ||
+    path.startsWith("/images/") ||
+    path.includes("/assets/images/")
+  ) {
+    return path;
   }
 
   // Remove potential leading slashes
@@ -119,9 +134,8 @@ export const IMAGE_VARIANT_WIDTHS = [600, 1200, 1920];
  *    requested ones — any other params (crop, gravity, …) are kept —
  *    so every requested width yields a genuinely different file
  *    instead of collapsing to the one pre-baked variant.
- *  - images.unsplash.com / plus.unsplash.com (imgix): the `w` query
- *    param is set to the requested width and `fm=webp` forces WebP
- *    delivery (the `auto=format` param is dropped — `fm` wins).
+ *  (The former external photo host's imgix scheme was removed in
+ *  Phase 2 when its images were self-hosted as local variants.)
  * Every other host (the app's own uploads origin, S3, …) has no known
  * scheme here: the resolved URL is returned BYTE-IDENTICAL, never
  * corrupted with a guessed parameter.
@@ -173,17 +187,6 @@ function applySizeTransform(resolvedUrl, width) {
       transform +
       "/" +
       segments.join("/");
-    return url.href;
-  }
-
-  if (
-    url.hostname === "images.unsplash.com" ||
-    url.hostname === "plus.unsplash.com"
-  ) {
-    url.searchParams.set("w", String(width));
-    url.searchParams.set("fm", "webp");
-    url.searchParams.delete("auto");
-    if (!url.searchParams.has("q")) url.searchParams.set("q", "80");
     return url.href;
   }
 

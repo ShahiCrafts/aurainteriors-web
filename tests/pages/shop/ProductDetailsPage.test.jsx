@@ -102,6 +102,7 @@ vi.mock("../../../src/components/shop/ReviewSection", () => ({
 }));
 
 import ProductDetailsPage from "../../../src/pages/shop/ProductDetailsPage.jsx";
+import useBuyNowStore from "../../../src/store/buyNowStore";
 
 const baseProduct = {
   _id: "prod-details-1",
@@ -144,6 +145,10 @@ beforeEach(() => {
   authState.isAuthenticated = false;
   cartState.mutate = vi.fn();
   guestState.addItem = vi.fn();
+  // Buy Now writes to the real buy-now store + sessionStorage:
+  // start every case from an empty direct-checkout state.
+  useBuyNowStore.getState().clearItem();
+  sessionStorage.clear();
 });
 
 describe("ProductDetailsPage sold count (FE-14)", () => {
@@ -165,27 +170,44 @@ describe("ProductDetailsPage sold count (FE-14)", () => {
 });
 
 describe("ProductDetailsPage purchase defects (FE-22)", () => {
-  it("Buy Now adds the item and navigates to /checkout for a guest", () => {
+  // Direct-checkout contract (the cart-first contract these cases
+  // used to pin was intentionally replaced — see useVariantPurchase:
+  // "Buy Now is a DIRECT checkout for this item only — it must not
+  // add the item to the cart"): the line goes to the buy-now store,
+  // neither cart is touched, and navigation is immediate.
+  it("Buy Now sets the buy-now item and navigates to /checkout for a guest, without touching the guest cart", () => {
     renderPage({ ...baseProduct });
 
     fireEvent.click(screen.getByRole("button", { name: "Buy Now" }));
 
-    expect(guestState.addItem).toHaveBeenCalledTimes(1);
+    expect(guestState.addItem).not.toHaveBeenCalled();
+    expect(cartState.mutate).not.toHaveBeenCalled();
+    const item = useBuyNowStore.getState().item;
+    expect(item).toMatchObject({
+      _id: `buynow_${baseProduct._id}`,
+      quantity: 1,
+      product: { _id: baseProduct._id, price: baseProduct.price },
+    });
+    expect(JSON.parse(sessionStorage.getItem("buy_now_item"))?._id).toBe(
+      `buynow_${baseProduct._id}`,
+    );
     expect(screen.getByText("CHECKOUT PAGE")).toBeInTheDocument();
   });
 
-  it("Buy Now navigates to /checkout only after the cart mutation succeeds (signed-in)", () => {
+  it("Buy Now navigates to /checkout for a signed-in user without calling the cart mutation", () => {
     authState.isAuthenticated = true;
     cartState.mutate = vi.fn((vars, opts) => opts?.onSuccess?.());
     renderPage({ ...baseProduct });
 
     fireEvent.click(screen.getByRole("button", { name: "Buy Now" }));
 
-    expect(cartState.mutate).toHaveBeenCalledTimes(1);
+    expect(cartState.mutate).not.toHaveBeenCalled();
+    expect(guestState.addItem).not.toHaveBeenCalled();
+    expect(useBuyNowStore.getState().item?.product?._id).toBe(baseProduct._id);
     expect(screen.getByText("CHECKOUT PAGE")).toBeInTheDocument();
   });
 
-  it("Buy Now does not navigate when the cart mutation fails (signed-in)", () => {
+  it("Buy Now does not depend on the cart mutation outcome (signed-in): a failing cart call cannot block it", () => {
     authState.isAuthenticated = true;
     cartState.mutate = vi.fn((vars, opts) =>
       opts?.onError?.(new Error("boom")),
@@ -194,7 +216,11 @@ describe("ProductDetailsPage purchase defects (FE-22)", () => {
 
     fireEvent.click(screen.getByRole("button", { name: "Buy Now" }));
 
-    expect(screen.queryByText("CHECKOUT PAGE")).not.toBeInTheDocument();
+    // The old failure mode (cart mutation fails -> no navigation)
+    // can no longer occur: Buy Now never calls the cart mutation.
+    expect(cartState.mutate).not.toHaveBeenCalled();
+    expect(useBuyNowStore.getState().item?.product?._id).toBe(baseProduct._id);
+    expect(screen.getByText("CHECKOUT PAGE")).toBeInTheDocument();
   });
 
   it("locks quantity and disables purchase for an out-of-stock product", () => {

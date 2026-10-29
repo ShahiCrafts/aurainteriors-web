@@ -7,8 +7,8 @@ import useInView from "../../hooks/useInView";
 import { shopCategoryUrl } from "../../utils/shopFilters";
 import PromoCard from "../common/PromoCard";
 
-import promoSofasSeating from "../../assets/images/promo-sofas-seating.webp";
-import promoLightingCollection from "../../assets/images/promo-lighting-collection.webp";
+import promoSofasSeating from "../../assets/images/promo/promo-sofas-seating.webp";
+import promoLightingCollection from "../../assets/images/promo/promo-lighting-collection.webp";
 
 const ROWS = 2;
 
@@ -63,7 +63,7 @@ export default function FeaturedPieces() {
       ref={sectionRef}
       className="bg-white px-2 pb-10 pt-8 font-dm-sans md:px-6 lg:px-8"
     >
-      <div className="mx-auto max-w-[1440px]">
+      <div className="mx-auto max-w-360">
         {/* Section Header */}
         <div className="mb-6 flex flex-wrap items-end justify-between gap-4">
           <div>
@@ -127,8 +127,8 @@ export default function FeaturedPieces() {
             ctaHref={shopCategoryUrl("living-room")}
             image={{
               src: promoSofasSeating,
-              width: 1747,
-              height: 900,
+              width: 1600,
+              height: 692,
               alt: "Olive green two-seater sofa in a warm, sunlit living room",
             }}
           />
@@ -149,8 +149,8 @@ export default function FeaturedPieces() {
             ctaHref={shopCategoryUrl("lighting")}
             image={{
               src: promoLightingCollection,
-              width: 1747,
-              height: 900,
+              width: 1600,
+              height: 824,
               alt: "Beige pendant lighting against a warm interior wall",
             }}
           />

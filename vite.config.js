@@ -38,11 +38,11 @@ export default defineConfig(({ mode, command }) => {
       // written. Reference proof per file (grep over src/**, both
       // index.html files and vite config; full evidence in
       // audit/fe/remediation/phase3-assets.md):
-      //   admin-only:    admin-logo.png — src/layouts/admin/AdminLayout.jsx
-      //   customer-only: sofa_chair.glb — src/pages/shop/NativeARPage.jsx
-      //                  ad-banner.png  — src/pages/shop/ShopPage.jsx
+      //   admin-only:    logo-aura-interiors-admin.webp — src/layouts/admin/AdminLayout.jsx
+      //   customer-only: sofa-chair.glb — src/pages/shop/NativeARPage.jsx
+      //                  promo-ad-banner.webp  — src/pages/shop/ShopPage.jsx
       // Everything else in public/ is referenced by both apps and is never
-      // pruned: favicon.png and not_found.json by both entries, logo.png by
+      // pruned: favicon.png by both entries, logo-aura-interiors.webp by
       // customer chrome AND the admin login page, brands/ by BrandMarquee —
       // which the ADMIN app also renders, because its NotFoundPage (routed
       // in AdminApp.jsx) reuses the customer Footer. Dev servers are
@@ -53,14 +53,33 @@ export default defineConfig(({ mode, command }) => {
         closeBundle() {
           const outDir = path.resolve(isAdmin ? "dist/admin" : "dist/customer");
           const drop = isAdmin
-            ? ["sofa_chair.glb", "ad-banner.png"]
-            : ["admin-logo.png"];
+            ? ["sofa-chair.glb", "promo-ad-banner.webp"]
+            : ["logo-aura-interiors-admin.webp"];
           for (const entry of drop) {
             fs.rmSync(path.join(outDir, entry), {
               recursive: true,
               force: true,
             });
           }
+        },
+      },
+      // PERF-007: preload the LCP hero image (1200w variant) in the
+      // customer build only. Done in generateBundle so the hashed
+      // asset filename emitted by Vite is used verbatim.
+      !isAdmin && {
+        name: "perf007-hero-preload",
+        apply: "build",
+        enforce: "post",
+        generateBundle(_options, bundle) {
+          const hero = Object.values(bundle).find(
+            (a) =>
+              a.type === "asset" &&
+              /hero-furniture-living-room-1200w-[^/]*\.webp$/.test(a.fileName),
+          );
+          const html = bundle["index.html"];
+          if (!hero || !html || html.type !== "asset") return;
+          const tag = `<link rel="preload" as="image" type="image/webp" fetchpriority="high" href="/${hero.fileName}" />`;
+          html.source = String(html.source).replace("</head>", `    ${tag}\n  </head>`);
         },
       },
       react(),
@@ -137,8 +156,8 @@ export default defineConfig(({ mode, command }) => {
            *  - vendor-query   → TanStack Query (shared everywhere after init)
            *  - vendor-three   → three.js (~600 KB) — only AR routes need it
            *  - vendor-charts  → recharts + d3 — only admin dashboard needs it
-           *  - vendor-xlsx    → xlsx — only admin export needs it
-           *  - vendor-motion  → framer-motion — only ChatWidget (lazy) needs it
+           *  - vendor-exceljs → exceljs — only admin export needs it
+           *  - vendor-motion  → framer-motion — used in 30+ files across customer + admin (PERF-004: an earlier comment claiming only the lazy ChatWidget used it was stale); it is chunked separately so lazy routes do not duplicate it
            *  - vendor-socket  → socket.io-client — only chat needs it
            *
            * Everything else falls through to Rollup's automatic chunking.
@@ -177,12 +196,12 @@ export default defineConfig(({ mode, command }) => {
               return "vendor-charts";
             }
 
-            // ── xlsx (used only by admin exports) ──────────────────────────
-            if (id.includes("/node_modules/xlsx/")) {
-              return "vendor-xlsx";
+            // ── exceljs (used only by admin exports, SEC-003) ─────────────
+            if (id.includes("/node_modules/exceljs/")) {
+              return "vendor-exceljs";
             }
 
-            // ── framer-motion (used only by lazy ChatWidget) ───────────────
+            // ── framer-motion (used broadly; kept in its own vendor chunk) ──
             if (id.includes("/node_modules/framer-motion/")) {
               return "vendor-motion";
             }
@@ -196,13 +215,6 @@ export default defineConfig(({ mode, command }) => {
               return "vendor-socket";
             }
 
-            // ── lottie-react (used only by lazy NotFoundPage) ──────────────
-            if (
-              id.includes("/node_modules/lottie-react/") ||
-              id.includes("/node_modules/lottie-web/")
-            ) {
-              return "vendor-lottie";
-            }
           },
         },
       },

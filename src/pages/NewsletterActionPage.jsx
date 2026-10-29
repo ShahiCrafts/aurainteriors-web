@@ -20,7 +20,7 @@ export default function NewsletterActionPage() {
     } catch (error) {
       setMessage(
         error.response?.data?.message ||
-          "Unable to process this request. Please try again.",
+        "Unable to process this request. Please try again.",
       );
     } finally {
       setBusy(false);

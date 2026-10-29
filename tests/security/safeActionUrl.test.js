@@ -85,7 +85,7 @@ describe("FE-04 safeActionUrl — hostile values return null", () => {
     ["foreign https", "https://evil.com/orders"],
     ["foreign http", "http://evil.com/orders"],
     ["allowlist subdomain trick", "https://res.cloudinary.com.evil.com/orders"],
-    ["userinfo trick", "https://images.unsplash.com@evil.com/orders"],
+    ["userinfo trick", "https://res.cloudinary.com@evil.com/orders"],
     ["relative without leading slash", "dashboard/orders"],
     ["empty", ""],
     ["whitespace only", "   "],
@@ -120,7 +120,7 @@ describe("FE-04 safeActionUrl — absolute URLs", () => {
 
   it("accepts an allowlisted external https for link use, but not for in-app navigation", () => {
     const url =
-      "https://images.unsplash.com/photo-1555041469-a586c61ea9bc?w=800";
+      "https://res.cloudinary.com/demo/image/upload/photo-1555041469-a586c61ea9bc?w=800";
     expect(safeActionUrl(url)).toBe(url);
     expect(safeActionUrl(url, { inAppOnly: true })).toBeNull();
   });

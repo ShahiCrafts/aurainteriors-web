@@ -2,22 +2,6 @@ import { useEffect } from "react";
 import useCheckoutStore from "../store/checkoutStore";
 import { addressToShippingAddress } from "../utils/addressMapper";
 
-/**
- * Phase 6 (REUSE-013) — CheckoutPage's shipping-form synchronisation,
- * extracted as a single-use hook with the effects moved VERBATIM
- * (same guards, same dependency arrays, same setValue options):
- *
- *  1. When the signed-in user is known, mirror their account fields
- *     into the checkout store's guestInfo (only when changed) and
- *     reset the RHF form to account + stored shipping values.
- *  2. When a default saved address arrives and the checkout holds
- *     no shipping data yet, adopt it: write the store's
- *     shippingAddress/shippingAddressId and push the fields into
- *     the form without dirtying it.
- *
- * The address -> shippingAddress field mapping is
- * utils/addressMapper.addressToShippingAddress.
- */
 export function useShippingFormSync({
   isAuthenticated,
   user,

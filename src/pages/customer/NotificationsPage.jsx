@@ -32,13 +32,6 @@ import { formatRelative } from "../../utils/formatDate";
 import { Link } from "react-router-dom";
 import { safeActionUrl } from "../../utils/safeUrl";
 
-// Phase 5 (open-redirect sweep): the stored actionUrl is
-// server-controlled and must pass the same FE-04 gate as every
-// other consumer (NotificationBell, AdminLayout, AnnouncementsPage)
-// before it reaches <Link to>. inAppOnly: router targets are
-// internal by definition — an off-site or dangerous-scheme value
-// yields null, and the caller falls back to the orders tab (when
-// the notification carries an orderId) or renders no link at all.
 const notificationTarget = (n) =>
   n.actionUrl ? safeActionUrl(n.actionUrl, { inAppOnly: true }) : null;
 
@@ -53,9 +46,6 @@ export default function NotificationsPage() {
   const { socket } = useNotificationSocket(token, user?._id);
   const queryClient = useQueryClient();
 
-  // REUSE-016 / PERF-F-007: server state is React Query now
-  // (useNotificationsTan) — the hand-rolled fetch and sequence-ref
-  // logic is gone; the query key (page + filters) supersedes it.
   const categories = {
     orders: "order",
     promos: "promotion",
@@ -85,15 +75,8 @@ export default function NotificationsPage() {
   const unreadCount = unreadQuery.data ?? 0;
   const loading = listQuery.isFetching;
   const error = listQuery.isError ? "Failed to load notifications" : null;
-
-  // The pre-Query fetch clamped an out-of-range page to the last
-  // page; the server clamps the page it echoes back, and the list
-  // above comes from that response — the pager displays the clamped
-  // page so state and view cannot diverge.
   const displayPage = Math.min(page, totalPages);
 
-  // Socket updates refresh page 1 (the pre-Query behaviour refetched
-  // page 1 on every event).
   useEffect(() => {
     if (!socket) return;
     const refresh = () => {
@@ -190,7 +173,7 @@ export default function NotificationsPage() {
               <div>
                 <h1 className="text-[32px] md:text-[40px] font-bold text-[#1A1714] tracking-tight mb-2 font-playfair leading-tight">
                   Your{" "}
-                  <span className="italic text-[#F27318]">Notifications</span>
+                  <span className="italic text-brand">Notifications</span>
                 </h1>
                 <p className="text-[16px] text-black/40 font-medium font-dm-sans">
                   Stay updated with orders, offers, and more
@@ -215,20 +198,18 @@ export default function NotificationsPage() {
               <button
                 key={f.id}
                 onClick={() => setFilter(f.id)}
-                className={`flex items-center gap-2 px-4 py-2 rounded-full text-sm font-medium whitespace-nowrap transition-all ${
-                  filter === f.id
-                    ? "bg-teal-700 text-white"
-                    : "bg-white text-gray-600 border border-gray-200 hover:bg-gray-50"
-                }`}
+                className={`flex items-center gap-2 px-4 py-2 rounded-full text-sm font-medium whitespace-nowrap transition-all ${filter === f.id
+                  ? "bg-teal-700 text-white"
+                  : "bg-white text-gray-600 border border-gray-200 hover:bg-gray-50"
+                  }`}
               >
                 {f.label}
                 {f.count > 0 && (
                   <span
-                    className={`flex items-center justify-center h-5 min-w-[20px] px-1.5 rounded-full text-[10px] ${
-                      filter === f.id
-                        ? "bg-white/20 text-white"
-                        : "bg-red-100 text-red-600"
-                    }`}
+                    className={`flex items-center justify-center h-5 min-w-5 px-1.5 rounded-full text-[10px] ${filter === f.id
+                      ? "bg-white/20 text-white"
+                      : "bg-red-100 text-red-600"
+                      }`}
                   >
                     {f.count}
                   </span>

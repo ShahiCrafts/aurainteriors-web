@@ -1,8 +1,8 @@
 import { useEffect, useState, useMemo } from "react";
-import { X, ExternalLink, Camera } from "lucide-react";
+import { X, ExternalLink, Camera, Scan } from "lucide-react";
 import { QRCodeSVG } from "qrcode.react";
 import Dialog from "../common/Dialog";
-import { MdViewInAr } from "react-icons/md";
+
 
 export default function ARViewModal({ isOpen, onClose, product }) {
   const [isMobile, setIsMobile] = useState(false);
@@ -173,7 +173,7 @@ export default function ARViewModal({ isOpen, onClose, product }) {
           ) : (
             <div className="flex flex-col items-center justify-center text-center mt-6">
               <div className="w-16 h-16 bg-gray-100 flex items-center justify-center rounded-none border border-gray-200 mb-4">
-                <MdViewInAr size={24} className="text-gray-400" />
+                <Scan size={24} className="text-gray-400" />
               </div>
               <p className="text-[14px] text-gray-500 max-w-60">
                 AR model is currently unavailable for this product.

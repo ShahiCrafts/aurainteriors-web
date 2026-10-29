@@ -4,6 +4,7 @@ import { Phone, Mail, MapPin, ArrowRight } from "lucide-react";
 import { Link } from "react-router-dom";
 
 import BrandMarquee from "../../components/sections/BrandMarquee";
+import promoNewsletterInspiration from "../../assets/images/promo/promo-newsletter-inspiration.webp";
 
 const footerLinks = [
   {
@@ -25,7 +26,7 @@ const footerLinks = [
     links: [
       { name: "About Us", href: "/about" },
       { name: "Our Story", href: "/story" },
-      { name: "Blogs & Inspiration", href: "/blogs" },
+      { name: "Blogs & Inspiration", href: "/blog" },
       { name: "Contact Us", href: "/contact" },
     ],
   },
@@ -174,7 +175,7 @@ function NewsletterBanner() {
           className="hidden md:block absolute inset-y-0 right-0 w-[52%] bg-cover bg-center"
           style={{
             backgroundImage:
-              "url(https://plus.unsplash.com/premium_photo-1686090449194-04ac2af9f758?q=80&w=2070&auto=format&fit=crop&ixlib=rb-4.1.0&ixid=NHwxMjA3fDA%3D)",
+              `url(${promoNewsletterInspiration})`,
           }}
           aria-hidden="true"
         />
@@ -231,8 +232,12 @@ export default function Footer() {
             <div className="col-span-2 lg:col-span-1 flex flex-col">
               <Link to="/" className="no-underline inline-block">
                 <img
-                  src="/logo.png"
+                  src="/logo-aura-interiors.webp"
                   alt="Aura Interiors"
+                  width={212}
+                  height={84}
+                  loading="lazy"
+                  decoding="async"
                   className="h-8 md:h-10 w-auto object-contain"
                 />
               </Link>

@@ -33,6 +33,17 @@ import { formatNPR } from "../../utils/formatCurrency";
 
 const CartSlider = lazy(() => import("../../components/cart/CartSlider"));
 
+// Shared styles so all three action buttons are identical in structure.
+const ACTION_BUTTON_CLASS =
+  "flex flex-col items-center gap-1 px-2 md:px-3.5 py-1.5 rounded-[10px] cursor-pointer transition-colors duration-180 text-[#6A6058] hover:text-[#1A1714] border-none bg-transparent font-sans relative group";
+
+// Fixed-size box for every icon/avatar so labels always sit on the same line.
+const ACTION_ICON_BOX_CLASS =
+  "flex items-center justify-center w-[22px] h-[22px] shrink-0";
+
+const ACTION_LABEL_CLASS =
+  "hidden md:block text-[12px] leading-4 font-medium text-[#6A6058] group-hover:text-[#1A1714] whitespace-nowrap";
+
 export default function Navbar() {
   const navigate = useNavigate();
   const [searchParams] = useSearchParams();
@@ -149,18 +160,20 @@ export default function Navbar() {
         <div className="px-4 md:px-6 lg:px-8 h-16 md:h-20 flex items-center justify-between gap-3 md:gap-6">
           <Link
             to="/"
-            className="flex items-center gap-2 md:gap-[11px] cursor-pointer shrink-0 select-none no-underline"
+            className="flex items-center gap-2 md:gap-2.75 cursor-pointer shrink-0 select-none no-underline"
           >
             <img
-              src="/logo.png"
+              src="/logo-aura-interiors.webp"
               alt="AuraInteriors Logo"
+              width={212}
+              height={84}
               className="h-8 md:h-10 w-auto object-contain"
             />
           </Link>
 
           <div
             ref={searchRef}
-            className="hidden md:block flex-1 max-w-[560px] relative"
+            className="hidden md:block flex-1 max-w-140 relative"
           >
             <form onSubmit={handleSearchSubmit} className="relative">
               <Search
@@ -173,13 +186,15 @@ export default function Navbar() {
                 onChange={(e) => setSearchInput(e.target.value)}
                 onFocus={() => setIsSearchFocused(true)}
                 placeholder="Search furniture, décor, colours…"
-                className="w-full py-[11px] pr-[100px] pl-11 border-[1.5px] border-neutral-300 rounded-[10px] bg-[#FAFAFA] font-sans text-[14px] text-neutral-400 focus:outline-none transition-all duration-220 focus:border-brand focus:bg-white placeholder:text-[#B8B4AE]"
+                aria-label="Search products"
+                className="w-full py-2.75 pr-25 pl-11 border-[1.5px] border-neutral-300 rounded-[10px] bg-[#FAFAFA] font-sans text-[14px] text-neutral-400 focus:outline-none transition-all duration-220 focus:border-brand focus:bg-white placeholder:text-[#B8B4AE]"
               />
-              <div className="absolute right-[5px] top-1/2 -translate-y-1/2 flex items-center gap-2">
+              <div className="absolute right-1.25 top-1/2 -translate-y-1/2 flex items-center gap-2">
                 {searchInput && (
                   <button
                     type="button"
                     onClick={() => setSearchInput("")}
+                    aria-label="Clear search"
                     className="p-1 text-[#B8B4AE] hover:text-[#1A1714] transition-colors bg-transparent border-none cursor-pointer"
                   >
                     <X size={16} />
@@ -190,7 +205,7 @@ export default function Navbar() {
                 )}
                 <button
                   type="submit"
-                  className="bg-brand hover:bg-brand-hover text-white border-none rounded-lg px-[18px] py-[7px] font-sans text-[13.5px] font-semibold cursor-pointer transition-colors duration-200"
+                  className="bg-brand hover:bg-brand-hover text-white border-none rounded-lg px-4.5 py-1.75 font-sans text-[13.5px] font-semibold cursor-pointer transition-colors duration-200"
                 >
                   Search
                 </button>
@@ -199,7 +214,7 @@ export default function Navbar() {
 
             {showDropdown && (
               <div className="absolute top-full left-0 right-0 mt-2 bg-white border border-[#F0EFED] rounded-xl shadow-[0_10px_40px_rgba(0,0,0,0.12)] z-50 overflow-hidden animate-in fade-in slide-in-from-top-2 duration-200">
-                <div className="max-h-[420px] overflow-y-auto">
+                <div className="max-h-105 overflow-y-auto">
                   {searchResults.length > 0 ? (
                     <>
                       <div className="p-3 border-b border-[#F0EFED] bg-[#FAFAFA]">
@@ -264,14 +279,23 @@ export default function Navbar() {
             )}
           </div>
 
-          <div className="flex md:hidden items-center gap-[18px] shrink-0 text-[#1A1714]">
-            <button className="bg-transparent border-none p-0 flex items-center justify-center cursor-pointer text-[#1A1714] hover:text-brand transition-colors">
+          <div className="flex md:hidden items-center gap-4.5 shrink-0 text-[#1A1714]">
+            <button
+              aria-label="Notifications"
+              className="bg-transparent border-none p-0 flex items-center justify-center cursor-pointer text-[#1A1714] hover:text-brand transition-colors"
+            >
               <Bell size={22} />
             </button>
-            <button className="bg-transparent border-none p-0 flex items-center justify-center cursor-pointer text-[#1A1714] hover:text-brand transition-colors">
+            <button
+              aria-label="Search"
+              className="bg-transparent border-none p-0 flex items-center justify-center cursor-pointer text-[#1A1714] hover:text-brand transition-colors"
+            >
               <Search size={22} />
             </button>
-            <button className="bg-transparent border-none p-0 flex items-center justify-center cursor-pointer text-[#1A1714] hover:text-brand transition-colors">
+            <button
+              aria-label="Open menu"
+              className="bg-transparent border-none p-0 flex items-center justify-center cursor-pointer text-[#1A1714] hover:text-brand transition-colors"
+            >
               <Menu size={24} />
             </button>
           </div>
@@ -286,10 +310,12 @@ export default function Navbar() {
                     ? openAuthModal("login")
                     : navigate("/profile", { state: { activeTab: "wishlist" } })
                 }
-                className="flex flex-col items-center gap-1 px-2 md:px-3.5 py-1.5 rounded-[10px] cursor-pointer transition-colors duration-180 text-[#6A6058] hover:text-[#1A1714] border-none bg-transparent font-sans relative group"
+                className={ACTION_BUTTON_CLASS}
               >
-                <Heart className="w-5 h-5 md:w-[22px] md:h-[22px]" />
-                <span className="hidden md:block text-[12px] font-medium text-[#6A6058] group-hover:text-[#1A1714] whitespace-nowrap">
+                <span className={ACTION_ICON_BOX_CLASS}>
+                  <Heart className="w-5 h-5 md:w-5.5 md:h-5.5" />
+                </span>
+                <span className={ACTION_LABEL_CLASS}>
                   Wishlist ({wishlistCount})
                 </span>
               </button>
@@ -298,16 +324,13 @@ export default function Navbar() {
             {showCartSkeleton ? (
               <CartActionSkeleton />
             ) : (
-              <button
-                onClick={handleOpenCart}
-                className="flex flex-col items-center gap-1 px-2 md:px-3.5 py-1.5 rounded-[10px] cursor-pointer transition-colors duration-180 text-[#6A6058] hover:text-[#1A1714] border-none bg-transparent font-sans relative group"
-              >
-                <ShoppingCart className="w-5 h-5 md:w-[22px] md:h-[22px]" />
-                <span className="hidden md:block text-[12px] font-medium text-[#6A6058] group-hover:text-[#1A1714] whitespace-nowrap">
-                  Cart ({cartCount})
+              <button onClick={handleOpenCart} className={ACTION_BUTTON_CLASS}>
+                <span className={ACTION_ICON_BOX_CLASS}>
+                  <ShoppingCart className="w-5 h-5 md:w-5.5 md:h-5.5" />
                 </span>
+                <span className={ACTION_LABEL_CLASS}>Cart ({cartCount})</span>
                 {cartCount > 0 && (
-                  <span className="absolute -top-1 p-2 right-1 w-[15px] h-[15px] md:w-[17px] md:h-[17px] rounded-full bg-brand text-white text-[8px] md:text-[9px] font-bold flex items-center justify-center border-2 border-white">
+                  <span className="absolute -top-1 right-1 w-3.75 h-3.75 md:w-4.25 md:h-4.25 rounded-full bg-brand text-white text-[8px] md:text-[9px] font-bold flex items-center justify-center border-2 border-white">
                     {cartCount}
                   </span>
                 )}
@@ -320,28 +343,30 @@ export default function Navbar() {
               ) : (
                 <button
                   onClick={() => setIsProfileOpen(!isProfileOpen)}
-                  className="flex flex-col items-center gap-1 px-2 md:px-3.5 py-1.5 rounded-[10px] cursor-pointer transition-colors duration-180 text-[#6A6058] hover:text-[#1A1714] border-none bg-transparent font-sans relative group"
+                  className={ACTION_BUTTON_CLASS}
                 >
-                  {isAuthenticated && user ? (
-                    <div className="flex items-center gap-1">
+                  <span className={ACTION_ICON_BOX_CLASS}>
+                    {isAuthenticated && user ? (
                       <UserAvatar
                         user={user}
                         alt="Profile"
-                        className="w-10 h-10 rounded-full text-[10px] font-dm-sans"
+                        className="w-5.5 h-5.5 rounded-full text-[9px] font-dm-sans"
                       />
+                    ) : (
+                      <User className="w-5 h-5 md:w-5.5 md:h-5.5" />
+                    )}
+                  </span>
+                  <span
+                    className={`${ACTION_LABEL_CLASS} flex items-center gap-0.5`}
+                  >
+                    {isAuthenticated && user ? "Account" : "Profile"}
+                    {isAuthenticated && user && (
                       <ChevronDown
                         size={12}
                         className="text-[#6A6058] group-hover:text-[#1A1714] transition-colors"
                       />
-                    </div>
-                  ) : (
-                    <User className="w-5 h-5" />
-                  )}
-                  {!isAuthenticated && (
-                    <span className="hidden md:block text-[11px] font-medium text-[#6A6058] group-hover:text-[#1A1714] whitespace-nowrap">
-                      Profile
-                    </span>
-                  )}
+                    )}
+                  </span>
                 </button>
               )}
 

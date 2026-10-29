@@ -104,9 +104,6 @@ export default function Discounts() {
       return toast.error("Please fill in required fields");
     }
 
-    // FE-45: parse + bound-check against the server discount schema
-    // (percentage 1..100, minimum >= 0, usage limit integer >= 1).
-    // The old code parseInt'd with no guard and could send NaN.
     const parsed = parseDiscountFormValues(discountForm);
     if (!parsed.ok) {
       return toast.error(parsed.error);

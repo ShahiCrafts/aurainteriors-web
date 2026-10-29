@@ -2,6 +2,7 @@ import { Routes, Route, useLocation } from "react-router-dom";
 import { Suspense, lazy } from "react";
 import "./styles/index.css";
 import ErrorBoundary from "./components/common/ErrorBoundary";
+
 import {
   RouteSkeleton,
   CatalogPageSkeleton,
@@ -18,9 +19,9 @@ import {
   NotificationsSkeleton,
   CenteredCardSkeleton,
   PaymentFailedSkeleton,
-} from "./components/common/Skeleton";
-import ShopChrome from "./components/shop/ShopChrome";
-import AuthCallback from "./components/auth/AuthCallback";
+} from "./components/common/lazySkeletons";
+const ShopChrome = lazy(() => import("./components/shop/ShopChrome"));
+const AuthCallback = lazy(() => import("./components/auth/AuthCallback"));
 import ProtectedRoute from "./components/auth/ProtectedRoute";
 import CustomerRoute from "./components/auth/CustomerRoute";
 import LegacyShopCategoryRedirect from "./components/navigation/LegacyShopCategoryRedirect";
@@ -60,9 +61,13 @@ const NotFoundPage = lazy(() => import("./pages/info/NotFoundPage"));
 const AnnouncementsPage = lazy(() => import("./pages/info/AnnouncementsPage"));
 
 const catalogFallback = (
-  <ShopChrome>
-    <CatalogPageSkeleton />
-  </ShopChrome>
+  <Suspense fallback={null}>
+    <ShopChrome>
+      <Suspense fallback={null}>
+        <CatalogPageSkeleton />
+      </Suspense>
+    </ShopChrome>
+  </Suspense>
 );
 
 function App() {
@@ -93,7 +98,14 @@ function App() {
               </Suspense>
             }
           />
-          <Route path="/auth/success" element={<AuthCallback />} />
+          <Route
+            path="/auth/success"
+            element={
+              <Suspense fallback={null}>
+                <AuthCallback />
+              </Suspense>
+            }
+          />
 
           {/* Customer-facing routes */}
           <Route
@@ -270,10 +282,6 @@ function App() {
               </ProtectedRoute>
             }
           />
-
-          {/* ⚠️  Catch-all 404 — this includes /admin, /dashboard, and any
-             admin-looking path. Customers hitting those paths see a standard
-             404 page. There is no login form, no hint that an admin exists. */}
           <Route
             path="/newsletter/confirm"
             element={

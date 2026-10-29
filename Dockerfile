@@ -1,7 +1,8 @@
-FROM node:25-alpine AS build
+FROM node:20-alpine@sha256:fb4cd12c85ee03686f6af5362a0b0d56d50c58a04632e6c0fb8363f609372293 AS build
 WORKDIR /app
 COPY package.json package-lock.json ./
-RUN npm ci
+COPY vendor ./vendor
+RUN npm ci --ignore-scripts
 COPY src ./src
 COPY public ./public
 COPY index.html index.admin.html vite.config.js ./
@@ -11,7 +12,7 @@ ARG APP_MODE=customer
 ENV VITE_API_BASE_URL=$VITE_API_BASE_URL VITE_API_URL=$VITE_API_URL
 RUN case "$APP_MODE" in customer|admin) ;; *) exit 1 ;; esac && npm run "build:$APP_MODE" && cp -R "dist/$APP_MODE" /app/site
 
-FROM nginxinc/nginx-unprivileged:alpine
+FROM nginxinc/nginx-unprivileged:alpine@sha256:b5047b9b76845eac124358373c6852377c52e4b05834a47647e955dd91cb8f1e
 COPY nginx.conf /etc/nginx/conf.d/default.conf
 COPY --from=build /app/site /usr/share/nginx/html
 USER 101
