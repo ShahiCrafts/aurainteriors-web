@@ -123,8 +123,31 @@ const useAuthStore = create((set, get) => {
             isAuthenticated: true,
             loading: false,
           });
-      } catch {
+      } catch (error) {
         if (revision === authRevision) set({ loading: false });
+        // Dead-credential purge: a 401 that is NOT the plain
+        // "not logged in" response means the browser presented a
+        // credential the server rejected — the account was deleted,
+        // deactivated, or the token revoked/expired (hit in local
+        // dev 2026-11-01: "The user belonging to this token no
+        // longer exists"). Left in place, that cookie keeps
+        // poisoning later handshakes: the realtime socket's auth
+        // rejects it and chat reads fail, while the app believes
+        // it is a clean guest. Ask the server to expire it — the
+        // logout endpoint is unauthenticated and clears the jwt
+        // cookie unconditionally. Fire-and-forget: local state is
+        // already signed out, and a failed purge simply recurs on
+        // the next load. Credential-less guests get the
+        // "not logged in" 401 and skip this entirely.
+        const status = error?.response?.status;
+        const message = error?.response?.data?.message || "";
+        if (
+          revision === authRevision &&
+          status === 401 &&
+          !/not logged in/i.test(message)
+        ) {
+          api.post("/auth/logout", {}).catch(() => {});
+        }
       }
     },
     setUser: (userData) => {

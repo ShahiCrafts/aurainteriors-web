@@ -1,51 +1,76 @@
+import { useEffect, useRef, useState } from "react";
 import { Sparkles } from "lucide-react";
+import lottie from "lottie-web";
+import animationData from "../../assets/chat/ai-logo-foriday.json";
 
-// FE-07 FALLBACK — read before "fixing" this back to dotlottie.
+// Chat empty-state animation: the owner's Lottie artwork
+// (AI_logo_Foriday.lottie, supplied 2026-11-01) replacing the
+// CSS/SVG typing-dots bubble that FE-07 fell back to.
 //
-// This module was the lazily loaded DotLottieReact wrapper (FE-49).
-// FE-07 required the dotlottie WASM runtime to stop coming from
-// the unpkg CDN. Wiring setWasmUrl() to a Vite-emitted local .wasm
-// asset was implemented and measured first: the asset WAS emitted
-// and the player chunk DID reference the local path — but the
-// installed @lottiefiles/dotlottie-web@0.76.0 loader keeps the
-// unpkg player-wasm URL as a hard-coded BACKUP source (loader
-// factory in dist/index.js:
-// q(init, primary, backup); setWasmUrl replaces only the primary),
-// load() retries from that backup when the primary fails, and the
-// package exports no API to replace or clear the backup. Exclusive
-// self-hosting is therefore impossible with the installed version,
-// so per the FE-07 fallback the player is dropped for a CSS/SVG
-// animation of the same visual role: a decorative, continuously
-// animated assistant motif in the chat empty state's 160x160 box.
-// APPEARANCE CHANGE (owner-visible): the original .lottie animation
-// asset no longer plays; a chat bubble with bouncing typing dots and
-// a pulsing sparkle renders instead, with no network fetch, no WASM
-// and no third-party runtime. The dotlottie dependency and the
-// animation asset were removed in FE-61/FE-62. The file keeps its
-// name so the lazy import path from ChatWindow is unchanged.
-const EmptyStateAnimation = () => (
-  <div
-    className="relative w-full h-full flex items-center justify-center"
-    role="img"
-    aria-label="Aura assistant is ready to chat"
-  >
-    <div className="relative flex h-24 w-28 items-center justify-center rounded-[1.75rem] bg-[#FFF3EB] shadow-sm">
-      <div className="flex items-center gap-1.5" aria-hidden="true">
-        <span className="h-2.5 w-2.5 rounded-full bg-[#F27318] animate-bounce [animation-delay:0ms]" />
-        <span className="h-2.5 w-2.5 rounded-full bg-[#F27318] animate-bounce [animation-delay:150ms]" />
-        <span className="h-2.5 w-2.5 rounded-full bg-[#F27318] animate-bounce [animation-delay:300ms]" />
-      </div>
-      <span
-        className="absolute -bottom-1.5 left-6 h-4 w-4 rotate-45 bg-[#FFF3EB]"
-        aria-hidden="true"
-      />
+// FE-07 still holds: nothing is fetched from a third-party runtime
+// at runtime. The banned player was @lottiefiles/dotlottie-web,
+// whose WASM loader keeps a hard-coded CDN backup URL; this uses
+// lottie-web instead — a pure-JS player with no WASM and no network
+// fetches — and the animation itself is the JSON extracted from the
+// supplied .lottie package, bundled as a local asset
+// (src/assets/chat/ai-logo-foriday.json). This module is only ever
+// reached through ChatWindow's lazy() import, so the player stays
+// out of the main bundle. tests/security/dotlottieCdnGuard.test.js
+// scans for the @lottiefiles packages / CDN domain and stays green.
+//
+// The animation always plays and loops — including for visitors
+// whose OS requests reduced motion. An earlier version froze the
+// first frame in that case; the owner reviewed that behaviour on
+// 2026-11-01 (their own machine has Reduce Motion on, which made
+// the empty state look broken-static) and directed that the brand
+// animation always animate. Deliberate owner decision, not an
+// oversight — do not re-add the freeze without asking.
+//
+// If the player ever fails to initialise, a pulsing sparkle renders
+// in the same labelled box rather than a hole in the empty state.
+const EmptyStateAnimation = () => {
+  const containerRef = useRef(null);
+  const [failed, setFailed] = useState(false);
+
+  useEffect(() => {
+    if (!containerRef.current) return undefined;
+    let animation;
+    try {
+      animation = lottie.loadAnimation({
+        container: containerRef.current,
+        renderer: "svg",
+        loop: true,
+        autoplay: true,
+        animationData,
+        rendererSettings: {
+          preserveAspectRatio: "xMidYMid meet",
+        },
+      });
+    } catch {
+      setFailed(true);
+    }
+    return () => {
+      animation?.destroy();
+    };
+  }, []);
+
+  return (
+    <div
+      className="relative w-full h-full flex items-center justify-center"
+      role="img"
+      aria-label="Aura assistant is ready to chat"
+    >
+      {failed ? (
+        <Sparkles
+          size={40}
+          className="text-[#F27318] animate-pulse"
+          aria-hidden="true"
+        />
+      ) : (
+        <div ref={containerRef} className="w-full h-full" aria-hidden="true" />
+      )}
     </div>
-    <Sparkles
-      size={22}
-      className="absolute right-5 top-5 text-[#F27318] animate-pulse"
-      aria-hidden="true"
-    />
-  </div>
-);
+  );
+};
 
 export default EmptyStateAnimation;

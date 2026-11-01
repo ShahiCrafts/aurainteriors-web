@@ -90,7 +90,11 @@ export default function Wishlist() {
     try {
       const results = await Promise.allSettled(
         targets.map((item) =>
-          addToCartAsync({ productId: item.product._id, quantity: 1 }),
+          addToCartAsync({
+            productId: item.product._id,
+            quantity: 1,
+            product: item.product,
+          }),
         ),
       );
       const added = results.filter((r) => r.status === "fulfilled").length;

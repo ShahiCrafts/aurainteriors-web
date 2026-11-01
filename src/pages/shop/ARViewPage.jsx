@@ -107,6 +107,7 @@ export default function ARViewPage() {
       {
         productId: p._id,
         quantity: 1,
+        product: p,
       },
       {
         onSettled: () => {

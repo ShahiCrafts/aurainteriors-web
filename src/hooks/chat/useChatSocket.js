@@ -238,6 +238,42 @@ const useChatSocket = (socket, chatId) => {
       setTypingStatus({ isTyping: false, userRole: null });
     };
 
+    // A message's attachments were synced after an instant send
+    // (the sender's background upload finished and PATCHed the real
+    // URLs; the server broadcasts the canonical message). Merge it
+    // in — but keep this client's still-uploading local previews,
+    // which the server copy cannot know about yet.
+    const handleAttachmentsUpdated = (data) => {
+      if (data?.chatId?.toString() !== chatId?.toString() || !data?.message)
+        return;
+      queryClient.setQueryData(["chats", chatId, "messages"], (old) => {
+        if (!old?.pages?.length) return old;
+        return {
+          ...old,
+          pages: old.pages.map((page) => ({
+            ...page,
+            data: {
+              ...page.data,
+              messages: (page.data?.messages || []).map((m) => {
+                if (m._id !== data.message._id) return m;
+                const stillPending = (m.attachments || []).filter(
+                  (att) => att._pendingSync || att._syncFailed,
+                );
+                return {
+                  ...m,
+                  ...data.message,
+                  attachments: [
+                    ...(data.message.attachments || []),
+                    ...stillPending,
+                  ],
+                };
+              }),
+            },
+          })),
+        };
+      });
+    };
+
     // AI tokens/completion are deliberately ignored by the customer UI.
     // The single source of truth is the persisted chat:message:new event above.
 
@@ -251,6 +287,7 @@ const useChatSocket = (socket, chatId) => {
     socket.on("ai:thinking_start", handleAiThinkingStart);
     socket.on("ai:thinking_stop", handleAiThinkingStop);
     socket.on("ai:error", handleAiError);
+    socket.on("message:attachments:updated", handleAttachmentsUpdated);
 
     return () => {
       socket.off("chat:message:new", handleNewMessage);
@@ -262,6 +299,7 @@ const useChatSocket = (socket, chatId) => {
       socket.off("ai:thinking_start", handleAiThinkingStart);
       socket.off("ai:thinking_stop", handleAiThinkingStop);
       socket.off("ai:error", handleAiError);
+      socket.off("message:attachments:updated", handleAttachmentsUpdated);
 
       if (humanTypingTimeoutRef.current)
         clearTimeout(humanTypingTimeoutRef.current);

@@ -24,10 +24,15 @@ vi.mock("../../src/api/index.js", () => ({
   },
 }));
 
+vi.mock("axios", () => ({
+  default: { post: vi.fn() },
+}));
+
 vi.mock("../../src/utils/guestSessionStorage.js", () => ({
   getGuestSessionId: vi.fn(() => null),
 }));
 
+import axios from "axios";
 import api from "../../src/api/index.js";
 import { uploadChatAttachment } from "../../src/api/chatApi.js";
 
@@ -75,9 +80,29 @@ class MockImage {
 beforeEach(() => {
   vi.clearAllMocks();
   encoderBytes = JPEG;
-  api.post.mockResolvedValue({
-    data: { data: { attachment: { fileUrl: "https://example.com/x.jpg" } } },
+  // Direct-upload aware: images are signed, sent straight to
+  // Cloudinary (mocked axios), then completed. The proxied endpoint
+  // keeps its legacy response shape for the PDF/fallback paths.
+  api.post.mockImplementation(async (url) => {
+    if (url.endsWith("/attachments/sign")) {
+      return {
+        data: {
+          data: {
+            cloudName: "demo-cloud",
+            apiKey: "1234567890",
+            timestamp: 1700000000,
+            signature: "sig",
+            folder: "aura/chat",
+            publicId: "3f9c1d2e-4a5b-4c6d-8e7f-9a0b1c2d3e4f",
+          },
+        },
+      };
+    }
+    return {
+      data: { data: { attachment: { fileUrl: "https://example.com/x.jpg" } } },
+    };
   });
+  axios.post.mockResolvedValue({ data: {} });
   globalThis.Image = MockImage;
   HTMLCanvasElement.prototype.getContext = function getContext() {
     return { drawImage: () => {} };
@@ -113,15 +138,23 @@ describe("FE-11: uploadChatAttachment validates content before any network call"
     expect(api.post).not.toHaveBeenCalled();
   });
 
-  it("a genuine PNG uploads: the posted FormData file is the validated substitute (JPEG re-encode)", async () => {
+  it("a genuine PNG uploads: the uploaded FormData file is the validated substitute (JPEG re-encode)", async () => {
     await uploadChatAttachment("chat-1", pngFile());
-    expect(api.post).toHaveBeenCalledTimes(1);
-    const [, formData] = api.post.mock.calls[0];
+    // Direct transport: the file that leaves the browser (bound for
+    // Cloudinary via axios) is the sniffed substitute — FE-11's
+    // property, unchanged by the transport. The proxied endpoint is
+    // not used; the API only signs and completes.
+    expect(axios.post).toHaveBeenCalledTimes(1);
+    const [, formData] = axios.post.mock.calls[0];
     const sent = formData.get("file");
     expect(sent).toBeInstanceOf(File);
     expect(sent.type).toBe("image/jpeg");
     const head = new Uint8Array(await sent.slice(0, 4).arrayBuffer());
     expect([...head]).toEqual(JPEG);
+    expect(api.post.mock.calls.map((c) => c[0])).toEqual([
+      "/chats/chat-1/attachments/sign",
+      "/chats/chat-1/attachments/complete",
+    ]);
   });
 
   it("a genuine PDF (non-image, returned as-is by compression) still uploads", async () => {

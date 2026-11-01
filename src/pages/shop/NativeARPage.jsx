@@ -123,6 +123,7 @@ export default function NativeARPage() {
       {
         productId: product._id,
         quantity: 1,
+        product,
       },
       {
         onSettled: () => {

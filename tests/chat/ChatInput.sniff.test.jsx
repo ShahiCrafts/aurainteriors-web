@@ -18,6 +18,7 @@ const toastMock = vi.hoisted(() => ({
 }));
 
 vi.mock("../../src/hooks/chat/useChatTan.js", () => ({
+  useSyncMessageAttachments: () => ({ mutate: vi.fn(), mutateAsync: vi.fn(async () => ({})) }),
   useSendMessage: () => ({ mutateAsync: h.sendMutate }),
 }));
 vi.mock("../../src/api/chatApi.js", () => ({

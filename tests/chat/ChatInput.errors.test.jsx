@@ -9,6 +9,7 @@ import { describe, expect, it, vi, beforeEach } from "vitest";
 const h = vi.hoisted(() => ({ sendError: null }));
 
 vi.mock("../../src/hooks/chat/useChatTan.js", () => ({
+  useSyncMessageAttachments: () => ({ mutate: vi.fn(), mutateAsync: vi.fn(async () => ({})) }),
   useSendMessage: () => ({
     mutateAsync: vi.fn(async () => {
       throw h.sendError;

@@ -246,7 +246,9 @@ function ProductCardMain({
         return;
       }
       addToCart(
-        { productId: _id, quantity: 1, variant: {} },
+        // `product` is the snapshot the cart hook renders the
+        // optimistic line from; cartApi does not send it.
+        { productId: _id, quantity: 1, variant: {}, product },
         { onSuccess: () => toast.success("Added to cart") },
       );
     },

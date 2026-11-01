@@ -1,3 +1,4 @@
+import axios from "axios";
 import api from "./index";
 import { getGuestSessionId } from "../utils/guestSessionStorage";
 import { compressFileIfNeeded } from "../utils/imageCompression";
@@ -21,6 +22,58 @@ const guestSessionHeaders = () => {
   return guestSessionId ? { "x-guest-session-id": guestSessionId } : undefined;
 };
 
+// Direct upload (images only): the API signs a one-asset parameter
+// set, the browser sends the file STRAIGHT to Cloudinary (one hop,
+// edge ingest, honest end-to-end progress), and the API then
+// verifies the asset against Cloudinary's record and writes the
+// upload ledger. Returns the exact shape the proxied upload
+// returns. Any failure falls back to the proxied path — except a
+// user abort, which must stay cancelled.
+const uploadDirectToCloudinary = async (
+  chatId,
+  prepared,
+  originalName,
+  { signal, onProgress } = {},
+) => {
+  const guestHeaders = guestSessionHeaders();
+  const headers = guestHeaders ? { headers: guestHeaders } : {};
+  const signResponse = await api.post(
+    `/chats/${encodeURIComponent(chatId)}/attachments/sign`,
+    {},
+    { ...headers, signal },
+  );
+  const { cloudName, apiKey, timestamp, signature, folder, publicId } =
+    signResponse.data.data;
+  const formData = new FormData();
+  formData.append("file", prepared);
+  formData.append("api_key", apiKey);
+  formData.append("timestamp", String(timestamp));
+  formData.append("signature", signature);
+  formData.append("folder", folder);
+  formData.append("public_id", publicId);
+  await axios.post(
+    `https://api.cloudinary.com/v1_1/${cloudName}/image/upload`,
+    formData,
+    {
+      signal,
+      onUploadProgress: onProgress
+        ? (event) => {
+            if (event.total)
+              onProgress(
+                Math.min(100, Math.round((event.loaded / event.total) * 100)),
+              );
+          }
+        : undefined,
+    },
+  );
+  const completeResponse = await api.post(
+    `/chats/${encodeURIComponent(chatId)}/attachments/complete`,
+    { publicId, fileName: originalName },
+    { ...headers, signal },
+  );
+  return completeResponse.data.data;
+};
+
 export const uploadChatAttachment = async (
   chatId,
   file,
@@ -36,6 +89,20 @@ export const uploadChatAttachment = async (
   // the post-compression substitute file with the same policy.
   const preparedError = await validateChatFilesSniffed([prepared]);
   if (preparedError) throw new Error(preparedError);
+  // Fast path: images go direct to Cloudinary (signed). PDFs keep
+  // the proxied path (raw uploads stay server-mediated), and any
+  // direct-path failure falls back to it as well.
+  if (prepared.type !== "application/pdf") {
+    try {
+      return await uploadDirectToCloudinary(chatId, prepared, file.name, {
+        signal,
+        onProgress,
+      });
+    } catch (error) {
+      if (signal?.aborted || error?.name === "CanceledError") throw error;
+      // fall through to the proxied upload
+    }
+  }
   const formData = new FormData();
   formData.append("file", prepared);
   // VULN-001: the guest credential travels in the x-guest-session-id

@@ -215,6 +215,9 @@ describe("ProductCard rating (FE-14)", () => {
       productId: baseProduct._id,
       quantity: 1,
       variant: {},
+      // UI-only snapshot for the cart hook's optimistic line;
+      // cartApi never sends it to the server.
+      product: expect.objectContaining({ _id: baseProduct._id }),
     });
     // Success is toasted by the card; errors belong to the cart
     // hook (FE-47), so no per-call onError is passed.

@@ -3,15 +3,61 @@ import {
   validateChatFilesSniffed,
   ATTACHMENT_MIME_TYPES,
 } from "../../utils/chatAttachmentPolicy";
-import { useState, useRef, useEffect } from "react";
-import { LucideSendHorizontal, Paperclip, X } from "lucide-react";
+import { useState, useRef, useEffect, useCallback } from "react";
+import { FileText, LucideSendHorizontal, Paperclip, X } from "lucide-react";
 import { AnimatePresence } from "framer-motion";
-import { useSendMessage } from "../../hooks/chat/useChatTan";
+import {
+  useSendMessage,
+  useSyncMessageAttachments,
+} from "../../hooks/chat/useChatTan";
 import { uploadChatAttachment } from "../../api/chatApi";
+import { queryClient } from "../../lib/queryClient";
+import { ATTACHMENT_RETRY_EVENT } from "./ChatMessage";
 import AuthRequiredModal from "./AuthRequiredModal";
 import RateLimitModal from "./RateLimitModal";
 import { RATE_LIMIT_EVENT } from "../../api/index";
 import { toast } from "../../lib/toast";
+
+// Circular upload progress, drawn over the chip thumbnail.
+// progress is 0-100; null (no progress event yet) renders a
+// spinning quarter arc so the control never looks stuck.
+const UploadRing = ({ progress }) => {
+  const radius = 8.5;
+  const circumference = 2 * Math.PI * radius;
+  const indeterminate = progress == null;
+  const pct = indeterminate
+    ? 25
+    : Math.max(0, Math.min(100, progress));
+  return (
+    <svg
+      viewBox="0 0 24 24"
+      className={`h-5 w-5 -rotate-90 ${
+        indeterminate ? "motion-safe:animate-spin" : ""
+      }`}
+      aria-hidden="true"
+    >
+      <circle
+        cx="12"
+        cy="12"
+        r={radius}
+        fill="none"
+        stroke="rgba(255,255,255,0.35)"
+        strokeWidth="2.5"
+      />
+      <circle
+        cx="12"
+        cy="12"
+        r={radius}
+        fill="none"
+        stroke="#ffffff"
+        strokeWidth="2.5"
+        strokeLinecap="round"
+        strokeDasharray={circumference}
+        strokeDashoffset={circumference - (circumference * pct) / 100}
+      />
+    </svg>
+  );
+};
 
 const ChatInput = ({ chatId, onTyping, draftReply }) => {
   const [message, setMessage] = useState("");
@@ -25,13 +71,22 @@ const ChatInput = ({ chatId, onTyping, draftReply }) => {
   const fileInputRef = useRef(null);
   const typingTimeoutRef = useRef(null);
   const typingActiveRef = useRef(false);
-  const uploadAbortRef = useRef(null);
   const textareaRef = useRef(null);
   const sendMessageMutation = useSendMessage();
-  const uploadCacheRef = useRef(new Map());
+  const syncAttachmentsMutation = useSyncMessageAttachments();
   const sendingRef = useRef(false);
   const sendAttemptRef = useRef(null);
   const [isSending, setIsSending] = useState(false);
+
+  // Upload registry (Messenger pattern): every selected file starts
+  // uploading IMMEDIATELY, in the background, so by the time the user
+  // presses send the transfer is usually done. An entry tracks the
+  // whole lifecycle — select-time upload, instant send with a local
+  // preview still syncing, background PATCH sync, failure + retry.
+  //   status: "uploading" | "done" | "error" | "cancelled"
+  const uploadsRef = useRef(new Map()); // File -> entry
+  const entriesByKeyRef = useRef(new Map()); // localKey -> entry
+  const syncChainsRef = useRef(new Map()); // messageId -> Promise chain
 
   // FE-25: an external draft (the admin AI panel's "Send to Input" /
   // edit actions, wired through SupportChats -> ChatConversation)
@@ -47,10 +102,204 @@ const ChatInput = ({ chatId, onTyping, draftReply }) => {
     }
   }, [draftReply]);
 
+  const refreshUploading = useCallback(() => {
+    const any = [...uploadsRef.current.values()].some(
+      (entry) => entry.status === "uploading",
+    );
+    setIsUploading(any);
+  }, []);
+
+  const runUpload = useCallback(
+    (entry) => {
+      const controller = new AbortController();
+      entry.controller = controller;
+      entry.status = "uploading";
+      entry.error = null;
+      entry.promise = uploadChatAttachment(entry.chatId, entry.file, {
+        signal: controller.signal,
+        onProgress: (pct) =>
+          setUploadProgress((prev) => ({ ...prev, [entry.localKey]: pct })),
+      })
+        .then((data) => {
+          entry.status = "done";
+          entry.result = data;
+          setUploadProgress((prev) => ({ ...prev, [entry.localKey]: 100 }));
+          refreshUploading();
+          return data;
+        })
+        .catch((error) => {
+          entry.status = controller.signal.aborted ? "cancelled" : "error";
+          entry.error = error;
+          refreshUploading();
+          throw error;
+        });
+      // Select-time uploads may have no awaiter yet; keep the
+      // rejection handled here — awaiters of entry.promise still
+      // observe it through their own branch.
+      entry.promise.catch(() => {});
+      refreshUploading();
+      return entry;
+    },
+    [refreshUploading],
+  );
+
+  const getOrCreateEntry = useCallback((file) => {
+    let entry = uploadsRef.current.get(file);
+    if (!entry) {
+      entry = {
+        file,
+        localKey: crypto.randomUUID(),
+        blobUrl: URL.createObjectURL(file),
+        status: "idle",
+        result: null,
+        error: null,
+        messageId: null,
+      };
+      uploadsRef.current.set(file, entry);
+      entriesByKeyRef.current.set(entry.localKey, entry);
+    }
+    return entry;
+  }, []);
+
+  const startUpload = useCallback(
+    (file) => {
+      const entry = getOrCreateEntry(file);
+      if (
+        entry.chatId === chatId &&
+        entry.status !== "error" &&
+        entry.status !== "cancelled" &&
+        entry.status !== "idle"
+      ) {
+        return entry;
+      }
+      entry.chatId = chatId;
+      return runUpload(entry);
+    },
+    [chatId, getOrCreateEntry, runUpload],
+  );
+
+  // Patch one local attachment entry inside the cached message
+  // (e.g. flip it to its failed state, or back to syncing on retry).
+  const patchLocalAttachment = useCallback(
+    (messageId, localKey, patch) => {
+      queryClient.setQueryData(["chats", chatId, "messages"], (old) => {
+        if (!old?.pages?.length) return old;
+        return {
+          ...old,
+          pages: old.pages.map((page) => ({
+            ...page,
+            data: {
+              ...page.data,
+              messages: (page.data?.messages || []).map((msg) =>
+                msg._id === messageId
+                  ? {
+                      ...msg,
+                      attachments: (msg.attachments || []).map((att) =>
+                        att._localKey === localKey ? { ...att, ...patch } : att,
+                      ),
+                    }
+                  : msg,
+              ),
+            },
+          })),
+        };
+      });
+    },
+    [chatId, queryClient],
+  );
+
+  // Serialised per message: PATCHes replace the whole attachment
+  // list, so completions are applied one at a time. The session
+  // record (created at send) is the source of truth for what has
+  // synced — not the query cache, which other writers also touch.
+  // Each PATCH carries the cumulative real list plus the local
+  // previews still pending / failed, so the merge on the other side
+  // never drops a photo.
+  const enqueueSync = useCallback(
+    (entry) => {
+      const session = entry.session;
+      if (!session) return;
+      const messageId = session.messageId;
+      const previous = syncChainsRef.current.get(messageId) || Promise.resolve();
+      const next = previous.then(async () => {
+        if (entry.localState !== "done") return;
+        if (!session.base.some((a) => a.fileUrl === entry.result.attachment.fileUrl))
+          session.base.push(entry.result.attachment);
+        const pendingLocals = session.entries
+          .filter((e) => e.localState === "pending")
+          .map((e) => e.toLocal());
+        const failedLocals = session.entries
+          .filter((e) => e.localState === "failed")
+          .map((e) => ({ ...e.toLocal(), _pendingSync: false, _syncFailed: true }));
+        await syncAttachmentsMutation.mutateAsync({
+          chatId,
+          messageId,
+          attachments: [...session.base],
+          pendingLocals,
+          failedLocals,
+        });
+      });
+      syncChainsRef.current.set(
+        messageId,
+        next.catch(() => {}),
+      );
+    },
+    [chatId, syncAttachmentsMutation],
+  );
+
+  const watchEntryForSync = useCallback(
+    (entry) => {
+      entry.promise.then(
+        () => {
+          if (entry.status === "done") {
+            entry.localState = "done";
+            enqueueSync(entry);
+          }
+        },
+        () => {
+          if (entry.status === "error" && entry.messageId) {
+            entry.localState = "failed";
+            patchLocalAttachment(entry.messageId, entry.localKey, {
+              _pendingSync: false,
+              _syncFailed: true,
+            });
+            toast.error(
+              `"${entry.file.name}" couldn't be uploaded. Tap the photo in your message to retry.`,
+            );
+          }
+        },
+      );
+    },
+    [enqueueSync, patchLocalAttachment],
+  );
+
+  // Retry affordance on a failed bubble photo (ChatMessage dispatches
+  // the event; the composer owns the file and the upload machinery).
+  useEffect(() => {
+    const onRetry = (event) => {
+      const { messageId, localKey } = event.detail || {};
+      const entry = entriesByKeyRef.current.get(localKey);
+      if (!entry || entry.messageId !== messageId) return;
+      if (entry.status === "uploading" || entry.status === "done") return;
+      entry.localState = "pending";
+      patchLocalAttachment(messageId, localKey, {
+        _pendingSync: true,
+        _syncFailed: false,
+      });
+      runUpload(entry);
+      watchEntryForSync(entry);
+    };
+    window.addEventListener(ATTACHMENT_RETRY_EVENT, onRetry);
+    return () => window.removeEventListener(ATTACHMENT_RETRY_EVENT, onRetry);
+  }, [patchLocalAttachment, runUpload, watchEntryForSync]);
+
   useEffect(
     () => () => {
       if (typingTimeoutRef.current) clearTimeout(typingTimeoutRef.current);
-      uploadAbortRef.current?.abort();
+      for (const entry of uploadsRef.current.values()) {
+        entry.controller?.abort();
+        URL.revokeObjectURL(entry.blobUrl);
+      }
     },
     [],
   );
@@ -92,18 +341,46 @@ const ChatInput = ({ chatId, onTyping, draftReply }) => {
     }, 300);
   };
 
-  const handleCancelUpload = () => {
-    uploadAbortRef.current?.abort();
-  };
-
   const handleFileSelect = (files) => {
     if (sendingRef.current) return;
-    const combined = [...selectedFiles, ...Array.from(files || [])];
+    const incoming = Array.from(files || []);
+    const combined = [...selectedFiles, ...incoming];
     const error = validateChatFiles(combined);
     if (error) toast.error(error);
-    else setSelectedFiles(combined);
+    else {
+      setSelectedFiles(combined);
+      // Start uploading right away, in the background — the transfer
+      // overlaps the user's reading/typing time instead of starting
+      // only when they press send. FE-11: content-sniff each file
+      // first; a spoofed file is marked blocked and never uploads
+      // (the send-time sniff then rejects the send with the policy
+      // toast, exactly as before). If send is pressed before the
+      // sniff resolves, the send path's own gate still runs first,
+      // and the upload itself re-sniffs before any network call.
+      for (const file of incoming) {
+        validateChatFilesSniffed([file]).then((sniffError) => {
+          if (sniffError) {
+            const entry = getOrCreateEntry(file);
+            entry.status = "blocked";
+            entry.error = new Error(sniffError);
+          } else {
+            startUpload(file);
+          }
+        });
+      }
+    }
     if (fileInputRef.current) fileInputRef.current.value = "";
   };
+
+  const toLocalAttachment = (entry) => ({
+    fileName: entry.file.name,
+    fileUrl: entry.blobUrl,
+    _localBlobUrl: entry.blobUrl,
+    fileType: entry.file.type === "application/pdf" ? "document" : "image",
+    fileSize: entry.file.size,
+    _localKey: entry.localKey,
+    _pendingSync: true,
+  });
 
   const handleSend = async () => {
     if (sendingRef.current) return;
@@ -125,51 +402,33 @@ const ChatInput = ({ chatId, onTyping, draftReply }) => {
     if (typingTimeoutRef.current) clearTimeout(typingTimeoutRef.current);
     typingActiveRef.current = false;
     onTyping(false);
-    const abortController = new AbortController();
-    uploadAbortRef.current = abortController;
     try {
-      // FE-31: uploads run in PARALLEL with per-file progress and an
-      // abort control — the old strictly-sequential loop (60s axios
-      // timeout each) could lock the composer for ~3 minutes on a
-      // 3-attachment send, with the textarea disabled throughout.
-      // Successful uploads are still cached per file so a failed-send
-      // retry does not re-upload them. Promise.all preserves the
-      // selected-file order in the attachments array.
-      let attachments = [];
-      if (files.length > 0) {
-        setIsUploading(true);
-        setUploadProgress(Object.fromEntries(files.map((_, i) => [i, 0])));
-        const uploaded = await Promise.all(
-          files.map(async (file, index) => {
-            let cached = uploadCacheRef.current.get(file);
-            if (
-              !cached ||
-              cached.chatId !== chatId ||
-              new Date(cached.expiresAt) <= new Date()
-            ) {
-              cached = {
-                ...(await uploadChatAttachment(chatId, file, {
-                  signal: abortController.signal,
-                  onProgress: (pct) =>
-                    setUploadProgress((prev) => ({ ...prev, [index]: pct })),
-                })),
-                chatId,
-              };
-              uploadCacheRef.current.set(file, cached);
-            } else {
-              setUploadProgress((prev) => ({ ...prev, [index]: 100 }));
-            }
-            return cached.attachment;
-          }),
-        );
-        attachments = uploaded;
+      const entries = files.map((file) => startUpload(file));
+      const doneEntries = () => entries.filter((e) => e.status === "done");
+      let wireEntries = doneEntries();
+      if (!text && wireEntries.length === 0) {
+        // Photo-only message: the server requires content or at
+        // least one real attachment, so wait just for the FIRST
+        // upload to land (uploads started at select time and go
+        // direct to Cloudinary — this is normally already done).
+        const pending = entries.filter((e) => e.status === "uploading");
+        if (pending.length > 0) {
+          await Promise.any(pending.map((e) => e.promise)).catch(() => {});
+          wireEntries = doneEntries();
+        }
+        if (wireEntries.length === 0) {
+          const failed = entries.find((e) => e.status === "error");
+          if (failed) throw failed.error;
+          return; // everything was cancelled — composer stays as-is
+        }
       }
-      setIsUploading(false);
-      setUploadProgress({});
+      const pendingEntries = entries.filter((e) => e.status === "uploading");
+      const wireAttachments = wireEntries.map((e) => e.result.attachment);
+      const localAttachments = pendingEntries.map(toLocalAttachment);
       const fingerprint = JSON.stringify({
         chatId,
         content: text,
-        attachments,
+        attachments: wireAttachments,
       });
       if (sendAttemptRef.current?.fingerprint !== fingerprint) {
         sendAttemptRef.current = {
@@ -177,22 +436,45 @@ const ChatInput = ({ chatId, onTyping, draftReply }) => {
           clientMessageId: crypto.randomUUID(),
         };
       }
-      await sendMessageMutation.mutateAsync({
+      // The message goes out NOW with whatever is ready; photos
+      // still uploading appear in the bubble as local previews and
+      // sync in the background as each transfer lands.
+      const response = await sendMessageMutation.mutateAsync({
         chatId,
         content: text,
-        attachments,
+        attachments: wireAttachments,
         clientMessageId: sendAttemptRef.current.clientMessageId,
+        localAttachments,
       });
+      const confirmedMessageId = response?.data?.message?._id;
+      if (pendingEntries.length > 0 && confirmedMessageId) {
+        const session = {
+          messageId: confirmedMessageId,
+          base: [...wireAttachments],
+          entries: pendingEntries,
+        };
+        for (const entry of pendingEntries) {
+          entry.messageId = confirmedMessageId;
+          entry.session = session;
+          entry.localState = "pending";
+          entry.toLocal = () => toLocalAttachment(entry);
+          watchEntryForSync(entry);
+        }
+      }
       sendAttemptRef.current = null;
       setMessage("");
-      setSelectedFiles([]);
-      uploadCacheRef.current.clear();
+      // Files that failed BEFORE the send stay in the composer so
+      // the user can retry them with another press of send.
+      setSelectedFiles(
+        entries
+          .filter((e) => e.status === "error" || e.status === "cancelled")
+          .map((e) => e.file),
+      );
       if (textareaRef.current) textareaRef.current.style.height = "24px";
     } catch (error) {
       // FE-31: a user-cancelled upload is not an error — nothing was
       // sent, and the draft + files stay put for a retry.
       if (
-        abortController.signal.aborted ||
         error?.code === "ERR_CANCELED" ||
         error?.name === "AbortError" ||
         error?.name === "CanceledError"
@@ -226,10 +508,7 @@ const ChatInput = ({ chatId, onTyping, draftReply }) => {
     } finally {
       sendingRef.current = false;
       setIsSending(false);
-      setIsUploading(false);
-      setUploadProgress({});
-      if (uploadAbortRef.current === abortController)
-        uploadAbortRef.current = null;
+      refreshUploading();
     }
   };
 
@@ -241,42 +520,79 @@ const ChatInput = ({ chatId, onTyping, draftReply }) => {
         <AnimatePresence>
           {selectedFiles.length > 0 && (
             <div className="flex flex-wrap gap-2 pb-3">
-              {selectedFiles.map((file, index) => (
-                <div
-                  key={index}
-                  className="relative bg-white border border-gray-200 rounded-lg px-3 py-2 pr-8 text-xs font-medium"
-                >
-                  {file.name}
-                  {/* FE-31: per-file upload progress while sending. */}
-                  {isUploading && uploadProgress[index] != null && (
-                    <span className="ml-2 font-bold text-[#F27318]">
-                      {uploadProgress[index]}%
-                    </span>
-                  )}
-                  <button
-                    disabled={isSending}
-                    onClick={() => {
-                      uploadCacheRef.current.delete(file);
-                      setSelectedFiles((prev) =>
-                        prev.filter((_, i) => i !== index),
-                      );
-                    }}
-                    className="absolute right-1 top-1.5 p-0.5 text-gray-400 hover:text-red-500"
+              {selectedFiles.map((file, index) => {
+                const entry = uploadsRef.current.get(file);
+                const progress = entry
+                  ? uploadProgress[entry.localKey]
+                  : undefined;
+                const isImage = file.type?.startsWith("image/");
+                const removeFile = () => {
+                  if (entry) {
+                    entry.controller?.abort();
+                    URL.revokeObjectURL(entry.blobUrl);
+                    uploadsRef.current.delete(file);
+                    entriesByKeyRef.current.delete(entry.localKey);
+                    refreshUploading();
+                  }
+                  setSelectedFiles((prev) =>
+                    prev.filter((_, i) => i !== index),
+                  );
+                };
+                return (
+                  <div
+                    key={index}
+                    className="flex items-center gap-2 bg-white border border-gray-200 rounded-lg py-1.5 pl-1.5 pr-2.5 text-xs font-medium"
                   >
-                    <X size={14} />
-                  </button>
-                </div>
-              ))}
-              {/* FE-31: abort control for in-flight uploads. */}
-              {isUploading && (
-                <button
-                  type="button"
-                  onClick={handleCancelUpload}
-                  className="self-center rounded-full border border-gray-300 px-3 py-1.5 text-xs font-semibold text-gray-600 hover:bg-gray-50"
-                >
-                  Cancel upload
-                </button>
-              )}
+                    {/* Thumbnail preview: the actual photo (rounded
+                        rectangle) for images, a file tile for PDFs.
+                        While uploading, a circular progress ring sits
+                        over it (tap = cancel this file's upload);
+                        once settled, a small ✕ on the corner removes
+                        the file. */}
+                    <div className="relative h-9 w-11 shrink-0">
+                      {isImage && entry?.blobUrl ? (
+                        <img
+                          src={entry.blobUrl}
+                          alt=""
+                          draggable={false}
+                          className="h-full w-full rounded-md object-cover"
+                        />
+                      ) : (
+                        <span className="flex h-full w-full items-center justify-center rounded-md bg-gray-100 text-gray-500">
+                          <FileText size={16} />
+                        </span>
+                      )}
+                      {entry?.status === "uploading" ? (
+                        <button
+                          type="button"
+                          disabled={isSending}
+                          onClick={() => entry.controller?.abort()}
+                          aria-label={
+                            progress != null
+                              ? `Cancel upload, ${progress}% uploaded`
+                              : "Cancel upload"
+                          }
+                          title="Cancel upload"
+                          className="absolute inset-0 flex items-center justify-center rounded-md bg-black/45"
+                        >
+                          <UploadRing progress={progress} />
+                        </button>
+                      ) : (
+                        <button
+                          type="button"
+                          disabled={isSending}
+                          onClick={removeFile}
+                          aria-label={`Remove ${file.name}`}
+                          className="absolute -right-1 -top-1 flex h-4 w-4 items-center justify-center rounded-full bg-gray-700/90 text-white transition-colors hover:bg-red-500"
+                        >
+                          <X size={10} />
+                        </button>
+                      )}
+                    </div>
+                    <span className="max-w-[140px] truncate">{file.name}</span>
+                  </div>
+                );
+              })}
             </div>
           )}
         </AnimatePresence>
@@ -289,8 +605,8 @@ const ChatInput = ({ chatId, onTyping, draftReply }) => {
               type="file"
               multiple
               accept={ATTACHMENT_MIME_TYPES.join(",")}
-              className="hidden"
               onChange={(e) => handleFileSelect(e.target.files)}
+              className="hidden"
             />
 
             <button
@@ -356,7 +672,6 @@ const ChatInput = ({ chatId, onTyping, draftReply }) => {
         message={authError?.message}
         suggestion={authError?.suggestion}
       />
-
       <RateLimitModal
         isOpen={showRateLimitModal}
         onClose={() => setShowRateLimitModal(false)}

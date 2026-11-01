@@ -1,6 +1,8 @@
 import { render, screen, fireEvent } from "@testing-library/react";
 import { describe, expect, it, vi } from "vitest";
-import ChatMessage from "../../src/components/chat/ChatMessage.jsx";
+import ChatMessage, {
+  ATTACHMENT_RETRY_EVENT,
+} from "../../src/components/chat/ChatMessage.jsx";
 
 // FE-19: optimistic send failures set isFailed/sendError in
 // useChatTan, but ChatMessage rendered neither field — a failed send
@@ -83,6 +85,78 @@ describe("ChatMessage failed state (FE-19)", () => {
     expect(screen.queryByText(/failed to send/i)).not.toBeInTheDocument();
     expect(
       screen.queryByRole("button", { name: /retry/i }),
+    ).not.toBeInTheDocument();
+  });
+
+  it("a photo whose background upload failed offers an in-place retry that dispatches the retry event", () => {
+    const withFailedPhoto = {
+      ...failedMessage,
+      _id: "m-photo",
+      isFailed: false,
+      sendError: undefined,
+      content: "",
+      attachments: [
+        {
+          fileName: "photo.jpg",
+          fileUrl: "blob:http://localhost/abc",
+          _localBlobUrl: "blob:http://localhost/abc",
+          fileType: "image",
+          fileSize: 1234,
+          _localKey: "lk-1",
+          _pendingSync: false,
+          _syncFailed: true,
+        },
+      ],
+    };
+    const seen = [];
+    const listener = (event) => seen.push(event.detail);
+    window.addEventListener(ATTACHMENT_RETRY_EVENT, listener);
+    try {
+      render(
+        <ChatMessage
+          message={withFailedPhoto}
+          isOwnMessage={true}
+          onRetry={vi.fn()}
+        />,
+      );
+      fireEvent.click(
+        screen.getByRole("button", { name: /couldn't upload/i }),
+      );
+      expect(seen).toEqual([{ messageId: "m-photo", localKey: "lk-1" }]);
+    } finally {
+      window.removeEventListener(ATTACHMENT_RETRY_EVENT, listener);
+    }
+  });
+
+  it("a photo still uploading shows the uploading veil, not the retry affordance", () => {
+    const withPendingPhoto = {
+      ...failedMessage,
+      _id: "m-photo-2",
+      isFailed: false,
+      sendError: undefined,
+      content: "",
+      attachments: [
+        {
+          fileName: "photo.jpg",
+          fileUrl: "blob:http://localhost/def",
+          _localBlobUrl: "blob:http://localhost/def",
+          fileType: "image",
+          fileSize: 1234,
+          _localKey: "lk-2",
+          _pendingSync: true,
+        },
+      ],
+    };
+    render(
+      <ChatMessage
+        message={withPendingPhoto}
+        isOwnMessage={true}
+        onRetry={vi.fn()}
+      />,
+    );
+    expect(screen.getByText(/uploading/i)).toBeInTheDocument();
+    expect(
+      screen.queryByRole("button", { name: /couldn't upload/i }),
     ).not.toBeInTheDocument();
   });
 });

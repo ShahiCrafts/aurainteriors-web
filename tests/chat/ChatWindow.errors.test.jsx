@@ -116,6 +116,65 @@ describe("ChatWindow load failures (FE-19)", () => {
     expect(h.refetch).toHaveBeenCalledTimes(1);
   });
 
+  it("an error with messages already in the cache keeps the conversation — no panel flash during a first send", () => {
+    h.messagesState = baseState({
+      data: {
+        pages: [
+          {
+            data: {
+              messages: [
+                {
+                  _id: "optimistic-1",
+                  clientMessageId: "cm-1",
+                  content: "Track my order",
+                  senderRole: "customer",
+                  isPending: true,
+                },
+              ],
+              pagination: { page: 1, totalPages: 1 },
+            },
+          },
+        ],
+      },
+      isError: true,
+      error: new Error("transient load failure"),
+    });
+    render(
+      <ChatWindow
+        chat={chat}
+        onClose={vi.fn()}
+        onStartNew={vi.fn()}
+        onResetView={vi.fn()}
+        isCreatingChat={false}
+      />,
+    );
+    expect(screen.getByTestId("msg-list")).toBeInTheDocument();
+    expect(
+      screen.queryByText(/could not load messages/i),
+    ).not.toBeInTheDocument();
+  });
+
+  it("an error while a retry/refetch is still in flight does not flash the panel either", () => {
+    h.messagesState = baseState({
+      data: undefined,
+      isError: true,
+      isFetching: true,
+      error: new Error("transient load failure"),
+    });
+    render(
+      <ChatWindow
+        chat={chat}
+        onClose={vi.fn()}
+        onStartNew={vi.fn()}
+        onResetView={vi.fn()}
+        isCreatingChat={false}
+      />,
+    );
+    expect(
+      screen.queryByText(/could not load messages/i),
+    ).not.toBeInTheDocument();
+  });
+
   it("a successful empty history still shows the message list (empty handled by the list), not an error", () => {
     h.messagesState = baseState();
     render(

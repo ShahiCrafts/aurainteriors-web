@@ -104,6 +104,9 @@ export default function useVariantPurchase(product) {
           variant: {},
           variantId: selectedVariant._id,
           sku: selectedVariant.sku,
+          // Snapshot for the cart hook's optimistic line (not sent
+          // to the server; cartApi picks its own fields).
+          product,
         },
         guestMeta: {
           variantId: selectedVariant._id,
@@ -114,7 +117,12 @@ export default function useVariantPurchase(product) {
       };
     }
     return {
-      auth: { productId: product._id, quantity, variant: buildVariant() },
+      auth: {
+        productId: product._id,
+        quantity,
+        variant: buildVariant(),
+        product,
+      },
       guestMeta: null,
     };
   };

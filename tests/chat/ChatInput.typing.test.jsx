@@ -8,6 +8,7 @@ import { describe, expect, it, vi, beforeEach, afterEach } from "vitest";
 // a new episode after the off may emit again.
 
 vi.mock("../../src/hooks/chat/useChatTan.js", () => ({
+  useSyncMessageAttachments: () => ({ mutate: vi.fn(), mutateAsync: vi.fn(async () => ({})) }),
   useSendMessage: () => ({ mutateAsync: vi.fn(async () => {}) }),
 }));
 vi.mock("../../src/api/chatApi.js", () => ({ uploadChatAttachment: vi.fn() }));

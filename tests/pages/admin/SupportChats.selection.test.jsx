@@ -20,6 +20,10 @@ vi.mock("../../../src/hooks/chat/useChatTan", () => ({
   useAllChats: () => hoisted.chatsResult,
   useWaitingQueue: () => ({ data: null }),
   useSendMessage: () => ({ mutateAsync: vi.fn(async () => {}) }),
+  useSyncMessageAttachments: () => ({
+    mutate: vi.fn(),
+    mutateAsync: vi.fn(async () => ({})),
+  }),
 }));
 
 vi.mock("../../../src/components/admin/chat/ChatList", () => ({

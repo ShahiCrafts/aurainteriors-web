@@ -140,6 +140,9 @@ describe("Wishlist canonical add-to-cart (Phase 5)", () => {
       productId: "prod-simple",
       quantity: 1,
       variant: {},
+      // UI-only snapshot for the cart hook's optimistic line;
+      // cartApi never sends it to the server.
+      product: expect.objectContaining({ _id: "prod-simple" }),
     });
     expect(options.onSuccess).toBeTypeOf("function");
   });

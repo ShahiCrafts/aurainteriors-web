@@ -17,11 +17,12 @@ import ChatMessageList from "./ChatMessageList";
 import ChatInput from "./ChatInput";
 
 // FE-49/FE-07: the empty-state animation lives in
-// DotLottieAnimation.jsx (a CSS/SVG animation since the FE-07
-// fallback dropped the dotlottie player — see that file) and is
-// loaded only when the empty state mounts. The Suspense fallback is
-// a static placeholder with the same footprint (the wrapping
-// w-40 h-40 box is unchanged), so the layout does not jump.
+// DotLottieAnimation.jsx (the owner's Lottie artwork played by the
+// self-hosted lottie-web player — see that file for why the FE-07
+// no-CDN-runtime rule still holds) and is loaded only when the
+// empty state mounts. The Suspense fallback is a static placeholder
+// with the same footprint (the wrapping w-40 h-40 box is
+// unchanged), so the layout does not jump.
 const EmptyStateAnimation = lazy(() => import("./DotLottieAnimation"));
 
 const ChatWindow = ({
@@ -47,6 +48,7 @@ const ChatWindow = ({
     hasNextPage,
     isFetchingNextPage,
     isLoading,
+    isFetching: isMessagesFetching,
     isError: isMessagesError,
     refetch: refetchMessages,
   } = useChatMessages(chat?._id, { enabled: !!chat });
@@ -173,9 +175,22 @@ const ChatWindow = ({
                   <ChatMessageSkeleton isUser={false} />
                   <ChatMessageSkeleton isUser={true} />
                 </div>
-              ) : isMessagesError ? (
+              ) : isMessagesError &&
+                !isMessagesFetching &&
+                allMessages.length === 0 ? (
                 /* FE-19: a failed history load is NOT an empty
-                   conversation. Distinct error state with retry. */
+                   conversation. Distinct error state with retry.
+                   Round-2 addendum: the panel takes over ONLY when
+                   the failure has settled (no automatic retry or
+                   refetch in flight) and there is no conversation
+                   to show. During a first send, the optimistic
+                   bubble already lives in the cache while the
+                   initial history fetch races the chat creation —
+                   a transient failure there used to flash this
+                   panel for ~a second until the retry / socket
+                   reconcile landed the real messages. A background
+                   refetch failure likewise never replaces visible
+                   messages with the panel anymore. */
                 <div
                   role="alert"
                   className="flex h-full flex-col items-center justify-center gap-3 p-6 text-center"

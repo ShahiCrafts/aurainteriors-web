@@ -23,6 +23,7 @@
     "capacitor-arcore": "file:vendor/capacitor-arcore-1.0.0.tgz",
     "exceljs": "^4.4.0",
     "framer-motion": "^12.23.25",
+    "lottie-web": "^5.13.0",
     "lucide-react": "^0.555.0",
     "qrcode.react": "^4.2.0",
     "react": "^19.2.1",

@@ -72,14 +72,26 @@ export const useSendMessage = () => {
       });
       const key = ["chats", chatId, "messages"];
       const previousData = queryClient.getQueryData(key);
+      // localAttachments are display-only entries (blob previews of
+      // files still uploading when the message was sent). They ride
+      // along in the optimistic bubble — and in the confirmed message
+      // after onSuccess merges them back — until the background sync
+      // (useSyncMessageAttachments) replaces them with the real
+      // uploaded attachments. chatApi.sendMessage builds its wire
+      // payload from named fields only, so they never reach the API
+      // (the server accepts https attachment URLs only).
+      const displayAttachments = [
+        ...(attachments || []),
+        ...(variables.localAttachments || []),
+      ];
       const optimisticMessage = {
         _id: `optimistic-${clientMessageId}`,
         clientMessageId,
         content,
-        attachments: attachments || [],
+        attachments: displayAttachments,
         senderRole: "customer",
         sender: { _id: "current-user", firstName: "You", role: "customer" },
-        messageType: attachments?.length ? "image" : "text",
+        messageType: displayAttachments.length ? "image" : "text",
         createdAt: new Date().toISOString(),
         deliveredAt: null,
         isRead: false,
@@ -131,6 +143,15 @@ export const useSendMessage = () => {
     onSuccess: (data, variables, context) => {
       const key = ["chats", variables.chatId, "messages"];
       const confirmed = { ...data.data.message, isPending: false };
+      // Keep any still-uploading local attachments visible on the
+      // confirmed message; the background sync swaps them for the
+      // real URLs as each upload lands.
+      if (variables.localAttachments?.length) {
+        confirmed.attachments = [
+          ...(confirmed.attachments || []),
+          ...variables.localAttachments,
+        ];
+      }
       queryClient.setQueryData(key, (old) => {
         if (!old?.pages?.length) return old;
         let replaced = false;
@@ -208,6 +229,51 @@ export const useSendMessage = () => {
                       isPending: false,
                       isFailed: true,
                       sendError: error?.message || "Failed to send",
+                    }
+                  : msg,
+              ),
+            },
+          })),
+        };
+      });
+    },
+  });
+};
+
+// Background attachment sync: after an instant send, each finished
+// upload PATCHes the message's real attachment list (the endpoint
+// also broadcasts it to every other participant). The cache copy of
+// the message becomes the server's version plus any local previews
+// still uploading, so the bubble never flickers or loses a photo.
+export const useSyncMessageAttachments = () => {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: ({ chatId, messageId, attachments }) =>
+      chatApi.updateMessageAttachments(chatId, messageId, attachments),
+    meta: { suppressGlobalErrorToast: true },
+    onSuccess: (data, variables) => {
+      const serverMessage = data?.data?.message;
+      if (!serverMessage) return;
+      const key = ["chats", variables.chatId, "messages"];
+      queryClient.setQueryData(key, (old) => {
+        if (!old?.pages?.length) return old;
+        return {
+          ...old,
+          pages: old.pages.map((page) => ({
+            ...page,
+            data: {
+              ...page.data,
+              messages: (page.data?.messages || []).map((msg) =>
+                msg._id === variables.messageId
+                  ? {
+                      ...msg,
+                      ...serverMessage,
+                      attachments: [
+                        ...(serverMessage.attachments || []),
+                        ...(variables.pendingLocals || []),
+                        ...(variables.failedLocals || []),
+                      ],
                     }
                   : msg,
               ),

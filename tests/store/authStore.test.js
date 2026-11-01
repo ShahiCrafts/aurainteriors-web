@@ -82,6 +82,47 @@ describe("session restore via import-time initialize()", () => {
     expect(s.isAuthenticated).toBe(false);
     expect(s.loading).toBe(false);
   });
+
+  it("dead credential (401, user no longer exists): purges it via /auth/logout so it cannot poison sockets/chat", async () => {
+    const { api, authStore } = await importFreshStores((mockApi) => {
+      mockApi.get.mockRejectedValue({
+        response: {
+          status: 401,
+          data: {
+            message: "The user belonging to this token no longer exists.",
+          },
+        },
+      });
+      mockApi.post.mockResolvedValue({});
+    });
+
+    await vi.waitFor(() => {
+      expect(authStore.getState().loading).toBe(false);
+    });
+
+    expect(api.post).toHaveBeenCalledWith("/auth/logout", {});
+    expect(authStore.getState().isAuthenticated).toBe(false);
+  });
+
+  it("plain guest (401, not logged in): no purge call", async () => {
+    const { api, authStore } = await importFreshStores((mockApi) => {
+      mockApi.get.mockRejectedValue({
+        response: {
+          status: 401,
+          data: {
+            message: "You are not logged in. Please log in to get access.",
+          },
+        },
+      });
+      mockApi.post.mockResolvedValue({});
+    });
+
+    await vi.waitFor(() => {
+      expect(authStore.getState().loading).toBe(false);
+    });
+
+    expect(api.post).not.toHaveBeenCalledWith("/auth/logout", {});
+  });
 });
 
 describe("signIn", () => {

@@ -20,6 +20,13 @@ import { formatTime } from "../../utils/formatDate";
 // chunk degrades to readable text — never a blank bubble.
 const BotMarkdown = lazy(() => import("./BotMarkdown.jsx"));
 
+// A background attachment upload that failed after its message was
+// already sent shows a per-photo retry affordance; tapping it fires
+// this event and the composer (which owns the upload machinery and
+// the file) performs the re-upload + sync. Detail:
+// { messageId, localKey }.
+export const ATTACHMENT_RETRY_EVENT = "aura:attachment-retry";
+
 // FE-52: memoised on the content string so an ancestor re-render
 // never re-enters the markdown pipeline for an unchanged message.
 const BotMessageContent = memo(function BotMessageContent({ content }) {
@@ -160,12 +167,37 @@ const ChatMessage = ({
                         isOptimistic={isOptimistic}
                       />
                       {/* PERF-OPT 1: Show subtle upload indicator overlay for optimistic attachments */}
-                      {isOptimistic && (
+                      {isOptimistic && !attachment._syncFailed && (
                         <div className="absolute inset-0 rounded-xl bg-black/5 flex items-center justify-center pointer-events-none">
                           <div className="flex items-center gap-1 bg-white/90 px-2 py-1 rounded-full text-[10px] font-bold text-gray-600 shadow-sm backdrop-blur-sm">
                             <div className="w-2.5 h-2.5 rounded-full bg-[#F27318] motion-safe:animate-pulse" />
                             Uploading
                           </div>
+                        </div>
+                      )}
+                      {/* A background upload that failed after the
+                          message was sent: the photo exists only in
+                          this browser, so offer an in-place retry
+                          (the composer still owns the file). */}
+                      {attachment._syncFailed && (
+                        <div className="absolute inset-0 rounded-xl bg-black/45 flex items-center justify-center">
+                          <button
+                            type="button"
+                            onClick={() =>
+                              window.dispatchEvent(
+                                new CustomEvent(ATTACHMENT_RETRY_EVENT, {
+                                  detail: {
+                                    messageId: message._id,
+                                    localKey: attachment._localKey,
+                                  },
+                                }),
+                              )
+                            }
+                            className="flex items-center gap-1 bg-white px-2.5 py-1 rounded-full text-[10px] font-bold text-red-600 shadow-sm hover:bg-red-50"
+                          >
+                            <RotateCcw size={11} strokeWidth={2.5} />
+                            Couldn&apos;t upload — retry
+                          </button>
                         </div>
                       )}
                     </div>
