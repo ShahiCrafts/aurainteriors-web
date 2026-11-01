@@ -40,7 +40,7 @@ export default function InitialsAvatar({
     <span
       aria-hidden={title ? undefined : true}
       title={title}
-      className={`text-white font-semibold flex items-center justify-center shrink-0 select-none ${className}`}
+      className={`text-white font-semibold flex items-center justify-center shrink-0 select-none aspect-square ${className}`}
       style={{ backgroundColor: color || colorForName(displayName) }}
     >
       {getInitials(displayName)}
@@ -90,7 +90,7 @@ export function UserAvatar({
     <img
       src={avatarUrl}
       alt={alt ?? displayName}
-      className={`${className} object-cover`}
+      className={`${className} aspect-square object-cover`}
       onError={() => setErroredUrl(avatarUrl)}
       {...rest}
     />

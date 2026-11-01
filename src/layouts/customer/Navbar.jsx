@@ -31,7 +31,8 @@ import { getProductImageUrl } from "../../utils/imageUrl";
 import { UserAvatar } from "../../components/common/InitialsAvatar";
 import { formatNPR } from "../../utils/formatCurrency";
 
-const CartSlider = lazy(() => import("../../components/cart/CartSlider"));
+const loadCartSlider = () => import("../../components/cart/CartSlider");
+const CartSlider = lazy(loadCartSlider);
 
 // Shared styles so all three action buttons are identical in structure.
 const ACTION_BUTTON_CLASS =
@@ -43,6 +44,13 @@ const ACTION_ICON_BOX_CLASS =
 
 const ACTION_LABEL_CLASS =
   "hidden md:block text-[12px] leading-4 font-medium text-[#6A6058] group-hover:text-[#1A1714] whitespace-nowrap";
+
+// Signed-in account control: avatar + dropdown chevron only, no text
+// label. The avatar gets one fixed square size (h-8 w-8) whether it
+// renders the photo or the initials circle, so the control never
+// changes size between users with and without an avatarUrl.
+const AVATAR_BUTTON_CLASS =
+  "flex items-center gap-1 px-2 md:px-3 py-1.5 rounded-[10px] cursor-pointer transition-colors duration-180 hover:text-[#1A1714] border-none bg-transparent font-sans relative group";
 
 export default function Navbar() {
   const navigate = useNavigate();
@@ -115,6 +123,40 @@ export default function Navbar() {
   const handleOpenCart = () => {
     setIsCartOpen(true);
     if (!cartEverOpened) setCartEverOpened(true);
+  };
+
+  // First-open performance: the drawer used to be fetched AND mounted
+  // only after the first click (lazy chunk + cartEverOpened gate), so
+  // the first open stalled on a production network round-trip while
+  // later opens were instant. Warm the chunk during browser idle and
+  // mount the (still closed, inert) drawer ahead of time; hover/focus
+  // on the cart button warms it too as a fallback. No visual change —
+  // the drawer renders closed exactly as before.
+  useEffect(() => {
+    let cancelled = false;
+    const warm = () => {
+      loadCartSlider()
+        .then(() => {
+          if (!cancelled) setCartEverOpened(true);
+        })
+        .catch(() => {});
+    };
+    if (typeof window !== "undefined" && "requestIdleCallback" in window) {
+      const id = window.requestIdleCallback(warm, { timeout: 2000 });
+      return () => {
+        cancelled = true;
+        if ("cancelIdleCallback" in window) window.cancelIdleCallback(id);
+      };
+    }
+    const timer = setTimeout(warm, 1200);
+    return () => {
+      cancelled = true;
+      clearTimeout(timer);
+    };
+  }, []);
+
+  const warmCartSlider = () => {
+    loadCartSlider().catch(() => {});
   };
 
   const profileMenuItems = [
@@ -324,7 +366,12 @@ export default function Navbar() {
             {showCartSkeleton ? (
               <CartActionSkeleton />
             ) : (
-              <button onClick={handleOpenCart} className={ACTION_BUTTON_CLASS}>
+              <button
+                onClick={handleOpenCart}
+                onPointerEnter={warmCartSlider}
+                onFocus={warmCartSlider}
+                className={ACTION_BUTTON_CLASS}
+              >
                 <span className={ACTION_ICON_BOX_CLASS}>
                   <ShoppingCart className="w-5 h-5 md:w-5.5 md:h-5.5" />
                 </span>
@@ -343,30 +390,39 @@ export default function Navbar() {
               ) : (
                 <button
                   onClick={() => setIsProfileOpen(!isProfileOpen)}
-                  className={ACTION_BUTTON_CLASS}
+                  className={
+                    isAuthenticated && user
+                      ? AVATAR_BUTTON_CLASS
+                      : ACTION_BUTTON_CLASS
+                  }
+                  aria-label={
+                    isAuthenticated && user ? "Account menu" : undefined
+                  }
+                  aria-haspopup={isAuthenticated && user ? "menu" : undefined}
+                  aria-expanded={
+                    isAuthenticated && user ? isProfileOpen : undefined
+                  }
                 >
-                  <span className={ACTION_ICON_BOX_CLASS}>
-                    {isAuthenticated && user ? (
+                  {isAuthenticated && user ? (
+                    <>
                       <UserAvatar
                         user={user}
                         alt="Profile"
-                        className="w-5.5 h-5.5 rounded-full text-[9px] font-dm-sans"
+                        className="h-8 w-8 rounded-full text-[11px] font-dm-sans"
                       />
-                    ) : (
-                      <User className="w-5 h-5 md:w-5.5 md:h-5.5" />
-                    )}
-                  </span>
-                  <span
-                    className={`${ACTION_LABEL_CLASS} flex items-center gap-0.5`}
-                  >
-                    {isAuthenticated && user ? "Account" : "Profile"}
-                    {isAuthenticated && user && (
                       <ChevronDown
-                        size={12}
-                        className="text-[#6A6058] group-hover:text-[#1A1714] transition-colors"
+                        size={14}
+                        className="text-[#6A6058] group-hover:text-[#1A1714] transition-colors shrink-0"
                       />
-                    )}
-                  </span>
+                    </>
+                  ) : (
+                    <>
+                      <span className={ACTION_ICON_BOX_CLASS}>
+                        <User className="w-5 h-5 md:w-5.5 md:h-5.5" />
+                      </span>
+                      <span className={ACTION_LABEL_CLASS}>Profile</span>
+                    </>
+                  )}
                 </button>
               )}
 

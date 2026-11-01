@@ -452,12 +452,41 @@ export default function CheckoutPage() {
         );
       }
       const order = result.data?.order;
-      if (paymentMethod === "esewa" && result.data?.esewa) {
-        const esewaData = result.data.esewa;
+      if (paymentMethod === "esewa") {
+        // Hand off to the eSewa gateway. The payload's payment_url is
+        // the form's ACTION, not a form field — posting it back as a
+        // hidden input sends eSewa a field it does not expect. If the
+        // payload is missing or the URL is not an https eSewa URL,
+        // fail loudly and un-stick the button instead of sitting on
+        // "Processing..." forever (or, worse, falling through to the
+        // COD order-confirmation path below).
+        const esewaData = result.data?.esewa;
+        const { payment_url: paymentUrl, ...esewaFields } = esewaData || {};
+        let gatewayUrl = null;
+        try {
+          const parsed = new URL(paymentUrl);
+          if (
+            parsed.protocol === "https:" &&
+            (parsed.hostname === "esewa.com.np" ||
+              parsed.hostname.endsWith(".esewa.com.np"))
+          ) {
+            gatewayUrl = parsed.href;
+          }
+        } catch {
+          gatewayUrl = null;
+        }
+        if (!gatewayUrl) {
+          toast.error(
+            "Could not open the eSewa payment page. Please try again.",
+          );
+          submittingRef.current = false;
+          setIsSubmitting(false);
+          return;
+        }
         const form = document.createElement("form");
         form.method = "POST";
-        form.action = esewaData.payment_url;
-        Object.entries(esewaData).forEach(([key, value]) => {
+        form.action = gatewayUrl;
+        Object.entries(esewaFields).forEach(([key, value]) => {
           const input = document.createElement("input");
           input.type = "hidden";
           input.name = key;
@@ -688,6 +717,15 @@ export default function CheckoutPage() {
                   <form
                     onSubmit={(e) => {
                       e.preventDefault();
+                      // Only this form's own submit may advance the
+                      // checkout. Submit events from nested portal
+                      // dialogs (e.g. the add-address modal) bubble
+                      // through the React tree and must not be read
+                      // as "Next: Payment" — that misfire produced
+                      // the "Please select a shipping address" error
+                      // toast while the user's first address was
+                      // being saved.
+                      if (e.target !== e.currentTarget) return;
                       currentStep === 1
                         ? handleGoToPayment()
                         : handlePlaceOrder();

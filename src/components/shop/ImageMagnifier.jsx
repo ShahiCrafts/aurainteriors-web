@@ -4,12 +4,25 @@ import { validateMediaUrl } from "../../utils/safeUrl";
 function sanitizeSrcSet(srcSet) {
   if (typeof srcSet !== "string" || !srcSet.trim()) return undefined;
   const entries = [];
-  for (const part of srcSet.split(",")) {
-    const trimmed = part.trim();
-    if (!trimmed) continue;
-    const [url, ...descriptor] = trimmed.split(/\s+/);
+  // Parse candidate-by-candidate — NEVER split a srcset on bare
+  // commas. Candidate URLs may legitimately contain commas:
+  // Cloudinary transformation segments are comma-joined
+  // (".../upload/w_600,q_auto,f_webp/..."), so a naive split(",")
+  // shreds every candidate into invalid fragments ("...w_600",
+  // "q_auto", "f_webp/... 600w"). Because a present srcset takes
+  // precedence over `src`, the browser then loads only the broken
+  // candidates and the main product image renders as a broken-image
+  // icon — while the magnifier lens, which uses `src` alone, kept
+  // working (the reported product-page bug). Parse instead: a URL
+  // is a run of non-whitespace characters, followed by an optional
+  // width/density descriptor, followed by the separating comma.
+  const candidateRe = /([^\s]+)(?:\s+(\d+(?:\.\d+)?[wx]))?\s*(?:,|$)/g;
+  let match;
+  while ((match = candidateRe.exec(srcSet)) !== null) {
+    const url = match[1].replace(/,+$/, "");
+    if (!url) continue;
     const safe = validateMediaUrl(url, { fallback: null });
-    if (safe) entries.push([safe, ...descriptor].join(" "));
+    if (safe) entries.push(match[2] ? `${safe} ${match[2]}` : safe);
   }
   return entries.length > 0 ? entries.join(", ") : undefined;
 }

@@ -172,7 +172,20 @@ export default function AddEditAddressModal({
 
               {/* Body: horizontal split */}
               <form
-                onSubmit={handleSubmit(onSubmit)}
+                onSubmit={(e) => {
+                  // This modal renders through a portal, but React
+                  // events from a portal still bubble through the
+                  // REACT tree. On the checkout page the modal is
+                  // nested (in React terms) inside the checkout
+                  // <form>, whose submit means "continue to payment"
+                  // — so saving an address also fired the checkout
+                  // submit, which toasted "Please select a shipping
+                  // address to proceed." (no address was selected
+                  // *yet*) right next to "Address added successfully".
+                  // Stop the submit here; it belongs to this form.
+                  e.stopPropagation();
+                  handleSubmit(onSubmit)(e);
+                }}
                 className="flex flex-col md:flex-row flex-1 min-h-0"
               >
                 {/* Left rail — classification */}

@@ -200,14 +200,24 @@ function ProductCardMain({
             toast.error(formatError(err, "Failed to remove from wishlist")),
         });
       } else {
-        addToWishlist(_id, {
-          onSuccess: () => toast.success("Added to wishlist"),
-          onError: (err) =>
-            toast.error(formatError(err, "Failed to add to wishlist")),
-        });
+        addToWishlist(
+          { productId: _id, product },
+          {
+            onSuccess: () => toast.success("Added to wishlist"),
+            onError: (err) =>
+              toast.error(formatError(err, "Failed to add to wishlist")),
+          },
+        );
       }
     },
-    [isAuthenticated, isInWishlist, _id, addToWishlist, removeFromWishlist],
+    [
+      isAuthenticated,
+      isInWishlist,
+      _id,
+      product,
+      addToWishlist,
+      removeFromWishlist,
+    ],
   );
 
   const imageUrl = useMemo(() => getProductImageUrl(product), [product]);

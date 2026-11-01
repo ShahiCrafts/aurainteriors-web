@@ -120,11 +120,14 @@ export default function ProductDetailsPage() {
           toast.error(formatError(err, "Failed to remove from wishlist")),
       });
     } else {
-      addToWishlist(product._id, {
-        onSuccess: () => toast.success("Added to wishlist"),
-        onError: (err) =>
-          toast.error(formatError(err, "Failed to add to wishlist")),
-      });
+      addToWishlist(
+        { productId: product._id, product },
+        {
+          onSuccess: () => toast.success("Added to wishlist"),
+          onError: (err) =>
+            toast.error(formatError(err, "Failed to add to wishlist")),
+        },
+      );
     }
   };
 
