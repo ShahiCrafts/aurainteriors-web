@@ -22,7 +22,6 @@ export default function PurchasePanel({
   discount,
   handleAddToCart,
   handleBuyNow,
-  isAddingToCart,
   isInWishlist,
   isWishlistLoading,
   onWishlistToggle: handleWishlistToggle,
@@ -201,20 +200,16 @@ export default function PurchasePanel({
         <button
           id="main-add-to-cart"
           onClick={handleAddToCart}
-          disabled={isAddingToCart || isOutOfStock}
+          disabled={isOutOfStock}
           className="flex-2 bg-brand text-white h-13 rounded-lg font-bold text-[16px] hover:bg-brand-hover transition-all duration-300 flex items-center justify-center gap-2.5 disabled:bg-neutral-200"
         >
           <ShoppingCart size={18} />
-          {isOutOfStock
-            ? "Out of Stock"
-            : isAddingToCart
-              ? "Adding..."
-              : "Add to Cart"}
+          {isOutOfStock ? "Out of Stock" : "Add to Cart"}
         </button>
 
         <button
           onClick={handleBuyNow}
-          disabled={isAddingToCart || isOutOfStock}
+          disabled={isOutOfStock}
           className="flex-1 bg-white text-[#1A1714] border border-black/15 h-13 rounded-lg font-bold text-[16px] hover:border-black/30 transition-all duration-300 disabled:opacity-50"
         >
           Buy Now

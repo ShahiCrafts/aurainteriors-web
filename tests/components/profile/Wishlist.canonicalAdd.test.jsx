@@ -144,7 +144,10 @@ describe("Wishlist canonical add-to-cart (Phase 5)", () => {
       // cartApi never sends it to the server.
       product: expect.objectContaining({ _id: "prod-simple" }),
     });
-    expect(options.onSuccess).toBeTypeOf("function");
+    // No per-call callbacks: feedback is optimistic (the card
+    // toasts on the click itself — pinned in ProductCard.test.jsx)
+    // and errors belong to the cart hook (FE-47).
+    expect(options).toBeUndefined();
   });
 
   it("simple product, guest: adds through the guest cart store (the path the old card lacked)", () => {

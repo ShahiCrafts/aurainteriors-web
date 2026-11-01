@@ -31,7 +31,7 @@ export default function useVariantPurchase(product) {
   const [variantSelection, setVariantSelection] = useState({});
   const [quantity, setQuantity] = useState(1);
 
-  const { mutate: addToCart, isPending: isAddingToCart } = useAddToCart();
+  const { mutate: addToCart } = useAddToCart();
   const { addItem: addToGuestCart } = useGuestCartStore(
     useShallow((state) => ({ addItem: state.addItem })),
   );
@@ -153,13 +153,13 @@ export default function useVariantPurchase(product) {
       return;
     }
 
-    addToCart(payload.auth, {
-      onSuccess: () => {
-        toast.success("Added to cart");
-        setQuantity(1);
-      },
-      // FE-47: no per-call onError — the cart hook reports errors.
-    });
+    // Feedback is optimistic like the cart data: announce on the
+    // click itself instead of waiting out the server round trip.
+    // FE-47: no per-call onError — the cart hook reports errors and
+    // the optimistic line rolls back.
+    addToCart(payload.auth);
+    toast.success("Added to cart");
+    setQuantity(1);
   };
 
   // The direct-checkout line for the current selection, in the same
@@ -238,7 +238,6 @@ export default function useVariantPurchase(product) {
     setVariantSelection,
     quantity,
     setQuantity,
-    isAddingToCart,
     stock,
     isVariantProduct,
     selectedVariant,

@@ -307,6 +307,7 @@ describe("ProductDetailsPage variant flow (Phase 7)", () => {
   it("add-to-cart sends variantId + sku (auth) with an empty legacy triple", () => {
     renderPage();
     fireEvent.click(screen.getByRole("button", { name: /Add to Cart/ }));
+    expect(cartState.mutate).toHaveBeenCalledTimes(1);
     expect(cartState.mutate).toHaveBeenCalledWith(
       expect.objectContaining({
         productId: "prod-variant-pdp",
@@ -315,7 +316,6 @@ describe("ProductDetailsPage variant flow (Phase 7)", () => {
         variantId: "v1",
         sku: "ARIA-RED-KING",
       }),
-      expect.anything(),
     );
   });
 

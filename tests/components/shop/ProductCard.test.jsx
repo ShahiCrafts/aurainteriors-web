@@ -219,11 +219,16 @@ describe("ProductCard rating (FE-14)", () => {
       // cartApi never sends it to the server.
       product: expect.objectContaining({ _id: baseProduct._id }),
     });
-    // Success is toasted by the card; errors belong to the cart
-    // hook (FE-47), so no per-call onError is passed.
-    expect(options.onError).toBeUndefined();
-    options.onSuccess();
+    // Instant feedback: the card toasts on the click itself — no
+    // per-call callbacks at all. Errors belong to the cart hook
+    // (FE-47), so no onSuccess/onError is passed, and the success
+    // toast has ALREADY fired even though nothing has resolved.
+    expect(options).toBeUndefined();
     expect(toast.success).toHaveBeenCalledWith("Added to cart");
+    // The button is not locked while the add is in flight either.
+    expect(
+      screen.getByRole("button", { name: "Add Luna Modular Sofa to cart" }),
+    ).not.toBeDisabled();
   });
 
   it("shows the real average and count for a product with reviews", () => {

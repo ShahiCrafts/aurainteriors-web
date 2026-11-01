@@ -83,13 +83,7 @@ function ProductCardThumb({ product, selected = false, onSelect }) {
   );
 }
 
-function AddToCartAction({
-  isVariantProduct,
-  productUrl,
-  name,
-  isAddingToCart,
-  onAdd,
-}) {
+function AddToCartAction({ isVariantProduct, productUrl, name, onAdd }) {
   if (isVariantProduct) {
     return (
       <Link
@@ -105,9 +99,8 @@ function AddToCartAction({
     <button
       type="button"
       onClick={onAdd}
-      disabled={isAddingToCart}
       aria-label={`Add ${name} to cart`}
-      className="relative z-20 flex h-9 w-9 shrink-0 items-center justify-center rounded-md bg-brand text-white shadow-sm transition-all hover:bg-brand-hover focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand disabled:opacity-60"
+      className="relative z-20 flex h-9 w-9 shrink-0 items-center justify-center rounded-md bg-brand text-white shadow-sm transition-all hover:bg-brand-hover focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand"
     >
       <ShoppingCart size={16} />
     </button>
@@ -180,7 +173,7 @@ function ProductCardMain({
     useRemoveFromWishlist();
   const isWishlistLoading = isAdding || isRemoving;
 
-  const { mutate: addToCart, isPending: isAddingToCart } = useAddToCart();
+  const { mutate: addToCart } = useAddToCart();
   const { addItem: addToGuestCart } = useGuestCartStore(
     useShallow((state) => ({ addItem: state.addItem })),
   );
@@ -245,12 +238,16 @@ function ProductCardMain({
         toast.success("Added to cart");
         return;
       }
+      // Feedback is optimistic like the cart data: announce on the
+      // click itself instead of waiting out the server round trip.
+      // A failure rolls the line back and the cart hook toasts the
+      // error (FE-47 — no per-call onError here).
       addToCart(
         // `product` is the snapshot the cart hook renders the
         // optimistic line from; cartApi does not send it.
         { productId: _id, quantity: 1, variant: {}, product },
-        { onSuccess: () => toast.success("Added to cart") },
       );
+      toast.success("Added to cart");
     },
     [isAuthenticated, product, _id, addToCart, addToGuestCart],
   );
@@ -561,7 +558,6 @@ function ProductCardMain({
               isVariantProduct={isVariantProduct}
               productUrl={productUrl}
               name={name}
-              isAddingToCart={isAddingToCart}
               onAdd={handleAddToCart}
             />
           )}

@@ -5,6 +5,7 @@ import { useProduct } from "../../hooks/product/useProductTan";
 import { useArCatalogProducts } from "../../hooks/product/useArCatalogTan";
 import { useCategories } from "../../hooks/product/useCategoryTan";
 import { useAddToCart } from "../../hooks/cart/useCartTan";
+import { toast } from "../../lib/toast";
 import useAuthStore from "../../store/authStore";
 import { useShallow } from "zustand/react/shallow";
 import useGuestCartStore from "../../store/guestCartStore";
@@ -116,6 +117,7 @@ export default function NativeARPage() {
     if (addInFlightRef.current || isAddingToCart) return;
     if (!isAuthenticated) {
       addGuestItem(product, 1);
+      toast.success("Added to cart");
       return;
     }
     addInFlightRef.current = true;
@@ -131,6 +133,10 @@ export default function NativeARPage() {
         },
       },
     );
+    // Announce on the tap, not on the server reply — the cart line
+    // is already optimistic; a failure rolls back with the cart
+    // hook's error toast.
+    toast.success("Added to cart");
   };
 
   const isLoading = wantsLinked && linkedLoading;
