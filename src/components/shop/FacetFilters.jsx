@@ -16,7 +16,7 @@ function withSelectedOptions(facet, entry) {
 }
 
 const SectionLabel = ({ children }) => (
-  <h3 className="text-sm font-bold text-[#1A1714] font-dm-sans mb-4 uppercase tracking-wider">
+  <h3 className="text-base font-bold text-[#1A1714] font-dm-sans mb-4">
     {children}
   </h3>
 );
@@ -292,7 +292,7 @@ export function FilterChips({ chips = [], onRemove, onClearAll }) {
       {chips.map((chip) => (
         <span
           key={chip.id}
-          className="inline-flex items-center gap-2 rounded-full border border-black/8 bg-white px-4 py-2 text-[13px] font-semibold text-[#1A1714] shadow-[0_1px_2px_rgba(26,23,20,0.05)] transition-colors hover:border-brand font-dm-sans"
+          className="inline-flex items-center gap-2 rounded-full border border-black/8 bg-white px-4 py-2 text-[13px] font-semibold text-[#1A1714] transition-colors hover:border-brand font-dm-sans"
         >
           {chip.swatch && (
             <span

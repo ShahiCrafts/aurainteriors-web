@@ -6,7 +6,6 @@ import { describe, it, expect } from "vitest";
 import { render, fireEvent } from "@testing-library/react";
 import { MemoryRouter } from "react-router-dom";
 import ChatAttachment from "../../src/components/chat/ChatAttachment";
-import TopProductsTable from "../../src/components/admin/dashboard/TopProductsTable";
 import ImageMagnifier from "../../src/components/shop/ImageMagnifier";
 import { FALLBACK_IMAGES } from "../../src/utils/imageUrl";
 
@@ -123,31 +122,6 @@ describe("FE-03 sink: ChatAttachment", () => {
     );
     expect(container.querySelector("img")?.getAttribute("src")).toBe(
       "http://localhost:3001/uploads/chat/a.jpg",
-    );
-  });
-});
-
-describe("FE-03 sink: TopProductsTable", () => {
-  const renderTable = (image) =>
-    render(
-      <MemoryRouter>
-        <TopProductsTable
-          products={[{ _id: "1", name: "Sofa", image, sales: 3, revenue: 100 }]}
-        />
-      </MemoryRouter>,
-    );
-
-  it("evil product.image → fallback image, never the raw host", () => {
-    const { container } = renderTable(EVIL);
-    const img = container.querySelector("img");
-    expect(img?.getAttribute("src")).toBe(FALLBACK_IMAGES.product);
-    expect(container.innerHTML).not.toContain("evil.com");
-  });
-
-  it("cloudinary product.image keeps working", () => {
-    const { container } = renderTable(CLOUDINARY);
-    expect(container.querySelector("img")?.getAttribute("src")).toBe(
-      CLOUDINARY,
     );
   });
 });

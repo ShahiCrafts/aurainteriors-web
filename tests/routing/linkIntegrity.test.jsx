@@ -75,7 +75,6 @@ vi.mock("../../src/components/sections/BrandMarquee.jsx", () => ({
 
 import useAuthStore from "../../src/store/authStore";
 import Footer from "../../src/layouts/customer/Footer";
-import MobileMenu from "../../src/components/navigation/MobileMenu";
 import QuickActions from "../../src/components/admin/dashboard/QuickActions";
 import NotificationDropdown from "../../src/components/common/NotificationDropdown";
 import AuthModal from "../../src/components/modals/AuthModal";
@@ -215,25 +214,6 @@ describe("FE-16 link integrity — Footer (customer app)", () => {
   });
 });
 
-// ─── MobileMenu (customer app) ────────────────────────────────────────────
-
-describe("FE-16 link integrity — MobileMenu (customer app)", () => {
-  it("every mobile-menu href resolves to a customer route (slug-based shop links)", () => {
-    const { container } = render(
-      <MemoryRouter>
-        <MobileMenu isOpen onClose={() => {}} />
-      </MemoryRouter>,
-    );
-    const hrefs = internalHrefs(container);
-    // All Categories + one link per mocked category.
-    expect(hrefs.length).toBe(3);
-    expect(deadTargets(CUSTOMER_PATTERNS, hrefs)).toEqual([]);
-    expect(hrefs).toContain("/shop");
-    expect(hrefs).toContain("/shop?categories=sofas");
-    expect(hrefs).toContain("/shop?categories=beds");
-  });
-});
-
 // ─── Guards ───────────────────────────────────────────────────────────────
 
 describe("FE-16 link integrity — guards", () => {
@@ -364,14 +344,6 @@ describe("FE-16 link integrity — forbidden customer targets", () => {
     );
     collected.push(...internalHrefs(footer.container));
     footer.unmount();
-
-    const menu = render(
-      <MemoryRouter>
-        <MobileMenu isOpen onClose={() => {}} />
-      </MemoryRouter>,
-    );
-    collected.push(...internalHrefs(menu.container));
-    menu.unmount();
 
     for (const Guard of [CustomerRoute, ProtectedRoute]) {
       for (const auth of [GUEST, CUSTOMER, ADMIN]) {

@@ -5,7 +5,6 @@ import { describe, it, expect } from "vitest";
 import { render, screen } from "@testing-library/react";
 import { MemoryRouter } from "react-router-dom";
 import CategorySalesChart from "../../../../src/components/admin/dashboard/CategorySalesChart.jsx";
-import TopProductsTable from "../../../../src/components/admin/dashboard/TopProductsTable.jsx";
 import RecentOrdersTable from "../../../../src/components/admin/dashboard/RecentOrdersTable.jsx";
 
 describe("FE-17 dashboard guards", () => {
@@ -18,24 +17,6 @@ describe("FE-17 dashboard guards", () => {
   it("CategorySalesChart renders rows with a missing value", () => {
     render(<CategorySalesChart data={[{ name: "Chairs" }]} />);
     expect(screen.getByText("Chairs")).toBeInTheDocument();
-  });
-
-  it("TopProductsTable renders the empty state with undefined products", () => {
-    render(
-      <MemoryRouter>
-        <TopProductsTable products={undefined} />
-      </MemoryRouter>,
-    );
-    expect(screen.getByText("No sales data yet")).toBeInTheDocument();
-  });
-
-  it("TopProductsTable renders a product missing sales/revenue", () => {
-    render(
-      <MemoryRouter>
-        <TopProductsTable products={[{ _id: "p1", name: "Sofa" }]} />
-      </MemoryRouter>,
-    );
-    expect(screen.getByText("Sofa")).toBeInTheDocument();
   });
 
   it("RecentOrdersTable renders an order missing orderId/total", () => {

@@ -34,7 +34,7 @@ import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { readdirSync, readFileSync, statSync } from "node:fs";
 import path from "node:path";
 import { fileURLToPath } from "node:url";
-import { safeActionUrl, validateExternalUrl } from "../../src/utils/safeUrl.js";
+import { safeActionUrl } from "../../src/utils/safeUrl.js";
 
 vi.mock("../../src/api/index.js", () => ({
   default: {
@@ -99,17 +99,6 @@ describe("open-redirect battery — safeActionUrl(inAppOnly) rejects every exter
       expect(safeActionUrl(hostile, { inAppOnly: true })).toBeNull();
     });
   }
-
-  it("validateExternalUrl (blog link-out helper) rejects every non-https form", () => {
-    for (const hostile of HOSTILE) {
-      const out = validateExternalUrl(hostile);
-      expect(out === null || out.startsWith("https://")).toBe(true);
-      if (out !== null)
-        expect(out).not.toMatch(/^(javascript|data|vbscript):/i);
-    }
-    expect(validateExternalUrl("javascript:alert(1)")).toBeNull();
-    expect(validateExternalUrl("//evil.com")).toBeNull();
-  });
 
   it("encoded-slash site-relative paths are confined to the origin (never protocol-relative)", () => {
     // safeActionUrl returns "/%2fevil.com" unchanged: a site-relative

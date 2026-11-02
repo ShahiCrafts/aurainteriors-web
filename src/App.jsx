@@ -10,8 +10,6 @@ import {
   HomeSkeleton,
   CheckoutSkeleton,
   ProfileSkeleton,
-  BlogListSkeleton,
-  BlogPostSkeleton,
   ContactSkeleton,
   FaqSkeleton,
   TrackOrderSkeleton,
@@ -40,8 +38,6 @@ const NotificationsPage = lazy(
 const ShopPage = lazy(() => import("./pages/shop/ShopPage"));
 const RoomPage = lazy(() => import("./pages/shop/RoomPage"));
 const CollectionPage = lazy(() => import("./pages/shop/CollectionPage"));
-const BlogsPage = lazy(() => import("./pages/blog/BlogsPage"));
-const BlogDetailsPage = lazy(() => import("./pages/blog/BlogDetailsPage"));
 const ProductDetailsPage = lazy(
   () => import("./pages/shop/ProductDetailsPage"),
 );
@@ -218,22 +214,6 @@ function App() {
           />
 
           {/* Public info routes */}
-          <Route
-            path="/blog"
-            element={
-              <Suspense fallback={<BlogListSkeleton />}>
-                <BlogsPage />
-              </Suspense>
-            }
-          />
-          <Route
-            path="/blog/:slug"
-            element={
-              <Suspense fallback={<BlogPostSkeleton />}>
-                <BlogDetailsPage />
-              </Suspense>
-            }
-          />
           <Route
             path="/contact"
             element={

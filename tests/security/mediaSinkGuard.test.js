@@ -111,28 +111,10 @@ const ALLOWLIST = [
       "FE-06 UserAvatar: local const assigned from getAvatarUrl(user) (a validateMediaUrl-checked URL or null) in the same file; renders InitialsAvatar when null or after an img error — there is no network fallback.",
   },
   {
-    file: "src/components/sections/BlogSection.jsx",
-    expr: "post.author.avatarUri",
-    reason:
-      "Blog author avatar fields — this surface does not use getAvatarUrl and never used the external placeholder service (FE-06 census); its raw fields remain as flagged in the FE-03 report.",
-  },
-  {
     file: "src/components/chat/BotMarkdown.jsx",
     expr: "cleanHref",
     reason:
       "Markdown link renderer (moved from ChatMessage.jsx by FE-49's lazy split, config unchanged): href comes through react-markdown's URL sanitisation and a /product/ rewrite in the same function; covered by tests/security/markdownUrls.test.jsx.",
-  },
-  {
-    file: "src/pages/blog/BlogDetailsPage.jsx",
-    expr: "validatedSourceLogo",
-    reason:
-      "FE-04 sibling: local const assigned from validateExternalUrl(blog.source.logo) in the same file — scheme-validated (https only; any publisher host is by-design attribution). The RAW blog.source.logo expression is deliberately no longer allowlisted: a regression to raw usage fails this guard.",
-  },
-  {
-    file: "src/pages/blog/BlogDetailsPage.jsx",
-    expr: "validatedOriginalUrl",
-    reason:
-      "FE-04 sibling: local const assigned from validateExternalUrl(blog.originalUrl) in the same file — scheme-validated (https only; arbitrary publisher host is the feature). The RAW blog.originalUrl expression is deliberately no longer allowlisted: a regression to raw usage fails this guard.",
   },
   {
     file: "src/pages/admin/AdminLoginPage.jsx",
@@ -142,22 +124,10 @@ const ALLOWLIST = [
     pattern: "css-url-interpolation",
   },
   {
-    file: "src/pages/blog/BlogDetailsPage.jsx",
-    expr: "section.id",
-    reason:
-      "FE-67: TOC anchor href={`#${section.id}`} — a same-page FRAGMENT built only from page-generated ids (section-1, section-2, … assigned by src/utils/blogToc.js to headings in the SANITIZED DOM). section.id never carries author/server data (proven by tests/pages/blog/BlogDetailsPage.toc.test.jsx, including author-id and __proto__ pen tests), and a fragment href cannot navigate off-page or carry a scheme.",
-  },
-  {
     file: "src/components/common/PromoCard.jsx",
     expr: "safeHref",
     reason:
       "Local const assigned from safeActionUrl(ctaHref) in the same file — the project's safe-URL helper itself; a null result renders an inert span, never the anchor (pinned by tests/components/common/PromoCard.test.jsx).",
-  },
-  {
-    file: "src/components/ui/Breadcrumbs.jsx",
-    expr: "safeHref",
-    reason:
-      "Phase 4 primitive, same pattern as PromoCard: local const assigned from safeActionUrl(item.href) in the same file — the project's safe-URL helper itself; a null result renders inert text, never the anchor (pinned by tests/components/ui/Breadcrumbs.test.jsx, including a javascript: href case).",
   },
   {
     file: "src/components/modals/AuthModal.jsx",

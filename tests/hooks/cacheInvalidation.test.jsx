@@ -142,19 +142,6 @@ vi.mock("../../src/api/productApi.js", () => ({
     updateStock: vi.fn(),
   },
 }));
-vi.mock("../../src/api/blogApi.js", () => ({
-  default: {
-    getAll: vi.fn(),
-    getById: vi.fn(),
-    getCategories: vi.fn(),
-    getPopular: vi.fn(),
-    getFeatured: vi.fn(),
-    getRelated: vi.fn(),
-    toggleLike: vi.fn(),
-    getSources: vi.fn(),
-    getStats: vi.fn(),
-  },
-}));
 vi.mock("../../src/api/addressApi.js", () => ({
   getAllAddresses: vi.fn(),
   getAddress: vi.fn(),
@@ -171,7 +158,6 @@ import promotionApi from "../../src/api/promotionApi.js";
 import userApi from "../../src/api/userApi.js";
 import categoryApi from "../../src/api/categoryApi.js";
 import productApi from "../../src/api/productApi.js";
-import blogApi from "../../src/api/blogApi.js";
 import * as addressApi from "../../src/api/addressApi.js";
 import useAuthStore from "../../src/store/authStore.js";
 
@@ -217,7 +203,6 @@ import {
   useUpdateStock,
   useSetPrimaryImage,
 } from "../../src/hooks/product/useProductTan.js";
-import { useToggleBlogLike } from "../../src/hooks/blog/useBlogTan.js";
 import {
   useCreateAddress,
   useUpdateAddress,
@@ -242,16 +227,6 @@ const PRODUCT_KEYS = {
   newArrivals: (limit) => ["products", "newArrivals", limit],
   related: (id, limit) => ["products", "related", id, limit],
 };
-const BLOG_KEYS = {
-  all: ["blogs"],
-  list: (params) => ["blogs", "list", params],
-  detail: (id) => ["blogs", "detail", id],
-  categories: () => ["blogs", "categories"],
-  popular: (limit) => ["blogs", "popular", limit],
-  featured: (limit) => ["blogs", "featured", limit],
-  related: (id, limit) => ["blogs", "related", id, limit],
-};
-
 function makeClient() {
   return new QueryClient({
     defaultOptions: { queries: { retry: false }, mutations: { retry: false } },
@@ -293,16 +268,11 @@ beforeEach(() => {
     userApi,
     categoryApi,
     productApi,
-    blogApi,
   ]) {
     for (const fn of Object.values(api)) fn.mockResolvedValue({});
   }
   for (const fn of Object.values(addressApi))
     fn.mockResolvedValue({ data: {} });
-  blogApi.toggleLike.mockResolvedValue({
-    status: "success",
-    data: { likes: 8 },
-  });
   useAuthStore.setState({
     user: { _id: "user-1" },
     isAuthenticated: true,
@@ -642,120 +612,6 @@ describe("FE-55 products: narrow invalidation", () => {
     expect(invalidated(client, PRODUCT_KEYS.featured(8))).toBe(true);
     expect(invalidated(client, PRODUCT_KEYS.newArrivals(8))).toBe(true);
     expect(notInvalidated(client, PRODUCT_KEYS.detail("prod-2"))).toBe(true);
-  });
-});
-
-describe("FE-55 blog like: direct cache update, no domain invalidation", () => {
-  function seededClient() {
-    const client = makeClient();
-    seed(client, [
-      [
-        BLOG_KEYS.detail("post-1"),
-        {
-          status: "success",
-          data: { blog: { _id: "post-1", slug: "post-one", likes: 7 } },
-        },
-      ],
-      [
-        BLOG_KEYS.list({ page: 1 }),
-        {
-          status: "success",
-          data: {
-            blogs: [
-              { _id: "post-1", likes: 7 },
-              { _id: "post-2", likes: 3 },
-            ],
-            pagination: { page: 1, pages: 1 },
-          },
-        },
-      ],
-      [
-        BLOG_KEYS.popular(5),
-        { status: "success", data: { blogs: [{ _id: "post-1", likes: 7 }] } },
-      ],
-      [
-        BLOG_KEYS.featured(3),
-        { status: "success", data: { blogs: [{ _id: "post-2", likes: 3 }] } },
-      ],
-      [
-        BLOG_KEYS.categories(),
-        {
-          status: "success",
-          data: { categories: [{ slug: "design", count: 2 }] },
-        },
-      ],
-      [
-        BLOG_KEYS.related("post-9", 3),
-        { status: "success", data: { blogs: [{ _id: "post-1", likes: 7 }] } },
-      ],
-    ]);
-    return client;
-  }
-
-  it("a like patches the post's count in detail/list/popular/related caches and invalidates NOTHING", async () => {
-    const client = seededClient();
-    await runMutation(client, useToggleBlogLike, "post-1");
-
-    expect(
-      client.getQueryData(BLOG_KEYS.detail("post-1")).data.blog.likes,
-    ).toBe(8);
-    const list = client.getQueryData(BLOG_KEYS.list({ page: 1 }));
-    expect(list.data.blogs.find((b) => b._id === "post-1").likes).toBe(8);
-    expect(list.data.blogs.find((b) => b._id === "post-2").likes).toBe(3);
-    expect(client.getQueryData(BLOG_KEYS.popular(5)).data.blogs[0].likes).toBe(
-      8,
-    );
-    expect(
-      client.getQueryData(BLOG_KEYS.related("post-9", 3)).data.blogs[0].likes,
-    ).toBe(8);
-
-    for (const key of [
-      BLOG_KEYS.detail("post-1"),
-      BLOG_KEYS.list({ page: 1 }),
-      BLOG_KEYS.popular(5),
-      BLOG_KEYS.featured(3),
-      BLOG_KEYS.categories(),
-      BLOG_KEYS.related("post-9", 3),
-    ]) {
-      expect(notInvalidated(client, key), JSON.stringify(key)).toBe(true);
-    }
-    // Untouched surfaces keep their exact data.
-    expect(client.getQueryData(BLOG_KEYS.categories())).toEqual({
-      status: "success",
-      data: { categories: [{ slug: "design", count: 2 }] },
-    });
-    expect(client.getQueryData(BLOG_KEYS.featured(3)).data.blogs[0].likes).toBe(
-      3,
-    );
-  });
-
-  it("pen: liking a different post leaves the first post's cached counts untouched", async () => {
-    const client = seededClient();
-    blogApi.toggleLike.mockResolvedValue({
-      status: "success",
-      data: { likes: 4 },
-    });
-    await runMutation(client, useToggleBlogLike, "post-2");
-    const list = client.getQueryData(BLOG_KEYS.list({ page: 1 }));
-    expect(list.data.blogs.find((b) => b._id === "post-2").likes).toBe(4);
-    expect(list.data.blogs.find((b) => b._id === "post-1").likes).toBe(7);
-    expect(
-      client.getQueryData(BLOG_KEYS.detail("post-1")).data.blog.likes,
-    ).toBe(7);
-    expect(client.getQueryData(BLOG_KEYS.featured(3)).data.blogs[0].likes).toBe(
-      4,
-    );
-  });
-
-  it("fallback: a response without a usable count invalidates ONLY detail + list, never categories/popular/featured", async () => {
-    const client = seededClient();
-    blogApi.toggleLike.mockResolvedValue({ status: "success", data: {} });
-    await runMutation(client, useToggleBlogLike, "post-1");
-    expect(invalidated(client, BLOG_KEYS.detail("post-1"))).toBe(true);
-    expect(invalidated(client, BLOG_KEYS.list({ page: 1 }))).toBe(true);
-    expect(notInvalidated(client, BLOG_KEYS.categories())).toBe(true);
-    expect(notInvalidated(client, BLOG_KEYS.popular(5))).toBe(true);
-    expect(notInvalidated(client, BLOG_KEYS.featured(3))).toBe(true);
   });
 });
 

@@ -1,4 +1,9 @@
-import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
+import {
+  useQuery,
+  useQueries,
+  useMutation,
+  useQueryClient,
+} from "@tanstack/react-query";
 import productApi from "../../api/productApi";
 
 const PRODUCT_KEYS = {
@@ -40,6 +45,23 @@ export const useProducts = (params = {}, options = {}) => {
     // (shop page, featured): inherits the 5-min global default unless overridden.
     staleTime: params.search ? 30 * 1000 : undefined, // 30s for search, global default otherwise
     ...options,
+  });
+};
+
+// Get the first `pageCount` pages of a listing in one call (Load More
+// pattern): every page is its own cache entry under the exact key
+// useProducts would use for that page, so already-seen pages are
+// served from cache and only the newest page hits the network.
+export const useProductPages = (params = {}, pageCount = 1) => {
+  return useQueries({
+    queries: Array.from({ length: Math.max(1, pageCount) }, (_, index) => {
+      const pageParams = { ...params, page: index + 1 };
+      return {
+        queryKey: PRODUCT_KEYS.list(pageParams),
+        queryFn: () => productApi.getAll(pageParams),
+        staleTime: params.search ? 30 * 1000 : undefined,
+      };
+    }),
   });
 };
 

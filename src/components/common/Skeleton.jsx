@@ -520,9 +520,10 @@ export function FilterSidebarSkeleton() {
             </div>
           ))}
         </div>
-        <div className="relative px-1 h-6">
-          <FilterBlock className="absolute top-1/2 w-full h-0.75 -translate-y-1/2" />
-          <FilterBlock className="absolute top-1/2 right-0 w-4 h-4 rounded-full -translate-y-1/2" />
+        <div className="relative h-6 mx-2.5">
+          <FilterBlock className="absolute! top-1/2 w-full h-0.75 -translate-y-1/2" />
+          <FilterBlock className="absolute! top-1/2 left-0 w-4 h-4 rounded-full -translate-y-1/2 -translate-x-1/2" />
+          <FilterBlock className="absolute! top-1/2 right-0 w-4 h-4 rounded-full -translate-y-1/2 translate-x-1/2" />
         </div>
       </div>
       <div className="w-full h-px bg-neutral-100" />
@@ -907,87 +908,6 @@ export function ProfileSkeleton() {
               <Skeleton className="h-11 rounded-lg" />
             </div>
             <Skeleton className="h-11 w-36 rounded-lg" />
-          </div>
-        </div>
-      </div>
-    </div>
-  );
-}
-
-export function BlogListSkeleton() {
-  return (
-    <div aria-busy="true">
-      <span role="status" className="sr-only">
-        Loading…
-      </span>
-      <NavbarSkeleton />
-      <div aria-hidden="true">
-        <div className="pt-12 sm:pt-14 md:pt-16 pb-8 sm:pb-12 px-4 sm:px-6 lg:px-8 max-w-7xl mx-auto">
-          <div className="max-w-3xl space-y-4">
-            <Skeleton className="h-10 w-96 max-w-full rounded" />
-            <Skeleton className="h-5 w-120 max-w-full rounded" />
-          </div>
-        </div>
-        <div className="px-4 sm:px-6 lg:px-8 max-w-7xl mx-auto mb-8 sm:mb-12">
-          <div className="grid md:grid-cols-2 gap-6 items-stretch">
-            <Skeleton className="aspect-16/10 md:aspect-auto md:h-full w-full rounded-2xl" />
-            <div className="space-y-4 py-2">
-              <Skeleton className="h-6 w-24 rounded-full" />
-              <Skeleton className="h-8 w-full rounded" />
-              <Skeleton className="h-8 w-2/3 rounded" />
-              <Skeleton className="h-4 w-full rounded" />
-              <Skeleton className="h-4 w-5/6 rounded" />
-              <Skeleton className="h-5 w-32 rounded" />
-            </div>
-          </div>
-        </div>
-        <div className="px-4 sm:px-6 lg:px-8 max-w-7xl mx-auto pb-16 grid sm:grid-cols-2 lg:grid-cols-3 gap-6">
-          {[0, 1, 2, 3, 4, 5].map((card) => (
-            <div key={card} className="space-y-3">
-              <Skeleton className="aspect-16/10 w-full rounded-xl" />
-              <Skeleton className="h-5 w-20 rounded-full" />
-              <Skeleton className="h-6 w-full rounded" />
-              <Skeleton className="h-6 w-3/4 rounded" />
-              <Skeleton className="h-4 w-1/2 rounded" />
-            </div>
-          ))}
-        </div>
-      </div>
-    </div>
-  );
-}
-
-export function BlogPostSkeleton() {
-  return (
-    <div aria-busy="true">
-      <span role="status" className="sr-only">
-        Loading…
-      </span>
-      <NavbarSkeleton />
-      <div
-        className="max-w-7xl mx-auto pt-12 sm:pt-14 md:pt-16 px-4 sm:px-6 lg:px-8 pb-16"
-        aria-hidden="true"
-      >
-        <div className="max-w-3xl mx-auto space-y-6">
-          <Skeleton className="h-6 w-24 rounded-full" />
-          <div className="space-y-3">
-            <Skeleton className="h-10 w-full rounded" />
-            <Skeleton className="h-10 w-2/3 rounded" />
-          </div>
-          <div className="flex items-center gap-3">
-            <Skeleton className="h-10 w-10 rounded-full" />
-            <Skeleton className="h-4 w-32 rounded" />
-            <Skeleton className="h-4 w-24 rounded" />
-          </div>
-          <Skeleton className="aspect-21/9 w-full rounded-2xl" />
-          <div className="space-y-3 pt-2">
-            <Skeleton className="h-4 w-full rounded" />
-            <Skeleton className="h-4 w-full rounded" />
-            <Skeleton className="h-4 w-5/6 rounded" />
-            <Skeleton className="h-4 w-full rounded" />
-            <Skeleton className="h-4 w-3/4 rounded" />
-            <Skeleton className="h-4 w-full rounded" />
-            <Skeleton className="h-4 w-2/3 rounded" />
           </div>
         </div>
       </div>

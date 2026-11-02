@@ -33,7 +33,6 @@ vi.mock("../../../src/hooks/catalog/useCatalogTan.js", () => ({
 }));
 
 import CategoryBar from "../../../src/components/navigation/CategoryBar";
-import MobileMenu from "../../../src/components/navigation/MobileMenu";
 
 beforeEach(() => {
   state.categories = [
@@ -122,43 +121,3 @@ describe("CategoryBar counts (Phase 7)", () => {
   });
 });
 
-describe("MobileMenu catalog sections (Phase 7)", () => {
-  const mount = () =>
-    render(
-      <MemoryRouter>
-        <MobileMenu isOpen onClose={vi.fn()} />
-      </MemoryRouter>,
-    );
-
-  it("categories expand to nested subcategories", () => {
-    mount();
-    expect(screen.queryByText("Corner Sofas")).not.toBeInTheDocument();
-    fireEvent.click(
-      screen.getByRole("button", { name: "Expand Living Room subcategories" }),
-    );
-    expect(screen.getByRole("link", { name: /Sofas/ })).toHaveAttribute(
-      "href",
-      "/shop?categories=sofas",
-    );
-    fireEvent.click(
-      screen.getByRole("button", { name: "Expand Sofas subcategories" }),
-    );
-    expect(screen.getByRole("link", { name: /Corner Sofas/ })).toHaveAttribute(
-      "href",
-      "/shop?categories=corner-sofas",
-    );
-  });
-
-  it("Rooms and Collections sections link to their landing pages", () => {
-    const { container } = mount();
-    expect(screen.getByText("Rooms")).toBeInTheDocument();
-    // "Living Room" is also a category name — select by href.
-    expect(
-      container.querySelector('a[href="/rooms/living-room"]'),
-    ).not.toBeNull();
-    expect(screen.getByText("Collections")).toBeInTheDocument();
-    expect(
-      container.querySelector('a[href="/collections/new-arrivals"]'),
-    ).not.toBeNull();
-  });
-});

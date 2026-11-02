@@ -1,6 +1,5 @@
 import { API_V1_URL, SOCKET_URL } from "../config/constants";
 import placeholderProduct from "../assets/images/placeholders/placeholder-product-sofa.webp";
-import placeholderBlog from "../assets/images/placeholders/placeholder-blog-interior.webp";
 import {
   validateMediaUrl,
   isAbsoluteUrlCandidate,
@@ -24,7 +23,6 @@ export const FALLBACK_IMAGES = {
   // hot-linked external photo URLs — see ATTRIBUTION.md).
   product: placeholderProduct,
   avatar: null, // FE-06: no placeholder service — InitialsAvatar renders locally
-  blog: placeholderBlog,
   category: placeholderProduct,
   chat: null,
 };
@@ -297,13 +295,6 @@ export const getAvatarUrl = (user) => {
 };
 
 /**
- * Get blog image URL
- */
-export const getBlogImageUrl = (imagePath) => {
-  return getImageUrl(imagePath, "blogs", FALLBACK_IMAGES.blog);
-};
-
-/**
  * Get category image URL
  */
 export const getCategoryImageUrl = (imagePath) => {
@@ -369,7 +360,6 @@ export default {
   getProductImageUrl,
   getProductImageSrcSet,
   getAvatarUrl,
-  getBlogImageUrl,
   getCategoryImageUrl,
   getChatImageUrl,
   getModelUrl,

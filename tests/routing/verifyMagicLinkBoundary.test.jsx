@@ -38,11 +38,6 @@ vi.mock(
   marker("PAGE:NotificationsPage"),
 );
 vi.mock("../../src/pages/shop/ShopPage.jsx", marker("PAGE:ShopPage"));
-vi.mock("../../src/pages/blog/BlogsPage.jsx", marker("PAGE:BlogsPage"));
-vi.mock(
-  "../../src/pages/blog/BlogDetailsPage.jsx",
-  marker("PAGE:BlogDetailsPage"),
-);
 vi.mock(
   "../../src/pages/shop/ProductDetailsPage.jsx",
   marker("PAGE:ProductDetailsPage"),

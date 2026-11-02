@@ -78,12 +78,6 @@ vi.mock("../../../src/components/shop/FilterSidebar.jsx", () => ({
     </div>
   ),
 }));
-vi.mock("../../../src/components/shop/FilterSidebarSkeleton.jsx", () => ({
-  default: () => null,
-}));
-vi.mock("../../../src/components/shop/ProductLoadingSkeletons.jsx", () => ({
-  ListingCardSkeleton: () => null,
-}));
 
 import productApi from "../../../src/api/productApi.js";
 import categoryApi from "../../../src/api/categoryApi.js";

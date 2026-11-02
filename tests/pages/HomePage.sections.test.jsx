@@ -25,9 +25,6 @@ vi.mock("../../src/components/sections/ShopByCategory", () => ({
 vi.mock("../../src/components/sections/FeaturedPieces", () => ({
   default: () => <div data-testid="featured-pieces" />,
 }));
-vi.mock("../../src/components/sections/BlogSection", () => ({
-  default: () => <div data-testid="blog-section" />,
-}));
 vi.mock("../../src/components/sections/Testimonials", () => ({
   default: () => <div data-testid="testimonials" />,
 }));

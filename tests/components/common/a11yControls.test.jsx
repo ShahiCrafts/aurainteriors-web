@@ -48,7 +48,6 @@ vi.mock("../../../src/hooks/review/useReviewTan", () => ({
 
 import CategoryBar from "../../../src/components/navigation/CategoryBar.jsx";
 import FilterSidebar from "../../../src/components/shop/FilterSidebar.jsx";
-import ReviewForm from "../../../src/components/shop/ReviewForm.jsx";
 import ToastItem from "../../../src/components/ui/ToastItem.jsx";
 import Pagination from "../../../src/components/common/Pagination.jsx";
 
@@ -113,20 +112,6 @@ describe("FE-65 primary navigation and custom controls", () => {
     expect(screen.getByLabelText("Max")).toBeInTheDocument();
   });
 
-  it("star rating is a radiogroup: aria-checked follows selection and arrows change it", () => {
-    render(<ReviewForm productId="p1" />);
-    expect(
-      screen.getByRole("radiogroup", { name: "Rating" }),
-    ).toBeInTheDocument();
-    const three = screen.getByRole("radio", { name: "3 stars" });
-    fireEvent.click(three);
-    expect(three).toHaveAttribute("aria-checked", "true");
-    fireEvent.keyDown(three, { key: "ArrowRight" });
-    expect(screen.getByRole("radio", { name: "4 stars" })).toHaveAttribute(
-      "aria-checked",
-      "true",
-    );
-  });
 });
 
 describe("FE-66 live regions and icon-button names", () => {

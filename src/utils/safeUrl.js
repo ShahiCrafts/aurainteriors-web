@@ -317,37 +317,4 @@ export function safeActionUrl(raw, options = {}) {
   return inAppOnly ? null : url.href;
 }
 
-/**
- * FE-04 (sibling) — validate an EXTERNAL attribution URL (blog
- * `originalUrl` / `source.logo` on BlogDetailsPage).
- *
- * Linking out to arbitrary publisher sites IS the feature here, so —
- * unlike validateMediaUrl — there is deliberately NO host allowlist:
- * any host may be linked. What must never survive is a non-https
- * scheme: a `javascript:` href executes on click, and a `data:` /
- * `javascript:` value in the logo `src` is the same stored-value
- * abuse. The value is cleaned exactly like the module's other
- * helpers (control characters stripped everywhere, then trimmed —
- * browsers ignore \t \n \r inside a scheme, so "java\tscript:" must
- * be judged as the "javascript:" it becomes) and parsed with URL();
- * only an https: result is accepted.
- *
- * @param {*} raw - Untrusted server-controlled value.
- * @returns {string|null} The parser-normalised href, or null when
- *   the value is not a clean https: URL. Callers render nothing on
- *   null — never the raw value.
- */
-export function validateExternalUrl(raw) {
-  const cleaned = cleanUrlValue(raw);
-  if (!cleaned) return null;
-  let url;
-  try {
-    url = new URL(cleaned);
-  } catch {
-    return null;
-  }
-  if (url.protocol !== "https:") return null;
-  return url.href;
-}
-
 export default validateMediaUrl;

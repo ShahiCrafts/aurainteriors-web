@@ -3,7 +3,7 @@ import api from "./index";
 /**
  * Subscribe to newsletter
  * @param {string} email - Email address
- * @param {string} source - Source of subscription ('footer' or 'blog')
+ * @param {string} source - Source of subscription ('footer')
  * @returns {Promise} API response
  */
 export const subscribeNewsletter = async (data) => {

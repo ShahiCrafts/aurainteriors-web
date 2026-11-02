@@ -97,3 +97,11 @@ html::-webkit-scrollbar {
   --color-teal-900: #002966;
   --color-teal-950: #001433;
 }
+
+* {
+  scrollbar-width: none;
+  -ms-overflow-style: none;
+}
+*::-webkit-scrollbar {
+  display: none;
+}

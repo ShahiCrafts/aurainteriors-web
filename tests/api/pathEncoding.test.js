@@ -35,7 +35,6 @@ vi.mock("../../src/utils/guestSessionStorage.js", () => ({
 import api from "../../src/api/index.js";
 import * as addressApi from "../../src/api/addressApi.js";
 import announcementApi from "../../src/api/announcementApi.js";
-import blogApi from "../../src/api/blogApi.js";
 import cartApi from "../../src/api/cartApi.js";
 import categoryApi from "../../src/api/categoryApi.js";
 import * as chatApi from "../../src/api/chatApi.js";
@@ -114,22 +113,6 @@ describe("FE-12 — domain API modules encode every path segment", () => {
     await expect(
       urlOf(() => announcementApi.getPublicById(HOSTILE)),
     ).resolves.toBe(`/announcements/public/${HOSTILE_ENC}`);
-  });
-
-  it("blogApi", async () => {
-    await expect(urlOf(() => blogApi.getById(HOSTILE))).resolves.toBe(
-      `/blogs/${HOSTILE_ENC}`,
-    );
-    vi.clearAllMocks();
-    api.get.mockResolvedValue({ data: {} });
-    await expect(urlOf(() => blogApi.getRelated(HOSTILE))).resolves.toBe(
-      `/blogs/${HOSTILE_ENC}/related`,
-    );
-    vi.clearAllMocks();
-    api.post.mockResolvedValue({ data: {} });
-    await expect(urlOf(() => blogApi.toggleLike(HOSTILE))).resolves.toBe(
-      `/blogs/${HOSTILE_ENC}/like`,
-    );
   });
 
   it("cartApi", async () => {

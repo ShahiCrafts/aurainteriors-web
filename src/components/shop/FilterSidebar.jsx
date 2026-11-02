@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useRef, useState } from "react";
 import { Star, Check } from "lucide-react";
 import { formatNPRNumber } from "../../utils/formatCurrency";
 import FacetSections from "./FacetFilters";
@@ -27,11 +27,11 @@ function Checkbox({ checked, onChange, label, count }) {
       >
         {checked && <Check size={14} className="text-white" strokeWidth={3} />}
       </div>
-      <span className="text-sm text-neutral-700 font-dm-sans flex-1">
+      <span className="text-[15px] text-neutral-700 font-dm-sans flex-1">
         {label}
       </span>
       {count !== undefined && (
-        <span className="text-[11px] font-bold text-black/20 font-dm-sans">
+        <span className="text-sm font-medium text-black/40 font-dm-sans">
           {count}
         </span>
       )}
@@ -167,11 +167,64 @@ export default function FilterSidebar({
     return Math.min(100, Math.max(0, (value / priceRange.max) * 100));
   };
 
+  // Dual-thumb dragging: pointer events land on the stage, which
+  // moves whichever thumb was grabbed (or the nearer one, when the
+  // track itself is pressed) and clamps it against the other thumb,
+  // so the two can touch but never cross.
+  const priceTrackRef = useRef(null);
+  const priceDragRef = useRef(null);
+
+  const priceFromPointer = (clientX) => {
+    const rect = priceTrackRef.current?.getBoundingClientRect();
+    if (!rect || rect.width === 0) return null;
+    const ratio = Math.min(1, Math.max(0, (clientX - rect.left) / rect.width));
+    const raw = priceRange.min + ratio * (priceRange.max - priceRange.min);
+    return Math.round(raw / 100) * 100;
+  };
+
+  const applyDragValue = (which, value) => {
+    if (value === null) return;
+    if (which === "min") {
+      setLocalMinPrice(Math.min(value, localMaxPrice));
+    } else {
+      setLocalMaxPrice(Math.max(value, localMinPrice));
+    }
+  };
+
+  const handlePricePointerDown = (e) => {
+    const value = priceFromPointer(e.clientX);
+    if (value === null) return;
+    const grabbed = e.target.closest?.("[data-thumb]")?.dataset.thumb;
+    const which =
+      grabbed ||
+      (value <= localMinPrice
+        ? "min"
+        : value >= localMaxPrice
+          ? "max"
+          : value - localMinPrice <= localMaxPrice - value
+            ? "min"
+            : "max");
+    priceDragRef.current = which;
+    priceTrackRef.current?.setPointerCapture?.(e.pointerId);
+    applyDragValue(which, value);
+  };
+
+  const handlePricePointerMove = (e) => {
+    if (!priceDragRef.current) return;
+    applyDragValue(priceDragRef.current, priceFromPointer(e.clientX));
+  };
+
+  const handlePricePointerEnd = () => {
+    if (!priceDragRef.current) return;
+    priceDragRef.current = null;
+    handlePriceSubmit();
+  };
+
   return (
     <div className="space-y-6">
       {/* Categories */}
       <div>
-        <h3 className="text-sm font-bold text-[#1A1714] font-dm-sans mb-4 uppercase tracking-wider">
+        <h3 className="text-base font-semibold text-[#1A1714] font-dm-sans mb-4">
           Categories
         </h3>
         <div className="space-y-1">
@@ -198,14 +251,14 @@ export default function FilterSidebar({
       {/* Price Range */}
       <div>
         <div className="flex items-center justify-between mb-4">
-          <h3 className="text-sm font-bold text-[#1A1714] font-dm-sans uppercase tracking-wider">
+          <h3 className="text-base font-semibold text-[#1A1714] font-dm-sans">
             Price Range
           </h3>
           <button
             onClick={handlePriceReset}
-            className="text-[11px] text-brand hover:text-brand-hover font-bold font-dm-sans underline underline-offset-4"
+            className="text-xs text-brand hover:text-brand-hover font-bold font-dm-sans underline underline-offset-4"
           >
-            RESET
+            Reset
           </button>
         </div>
 
@@ -213,12 +266,12 @@ export default function FilterSidebar({
           <div className="flex-1">
             <label
               htmlFor="filter-price-min"
-              className="text-[10px] text-neutral-500 font-dm-sans uppercase tracking-wider mb-1.5 block"
+              className="text-[13px] text-neutral-500 font-dm-sans mb-1.5 block"
             >
               Min
             </label>
             <div className="relative">
-              <span className="absolute left-3 top-1/2 -translate-y-1/2 text-neutral-400 text-[10px] font-bold">
+              <span className="absolute left-3 top-1/2 -translate-y-1/2 text-neutral-400 text-[11px] font-bold">
                 NPR
               </span>
               <input
@@ -230,19 +283,19 @@ export default function FilterSidebar({
                   setLocalMinPrice(Number(val) || 0);
                 }}
                 onBlur={handlePriceSubmit}
-                className="w-full pl-10 pr-3 py-2 rounded-lg border border-neutral-200 text-xs font-dm-sans focus:border-brand focus:ring-1 focus:ring-brand outline-none transition-all"
+                className="w-full pl-10 pr-3 py-2 rounded-lg border border-neutral-200 text-sm font-dm-sans focus:border-brand focus:ring-1 focus:ring-brand outline-none transition-all"
               />
             </div>
           </div>
           <div className="flex-1">
             <label
               htmlFor="filter-price-max"
-              className="text-[10px] text-neutral-500 font-dm-sans uppercase tracking-wider mb-1.5 block"
+              className="text-[13px] text-neutral-500 font-dm-sans mb-1.5 block"
             >
               Max
             </label>
             <div className="relative">
-              <span className="absolute left-3 top-1/2 -translate-y-1/2 text-neutral-400 text-[10px] font-bold">
+              <span className="absolute left-3 top-1/2 -translate-y-1/2 text-neutral-400 text-[11px] font-bold">
                 NPR
               </span>
               <input
@@ -254,14 +307,21 @@ export default function FilterSidebar({
                   setLocalMaxPrice(Number(val) || 0);
                 }}
                 onBlur={handlePriceSubmit}
-                className="w-full pl-10 pr-3 py-2 rounded-lg border border-neutral-200 text-xs font-dm-sans focus:border-brand focus:ring-1 focus:ring-brand outline-none transition-all"
+                className="w-full pl-10 pr-3 py-2 rounded-lg border border-neutral-200 text-sm font-dm-sans focus:border-brand focus:ring-1 focus:ring-brand outline-none transition-all"
               />
             </div>
           </div>
         </div>
 
-        <div className="relative px-1 h-6">
-          <div className="absolute top-1/2 left-0 right-0 h-0.75 bg-neutral-100 rounded-full -translate-y-1/2">
+        <div
+          ref={priceTrackRef}
+          className="relative h-6 mx-2.5 touch-none select-none"
+          onPointerDown={handlePricePointerDown}
+          onPointerMove={handlePricePointerMove}
+          onPointerUp={handlePricePointerEnd}
+          onPointerCancel={handlePricePointerEnd}
+        >
+          <div className="absolute top-1/2 left-0 right-0 h-0.75 bg-neutral-100 rounded-full -translate-y-1/2 pointer-events-none">
             <div
               className="absolute h-full bg-brand rounded-full"
               style={{
@@ -272,17 +332,39 @@ export default function FilterSidebar({
           </div>
           <input
             type="range"
+            aria-label="Minimum price"
+            min={priceRange.min}
+            max={priceRange.max}
+            value={localMinPrice}
+            onChange={(e) =>
+              setLocalMinPrice(Math.min(Number(e.target.value), localMaxPrice))
+            }
+            onBlur={handlePriceSubmit}
+            className="peer/min absolute inset-0 w-full h-full opacity-0 pointer-events-none"
+          />
+          <input
+            type="range"
             aria-label="Maximum price"
             min={priceRange.min}
             max={priceRange.max}
             value={localMaxPrice}
-            onChange={(e) => setLocalMaxPrice(Number(e.target.value))}
-            onMouseUp={handlePriceSubmit}
-            onTouchEnd={handlePriceSubmit}
-            className="absolute inset-0 w-full h-full opacity-0 cursor-pointer z-10"
+            onChange={(e) =>
+              setLocalMaxPrice(Math.max(Number(e.target.value), localMinPrice))
+            }
+            onBlur={handlePriceSubmit}
+            className="peer/max absolute inset-0 w-full h-full opacity-0 pointer-events-none"
           />
           <div
-            className="absolute top-1/2 -translate-y-1/2 w-4 h-4 bg-white border-2 border-brand rounded-full shadow-sm pointer-events-none transition-transform group-hover:scale-110"
+            data-thumb="min"
+            className="absolute top-1/2 -translate-y-1/2 w-4 h-4 bg-white border-2 border-brand rounded-full shadow-sm cursor-grab active:cursor-grabbing z-10 peer-focus-visible/min:ring-2 peer-focus-visible/min:ring-brand peer-focus-visible/min:ring-offset-1"
+            style={{
+              left: `${pctOf(localMinPrice)}%`,
+              marginLeft: "-8px",
+            }}
+          />
+          <div
+            data-thumb="max"
+            className="absolute top-1/2 -translate-y-1/2 w-4 h-4 bg-white border-2 border-brand rounded-full shadow-sm cursor-grab active:cursor-grabbing z-20 peer-focus-visible/max:ring-2 peer-focus-visible/max:ring-brand peer-focus-visible/max:ring-offset-1"
             style={{
               left: `${pctOf(localMaxPrice)}%`,
               marginLeft: "-8px",
@@ -295,7 +377,7 @@ export default function FilterSidebar({
 
       {/* Colors */}
       <div>
-        <h3 className="text-sm font-bold text-[#1A1714] font-dm-sans mb-4 uppercase tracking-wider">
+        <h3 className="text-base font-semibold text-[#1A1714] font-dm-sans mb-4">
           Colors
         </h3>
         <div className="flex flex-wrap gap-2.5">
@@ -315,7 +397,8 @@ export default function FilterSidebar({
                   } ${isWhite ? "border border-neutral-200" : ""}`}
                 style={{ backgroundColor: color.hex }}
                 title={color.name}
-              />
+              >
+              </button>
             );
           })}
         </div>
@@ -325,7 +408,7 @@ export default function FilterSidebar({
 
       {/* Materials */}
       <div>
-        <h3 className="text-sm font-bold text-[#1A1714] font-dm-sans mb-4 uppercase tracking-wider">
+        <h3 className="text-base font-semibold text-[#1A1714] font-dm-sans mb-4">
           Materials
         </h3>
         <div className="space-y-1">
@@ -344,7 +427,7 @@ export default function FilterSidebar({
       <div className="w-full h-px bg-neutral-100" />
 
       <div>
-        <h3 className="text-sm font-bold text-[#1A1714] font-dm-sans mb-4 uppercase tracking-wider">
+        <h3 className="text-base font-semibold text-[#1A1714] font-dm-sans mb-4">
           Rating
         </h3>
         <div className="space-y-1">
@@ -353,7 +436,7 @@ export default function FilterSidebar({
             onClick={() => onRatingChange?.(0)}
             aria-label="Any rating"
             aria-pressed={!selectedRating}
-            className={`block w-full text-left px-2 py-1.5 rounded-lg text-sm font-dm-sans transition-colors ${!selectedRating
+            className={`block w-full text-left px-2 py-1.5 rounded-lg text-[15px] font-dm-sans transition-colors ${!selectedRating
               ? "bg-brand/10 text-[#1A1714] font-bold"
               : "text-neutral-700 hover:bg-neutral-50"
               }`}
@@ -367,7 +450,7 @@ export default function FilterSidebar({
               onClick={() => onRatingChange?.(rating)}
               aria-label={`${rating} stars & up`}
               aria-pressed={selectedRating === rating}
-              className={`flex w-full items-center gap-2 px-2 py-1.5 rounded-lg transition-colors ${selectedRating === rating
+              className={`flex w-full items-center gap-2 px-2 py-1.5 rounded-lg text-[15px] font-dm-sans transition-colors ${selectedRating === rating
                 ? "bg-brand/10"
                 : "hover:bg-neutral-50"
                 }`}
@@ -385,11 +468,11 @@ export default function FilterSidebar({
                   />
                 ))}
               </span>
-              <span className="text-sm text-neutral-700 font-dm-sans">
+              <span className="text-[15px] text-neutral-700 font-dm-sans">
                 & up
               </span>
               {facetRatingCounts.has(rating) && (
-                <span className="text-[11px] font-bold text-black/20 font-dm-sans">
+                <span className="text-sm font-medium text-black/40 font-dm-sans">
                   {facetRatingCounts.get(rating)}
                 </span>
               )}

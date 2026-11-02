@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { Link, useSearchParams } from "react-router-dom";
 import {
   ChevronDown,
@@ -10,7 +10,6 @@ import {
 } from "lucide-react";
 
 import ProductCard from "./ProductCard";
-import Pagination from "../common/Pagination";
 import Dialog from "../ui/Dialog";
 import { FilterSidebarSkeleton, ListingGridSkeleton } from "../common/Skeleton";
 import FilterSidebar from "./FilterSidebar";
@@ -34,7 +33,7 @@ import {
   buildFilterChips,
 } from "../../utils/catalogListing";
 import { getCategoryImageUrl } from "../../utils/imageUrl";
-import { useProducts } from "../../hooks/product/useProductTan";
+import { useProductPages } from "../../hooks/product/useProductTan";
 
 const SORT_OPTIONS = [
   { value: "featured", label: "Featured" },
@@ -129,18 +128,41 @@ export default function CatalogListing({
       ? findCategoryChain(categories, selectedCategories[0])
       : [];
 
-  const params = buildListingParams({ searchParams, page, limit, pinned });
-  const { data: productsData, isLoading: isProductsLoading } =
-    useProducts(params);
-  const products = productsData?.data?.products || [];
-  const facets = productsData?.data?.facets || null;
-  const pagination = productsData?.data?.pagination || {
+  // Load More: the `page` URL param now means "how many batches are
+  // loaded". Each batch is fetched (and cached) as its own server
+  // page, then flattened in order and deduped — the server caps a
+  // single request at 100 items, so one growing-limit request would
+  // silently stall. Filter changes delete `page` (see updateFilters),
+  // which resets the listing to the first batch.
+  const baseParams = buildListingParams({
+    searchParams,
+    page: 1,
+    limit,
+    pinned,
+  });
+  const pageResults = useProductPages(baseParams, Math.min(page, 25));
+  const seenIds = new Set();
+  const products = [];
+  for (const result of pageResults) {
+    for (const item of result.data?.data?.products || []) {
+      if (!seenIds.has(item._id)) {
+        seenIds.add(item._id);
+        products.push(item);
+      }
+    }
+  }
+  const listingData = pageResults.find((result) => result.data)?.data?.data;
+  const facets = listingData?.facets || null;
+  const pagination = listingData?.pagination || {
     page: 1,
     limit: 12,
     total: 0,
     pages: 1,
   };
   const totalProducts = pagination.total;
+  const isProductsLoading = pageResults[0]?.isLoading ?? true;
+  const isFetchingAny = pageResults.some((result) => result.isFetching);
+  const hasMore = products.length < totalProducts;
 
   const priceBounds = facets?.price
     ? {
@@ -218,10 +240,61 @@ export default function CatalogListing({
   const chips = buildFilterChips(searchParams, chipLabels);
   const activeFilterCount = chips.length;
 
-  const handlePageChange = (newPage) => {
-    updateFilters({ page: newPage > 1 ? newPage : null }, true);
-    window.scrollTo({ top: 0, behavior: "smooth" });
+  const handleLoadMore = () => updateFilters({ page: page + 1 }, true);
+
+  // Burst loader shared by the sentinel observer and the near-end
+  // scroll check: three batches per trigger, fetched in parallel by
+  // useProductPages, clamped to the last batch. Guarded so it never
+  // fires while a fetch is in flight or past the end of the list.
+  const loadNextBurst = () => {
+    if (!hasMore || isFetchingAny || isProductsLoading) return;
+    const lastBatch = Math.min(Math.ceil(totalProducts / limit), 25);
+    updateFilters({ page: Math.min(page + 3, lastBatch) }, true);
   };
+
+  // Infinite scroll: a sentinel just past the grid is watched by an
+  // IntersectionObserver with a generous rootMargin, so the next
+  // batch is fetched *before* the shopper reaches the bottom. The
+  // effect re-subscribes whenever a batch settles — a fresh observe()
+  // reports the sentinel's position immediately, which is what keeps
+  // filling the page when the content is still shorter than the
+  // prefetch zone. Guards: never fetch while a batch is in flight,
+  // while the first batch is loading, or past the end of the list.
+  const loadMoreRef = useRef(null);
+  const supportsObserver = typeof IntersectionObserver !== "undefined";
+  useEffect(() => {
+    const node = loadMoreRef.current;
+    if (!node || !supportsObserver) return;
+    const observer = new IntersectionObserver(
+      (entries) => {
+        if (entries.some((entry) => entry.isIntersecting)) loadNextBurst();
+      },
+      { rootMargin: "1600px 0px" },
+    );
+    observer.observe(node);
+    return () => observer.disconnect();
+  }, [hasMore, isFetchingAny, isProductsLoading, page, supportsObserver, totalProducts, limit]);
+
+  useEffect(() => {
+    let ticking = false;
+    const checkNearEnd = () => {
+      const remainingPx =
+        document.documentElement.scrollHeight -
+        (window.scrollY + window.innerHeight);
+      if (remainingPx < 2400) loadNextBurst();
+    };
+    const onScroll = () => {
+      if (ticking) return;
+      ticking = true;
+      requestAnimationFrame(() => {
+        ticking = false;
+        checkNearEnd();
+      });
+    };
+    checkNearEnd();
+    window.addEventListener("scroll", onScroll, { passive: true });
+    return () => window.removeEventListener("scroll", onScroll);
+  }, [page, totalProducts, limit, hasMore, isFetchingAny, isProductsLoading]);
 
   const isLoading = isProductsLoading;
 
@@ -285,12 +358,14 @@ export default function CatalogListing({
             {breadcrumbNav(
               "flex items-center gap-2 text-[14px] font-medium text-black/40 mb-10 flex-wrap",
             )}
-            <div className="sticky top-28">
-              {isCategoryTreeLoading || isLoading ? (
-                <FilterSidebarSkeleton />
-              ) : (
-                sidebar
-              )}
+            <div className="sticky top-42">
+              <div className="max-h-[calc(100vh-11.5rem)] overflow-y-auto overscroll-contain [&::-webkit-scrollbar]:hidden">
+                {isCategoryTreeLoading || isLoading ? (
+                  <FilterSidebarSkeleton />
+                ) : (
+                  sidebar
+                )}
+              </div>
             </div>
           </aside>
 
@@ -303,7 +378,7 @@ export default function CatalogListing({
               <div className="flex items-center gap-4">
                 <h1 className="text-[20px] sm:text-[24px] md:text-[28px] font-semibold text-[#1A1714]">
                   {headingTitle}
-                  <span className="ml-3 sm:ml-5 text-[13px] sm:text-[15px] font-semibold text-black/40 tracking-normal lowercase">
+                  <span className="ml-2 sm:ml-3 text-[13px] sm:text-[15px] font-semibold text-black/40 tracking-normal lowercase">
                     {isLoading ? (
                       <span
                         role="status"
@@ -354,10 +429,10 @@ export default function CatalogListing({
                       <button
                         type="button"
                         aria-label="Close sort menu"
-                        className="fixed inset-0 z-10 cursor-default"
+                        className="fixed inset-0 z-40 cursor-default"
                         onClick={() => setShowSortDropdown(false)}
                       />
-                      <div className="absolute right-0 top-full mt-2 w-64 bg-white border border-black/8 rounded-md shadow-[0_10px_30px_rgba(0,0,0,0.08)] z-20 py-1 overflow-hidden">
+                      <div className="absolute right-0 top-full mt-2 w-60 bg-white border border-black/8 rounded-md shadow-[0_10px_30px_rgba(0,0,0,0.08)] z-50 py-1 overflow-hidden">
                         {SORT_OPTIONS.map((option) => (
                           <button
                             key={option.value}
@@ -485,22 +560,29 @@ export default function CatalogListing({
                   ))}
                 </div>
 
-                {pagination.pages > 1 && (
-                  <div className="flex flex-col sm:flex-row items-center justify-between gap-4 mt-12 sm:mt-16 pt-8 border-t border-black/3">
-                    <span className="text-[11px] font-bold text-black/20 uppercase tracking-widest order-2 sm:order-1">
-                      Page {pagination.page} / {pagination.pages}
-                    </span>
-                    <div className="order-1 sm:order-2 flex-1 sm:max-w-xl w-full">
-                      <Pagination
-                        theme="customer"
-                        page={pagination.page}
-                        totalPages={pagination.pages}
-                        pageSize={pagination.limit}
-                        totalItems={totalProducts}
-                        onPageChange={handlePageChange}
-                      />
-                    </div>
-                    <div className="hidden sm:block w-24 order-3" />
+                {hasMore && (
+                  <div ref={loadMoreRef} aria-hidden="true" className="h-px" />
+                )}
+
+                {hasMore && (
+                  <div className="mt-6 md:mt-8">
+                    <ListingGridSkeleton
+                      viewMode={viewMode}
+                      count={viewMode === "grid" ? Math.min(totalProducts - products.length, 48) : Math.min(totalProducts - products.length, 16)}
+                    />
+                  </div>
+                )}
+
+                {totalProducts > limit && hasMore && !supportsObserver && (
+                  <div className="mt-12 sm:mt-16 pt-8 border-t border-black/3 flex justify-center">
+                    <button
+                      type="button"
+                      onClick={handleLoadMore}
+                      disabled={isFetchingAny}
+                      className="px-8 py-3 bg-[#1A1714] text-white rounded-lg text-[13px] font-bold transition-opacity disabled:opacity-50"
+                    >
+                      {isFetchingAny ? "Loading..." : "Load more"}
+                    </button>
                   </div>
                 )}
               </>
