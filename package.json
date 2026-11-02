@@ -17,7 +17,7 @@
     "build:spa": "vite build --mode customer --outDir dist/customer"
   },
   "dependencies": {
-    "@hookform/resolvers": "^5.2.2",
+    "@hookform/resolvers": "^6.0.2",
     "@tailwindcss/vite": "^4.1.17",
     "@tanstack/react-query": "^5.90.11",
     "axios": "^1.20.0",
