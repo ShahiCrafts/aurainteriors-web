@@ -5,6 +5,8 @@ import CategoryBar from "../../components/navigation/CategoryBar";
 import CatalogListing from "../../components/shop/CatalogListing";
 import { useCollections } from "../../hooks/catalog/useCatalogTan";
 import { getImageUrl } from "../../utils/imageUrl";
+import Seo from "../../components/common/Seo.jsx";
+import { breadcrumbJsonLd } from "../../seo/seo.js";
 
 export default function CollectionPage() {
   const { slug } = useParams();
@@ -32,6 +34,14 @@ export default function CollectionPage() {
 
   return (
     <>
+      {collection && (
+        <Seo
+          title={`${collection.label || collection.name} | Aura Interiors Nepal`}
+          description={collection.description || `Explore the ${collection.label || collection.name} collection at Aura Interiors – furniture and décor with delivery across Nepal.`}
+          path={`/collections/${encodeURIComponent(collection.slug)}`}
+          jsonLd={[breadcrumbJsonLd([{ name: "Home", path: "/" }, { name: collection.label || collection.name, path: `/collections/${encodeURIComponent(collection.slug)}` }])]}
+        />
+      )}
       <Navbar />
       <CategoryBar />
       <main className="min-h-screen bg-white pb-12 md:pb-20 font-dm-sans pt-6">

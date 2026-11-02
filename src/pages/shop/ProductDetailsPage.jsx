@@ -1,4 +1,7 @@
 import { shopCategoryUrl, findCategoryChain } from "../../utils/shopFilters";
+import Seo from "../../components/common/Seo.jsx";
+import { productJsonLd, breadcrumbJsonLd } from "../../seo/seo.js";
+import { formatNPR } from "../../seo/site.js";
 import { ProductDetailsSkeleton } from "../../components/common/Skeleton";
 import { useState, useEffect } from "react";
 import { useParams, Link } from "react-router-dom";
@@ -282,6 +285,28 @@ export default function ProductDetailsPage() {
 
   return (
     <>
+      {product && (
+        <Seo
+          title={`${product.metaTitle || product.name} | Aura Interiors`}
+          description={
+            product.metaDescription ||
+            `${product.name} – ${formatNPR(product.priceFrom ?? product.price)} at Aura Interiors, Nepal. ${product.shortDescription || ""}`.trim()
+          }
+          path={`/product/${encodeURIComponent(product.slug)}`}
+          type="product"
+          image={product.images?.find((img) => img?.url)?.url}
+          jsonLd={[
+            productJsonLd(product),
+            breadcrumbJsonLd([
+              { name: "Home", path: "/" },
+              ...(product.category?.slug
+                ? [{ name: product.category.name, path: `/shop/${encodeURIComponent(product.category.slug)}` }]
+                : []),
+              { name: product.name, path: `/product/${encodeURIComponent(product.slug)}` },
+            ]),
+          ]}
+        />
+      )}
       <Navbar />
       <CategoryBar />
       <main className="min-h-screen bg-white pt-4 font-dm-sans pb-32 lg:pb-28">

@@ -4,7 +4,7 @@ import CatalogListing from "../../components/shop/CatalogListing";
 export default function ShopPage() {
   return (
     <ShopChrome>
-      <CatalogListing crumbPrefix={[{ name: "Shop", path: "/shop" }]} />
+      <CatalogListing enableSeo crumbPrefix={[{ name: "Shop", path: "/shop" }]} />
     </ShopChrome>
   );
 }

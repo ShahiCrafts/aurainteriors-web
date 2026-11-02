@@ -17,6 +17,7 @@ import {
   Star,
 } from "lucide-react";
 import Navbar from "../../layouts/customer/Navbar";
+import Seo from "../../components/common/Seo.jsx";
 import Footer from "../../layouts/customer/Footer";
 import { useSubmitContact } from "../../hooks/admin/useContactTan";
 import { useForm } from "react-hook-form";
@@ -91,6 +92,11 @@ export default function ContactPage() {
 
   return (
     <>
+      <Seo
+        title="Contact Aura Interiors – Furniture Store in Lalitpur, Nepal"
+        description="Contact Aura Interiors, Lalitpur: call +977 9866291003 or email support@aurainteriors.live for furniture enquiries, orders and delivery across Nepal."
+        path="/contact"
+      />
       <Navbar />
       <main className="min-h-screen bg-white font-dm-sans">
         {/* Full Width Split Layout - Responsive */}

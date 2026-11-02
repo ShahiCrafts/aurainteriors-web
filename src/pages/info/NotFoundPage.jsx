@@ -2,11 +2,13 @@ import React from "react";
 import { Link } from "react-router-dom";
 import { ArrowLeft } from "lucide-react";
 import Navbar from "../../layouts/customer/Navbar";
+import Seo from "../../components/common/Seo.jsx";
 import Footer from "../../layouts/customer/Footer";
 
 const NotFoundPage = () => {
   return (
     <>
+      <Seo title="Page Not Found | Aura Interiors" description="The page you are looking for could not be found." noindex />
       <Navbar />
       <div className="py-20 flex flex-col items-center justify-center px-4 bg-neutral-50 font-dm-sans">
         <div className="w-full max-w-xs mb-3 flex justify-center" aria-hidden="true">

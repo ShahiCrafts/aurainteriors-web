@@ -34,6 +34,9 @@ import {
 } from "../../utils/catalogListing";
 import { getCategoryImageUrl } from "../../utils/imageUrl";
 import { useProductPages } from "../../hooks/product/useProductTan";
+import Seo from "../common/Seo.jsx";
+import { breadcrumbJsonLd, itemListJsonLd } from "../../seo/seo.js";
+import { formatNPR } from "../../seo/site.js";
 
 const SORT_OPTIONS = [
   { value: "featured", label: "Featured" },
@@ -48,6 +51,7 @@ const SORT_OPTIONS = [
 const DEFAULT_PRICE_BOUNDS = { min: 0, max: 500000 };
 
 export default function CatalogListing({
+  enableSeo = false,
   pinned = {},
   crumbPrefix = [],
   header = null,
@@ -213,6 +217,35 @@ export default function CatalogListing({
   ];
 
   const pageTitle = title || currentCategory?.name || "All Products";
+
+  // Runtime head for the two listing contexts ShopPage mounts: the shop
+  // root and category pages. Room/Collection pages mount their own <Seo>
+  // and leave enableSeo off here.
+  const seoProducts = products.slice(0, 24);
+  const listingSeo = !enableSeo ? null : currentCategory ? (
+    <Seo
+      title={`${currentCategory.name} Price in Nepal | Buy ${currentCategory.name} Online – Aura Interiors`}
+      description={
+        (currentCategory.description || "").trim() ||
+        `Shop ${currentCategory.name.toLowerCase()} online in Nepal${totalProducts ? ` – ${totalProducts} designs` : ""} with delivery across Nepal from Aura Interiors, Lalitpur.`
+      }
+      path={`/shop/${encodeURIComponent(currentCategory.slug)}`}
+      jsonLd={[
+        breadcrumbJsonLd(breadcrumbs),
+        ...(seoProducts.length ? [itemListJsonLd(seoProducts)] : []),
+      ]}
+    />
+  ) : (
+    <Seo
+      title="Buy Furniture Online in Nepal – Sofas, Beds, Dining & More | Aura Interiors"
+      description="Browse the full Aura Interiors collection: sofas, beds, dining sets, wardrobes, lighting and décor with prices in NPR and delivery across Nepal."
+      path="/shop"
+      jsonLd={[
+        breadcrumbJsonLd(breadcrumbs),
+        ...(seoProducts.length ? [itemListJsonLd(seoProducts)] : []),
+      ]}
+    />
+  );
   const headingTitle = title || (currentCategory ? pageTitle : "Collection");
 
   const chipLabels = {
@@ -351,6 +384,7 @@ export default function CatalogListing({
 
   return (
     <>
+      {listingSeo}
       {header}
       <div className="max-w-360 mx-auto px-4 sm:px-5 md:px-6 lg:px-4">
         <div className="flex flex-col lg:flex-row gap-6 md:gap-8 lg:gap-12">

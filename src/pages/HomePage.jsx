@@ -2,6 +2,7 @@ import { Suspense, lazy, useEffect } from "react";
 import { useQueryClient } from "@tanstack/react-query";
 import { prefetchHomeData } from "../utils/prefetchHome";
 import TopBar from "../layouts/customer/TopBar";
+import Seo from "../components/common/Seo.jsx";
 import Navbar from "../layouts/customer/Navbar";
 import CategoryBar from "../components/navigation/CategoryBar";
 import Hero from "../components/sections/Hero";
@@ -34,6 +35,11 @@ export default function HomePage() {
 
   return (
     <>
+      <Seo
+        title="Furniture in Nepal – Buy Furniture Online | Aura Interiors"
+        description="Shop furniture online in Nepal: sofas, beds, dining sets, wardrobes, lighting and décor from Aura Interiors, Lalitpur – with delivery across Nepal."
+        path="/"
+      />
       <TopBar />
       <Navbar />
       <CategoryBar />

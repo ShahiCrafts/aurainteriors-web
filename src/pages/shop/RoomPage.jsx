@@ -5,6 +5,8 @@ import CategoryBar from "../../components/navigation/CategoryBar";
 import CatalogListing from "../../components/shop/CatalogListing";
 import { useRooms } from "../../hooks/catalog/useCatalogTan";
 import { getImageUrl } from "../../utils/imageUrl";
+import Seo from "../../components/common/Seo.jsx";
+import { breadcrumbJsonLd } from "../../seo/seo.js";
 
 export default function RoomPage() {
   const { slug } = useParams();
@@ -31,6 +33,14 @@ export default function RoomPage() {
 
   return (
     <>
+      {room && (
+        <Seo
+          title={`${room.label} Furniture in Nepal | Aura Interiors`}
+          description={room.description || `Shop ${room.label.toLowerCase()} furniture online in Nepal – delivery across Nepal from Aura Interiors, Lalitpur.`}
+          path={`/rooms/${encodeURIComponent(room.slug)}`}
+          jsonLd={[breadcrumbJsonLd([{ name: "Home", path: "/" }, { name: room.label, path: `/rooms/${encodeURIComponent(room.slug)}` }])]}
+        />
+      )}
       <Navbar />
       <CategoryBar />
       <main className="min-h-screen bg-white pb-12 md:pb-20 font-dm-sans pt-6">

@@ -7,13 +7,14 @@
     "dev": "vite --mode customer --port 5173",
     "dev:customer": "vite --mode customer --port 5173",
     "dev:admin": "vite --mode admin --port 5174",
-    "build": "vite build --mode customer --outDir dist/customer",
-    "build:customer": "vite build --mode customer --outDir dist/customer",
+    "build": "vite build --mode customer --outDir dist/customer && node scripts/prerender.mjs",
+    "build:customer": "vite build --mode customer --outDir dist/customer && node scripts/prerender.mjs",
     "build:admin": "vite build --mode admin --outDir dist/admin",
     "check:bundle": "node scripts/check-bundle-budget.mjs",
     "lint": "eslint .",
     "test": "vitest run",
-    "preview": "vite preview"
+    "preview": "vite preview",
+    "build:spa": "vite build --mode customer --outDir dist/customer"
   },
   "dependencies": {
     "@hookform/resolvers": "^5.2.2",

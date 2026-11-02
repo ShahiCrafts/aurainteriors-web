@@ -1,0 +1,8 @@
+# Aura Interiors
+
+> Aura Interiors is an online furniture and home décor store based in Lalitpur, Nepal. It sells sofas, beds, dining sets, wardrobes, lighting and décor with prices in Nepali Rupees (NPR) and delivery across Nepal. Many products can be previewed in augmented reality (View in Room).
+
+- Store: https://aurainteriors.live/
+- Shop all furniture: https://aurainteriors.live/shop
+- Contact: https://aurainteriors.live/contact (phone +977 9866291003, email support@aurainteriors.live)
+- FAQs: https://aurainteriors.live/faq

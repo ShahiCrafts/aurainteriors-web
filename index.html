@@ -12,7 +12,8 @@
     <link rel="icon" type="image/png" href="/favicon.png" />
 
     <!-- DNS prefetch for API origin (resolves the domain before any fetch fires) -->
-    <link rel="dns-prefetch" href="https://api.aurainteriors.live" />
+    <link rel="dns-prefetch" href="https://backend.aurainteriors.live" />
+    <link rel="preconnect" href="https://res.cloudinary.com" />
 
     <!--
       Preconnect to Google Fonts origins before any stylesheet is parsed.
@@ -32,6 +33,25 @@
       href="https://fonts.googleapis.com/css2?family=DM+Sans:ital,opsz,wght@0,9..40,300..900;1,9..40,300..900&display=swap"
       rel="stylesheet"
     />
+
+    <!-- Default head for routes without a prerendered page. Indexable
+         routes get their own title/meta/canonical/OG/JSON-LD from
+         scripts/prerender.mjs at build time. -->
+    <meta name="robots" content="index, follow" />
+    <meta name="theme-color" content="#1E2C4A" />
+    <meta name="geo.region" content="NP-3" />
+    <meta name="geo.placename" content="Lalitpur" />
+    <link rel="canonical" href="https://aurainteriors.live/" />
+    <meta property="og:site_name" content="Aura Interiors" />
+    <meta property="og:type" content="website" />
+    <meta property="og:title" content="Aura Interiors – Redefine Your Space" />
+    <meta
+      property="og:description"
+      content="Aura Interiors – Discover handcrafted furniture and home décor that transforms your living space. Shop sofas, beds, dining sets, wardrobes and more."
+    />
+    <meta property="og:url" content="https://aurainteriors.live/" />
+    <meta property="og:image" content="https://aurainteriors.live/promo-ad-banner.webp" />
+    <meta name="twitter:card" content="summary_large_image" />
 
     <title>Aura Interiors – Redefine Your Space</title>
   </head>

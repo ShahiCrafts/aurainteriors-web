@@ -1,0 +1,24 @@
+# Aura Interiors – robots.txt
+# The deploy build (scripts/prerender.mjs) regenerates this file into dist
+# together with sitemap.xml; this copy is the fallback for raw SPA builds.
+User-agent: *
+Allow: /
+Disallow: /checkout
+Disallow: /profile
+Disallow: /notifications
+Disallow: /auth/
+Disallow: /order-confirmation
+Disallow: /ar/
+Disallow: /native-ar
+Disallow: /*?
+
+User-agent: OAI-SearchBot
+Allow: /
+
+User-agent: PerplexityBot
+Allow: /
+
+User-agent: Claude-SearchBot
+Allow: /
+
+Sitemap: https://aurainteriors.live/sitemap.xml
