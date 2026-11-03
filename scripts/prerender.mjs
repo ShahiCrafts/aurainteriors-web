@@ -413,7 +413,7 @@ async function main() {
       <ul>
         <li>Phone: <a href="tel:${esc(CONTACT.phoneInternational)}">${esc(CONTACT.phoneDisplay)}</a></li>
         <li>Email: <a href="mailto:${esc(CONTACT.email)}">${esc(CONTACT.email)}</a></li>
-        <li>Location: ${esc(CONTACT.city)}, ${esc(CONTACT.region)}, ${esc(CONTACT.country)}</li>
+        <li>Location: ${esc(CONTACT.street)}, ${esc(CONTACT.city)}, ${esc(CONTACT.country)}</li>
       </ul>
     </main>`,
   });

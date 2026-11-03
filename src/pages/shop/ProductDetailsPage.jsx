@@ -36,8 +36,8 @@ import { useCanReview, useUserReview } from "../../hooks/review/useReviewTan";
 import Gallery, { GalleryLightbox } from "./product-details/Gallery";
 import PurchasePanel from "./product-details/PurchasePanel";
 import FeatureHighlights from "./product-details/FeatureHighlights";
-import ProductDescription from "./product-details/ProductDescription";
 import KeySpecifications from "./product-details/KeySpecifications";
+import Recommendations from "./product-details/Recommendations";
 import useVariantPurchase from "./product-details/hooks/useVariantPurchase";
 import placeholderProductSofa from "../../assets/images/placeholders/placeholder-product-sofa.webp";
 
@@ -280,7 +280,6 @@ export default function ProductDetailsPage() {
     );
   }
 
-  const descriptionImage = images[1] || images[0];
   const resolvedModelUrl = effectiveModelUrl(product, selectedVariant);
 
   return (
@@ -366,22 +365,19 @@ export default function ProductDetailsPage() {
           {/* Designed for Growing Spaces */}
           <FeatureHighlights productName={product.name} />
 
-          {/* Product Description */}
-          <ProductDescription
-            product={product}
-            image={descriptionImage}
-            getImageUrl={getImageUrl}
-            getImageSrcSet={getImageSrcSet}
-            canViewInAR={!!resolvedModelUrl}
-            onViewInAR={() => setIsARModalOpen(true)}
-          />
-
           {/* Key Specifications */}
           <KeySpecifications
             product={product}
             selectedVariant={selectedVariant}
             definitions={definitions}
           />
+
+          {/* Recommendations — engine-ranked similar pieces +
+              "Complete the Look" complements (see
+              product-details/Recommendations.jsx). The old
+              Product Description section was removed: the purchase
+              panel at the top already carries the description. */}
+          <Recommendations product={product} />
 
           {/* Reviews */}
           <section

@@ -1,10 +1,24 @@
 import { shopCategoryUrl } from "../../utils/shopFilters";
+import { CONTACT } from "../../seo/site";
 import React from "react";
 import { Phone, Mail, MapPin, ArrowRight } from "lucide-react";
 import { Link } from "react-router-dom";
 
 import BrandMarquee from "../../components/sections/BrandMarquee";
 import promoNewsletterInspiration from "../../assets/images/promo/promo-newsletter-inspiration.webp";
+// "We Accept" payment marks — the brands' official logos, bundled
+// locally (src/assets/images/payments/) instead of hot-linking
+// third-party hosts at runtime: the old favpng eSewa JPG showed a
+// fake-transparency checkerboard, and the khaltibyime blog PNG the
+// footer pointed at now 404s (it rendered as a broken image).
+// Sources: eSewa logo (esewa.com.np brand mark), Khalti logo from
+// Khalti's official docs (docs.khalti.com — the current red
+// "Khalti by IME" wordmark), Mastercard and Visa marks as published
+// from brand.mastercard.com / visa.com.
+import esewaLogo from "../../assets/images/payments/esewa.png";
+import khaltiLogo from "../../assets/images/payments/khalti.svg";
+import mastercardLogo from "../../assets/images/payments/mastercard.svg";
+import visaLogo from "../../assets/images/payments/visa.svg";
 
 const footerLinks = [
   {
@@ -253,7 +267,7 @@ export default function Footer() {
                     strokeWidth={1.5}
                   />
                   <span className="text-[16px] text-[#1A1714]">
-                    +977 1 44XXXXX
+                    {CONTACT.phoneDisplay}
                   </span>
                 </li>
                 <li className="flex items-center gap-3.5">
@@ -263,7 +277,7 @@ export default function Footer() {
                     strokeWidth={1.8}
                   />
                   <span className="text-[16px] text-black/65">
-                    care@aurainteriors.live
+                    {CONTACT.email}
                   </span>
                 </li>
                 <li className="flex items-center gap-3.5">
@@ -273,7 +287,7 @@ export default function Footer() {
                     strokeWidth={1.8}
                   />
                   <span className="text-[16px] text-black/65">
-                    Durbarmarg, Kathmandu, Nepal
+                    {CONTACT.street}, {CONTACT.city}, {CONTACT.country}
                   </span>
                 </li>
               </ul>
@@ -330,28 +344,41 @@ export default function Footer() {
                 <h5 className="text-[18px] font-semibold text-[#1A1714] leading-none">
                   We Accept
                 </h5>
-                <div className="mt-6 flex items-center gap-5">
+                {/* One row, exactly the column's width: the row is
+                    justify-between over w-full, so the first logo
+                    starts where the Google Play badge starts and the
+                    last logo ends where the App Store badge ends.
+                    Widths are computed, not eyeballed: each file was
+                    measured for the share of its canvas the artwork
+                    actually occupies (content width × height
+                    fractions — Khalti's canvas is 30% whitespace,
+                    the others ~0-8%), and widths were solved so
+                    every logo's ARTWORK AREA is identical:
+                    w ∝ √(aspect ÷ (contentW × contentH)), giving
+                    equal visual weight (~2,160px² of artwork each
+                    in the 380px column). Shares sum to 82%; the
+                    remaining 18% becomes the justify-between gaps. */}
+                <div className="mt-6 flex w-full flex-nowrap items-center justify-between">
                   <img
-                    src="https://img.favpng.com/7/14/6/esewa-fonepay-pvt-ltd-logo-portable-network-graphics-image-brand-png-favpng-aLLyxWtspEZQckmv19jDj2TWC.jpg"
+                    src={esewaLogo}
                     alt="eSewa"
-                    className="h-[34px] w-auto object-contain mix-blend-multiply"
+                    className="h-auto w-[24.5%] object-contain"
                   />
                   <img
-                    src="https://khaltibyime.khalti.com/wp-content/uploads/2025/07/cropped-Logo-for-Blog-1024x522.png"
+                    src={khaltiLogo}
                     alt="Khalti"
-                    className="h-[34px] w-auto object-contain"
+                    className="h-auto w-[22.1%] object-contain"
                   />
                   <img
-                    src="https://upload.wikimedia.org/wikipedia/commons/thumb/2/2a/Mastercard-logo.svg/330px-Mastercard-logo.svg.png"
+                    src={mastercardLogo}
                     alt="Mastercard"
-                    className="h-[34px] w-auto object-contain"
+                    className="h-auto w-[13.9%] object-contain"
                   />
-                  <span
-                    aria-label="Visa"
-                    className="text-[26px] font-extrabold italic tracking-tight text-[#1A1F71] leading-none"
-                  >
-                    VISA
-                  </span>
+                  <img
+                    src={visaLogo}
+                    alt="Visa"
+                    className="h-auto w-[21.5%] object-contain"
+                  />
                 </div>
               </div>
             </div>

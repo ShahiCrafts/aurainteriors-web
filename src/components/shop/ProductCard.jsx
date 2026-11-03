@@ -26,7 +26,11 @@ import ImageWithFallback from "../fallbacks/ImageWithFallback";
 function ArPill({ className = "" }) {
   return (
     <span
-      className={`rounded-md bg-white/95 font-bold uppercase tracking-wider text-brand backdrop-blur-sm ${className}`}
+      // All card tags share one radius: the badge (New Arrival /
+      // Featured / % OFF) uses rounded-sm, so AR View does too.
+      // It previously used rounded-md and looked rounder than
+      // every other tag stacked with it.
+      className={`rounded-sm bg-white/95 font-bold uppercase tracking-wider text-brand backdrop-blur-sm ${className}`}
     >
       ✦ AR View
     </span>

@@ -1,9 +1,14 @@
-import React from "react";
+import React, { Suspense, lazy } from "react";
 import { Link } from "react-router-dom";
 import { ArrowLeft } from "lucide-react";
 import Navbar from "../../layouts/customer/Navbar";
 import Seo from "../../components/common/Seo.jsx";
 import Footer from "../../layouts/customer/Footer";
+
+// The owner's Lottie artwork (Market_research.lottie) — lazy so the
+// lottie-web player stays out of the main bundle; see
+// NotFoundAnimation.jsx for the playback approach.
+const NotFoundAnimation = lazy(() => import("./NotFoundAnimation"));
 
 const NotFoundPage = () => {
   return (
@@ -11,21 +16,14 @@ const NotFoundPage = () => {
       <Seo title="Page Not Found | Aura Interiors" description="The page you are looking for could not be found." noindex />
       <Navbar />
       <div className="py-20 flex flex-col items-center justify-center px-4 bg-neutral-50 font-dm-sans">
-        <div className="w-full max-w-xs mb-3 flex justify-center" aria-hidden="true">
-          <svg viewBox="0 0 200 120" className="w-56 h-auto">
-            <style>{`
-              @keyframes aura-404-float { 0%,100% { transform: translateY(0); } 50% { transform: translateY(-8px); } }
-              @keyframes aura-404-fade { 0%,100% { opacity: .35; } 50% { opacity: 1; } }
-              .aura-404-float { animation: aura-404-float 3s ease-in-out infinite; }
-              .aura-404-dot { animation: aura-404-fade 1.6s ease-in-out infinite; }
-            `}</style>
-            <g className="aura-404-float">
-              <text x="100" y="72" textAnchor="middle" fontSize="56" fontWeight="700" fill="#0f766e" fontFamily="Georgia, serif">404</text>
-            </g>
-            <circle className="aura-404-dot" cx="52" cy="94" r="4" fill="#f27318" />
-            <circle className="aura-404-dot" cx="100" cy="100" r="4" fill="#0f766e" style={{ animationDelay: "0.3s" }} />
-            <circle className="aura-404-dot" cx="148" cy="94" r="4" fill="#f27318" style={{ animationDelay: "0.6s" }} />
-          </svg>
+        <div className="w-64 h-64 md:w-80 md:h-80 mb-3">
+          <Suspense
+            fallback={
+              <div className="w-full h-full" aria-hidden="true" />
+            }
+          >
+            <NotFoundAnimation />
+          </Suspense>
         </div>
 
         <h1 className="text-2xl md:text-3xl font-playfair font-semibold text-neutral-900 mb-4 text-center">

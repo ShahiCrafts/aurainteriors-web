@@ -11,6 +11,7 @@ export const CONTACT = {
   email: "support@aurainteriors.live",
   phoneDisplay: "+977 9866291003",
   phoneInternational: "+9779866291003",
+  street: "Hattiban",
   city: "Lalitpur",
   region: "Bagmati",
   country: "Nepal",

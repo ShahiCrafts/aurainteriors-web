@@ -152,7 +152,7 @@ export default function ContactPage() {
                       Studio
                     </p>
                     <p className="text-base sm:text-lg font-medium text-gray-900">
-                      Lalitpur, Nepal
+                      Hattiban, Lalitpur, Nepal
                     </p>
                   </div>
                 </div>

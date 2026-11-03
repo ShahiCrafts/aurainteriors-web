@@ -148,6 +148,30 @@ const ALLOWLIST = [
     reason:
       "PromoCard's image prop is supplied by the calling sections with bundled static asset imports (Vite-emitted /assets URLs, compile-time constants) per the component contract — not a server field. Same class as the arIcon bundled-icon entry.",
   },
+  {
+    file: "src/layouts/customer/Footer.jsx",
+    expr: "esewaLogo",
+    reason:
+      "Bundled static import of the official eSewa logo (src/assets/images/payments/, self-hosted 2026-11-03 to replace the hot-linked favpng JPG), compile-time constant — same class as the arIcon bundled-icon entry.",
+  },
+  {
+    file: "src/layouts/customer/Footer.jsx",
+    expr: "khaltiLogo",
+    reason:
+      "Bundled static import of the official Khalti logo (src/assets/images/payments/, from Khalti's official docs; replaced the khaltibyime hot-link that now 404s), compile-time constant — same class as the arIcon entry.",
+  },
+  {
+    file: "src/layouts/customer/Footer.jsx",
+    expr: "mastercardLogo",
+    reason:
+      "Bundled static import of the official Mastercard logo (src/assets/images/payments/, as published from brand.mastercard.com), compile-time constant — same class as the arIcon entry.",
+  },
+  {
+    file: "src/layouts/customer/Footer.jsx",
+    expr: "visaLogo",
+    reason:
+      "Bundled static import of the official Visa logo (src/assets/images/payments/, as published from visa.com; replaces the previous styled-text 'VISA' span), compile-time constant — same class as the arIcon entry.",
+  },
 ];
 
 function collectSourceFiles(dir) {

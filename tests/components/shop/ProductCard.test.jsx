@@ -302,3 +302,23 @@ describe("ProductCard reference design (grid)", () => {
     expect(cta.querySelector("svg.lucide-shopping-cart")).not.toBeNull();
   });
 });
+
+describe("ProductCard tag roundedness (unified)", () => {
+  it("AR View tag uses the same rounded-sm radius as the New Arrival badge, in grid and list", () => {
+    const product = {
+      ...baseProduct,
+      isNewArrival: true,
+      arAvailable: true,
+      rating: { average: 0, count: 0 },
+    };
+    for (const viewMode of ["grid", "list"]) {
+      const { unmount } = renderCard(product, viewMode);
+      const badge = screen.getByText("New Arrival");
+      const arPill = screen.getByText(/AR View/);
+      expect(badge.className).toContain("rounded-sm");
+      expect(arPill.className).toContain("rounded-sm");
+      expect(arPill.className).not.toContain("rounded-md");
+      unmount();
+    }
+  });
+});

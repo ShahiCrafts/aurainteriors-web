@@ -332,3 +332,15 @@ describe("Product detail error states", () => {
     expect(screen.getByText("Unable to load product")).toBeInTheDocument();
   });
 });
+
+describe("Product Description section removal + Recommendations", () => {
+  it("does not render the standalone Product Description section (the purchase panel already carries the description)", () => {
+    renderPage({ ...baseProduct });
+    expect(
+      screen.queryByRole("heading", { name: "Product Description" }),
+    ).not.toBeInTheDocument();
+    expect(screen.queryByText("Product Description")).not.toBeInTheDocument();
+    // The top-of-page description itself is still present.
+    expect(screen.getByText(/A comfortable sofa/)).toBeInTheDocument();
+  });
+});

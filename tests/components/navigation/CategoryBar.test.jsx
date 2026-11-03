@@ -93,3 +93,20 @@ describe("CategoryBar 'Try AR View' (FE-38)", () => {
     expect(modal.textContent).not.toContain("example.com/demo.glb");
   });
 });
+
+describe("CategoryBar 'Try AR View' right padding (hero alignment)", () => {
+  it("right padding matches the hero's inset at every breakpoint (px-2 / md:px-6 / lg:px-8)", () => {
+    h.catalog = { data: { products: [arProduct] } };
+    render(
+      <MemoryRouter initialEntries={["/"]}>
+        <CategoryBar />
+      </MemoryRouter>,
+    );
+    const button = screen.getByText("Try AR View").closest("button");
+    expect(button.className).toContain("pr-2");
+    expect(button.className).toContain("md:pr-6");
+    expect(button.className).toContain("lg:pr-8");
+    // The old flat px-4 (16px at every width) must not come back.
+    expect(button.className).not.toMatch(/(^|\s)px-4(\s|$)/);
+  });
+});

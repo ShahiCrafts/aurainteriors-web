@@ -304,7 +304,12 @@ export default function CategoryBar() {
                 setOpenSlug(null);
                 setIsArModalOpen(true);
               }}
-              className="flex shrink-0 items-center gap-1.5 border-l border-[#F0EFED] px-4 py-2.5 text-xs font-semibold text-brand hover:text-brand-hover focus-visible:outline-2 focus-visible:outline-brand"
+              // Right padding matches the hero below it (Hero: px-2
+              // md:px-6 lg:px-8) so the "Try AR View" label's right
+              // edge lines up with the hero card's right edge at
+              // every breakpoint. It was a flat px-4, which sat
+              // 16px too far right on desktop (hero inset is 32px).
+              className="flex shrink-0 items-center gap-1.5 border-l border-[#F0EFED] py-2.5 pl-4 pr-2 text-xs font-semibold text-brand hover:text-brand-hover focus-visible:outline-2 focus-visible:outline-brand md:py-3 md:pr-6 lg:pr-8"
             >
               <Scan size={16} />
               <span className="hidden sm:inline">Try AR View</span>

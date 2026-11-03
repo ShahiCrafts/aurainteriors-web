@@ -30,6 +30,7 @@ export const organizationJsonLd = () => ({
   telephone: CONTACT.phoneInternational,
   address: {
     "@type": "PostalAddress",
+    streetAddress: CONTACT.street,
     addressLocality: CONTACT.city,
     addressRegion: CONTACT.region,
     addressCountry: CONTACT.countryCode,
