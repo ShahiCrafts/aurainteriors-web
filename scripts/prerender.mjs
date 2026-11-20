@@ -33,7 +33,7 @@ import { faqData } from "../src/data/faqData.js";
 const rootDir = path.dirname(fileURLToPath(import.meta.url));
 const distDir = path.join(rootDir, "..", "dist", "customer");
 const API_BASE = (
-  process.env.VITE_API_BASE_URL || "https://backend.aurainteriors.live"
+  process.env.VITE_API_BASE_URL || "https://api.aurainteriors.live"
 ).replace(/\/$/, "");
 const API = `${API_BASE}/api/v1`;
 const BUILD_DATE = new Date().toISOString().slice(0, 10);
