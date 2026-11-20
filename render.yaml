@@ -1,0 +1,29 @@
+# Render Blueprint — Aura Interiors storefront (customer web)
+#
+# Professional deployment model: the storefront is served by a real
+# web server (Docker + nginx), not by static hosting rewrites.
+# nginx serves the build-time prerendered catalog pages as files
+# first, and falls back to the SPA app shell (index.html) for every
+# app route — /auth/*, /profile, /checkout, /ar/*, etc. — via
+# `try_files` in nginx.conf. Routing is owned by the server, so no
+# route can 404 just because no static file exists for it.
+services:
+  - type: web
+    name: aurainteriors-web
+    runtime: docker
+    plan: free
+    region: oregon
+    branch: main
+    dockerfilePath: ./Dockerfile
+    healthCheckPath: /
+    autoDeploy: true
+    envVars:
+      # Build args consumed by the Dockerfile (ARG VITE_API_BASE_URL /
+      # ARG APP_MODE). The API lives on its own canonical host.
+      - key: VITE_API_BASE_URL
+        value: https://api.aurainteriors.live
+      - key: APP_MODE
+        value: customer
+    domains:
+      - www.aurainteriors.live
+      - aurainteriors.live
