@@ -6,6 +6,7 @@ RUN npm ci --ignore-scripts
 COPY src ./src
 COPY public ./public
 COPY index.html index.admin.html vite.config.js ./
+COPY scripts ./scripts
 ARG VITE_API_BASE_URL
 ARG VITE_API_URL
 ARG APP_MODE=customer

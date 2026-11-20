@@ -12,7 +12,7 @@ services:
     name: aurainteriors-web
     runtime: docker
     plan: free
-    region: oregon
+    region: singapore
     branch: main
     dockerfilePath: ./Dockerfile
     healthCheckPath: /
