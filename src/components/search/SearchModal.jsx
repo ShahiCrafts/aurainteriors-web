@@ -8,6 +8,8 @@ import {
   Star,
   ArrowRight,
   LayoutGrid,
+  Tag,
+  ChevronDown,
   Armchair,
   BedDouble,
   Lamp,
@@ -308,15 +310,6 @@ export default function SearchModal({ onClose }) {
         aria-hidden="true"
       />
       <div className="relative w-full max-w-3xl bg-white rounded-2xl shadow-[0_24px_70px_rgba(0,0,0,0.28)] animate-in fade-in duration-300 max-h-[90dvh] flex flex-col">
-        <button
-          type="button"
-          onClick={onClose}
-          aria-label="Close search"
-          className="absolute -top-3 -right-3 z-10 w-9 h-9 rounded-full bg-white shadow-[0_4px_16px_rgba(0,0,0,0.18)] border border-[#F0EFED] flex items-center justify-center text-[#1A1714] hover:text-brand cursor-pointer transition-colors"
-        >
-          <X size={17} />
-        </button>
-
         <div className="p-4 md:p-5 pb-0">
           <form onSubmit={handleSubmit} className="relative">
             {/* Geometry copied exactly from the navbar search bar:
@@ -356,7 +349,7 @@ export default function SearchModal({ onClose }) {
           </form>
         </div>
 
-        <div className="flex-1 overflow-y-auto md:overflow-hidden grid md:grid-cols-[275px_1fr] min-h-0">
+        <div className="flex-1 overflow-y-auto md:overflow-hidden grid md:grid-cols-[240px_1fr] min-h-0">
           <div className="px-4 md:px-5 py-4 md:overflow-y-auto md:border-r border-[#F0EFED]">
             <div className="flex items-center gap-1.5 mb-3">
               <Sparkles size={15} className="text-brand" />
@@ -371,7 +364,7 @@ export default function SearchModal({ onClose }) {
                     key={term}
                     type="button"
                     onClick={() => runSuggestion(term)}
-                    className="flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-[#FAFAFA] border border-[#F0EFED] text-[13px] font-medium text-[#6A6058] hover:border-brand hover:text-brand cursor-pointer transition-colors"
+                    className="flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-[#E9E7E4] text-[13px] font-medium text-[#6A6058] hover:bg-[#DDDAD5] hover:text-brand cursor-pointer transition-colors"
                   >
                     <Search size={12} />
                     {term}
@@ -428,42 +421,42 @@ export default function SearchModal({ onClose }) {
 
           </div>
 
-          <div className="px-4 md:px-5 py-4 md:overflow-y-auto min-h-0">
-            {searching ? (
-              <>
-                <div className="flex items-center justify-between gap-3 border-b border-[#F0EFED]">
-                  <div className="flex items-center gap-5">
-                    <button
-                      type="button"
-                      onClick={() => setActiveTab("products")}
-                      className={`pb-2.5 text-[14px] font-semibold bg-transparent border-none cursor-pointer transition-colors ${
-                        activeTab === "products"
-                          ? "text-brand shadow-[inset_0_-2px_0_0_#F27318]"
-                          : "text-[#6A6058] hover:text-[#1A1714]"
-                      }`}
-                    >
-                      Products ({products.length})
-                    </button>
-                    <button
-                      type="button"
-                      onClick={() => setActiveTab("categories")}
-                      className={`pb-2.5 text-[14px] font-semibold bg-transparent border-none cursor-pointer transition-colors ${
-                        activeTab === "categories"
-                          ? "text-brand shadow-[inset_0_-2px_0_0_#F27318]"
-                          : "text-[#6A6058] hover:text-[#1A1714]"
-                      }`}
-                    >
-                      Categories ({matchedCategories.length})
-                    </button>
-                  </div>
-                  {activeTab === "products" && (
-                    <label className="hidden sm:flex items-center gap-2 pb-2 text-[13px] text-[#6A6058]">
-                      Sort by:
+          <div className="flex flex-col min-h-0">
+            {searching && (
+              <div className="flex items-center gap-4 sm:gap-5 px-4 md:px-5 border-b border-[#F0EFED] shrink-0 overflow-x-auto">
+                <button
+                  type="button"
+                  onClick={() => setActiveTab("products")}
+                  className={`flex items-center gap-1.5 py-3 -mb-px border-b-2 text-[14px] font-semibold whitespace-nowrap bg-transparent cursor-pointer transition-colors ${
+                    activeTab === "products"
+                      ? "text-brand border-brand"
+                      : "text-[#6A6058] border-transparent hover:text-[#1A1714]"
+                  }`}
+                >
+                  <LayoutGrid size={16} />
+                  Products ({products.length})
+                </button>
+                <button
+                  type="button"
+                  onClick={() => setActiveTab("categories")}
+                  className={`flex items-center gap-1.5 py-3 -mb-px border-b-2 text-[14px] font-semibold whitespace-nowrap bg-transparent cursor-pointer transition-colors ${
+                    activeTab === "categories"
+                      ? "text-brand border-brand"
+                      : "text-[#6A6058] border-transparent hover:text-[#1A1714]"
+                  }`}
+                >
+                  <Tag size={16} />
+                  Categories ({matchedCategories.length})
+                </button>
+                {activeTab === "products" && (
+                  <label className="ml-auto hidden sm:flex items-center gap-2 py-2 text-[13px] text-[#6A6058] shrink-0">
+                    Sort by:
+                    <span className="relative inline-flex">
                       <select
                         value={sort}
                         onChange={(event) => setSort(event.target.value)}
                         aria-label="Sort search results"
-                        className="border border-[#F0EFED] rounded-lg px-2 py-1.5 text-[13px] font-medium text-[#1A1714] bg-white focus:outline-none focus:border-brand cursor-pointer"
+                        className="appearance-none bg-[#F5F4F2] border-none rounded-lg pl-3 pr-8 py-1.75 text-[13.5px] font-semibold text-[#1A1714] focus:outline-none cursor-pointer"
                       >
                         {SORT_OPTIONS.map((option) => (
                           <option key={option.value} value={option.value}>
@@ -471,10 +464,18 @@ export default function SearchModal({ onClose }) {
                           </option>
                         ))}
                       </select>
-                    </label>
-                  )}
-                </div>
-
+                      <ChevronDown
+                        size={14}
+                        className="absolute right-2.5 top-1/2 -translate-y-1/2 pointer-events-none text-[#6A6058]"
+                      />
+                    </span>
+                  </label>
+                )}
+              </div>
+            )}
+            <div className="px-4 md:px-5 py-4 overflow-y-auto min-h-0 flex-1">
+            {searching ? (
+              <>
                 {activeTab === "products" && (
                   <div className="pt-2">
                     {isResultsLoading ? (
@@ -561,6 +562,7 @@ export default function SearchModal({ onClose }) {
                 </div>
               </>
             )}
+            </div>
           </div>
         </div>
 
