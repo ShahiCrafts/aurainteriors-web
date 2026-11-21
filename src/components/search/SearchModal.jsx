@@ -166,33 +166,30 @@ export default function SearchModal({ onClose }) {
     return list;
   }, [products, sort]);
 
-  // The popup keeps its centered position (the right edge of the
-  // original centered 560px popup does not move); only its width grows
-  // leftward until its left edge lines up with the start of the navbar
-  // search bar. Measured from the live bar element and re-measured on
-  // resize. On mobile the bar is hidden, so the popup falls back to the
-  // plain centered layout.
-  const [anchor, setAnchor] = useState(null);
+  // The popup stays exactly centered; only its WIDTH is widened beyond
+  // the base 560px by the distance from the centered popup's left edge
+  // to the start of the navbar search bar (so at its original size it
+  // would have reached the bar's start). Measured from the live bar
+  // element and re-measured on resize. On mobile the bar is hidden, so
+  // the popup falls back to the plain centered 560px layout.
+  const [wideWidth, setWideWidth] = useState(null);
   useEffect(() => {
     const BASE_WIDTH = 560;
     const measure = () => {
       const el = document.getElementById("navbar-search-anchor");
       const rect = el?.getBoundingClientRect();
       if (!rect || rect.width === 0) {
-        setAnchor(null);
+        setWideWidth(null);
         return;
       }
       const viewportWidth = window.innerWidth;
-      const right = (viewportWidth + BASE_WIDTH) / 2;
-      const left = rect.left;
-      if (left >= right - 320) {
-        setAnchor(null);
+      const centeredLeft = (viewportWidth - BASE_WIDTH) / 2;
+      const extra = centeredLeft - rect.left;
+      if (extra <= 0) {
+        setWideWidth(null);
         return;
       }
-      setAnchor({
-        left,
-        width: Math.min(right - left, viewportWidth - left - 12),
-      });
+      setWideWidth(Math.min(BASE_WIDTH + extra, viewportWidth - 24));
     };
     measure();
     window.addEventListener("resize", measure);
@@ -320,18 +317,9 @@ export default function SearchModal({ onClose }) {
         aria-hidden="true"
       />
       <div
-        style={
-          anchor
-            ? {
-                position: "fixed",
-                left: anchor.left,
-                width: anchor.width,
-                top: "7vh",
-              }
-            : undefined
-        }
-        className={`bg-white rounded-2xl shadow-[0_24px_70px_rgba(0,0,0,0.28)] animate-in fade-in zoom-in-95 duration-200 max-h-[90dvh] flex flex-col ${
-          anchor ? "" : "relative w-full max-w-[560px]"
+        style={wideWidth ? { width: wideWidth } : undefined}
+        className={`relative bg-white rounded-2xl shadow-[0_24px_70px_rgba(0,0,0,0.28)] animate-in fade-in zoom-in-95 duration-200 max-h-[90dvh] flex flex-col ${
+          wideWidth ? "" : "w-full max-w-[560px]"
         }`}
       >
         <button
