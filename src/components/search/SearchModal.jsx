@@ -295,7 +295,7 @@ export default function SearchModal({ onClose }) {
         onClick={onClose}
         aria-hidden="true"
       />
-      <div className="relative w-full max-w-4xl bg-white rounded-2xl shadow-[0_24px_70px_rgba(0,0,0,0.28)] animate-in fade-in zoom-in-95 duration-200 max-h-[90dvh] flex flex-col">
+      <div className="relative w-full max-w-[560px] bg-white rounded-2xl shadow-[0_24px_70px_rgba(0,0,0,0.28)] animate-in fade-in zoom-in-95 duration-200 max-h-[90dvh] flex flex-col">
         <button
           type="button"
           onClick={onClose}
@@ -341,15 +341,15 @@ export default function SearchModal({ onClose }) {
           </form>
         </div>
 
-        <div className="flex-1 overflow-y-auto md:overflow-hidden grid md:grid-cols-[275px_1fr] min-h-0">
-          <div className="px-4 md:px-5 py-4 md:overflow-y-auto md:border-r border-[#F0EFED]">
+        <div className="flex-1 overflow-y-auto min-h-0 px-4 md:px-5 py-4 space-y-5">
+          <div>
             <div className="flex items-center gap-1.5 mb-3">
               <Sparkles size={15} className="text-brand" />
               <h3 className="text-[14px] font-bold text-[#1A1714]">
                 Suggestions
               </h3>
             </div>
-            <div className="flex flex-wrap gap-2 mb-6">
+            <div className="flex flex-wrap gap-2">
               {suggestions.length > 0 ? (
                 suggestions.map((term) => (
                   <button
@@ -369,7 +369,7 @@ export default function SearchModal({ onClose }) {
               )}
             </div>
 
-            <div className="flex items-center justify-between mb-2">
+            <div className="flex items-center justify-between mb-2 mt-5">
               <h3 className="text-[14px] font-bold text-[#1A1714]">
                 Categories
               </h3>
@@ -381,24 +381,24 @@ export default function SearchModal({ onClose }) {
                 View all →
               </Link>
             </div>
-            <div className="flex md:flex-col gap-1 overflow-x-auto md:overflow-visible pb-1 md:pb-0">
+            <div className="flex gap-2 overflow-x-auto pb-1">
               {(searching ? matchedCategories : topCategories)
-                .slice(0, 5)
+                .slice(0, 8)
                 .map((category) => (
                   <button
                     key={category._id || category.slug}
                     type="button"
                     onClick={() => goToCategory(category)}
-                    className="flex items-center gap-3 px-2.5 py-2 rounded-[10px] hover:bg-[#FDF0E7] transition-colors bg-transparent border-none cursor-pointer text-left shrink-0 md:shrink group w-auto md:w-full"
+                    className="flex items-center gap-2.5 pl-1.5 pr-3.5 py-1.5 rounded-full border border-[#F0EFED] bg-white hover:border-brand transition-colors cursor-pointer shrink-0 group"
                   >
-                    <span className="w-9 h-9 rounded-lg bg-[#F9F8F6] group-hover:bg-white flex items-center justify-center text-[#6A6058] group-hover:text-brand transition-colors shrink-0">
+                    <span className="w-8 h-8 rounded-full bg-[#F9F8F6] flex items-center justify-center text-[#6A6058] group-hover:text-brand transition-colors shrink-0">
                       {getCategoryIcon(category.name)}
                     </span>
-                    <span className="text-[14px] font-medium text-[#1A1714] whitespace-nowrap">
+                    <span className="text-[13.5px] font-medium text-[#1A1714] whitespace-nowrap">
                       {category.name}
                     </span>
                     {typeof category.productCount === "number" && (
-                      <span className="hidden md:inline text-[12px] text-[#8C8782] ml-auto">
+                      <span className="text-[12px] text-[#8C8782]">
                         {category.productCount}
                       </span>
                     )}
@@ -411,36 +411,38 @@ export default function SearchModal({ onClose }) {
               )}
             </div>
 
-            <div className="hidden md:flex mt-6 rounded-2xl overflow-hidden bg-[#FDF0E7]">
-              <div className="flex-1 p-4">
-                <h4 className="text-[15px] font-bold text-[#1A1714] leading-snug">
-                  Upgrade Your Space
-                </h4>
-                <p className="text-[12.5px] text-[#6A6058] mt-1">
-                  with Timeless Comfort
-                </p>
-                <button
-                  type="button"
-                  onClick={() =>
-                    sofasCategory
-                      ? goToCategory(sofasCategory)
-                      : (navigate("/shop"), onClose())
-                  }
-                  className="mt-3 bg-brand hover:bg-brand-hover text-white border-none rounded-lg px-3.5 py-2 font-sans text-[12.5px] font-semibold cursor-pointer transition-colors"
-                >
-                  Shop Sofas →
-                </button>
+            {!searching && (
+              <div className="flex mt-5 rounded-2xl overflow-hidden bg-[#FDF0E7]">
+                <div className="flex-1 p-3.5">
+                  <h4 className="text-[14.5px] font-bold text-[#1A1714] leading-snug">
+                    Upgrade Your Space
+                  </h4>
+                  <p className="text-[12.5px] text-[#6A6058] mt-0.5">
+                    with Timeless Comfort
+                  </p>
+                  <button
+                    type="button"
+                    onClick={() =>
+                      sofasCategory
+                        ? goToCategory(sofasCategory)
+                        : (navigate("/shop"), onClose())
+                    }
+                    className="mt-2.5 bg-brand hover:bg-brand-hover text-white border-none rounded-lg px-3 py-1.5 font-sans text-[12.5px] font-semibold cursor-pointer transition-colors"
+                  >
+                    Shop Sofas →
+                  </button>
+                </div>
+                <img
+                  src={promoSofasImage}
+                  alt="Sofas and seating collection"
+                  loading="lazy"
+                  className="w-24 object-cover shrink-0"
+                />
               </div>
-              <img
-                src={promoSofasImage}
-                alt="Sofas and seating collection"
-                loading="lazy"
-                className="w-28 object-cover shrink-0"
-              />
-            </div>
+            )}
           </div>
 
-          <div className="px-4 md:px-5 py-4 md:overflow-y-auto min-h-0">
+          <div>
             {searching ? (
               <>
                 <div className="flex items-center justify-between gap-3 border-b border-[#F0EFED]">

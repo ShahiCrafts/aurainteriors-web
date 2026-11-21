@@ -5,6 +5,7 @@ import BrandLoader from "../../components/common/BrandLoader";
 import useAuthStore, { getAuthRevision } from "../../store/authStore";
 import { useShallow } from "zustand/react/shallow";
 import { toast } from "../../lib/toast";
+import { dismissSplash } from "../../lib/splash";
 
 const processedTokens = new Set();
 
@@ -19,9 +20,17 @@ export default function VerifyMagicLinkPage() {
     })),
   );
   useEffect(() => {
+    // The splash has covered this page since first paint (App does not
+    // auto-dismiss it on /auth/* routes). Release it only as we leave,
+    // so the user sees exactly one loader for the whole verification.
+    const goHome = () => {
+      dismissSplash();
+      navigate("/");
+    };
+
     if (!token) {
       toast.error("Invalid or missing magic link token.");
-      navigate("/");
+      goHome();
       return;
     }
 
@@ -35,7 +44,7 @@ export default function VerifyMagicLinkPage() {
         const data = response.data;
         const user = data.data.user;
         if (getAuthRevision() !== revisionAtStart) {
-          navigate("/");
+          goHome();
           return;
         }
         signIn(user, data.token);
@@ -53,23 +62,24 @@ export default function VerifyMagicLinkPage() {
         } else {
           toast.success(`Welcome back, ${user.firstName || "User"}!`);
         }
-        navigate("/");
+        goHome();
       } catch (error) {
         toast.error(error.displayMessage || "Failed to verify magic link.");
-        navigate("/");
+        goHome();
       }
     };
 
     verify();
   }, [token, navigate, signIn, openAuthModal]);
 
-  // Identical to the app splash (same #f3f4f6 background, same 168px
-  // animation, no text) so the splash fades into this screen seamlessly —
-  // the user sees one continuous loading animation, not two loaders.
-  // Success and failure both navigate home with a toast.
+  // Fallback only: the splash normally covers this page for the whole
+  // verification (see App.jsx), and this identical loader (same #f3f4f6
+  // background, same 112px animation, no text) is what shows if the
+  // splash's 6s safety net in main.jsx ever fires first on a very slow
+  // verification request. Success and failure both go home with a toast.
   return (
     <div className="flex items-center justify-center min-h-screen bg-[#f3f4f6]">
-      <BrandLoader size={168} />
+      <BrandLoader size={112} />
     </div>
   );
 }

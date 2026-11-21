@@ -70,7 +70,14 @@ const catalogFallback = (
 function App() {
   const location = useLocation();
   // First commit is on screen: the branded splash has done its job.
+  // Exception: the auth return routes (/auth/success, /auth/verify) keep
+  // the splash up until sign-in completes — those pages dismiss it
+  // themselves right before navigating home. Without this, the splash
+  // faded out on mount and revealed a SECOND loading screen underneath
+  // (the auth page's own loader), so users saw two loaders in a row
+  // after login.
   useEffect(() => {
+    if (window.location.pathname.startsWith("/auth/")) return;
     dismissSplash();
   }, []);
   return (
