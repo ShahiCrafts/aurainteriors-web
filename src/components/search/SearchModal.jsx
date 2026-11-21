@@ -1,4 +1,4 @@
-import { useEffect, useLayoutEffect, useMemo, useRef, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import {
   Search,
@@ -166,39 +166,6 @@ export default function SearchModal({ onClose }) {
     return list;
   }, [products, sort]);
 
-  // The popup stays exactly centered; only its WIDTH is widened beyond
-  // the base 560px by the distance from the centered popup's left edge
-  // to the start of the navbar search bar (so at its original size it
-  // would have reached the bar's start). On mobile the bar is hidden, so
-  // the popup falls back to the plain centered 560px layout.
-  //
-  // The width is computed in the state initializer (and re-checked in a
-  // layout effect) so the FIRST painted frame already has the final
-  // width. Measuring in a passive effect instead made the popup paint
-  // at 560px and then jump wider a frame later — a visible horizontal
-  // shrink/grow while it faded in.
-  const computeWideWidth = () => {
-    const BASE_WIDTH = 560;
-    if (typeof document === "undefined" || typeof window === "undefined") {
-      return null;
-    }
-    const el = document.getElementById("navbar-search-anchor");
-    const rect = el?.getBoundingClientRect();
-    if (!rect || rect.width === 0) return null;
-    const viewportWidth = window.innerWidth;
-    const centeredLeft = (viewportWidth - BASE_WIDTH) / 2;
-    const extra = centeredLeft - rect.left;
-    if (extra <= 0) return null;
-    return Math.min(BASE_WIDTH + extra, viewportWidth - 24);
-  };
-  const [wideWidth, setWideWidth] = useState(computeWideWidth);
-  useLayoutEffect(() => {
-    const measure = () => setWideWidth(computeWideWidth());
-    measure();
-    window.addEventListener("resize", measure);
-    return () => window.removeEventListener("resize", measure);
-  }, []);
-
   useEffect(() => {
     inputRef.current?.focus();
     const handleKeyDown = (event) => {
@@ -340,12 +307,7 @@ export default function SearchModal({ onClose }) {
         onClick={onClose}
         aria-hidden="true"
       />
-      <div
-        style={wideWidth ? { width: wideWidth } : undefined}
-        className={`relative bg-white rounded-2xl shadow-[0_24px_70px_rgba(0,0,0,0.28)] animate-in fade-in duration-300 max-h-[90dvh] flex flex-col ${
-          wideWidth ? "" : "w-full max-w-[560px]"
-        }`}
-      >
+      <div className="relative w-full max-w-4xl bg-white rounded-2xl shadow-[0_24px_70px_rgba(0,0,0,0.28)] animate-in fade-in duration-300 max-h-[90dvh] flex flex-col">
         <button
           type="button"
           onClick={onClose}
@@ -394,15 +356,15 @@ export default function SearchModal({ onClose }) {
           </form>
         </div>
 
-        <div className="flex-1 overflow-y-auto min-h-0 px-4 md:px-5 py-4 space-y-5">
-          <div>
+        <div className="flex-1 overflow-y-auto md:overflow-hidden grid md:grid-cols-[275px_1fr] min-h-0">
+          <div className="px-4 md:px-5 py-4 md:overflow-y-auto md:border-r border-[#F0EFED]">
             <div className="flex items-center gap-1.5 mb-3">
               <Sparkles size={15} className="text-brand" />
               <h3 className="text-[14px] font-bold text-[#1A1714]">
                 Suggestions
               </h3>
             </div>
-            <div className="flex flex-wrap gap-2">
+            <div className="flex flex-wrap gap-2 mb-5">
               {suggestions.length > 0 ? (
                 suggestions.map((term) => (
                   <button
@@ -422,7 +384,7 @@ export default function SearchModal({ onClose }) {
               )}
             </div>
 
-            <div className="flex items-center justify-between mb-2 mt-5">
+            <div className="flex items-center justify-between mb-2">
               <h3 className="text-[14px] font-bold text-[#1A1714]">
                 Categories
               </h3>
@@ -434,24 +396,24 @@ export default function SearchModal({ onClose }) {
                 View all →
               </Link>
             </div>
-            <div className="flex gap-2 overflow-x-auto pb-1">
+            <div className="flex md:flex-col gap-2 md:gap-1 overflow-x-auto md:overflow-visible pb-1 md:pb-0">
               {(searching ? matchedCategories : topCategories)
-                .slice(0, 8)
+                .slice(0, 6)
                 .map((category) => (
                   <button
                     key={category._id || category.slug}
                     type="button"
                     onClick={() => goToCategory(category)}
-                    className="flex items-center gap-2 pl-1 pr-3 py-1 rounded-full border border-[#F0EFED] bg-white hover:border-brand transition-colors cursor-pointer shrink-0 group"
+                    className="flex items-center gap-2 md:gap-2.5 pl-1 pr-3 py-1 md:px-2.5 md:py-1.5 rounded-full md:rounded-[10px] border md:border-0 border-[#F0EFED] bg-white md:bg-transparent hover:border-brand md:hover:bg-[#FDF0E7] transition-colors cursor-pointer shrink-0 md:w-full text-left group"
                   >
-                    <span className="w-6 h-6 rounded-full bg-[#F9F8F6] flex items-center justify-center text-[#6A6058] group-hover:text-brand transition-colors shrink-0">
+                    <span className="w-6 h-6 md:w-8 md:h-8 rounded-full md:rounded-lg bg-[#F9F8F6] md:group-hover:bg-white flex items-center justify-center text-[#6A6058] group-hover:text-brand transition-colors shrink-0">
                       {getCategoryIcon(category.name)}
                     </span>
-                    <span className="text-[13px] font-medium text-[#1A1714] whitespace-nowrap">
+                    <span className="text-[13px] md:text-[13.5px] font-medium text-[#1A1714] whitespace-nowrap">
                       {category.name}
                     </span>
                     {typeof category.productCount === "number" && (
-                      <span className="text-[12px] text-[#8C8782]">
+                      <span className="text-[12px] text-[#8C8782] md:ml-auto">
                         {category.productCount}
                       </span>
                     )}
@@ -466,7 +428,7 @@ export default function SearchModal({ onClose }) {
 
           </div>
 
-          <div>
+          <div className="px-4 md:px-5 py-4 md:overflow-y-auto min-h-0">
             {searching ? (
               <>
                 <div className="flex items-center justify-between gap-3 border-b border-[#F0EFED]">
