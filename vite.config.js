@@ -63,22 +63,33 @@ export default defineConfig(({ mode, command }) => {
           }
         },
       },
-      // PERF-007: preload the LCP hero image (1200w variant) in the
-      // customer build only. Done in generateBundle so the hashed
-      // asset filename emitted by Vite is used verbatim.
+      // PERF-007: preload the LCP hero image in the customer build
+      // only. Done in generateBundle so the hashed asset filenames
+      // emitted by Vite are used verbatim. The preload mirrors the
+      // hero <img> srcset/sizes exactly (all three variants), so the
+      // browser preloads the same candidate it will render — a lone
+      // 1200w href preloads the wrong file on wide screens, which
+      // browsers then ignore ("preloaded but not used") while the
+      // real hero arrives late and shifts the layout.
       !isAdmin && {
         name: "perf007-hero-preload",
         apply: "build",
         enforce: "post",
         generateBundle(_options, bundle) {
-          const hero = Object.values(bundle).find(
-            (a) =>
-              a.type === "asset" &&
-              /hero-furniture-living-room-1200w-[^/]*\.webp$/.test(a.fileName),
-          );
+          const variants = [600, 1200, 1920].map((w) => {
+            const asset = Object.values(bundle).find(
+              (a) =>
+                a.type === "asset" &&
+                new RegExp(
+                  `hero-furniture-living-room-${w}w-[^/]*\\.webp$`,
+                ).test(a.fileName),
+            );
+            return asset ? `/${asset.fileName} ${w}w` : null;
+          });
           const html = bundle["index.html"];
-          if (!hero || !html || html.type !== "asset") return;
-          const tag = `<link rel="preload" as="image" type="image/webp" fetchpriority="high" href="/${hero.fileName}" />`;
+          if (variants.some((v) => !v) || !html || html.type !== "asset")
+            return;
+          const tag = `<link rel="preload" as="image" type="image/webp" fetchpriority="high" imagesrcset="${variants.join(", ")}" imagesizes="(max-width: 1024px) 100vw, 66vw" />`;
           html.source = String(html.source).replace("</head>", `    ${tag}\n  </head>`);
         },
       },

@@ -70,7 +70,7 @@
       scripts are used anywhere.
     -->
     <style>
-      html { background: #1e2c4a; }
+      html { background: #f3f4f6; }
       body { margin: 0; }
       #app-splash {
         position: fixed; inset: 0; z-index: 9999;
@@ -78,7 +78,9 @@
         background: #1e2c4a; color: #fff;
         font-family: "DM Sans", system-ui, -apple-system, "Segoe UI", sans-serif;
         animation: app-splash-failsafe 0.6s ease 7s forwards;
+        transition: opacity 0.35s ease, visibility 0.35s;
       }
+      #app-splash.app-splash-done { opacity: 0; visibility: hidden; }
       #app-splash .wordmark { font-size: 22px; font-weight: 700; letter-spacing: 0.35em; text-transform: uppercase; }
       #app-splash .wordmark span { color: #f97316; }
       #app-splash .bar { width: 148px; height: 2px; background: rgba(255, 255, 255, 0.18); overflow: hidden; border-radius: 2px; }

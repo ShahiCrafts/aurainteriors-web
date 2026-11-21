@@ -26,10 +26,9 @@ createRoot(document.getElementById("root")).render(
 );
 
 // The branded splash in index.html covers the first paint (including
-// any prerendered SEO content) until the app has actually mounted;
-// remove it once the first frames are on screen so it never lingers
-// over the UI. The splash also has a CSS failsafe fade if this
-// bundle fails, and the timeout below is a second safety net.
-const removeSplash = () => document.getElementById("app-splash")?.remove();
-requestAnimationFrame(() => requestAnimationFrame(removeSplash));
-setTimeout(removeSplash, 4000);
+// any prerendered SEO content) until the app has actually mounted.
+// App dismisses it from its mount effect via lib/splash — removing it
+// here, before React commits, would flash the unstyled snapshot.
+// These are only safety nets: the splash also has a CSS failsafe
+// fade, and this timeout force-removes it if the app never mounts.
+setTimeout(() => document.getElementById("app-splash")?.remove(), 6000);

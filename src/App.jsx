@@ -1,5 +1,6 @@
 import { Routes, Route, useLocation } from "react-router-dom";
-import { Suspense, lazy } from "react";
+import { Suspense, lazy, useEffect } from "react";
+import { dismissSplash } from "./lib/splash";
 import "./styles/index.css";
 import ErrorBoundary from "./components/common/ErrorBoundary";
 
@@ -68,6 +69,10 @@ const catalogFallback = (
 
 function App() {
   const location = useLocation();
+  // First commit is on screen: the branded splash has done its job.
+  useEffect(() => {
+    dismissSplash();
+  }, []);
   return (
     <>
       <Suspense fallback={null}>
