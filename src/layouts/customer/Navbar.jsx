@@ -1,4 +1,4 @@
-import { useState, useEffect, useRef, Suspense, lazy } from "react";
+import { useState, useEffect, Suspense, lazy } from "react";
 import { Link, useNavigate, useSearchParams } from "react-router-dom";
 import {
   Search,
@@ -13,7 +13,7 @@ import {
   X,
   ChevronDown,
 } from "lucide-react";
-import Skeleton, {
+import {
   WishlistActionSkeleton,
   CartActionSkeleton,
   ProfileActionSkeleton,
@@ -25,14 +25,11 @@ import { useShallow } from "zustand/react/shallow";
 import useGuestCartStore from "../../store/guestCartStore";
 import { useCart } from "../../hooks/cart/useCartTan";
 import { useWishlist } from "../../hooks/cart/useWishlistTan";
-import useDebounce from "../../hooks/useDebounce";
-import { useProducts } from "../../hooks/product/useProductTan";
-import { getProductImageUrl } from "../../utils/imageUrl";
 import { UserAvatar } from "../../components/common/InitialsAvatar";
-import { formatNPR } from "../../utils/formatCurrency";
 
 const loadCartSlider = () => import("../../components/cart/CartSlider");
 const CartSlider = lazy(loadCartSlider);
+const SearchModal = lazy(() => import("../../components/search/SearchModal"));
 
 // Shared styles so all three action buttons are identical in structure.
 const ACTION_BUTTON_CLASS =
@@ -87,37 +84,13 @@ export default function Navbar() {
   const showWishlistSkeleton = isAuthenticated && isWishlistLoading;
   const showProfileSkeleton = isAuthenticated && !user;
 
-  const [searchInput, setSearchInput] = useState("");
-  const [isSearchFocused, setIsSearchFocused] = useState(false);
-  const debouncedSearch = useDebounce(searchInput, 300);
-  const searchRef = useRef(null);
+  const [isSearchOpen, setIsSearchOpen] = useState(false);
 
-  const { data: searchResultsData, isLoading: isSearchLoading } = useProducts(
-    { search: debouncedSearch, limit: 5, status: "active" },
-    { enabled: debouncedSearch.length >= 2 },
-  );
+  const openSearch = () => setIsSearchOpen(true);
 
-  const searchResults = searchResultsData?.data?.products || [];
-
-  const showDropdown =
-    isSearchFocused && debouncedSearch.length >= 2 && !isSearchLoading;
-
-  useEffect(() => {
-    const handleClickOutside = (event) => {
-      if (searchRef.current && !searchRef.current.contains(event.target)) {
-        setIsSearchFocused(false);
-      }
-    };
-    document.addEventListener("mousedown", handleClickOutside);
-    return () => document.removeEventListener("mousedown", handleClickOutside);
-  }, []);
-
-  const handleSearchSubmit = (e) => {
+  const handleSearchTriggerSubmit = (e) => {
     e.preventDefault();
-    if (searchInput.trim()) {
-      navigate(`/shop?search=${encodeURIComponent(searchInput.trim())}`);
-      setIsSearchFocused(false);
-    }
+    openSearch();
   };
 
   const handleOpenCart = () => {
@@ -213,38 +186,21 @@ export default function Navbar() {
             />
           </Link>
 
-          <div
-            ref={searchRef}
-            className="hidden md:block flex-1 max-w-140 relative"
-          >
-            <form onSubmit={handleSearchSubmit} className="relative">
+          <div className="hidden md:block flex-1 max-w-140 relative">
+            <form onSubmit={handleSearchTriggerSubmit} className="relative">
               <Search
                 size={16}
                 className="absolute left-3.5 top-1/2 -translate-y-1/2 text-neutral-400 pointer-events-none"
               />
               <input
                 type="text"
-                value={searchInput}
-                onChange={(e) => setSearchInput(e.target.value)}
-                onFocus={() => setIsSearchFocused(true)}
+                readOnly
+                onClick={openSearch}
                 placeholder="Search furniture, décor, colours…"
                 aria-label="Search products"
-                className="w-full py-2.75 pr-25 pl-11 border-[1.5px] border-neutral-300 rounded-[10px] bg-[#FAFAFA] font-sans text-[14px] text-neutral-400 focus:outline-none transition-all duration-220 focus:border-brand focus:bg-white placeholder:text-[#B8B4AE]"
+                className="w-full py-2.75 pr-25 pl-11 border-[1.5px] border-neutral-300 rounded-[10px] bg-[#FAFAFA] font-sans text-[14px] text-neutral-400 focus:outline-none transition-all duration-220 hover:border-brand focus:border-brand focus:bg-white placeholder:text-[#B8B4AE] cursor-pointer"
               />
               <div className="absolute right-1.25 top-1/2 -translate-y-1/2 flex items-center gap-2">
-                {searchInput && (
-                  <button
-                    type="button"
-                    onClick={() => setSearchInput("")}
-                    aria-label="Clear search"
-                    className="p-1 text-[#B8B4AE] hover:text-[#1A1714] transition-colors bg-transparent border-none cursor-pointer"
-                  >
-                    <X size={16} />
-                  </button>
-                )}
-                {isSearchLoading && (
-                  <Skeleton className="w-4 h-4 rounded-full shrink-0" />
-                )}
                 <button
                   type="submit"
                   className="bg-brand hover:bg-brand-hover text-white border-none rounded-lg px-4.5 py-1.75 font-sans text-[13.5px] font-semibold cursor-pointer transition-colors duration-200"
@@ -253,72 +209,6 @@ export default function Navbar() {
                 </button>
               </div>
             </form>
-
-            {showDropdown && (
-              <div className="absolute top-full left-0 right-0 mt-2 bg-white border border-[#F0EFED] rounded-xl shadow-[0_10px_40px_rgba(0,0,0,0.12)] z-50 overflow-hidden animate-in fade-in slide-in-from-top-2 duration-200">
-                <div className="max-h-105 overflow-y-auto">
-                  {searchResults.length > 0 ? (
-                    <>
-                      <div className="p-3 border-b border-[#F0EFED] bg-[#FAFAFA]">
-                        <span className="text-[11px] font-bold text-[#B8B4AE] uppercase tracking-wider">
-                          Product Results
-                        </span>
-                      </div>
-                      <div className="py-1">
-                        {searchResults.map((product) => (
-                          <Link
-                            key={product._id}
-                            to={`/product/${encodeURIComponent(product.slug)}`}
-                            onClick={() => setIsSearchFocused(false)}
-                            className="flex items-center gap-4 px-4 py-3 hover:bg-[#F9F8F6] transition-colors no-underline group"
-                          >
-                            <div className="w-12 h-12 rounded-lg overflow-hidden bg-[#F6F6F6] shrink-0 border border-[#F0EFED]">
-                              <img
-                                src={getProductImageUrl(product)}
-                                alt={product.name}
-                                className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-300"
-                              />
-                            </div>
-                            <div className="flex-1 min-w-0">
-                              <h4 className="text-[14px] font-bold text-[#1A1714] truncate mb-0.5">
-                                {product.name}
-                              </h4>
-                              <p className="text-[12px] text-[#8C8782] truncate">
-                                {product.category?.name}
-                              </p>
-                            </div>
-                            <div className="text-right">
-                              <span className="text-[14px] font-bold text-brand">
-                                {formatNPR(product.price)}
-                              </span>
-                            </div>
-                          </Link>
-                        ))}
-                      </div>
-                      <Link
-                        to={`/shop?search=${encodeURIComponent(debouncedSearch)}`}
-                        onClick={() => setIsSearchFocused(false)}
-                        className="flex items-center justify-center p-4 border-t border-[#F0EFED] text-[13px] font-bold text-[#1A1714] hover:text-brand transition-colors no-underline bg-[#FAFAFA]"
-                      >
-                        See all results for "{debouncedSearch}"
-                      </Link>
-                    </>
-                  ) : (
-                    <div className="p-8 text-center">
-                      <div className="w-12 h-12 bg-[#F9F8F6] rounded-full flex items-center justify-center mx-auto mb-3">
-                        <Search size={20} className="text-[#B8B4AE]" />
-                      </div>
-                      <p className="text-[14px] font-medium text-[#1A1714]">
-                        No products found for "{debouncedSearch}"
-                      </p>
-                      <p className="text-[12px] text-[#8C8782] mt-1">
-                        Try searching for something else
-                      </p>
-                    </div>
-                  )}
-                </div>
-              </div>
-            )}
           </div>
 
           <div className="flex md:hidden items-center gap-4.5 shrink-0 text-[#1A1714]">
@@ -330,6 +220,7 @@ export default function Navbar() {
             </button>
             <button
               aria-label="Search"
+              onClick={openSearch}
               className="bg-transparent border-none p-0 flex items-center justify-center cursor-pointer text-[#1A1714] hover:text-brand transition-colors"
             >
               <Search size={22} />
@@ -534,6 +425,11 @@ export default function Navbar() {
             isOpen={isCartOpen}
             onClose={() => setIsCartOpen(false)}
           />
+        </Suspense>
+      )}
+      {isSearchOpen && (
+        <Suspense fallback={null}>
+          <SearchModal onClose={() => setIsSearchOpen(false)} />
         </Suspense>
       )}
     </>
