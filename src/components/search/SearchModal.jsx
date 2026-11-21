@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useRef, useState } from "react";
+import { useEffect, useLayoutEffect, useMemo, useRef, useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import {
   Search,
@@ -169,28 +169,31 @@ export default function SearchModal({ onClose }) {
   // The popup stays exactly centered; only its WIDTH is widened beyond
   // the base 560px by the distance from the centered popup's left edge
   // to the start of the navbar search bar (so at its original size it
-  // would have reached the bar's start). Measured from the live bar
-  // element and re-measured on resize. On mobile the bar is hidden, so
+  // would have reached the bar's start). On mobile the bar is hidden, so
   // the popup falls back to the plain centered 560px layout.
-  const [wideWidth, setWideWidth] = useState(null);
-  useEffect(() => {
+  //
+  // The width is computed in the state initializer (and re-checked in a
+  // layout effect) so the FIRST painted frame already has the final
+  // width. Measuring in a passive effect instead made the popup paint
+  // at 560px and then jump wider a frame later — a visible horizontal
+  // shrink/grow while it faded in.
+  const computeWideWidth = () => {
     const BASE_WIDTH = 560;
-    const measure = () => {
-      const el = document.getElementById("navbar-search-anchor");
-      const rect = el?.getBoundingClientRect();
-      if (!rect || rect.width === 0) {
-        setWideWidth(null);
-        return;
-      }
-      const viewportWidth = window.innerWidth;
-      const centeredLeft = (viewportWidth - BASE_WIDTH) / 2;
-      const extra = centeredLeft - rect.left;
-      if (extra <= 0) {
-        setWideWidth(null);
-        return;
-      }
-      setWideWidth(Math.min(BASE_WIDTH + extra, viewportWidth - 24));
-    };
+    if (typeof document === "undefined" || typeof window === "undefined") {
+      return null;
+    }
+    const el = document.getElementById("navbar-search-anchor");
+    const rect = el?.getBoundingClientRect();
+    if (!rect || rect.width === 0) return null;
+    const viewportWidth = window.innerWidth;
+    const centeredLeft = (viewportWidth - BASE_WIDTH) / 2;
+    const extra = centeredLeft - rect.left;
+    if (extra <= 0) return null;
+    return Math.min(BASE_WIDTH + extra, viewportWidth - 24);
+  };
+  const [wideWidth, setWideWidth] = useState(computeWideWidth);
+  useLayoutEffect(() => {
+    const measure = () => setWideWidth(computeWideWidth());
     measure();
     window.addEventListener("resize", measure);
     return () => window.removeEventListener("resize", measure);
