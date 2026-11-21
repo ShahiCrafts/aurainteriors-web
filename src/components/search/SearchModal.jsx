@@ -354,9 +354,12 @@ export default function SearchModal({ onClose }) {
 
         <div className="p-4 md:p-5 pb-0">
           <form onSubmit={handleSubmit} className="relative">
+            {/* Geometry copied exactly from the navbar search bar:
+                same padding (py-2.75, pl-11, pr-25), same 10px rounding,
+                same icon size/position, same Search button size. */}
             <Search
-              size={18}
-              className="absolute left-4 top-1/2 -translate-y-1/2 text-neutral-400 pointer-events-none"
+              size={16}
+              className="absolute left-3.5 top-1/2 -translate-y-1/2 text-neutral-400 pointer-events-none"
             />
             <input
               ref={inputRef}
@@ -365,22 +368,22 @@ export default function SearchModal({ onClose }) {
               onChange={(event) => setQuery(event.target.value)}
               placeholder="Search furniture, décor, colours…"
               aria-label="Search products"
-              className="w-full py-3.5 pr-32 pl-11.5 border-[1.5px] border-neutral-300 rounded-[10px] bg-[#FAFAFA] font-sans text-[15px] text-[#1A1714] focus:outline-none transition-all duration-200 focus:border-brand focus:bg-white placeholder:text-[#B8B4AE]"
+              className="w-full py-2.75 pr-25 pl-11 border-[1.5px] border-neutral-300 rounded-[10px] bg-[#FAFAFA] font-sans text-[14px] text-[#1A1714] focus:outline-none transition-all duration-220 focus:border-brand focus:bg-white placeholder:text-[#B8B4AE]"
             />
-            <div className="absolute right-1.5 top-1/2 -translate-y-1/2 flex items-center gap-1.5">
+            <div className="absolute right-1.25 top-1/2 -translate-y-1/2 flex items-center gap-2">
               {query && (
                 <button
                   type="button"
                   onClick={() => setQuery("")}
                   aria-label="Clear search"
-                  className="p-1.5 text-[#B8B4AE] hover:text-[#1A1714] transition-colors bg-transparent border-none cursor-pointer"
+                  className="p-1 text-[#B8B4AE] hover:text-[#1A1714] transition-colors bg-transparent border-none cursor-pointer"
                 >
                   <X size={16} />
                 </button>
               )}
               <button
                 type="submit"
-                className="bg-brand hover:bg-brand-hover text-white border-none rounded-lg px-5 py-2.25 font-sans text-[14px] font-semibold cursor-pointer transition-colors duration-200"
+                className="bg-brand hover:bg-brand-hover text-white border-none rounded-lg px-4.5 py-1.75 font-sans text-[13.5px] font-semibold cursor-pointer transition-colors duration-200"
               >
                 Search
               </button>
