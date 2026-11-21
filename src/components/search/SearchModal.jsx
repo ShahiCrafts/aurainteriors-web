@@ -166,21 +166,33 @@ export default function SearchModal({ onClose }) {
     return list;
   }, [products, sort]);
 
-  // The popup is anchored to the navbar search bar — same left edge and
-  // same width — so it exactly covers the bar behind it, whatever the
-  // viewport size. Measured from the live element and re-measured on
-  // resize. On mobile the bar is hidden, so there is no anchor and the
-  // popup falls back to the centered layout.
+  // The popup keeps its centered position (the right edge of the
+  // original centered 560px popup does not move); only its width grows
+  // leftward until its left edge lines up with the start of the navbar
+  // search bar. Measured from the live bar element and re-measured on
+  // resize. On mobile the bar is hidden, so the popup falls back to the
+  // plain centered layout.
   const [anchor, setAnchor] = useState(null);
   useEffect(() => {
+    const BASE_WIDTH = 560;
     const measure = () => {
       const el = document.getElementById("navbar-search-anchor");
       const rect = el?.getBoundingClientRect();
-      setAnchor(
-        rect && rect.width > 0
-          ? { left: rect.left, width: rect.width, top: rect.top }
-          : null,
-      );
+      if (!rect || rect.width === 0) {
+        setAnchor(null);
+        return;
+      }
+      const viewportWidth = window.innerWidth;
+      const right = (viewportWidth + BASE_WIDTH) / 2;
+      const left = rect.left;
+      if (left >= right - 320) {
+        setAnchor(null);
+        return;
+      }
+      setAnchor({
+        left,
+        width: Math.min(right - left, viewportWidth - left - 12),
+      });
     };
     measure();
     window.addEventListener("resize", measure);
@@ -314,7 +326,7 @@ export default function SearchModal({ onClose }) {
                 position: "fixed",
                 left: anchor.left,
                 width: anchor.width,
-                top: Math.max(8, anchor.top - 18),
+                top: "7vh",
               }
             : undefined
         }
