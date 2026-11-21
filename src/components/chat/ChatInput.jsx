@@ -17,23 +17,21 @@ import AuthRequiredModal from "./AuthRequiredModal";
 import RateLimitModal from "./RateLimitModal";
 import { RATE_LIMIT_EVENT } from "../../api/index";
 import { toast } from "../../lib/toast";
+import BrandLoader from "../common/BrandLoader";
 
 // Circular upload progress, drawn over the chip thumbnail.
-// progress is 0-100; null (no progress event yet) renders a
-// spinning quarter arc so the control never looks stuck.
+// progress is 0-100; null (no progress event yet) renders the one
+// standard loading animation (BrandLoader) so the control never
+// looks stuck — there is no separate spinner anywhere in the app.
 const UploadRing = ({ progress }) => {
   const radius = 8.5;
   const circumference = 2 * Math.PI * radius;
-  const indeterminate = progress == null;
-  const pct = indeterminate
-    ? 25
-    : Math.max(0, Math.min(100, progress));
+  if (progress == null) return <BrandLoader size={20} />;
+  const pct = Math.max(0, Math.min(100, progress));
   return (
     <svg
       viewBox="0 0 24 24"
-      className={`h-5 w-5 -rotate-90 ${
-        indeterminate ? "motion-safe:animate-spin" : ""
-      }`}
+      className="h-5 w-5 -rotate-90"
       aria-hidden="true"
     >
       <circle

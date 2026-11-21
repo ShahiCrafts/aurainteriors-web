@@ -1,4 +1,5 @@
 import { Shield } from "lucide-react";
+import BrandLoader from "../common/BrandLoader";
 
 const TypingIndicator = ({ isAdmin = true }) => {
   return (
@@ -10,20 +11,7 @@ const TypingIndicator = ({ isAdmin = true }) => {
         <span className="text-sm text-neutral-500 font-medium">
           {isAdmin ? "Support is typing" : "Customer is typing"}
         </span>
-        <div className="flex gap-1 items-center">
-          <span
-            className="w-1.5 h-1.5 bg-[#F27318] rounded-full animate-bounce"
-            style={{ animationDelay: "0ms", animationDuration: "600ms" }}
-          />
-          <span
-            className="w-1.5 h-1.5 bg-[#F27318] rounded-full animate-bounce"
-            style={{ animationDelay: "150ms", animationDuration: "600ms" }}
-          />
-          <span
-            className="w-1.5 h-1.5 bg-[#F27318] rounded-full animate-bounce"
-            style={{ animationDelay: "300ms", animationDuration: "600ms" }}
-          />
-        </div>
+        <BrandLoader size={24} />
       </div>
     </div>
   );

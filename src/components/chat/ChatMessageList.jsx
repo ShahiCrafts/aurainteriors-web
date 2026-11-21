@@ -5,6 +5,7 @@ import ChatMessage from "./ChatMessage";
 import useAuthStore from "../../store/authStore";
 import { useShallow } from "zustand/react/shallow";
 import { UserAvatar } from "../common/InitialsAvatar";
+import BrandLoader from "../common/BrandLoader";
 
 const ChatMessageList = ({
   messages,
@@ -219,29 +220,9 @@ const ChatMessageList = ({
                     className="w-8 h-8 rounded-full text-xs border shadow-xs"
                   />
                 )}
-                {/* Bubble */}
-                <div className="bg-gray-100 px-4 py-2.5 rounded-2xl flex gap-1 items-center justify-center w-fit">
-                  <span
-                    className="w-1.5 h-1.5 bg-gray-500 rounded-full animate-bounce"
-                    style={{
-                      animationDelay: "0ms",
-                      animationDuration: "600ms",
-                    }}
-                  />
-                  <span
-                    className="w-1.5 h-1.5 bg-gray-500 rounded-full animate-bounce"
-                    style={{
-                      animationDelay: "150ms",
-                      animationDuration: "600ms",
-                    }}
-                  />
-                  <span
-                    className="w-1.5 h-1.5 bg-gray-500 rounded-full animate-bounce"
-                    style={{
-                      animationDelay: "300ms",
-                      animationDuration: "600ms",
-                    }}
-                  />
+                {/* Bubble — the one standard loading animation */}
+                <div className="bg-gray-100 px-3 py-1.5 rounded-2xl flex items-center justify-center w-fit">
+                  <BrandLoader size={28} />
                 </div>
               </div>
             </div>

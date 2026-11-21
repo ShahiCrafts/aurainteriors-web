@@ -1,6 +1,7 @@
 import { formatDate } from "../../utils/formatDate";
 import { useState } from "react";
 import Dialog from "../../components/common/Dialog";
+import BrandLoader from "../../components/common/BrandLoader";
 import { motion, AnimatePresence } from "framer-motion";
 import {
   Plus,
@@ -11,7 +12,6 @@ import {
   Send,
   Calendar,
   Users,
-  Loader2,
   CheckCircle,
   XCircle,
   Clock,
@@ -316,7 +316,9 @@ export default function Promotions() {
         label: "Scheduled",
       },
       sending: {
-        icon: Loader2,
+        // No icon: the chip renders the one standard loading
+        // animation (BrandLoader) for this in-progress state.
+        icon: null,
         bg: "bg-amber-50",
         text: "text-amber-700",
         label: "Sending",
@@ -341,10 +343,11 @@ export default function Promotions() {
       <span
         className={`inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-[10px] font-bold uppercase tracking-wider ${config.bg} ${config.text}`}
       >
-        <Icon
-          size={10}
-          className={status === "sending" ? "motion-safe:animate-pulse" : ""}
-        />
+        {status === "sending" ? (
+          <BrandLoader size={14} />
+        ) : (
+          <Icon size={10} />
+        )}
         {config.label}
       </span>
     );
