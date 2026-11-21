@@ -5,7 +5,7 @@ import React, {
   useCallback,
   useMemo,
 } from "react";
-import { createARView } from "capacitor-arcore";
+import { createARView } from "reticlexr";
 import { X, Info, Camera, Scan } from "lucide-react";
 
 
@@ -360,7 +360,7 @@ const NativeARView = ({
           }
         },
         // FE-21: the tutorial has a single step now. The installed
-        // capacitor-arcore ARView.enableCustomization wires only
+        // reticlexr ARView.enableCustomization wires only
         // onTap/onPinch/onRotate — it never forwards the gesture
         // controller's onDrag — so the old step 2 ("Move Position")
         // could never advance and obstructed the first session until

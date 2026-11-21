@@ -10,7 +10,7 @@ const TutorialOverlay = ({
   onSkip,
 }) => {
   // FE-21: only step 0 exists. The former step 1 ("Move Position")
-  // could never complete — the installed capacitor-arcore
+  // could never complete — the installed reticlexr
   // ARView.enableCustomization never forwards an onDrag callback to
   // the app — so the step was dropped rather than rewired to a signal
   // that does not exist. Any step other than 0 means "done".

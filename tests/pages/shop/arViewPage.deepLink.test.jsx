@@ -178,6 +178,9 @@ describe("ARViewPage add-to-cart (FE-30)", () => {
     expect(cartApi.addToCart).toHaveBeenCalledWith({
       productId: "p-linked",
       quantity: 1,
+      // 54498c9: the mutation also carries the product for optimistic
+      // add-to-cart feedback (same shape as ProductDetailsPage).
+      product: expect.objectContaining({ _id: "p-linked" }),
     });
   });
 });

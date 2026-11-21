@@ -12,7 +12,7 @@
 //
 // These tests mock at the API layer only; the real hooks, the real
 // auth/guest-cart stores and the real page execute. NativeARView is
-// stubbed (capacitor-arcore cannot run in jsdom) and captures props.
+// stubbed (reticlexr cannot run in jsdom) and captures props.
 import { describe, it, expect, vi, beforeEach } from "vitest";
 import { render, screen, waitFor, act } from "@testing-library/react";
 import { MemoryRouter, Routes, Route } from "react-router-dom";
@@ -242,6 +242,9 @@ describe("NativeARPage add-to-cart (FE-30)", () => {
     expect(cartApi.addToCart).toHaveBeenCalledWith({
       productId: "p-linked",
       quantity: 1,
+      // 54498c9: the mutation also carries the product for optimistic
+      // add-to-cart feedback (same shape as ProductDetailsPage).
+      product: expect.objectContaining({ _id: "p-linked" }),
     });
   });
 });

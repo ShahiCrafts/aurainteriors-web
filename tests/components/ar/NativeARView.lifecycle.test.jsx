@@ -6,11 +6,11 @@
 // so the camera stayed live while the UI said "Camera Access Required".
 // A failed product switch likewise left the catalog/price showing the
 // new product while the scene still showed the old one; the tutorial's
-// "Move" step could never advance (the installed capacitor-arcore
+// "Move" step could never advance (the installed reticlexr
 // ARView.enableCustomization wires onTap/onPinch/onRotate only — it
 // never forwards the gesture controller's onDrag).
 //
-// capacitor-arcore cannot run in jsdom, so the plugin is mocked with a
+// reticlexr cannot run in jsdom, so the plugin is mocked with a
 // fake view whose methods are spies; the REAL NativeARView executes.
 import { describe, it, expect, vi, beforeEach } from "vitest";
 import {
@@ -23,7 +23,7 @@ import {
 
 const hoisted = vi.hoisted(() => ({ view: null, gestureOptions: null }));
 
-vi.mock("capacitor-arcore", () => ({
+vi.mock("reticlexr", () => ({
   createARView: vi.fn(() => hoisted.view),
 }));
 

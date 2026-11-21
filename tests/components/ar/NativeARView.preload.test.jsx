@@ -23,7 +23,7 @@
 //    (and FE-21 teardown still runs): the first thing the user sees
 //    must actually be loadable.
 //
-// capacitor-arcore is mocked exactly as in the FE-21 lifecycle tests.
+// reticlexr is mocked exactly as in the FE-21 lifecycle tests.
 import { describe, it, expect, vi, beforeEach } from "vitest";
 import {
   render,
@@ -35,7 +35,7 @@ import {
 
 const hoisted = vi.hoisted(() => ({ view: null, gestureOptions: null }));
 
-vi.mock("capacitor-arcore", () => ({
+vi.mock("reticlexr", () => ({
   createARView: vi.fn(() => hoisted.view),
 }));
 
