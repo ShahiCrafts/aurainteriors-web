@@ -16,6 +16,15 @@ vi.mock("../../../src/api/integrationsApi.js", () => ({
   },
 }));
 
+vi.mock("../../../src/api/settingsApi.js", () => ({
+  default: {
+    getSettings: vi.fn(),
+    updateSettingsSection: vi.fn(),
+    uploadSettingsImage: vi.fn(),
+    reindexKnowledge: vi.fn(),
+  },
+}));
+
 vi.mock("../../../src/lib/toast", () => ({
   toast: Object.assign(vi.fn(), {
     success: vi.fn(),
@@ -26,6 +35,7 @@ vi.mock("../../../src/lib/toast", () => ({
 }));
 
 import integrationsApi from "../../../src/api/integrationsApi.js";
+import settingsApi from "../../../src/api/settingsApi.js";
 import Integrations from "../../../src/pages/admin/Integrations.jsx";
 
 const CONFIG = {
@@ -205,6 +215,39 @@ describe("Admin Integrations page", () => {
         }),
       ),
     );
+  });
+
+  it("(i) Google Maps key is edited and saved with the seo section (Batch 3a)", async () => {
+    await renderPage();
+    fireEvent.change(screen.getByLabelText("Google Maps API key"), {
+      target: { value: "AIza-test-key" },
+    });
+    fireEvent.click(
+      screen.getByRole("button", { name: "Save analytics settings" }),
+    );
+    await waitFor(() =>
+      expect(integrationsApi.updateSettingsSection).toHaveBeenCalledWith(
+        "seo",
+        expect.objectContaining({ googleMapsKey: "AIza-test-key" }),
+      ),
+    );
+  });
+
+  it("(j) Re-index knowledge base button calls the endpoint and reports the queued count (Batch 3a)", async () => {
+    settingsApi.reindexKnowledge.mockResolvedValue({
+      status: "success",
+      data: { queued: 4 },
+    });
+    await renderPage();
+    fireEvent.click(
+      screen.getByRole("button", { name: "Re-index knowledge base" }),
+    );
+    await waitFor(() =>
+      expect(settingsApi.reindexKnowledge).toHaveBeenCalledTimes(1),
+    );
+    expect(
+      await screen.findByText("Queued 4 documents for re-indexing."),
+    ).toBeInTheDocument();
   });
 
   it("shows an error state when the initial load fails", async () => {

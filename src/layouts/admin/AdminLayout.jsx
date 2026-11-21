@@ -27,6 +27,7 @@ import {
   DoorOpen,
   LayoutGrid,
   Plug,
+  Store,
 } from "lucide-react";
 import AdminSidebar from "./AdminSidebar";
 import AdminTopbar from "./AdminTopbar";
@@ -271,6 +272,12 @@ export default function AdminLayout() {
           label: "Integrations",
           icon: Plug,
           path: "/dashboard/integrations",
+        },
+        {
+          id: "store-settings",
+          label: "Store Settings",
+          icon: Store,
+          path: "/dashboard/store-settings",
         },
       ],
     },

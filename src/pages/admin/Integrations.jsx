@@ -1,6 +1,7 @@
 import { useState, useEffect, useCallback } from "react";
 import { Plug, ArrowUp, ArrowDown, Copy, Check } from "lucide-react";
 import integrationsApi from "../../api/integrationsApi";
+import settingsApi from "../../api/settingsApi";
 import SecretKeyControl from "../../components/admin/integrations/SecretKeyControl";
 import ProviderCard from "../../components/admin/integrations/ProviderCard";
 import { toast } from "../../lib/toast";
@@ -135,7 +136,10 @@ export default function Integrations() {
     metaPixelId: "",
     tiktokPixelId: "",
     searchConsoleVerification: "",
+    googleMapsKey: "",
   });
+  const [reindexing, setReindexing] = useState(false);
+  const [reindexResult, setReindexResult] = useState(null);
   const [secrets, setSecrets] = useState({}); // service -> describe
   const [savingAi, setSavingAi] = useState(false);
   const [savingSection, setSavingSection] = useState(null);
@@ -161,6 +165,7 @@ export default function Integrations() {
         metaPixelId: fetchedSeo.metaPixelId || "",
         tiktokPixelId: fetchedSeo.tiktokPixelId || "",
         searchConsoleVerification: fetchedSeo.searchConsoleVerification || "",
+        googleMapsKey: fetchedSeo.googleMapsKey || "",
       });
       setLoadError(null);
     } catch (err) {
@@ -250,6 +255,25 @@ export default function Integrations() {
       toast.error(formatError(err, "Failed to save analytics settings"));
     } finally {
       setSavingSeo(false);
+    }
+  };
+
+  const reindexKnowledge = async () => {
+    setReindexing(true);
+    setReindexResult(null);
+    try {
+      const res = await settingsApi.reindexKnowledge();
+      const queued = res?.data?.queued ?? 0;
+      setReindexResult(
+        queued > 0
+          ? `Queued ${queued} document${queued === 1 ? "" : "s"} for re-indexing.`
+          : "No knowledge documents to re-index.",
+      );
+      toast.success("Knowledge base re-indexing scheduled");
+    } catch (err) {
+      toast.error(formatError(err, "Failed to schedule re-indexing"));
+    } finally {
+      setReindexing(false);
     }
   };
 
@@ -521,7 +545,20 @@ export default function Integrations() {
           />
         </Field>
         {secretControl("vector.qdrant", "Qdrant API key")}
-        <div className="flex justify-end">
+        <div className="flex items-center justify-between gap-4">
+          <div className="flex items-center gap-3">
+            <button
+              type="button"
+              onClick={reindexKnowledge}
+              disabled={reindexing}
+              className="inline-flex items-center gap-2 px-4 py-2.5 border border-gray-200 text-gray-700 rounded-xl text-sm font-medium hover:bg-gray-50 transition-colors disabled:opacity-50"
+            >
+              {reindexing ? "Scheduling…" : "Re-index knowledge base"}
+            </button>
+            {reindexResult && (
+              <span className="text-sm text-gray-500">{reindexResult}</span>
+            )}
+          </div>
           <button
             type="button"
             onClick={() => saveIntegrations("search")}
@@ -838,6 +875,21 @@ export default function Integrations() {
               onChange={(e) =>
                 setSeo({ ...seo, searchConsoleVerification: e.target.value })
               }
+              className={inputClass}
+            />
+          </Field>
+          <Field
+            label="Google Maps API key"
+            helper="Used for storefront map embeds. Browser keys are visible in page source by design — restrict this key by HTTP referrer in Google Cloud Console."
+          >
+            <input
+              type="text"
+              aria-label="Google Maps API key"
+              value={seo.googleMapsKey}
+              onChange={(e) =>
+                setSeo({ ...seo, googleMapsKey: e.target.value })
+              }
+              placeholder="AIza…"
               className={inputClass}
             />
           </Field>

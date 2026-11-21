@@ -23,6 +23,9 @@ const AdminKnowledgeBase = lazy(() => import("./pages/admin/KnowledgeBase"));
 const AdminContacts = lazy(() => import("./pages/admin/Contacts"));
 const AdminUsers = lazy(() => import("./pages/admin/Users"));
 const AdminIntegrations = lazy(() => import("./pages/admin/Integrations"));
+const AdminStoreSettings = lazy(
+  () => import("./pages/admin/StoreSettings"),
+);
 const NotFoundPage = lazy(() => import("./pages/info/NotFoundPage"));
 
 import Skeleton, { DashboardSkeleton } from "./components/common/Skeleton";
@@ -202,6 +205,14 @@ export default function AdminApp() {
             element={
               <Suspense fallback={<AdminPageSkeleton />}>
                 <AdminIntegrations />
+              </Suspense>
+            }
+          />
+          <Route
+            path="store-settings"
+            element={
+              <Suspense fallback={<AdminPageSkeleton />}>
+                <AdminStoreSettings />
               </Suspense>
             }
           />
