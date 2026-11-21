@@ -312,13 +312,13 @@ export default function SearchModal({ onClose }) {
       aria-label="Search products"
     >
       <div
-        className="absolute inset-0 bg-black/40"
+        className="absolute inset-0 bg-black/40 animate-in fade-in duration-300"
         onClick={onClose}
         aria-hidden="true"
       />
       <div
         style={wideWidth ? { width: wideWidth } : undefined}
-        className={`relative bg-white rounded-2xl shadow-[0_24px_70px_rgba(0,0,0,0.28)] animate-in fade-in zoom-in-95 duration-200 max-h-[90dvh] flex flex-col ${
+        className={`relative bg-white rounded-2xl shadow-[0_24px_70px_rgba(0,0,0,0.28)] animate-in fade-in duration-300 max-h-[90dvh] flex flex-col ${
           wideWidth ? "" : "w-full max-w-[560px]"
         }`}
       >
