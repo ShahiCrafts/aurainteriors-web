@@ -41,24 +41,24 @@ const readRecents = () => {
 };
 
 const categoryIconMap = {
-  sofa: <Armchair size={19} />,
-  bed: <BedDouble size={19} />,
-  dining: <UtensilsCrossed size={19} />,
-  living: <Sofa size={19} />,
-  bedroom: <BedDouble size={19} />,
-  kitchen: <ChefHat size={19} />,
-  desk: <Monitor size={19} />,
-  outdoor: <Leaf size={19} />,
-  lighting: <Lamp size={19} />,
+  sofa: <Armchair size={15} />,
+  bed: <BedDouble size={15} />,
+  dining: <UtensilsCrossed size={15} />,
+  living: <Sofa size={15} />,
+  bedroom: <BedDouble size={15} />,
+  kitchen: <ChefHat size={15} />,
+  desk: <Monitor size={15} />,
+  outdoor: <Leaf size={15} />,
+  lighting: <Lamp size={15} />,
 };
 
 const getCategoryIcon = (categoryName) => {
-  if (typeof categoryName !== "string") return <LayoutGrid size={19} />;
+  if (typeof categoryName !== "string") return <LayoutGrid size={15} />;
   const name = categoryName.toLowerCase();
   for (const [key, icon] of Object.entries(categoryIconMap)) {
     if (name.includes(key)) return icon;
   }
-  return <LayoutGrid size={19} />;
+  return <LayoutGrid size={15} />;
 };
 
 const SORT_OPTIONS = [
@@ -415,12 +415,12 @@ export default function SearchModal({ onClose }) {
                     key={category._id || category.slug}
                     type="button"
                     onClick={() => goToCategory(category)}
-                    className="flex items-center gap-2.5 pl-1.5 pr-3.5 py-1.5 rounded-full border border-[#F0EFED] bg-white hover:border-brand transition-colors cursor-pointer shrink-0 group"
+                    className="flex items-center gap-2 pl-1 pr-3 py-1 rounded-full border border-[#F0EFED] bg-white hover:border-brand transition-colors cursor-pointer shrink-0 group"
                   >
-                    <span className="w-8 h-8 rounded-full bg-[#F9F8F6] flex items-center justify-center text-[#6A6058] group-hover:text-brand transition-colors shrink-0">
+                    <span className="w-6 h-6 rounded-full bg-[#F9F8F6] flex items-center justify-center text-[#6A6058] group-hover:text-brand transition-colors shrink-0">
                       {getCategoryIcon(category.name)}
                     </span>
-                    <span className="text-[13.5px] font-medium text-[#1A1714] whitespace-nowrap">
+                    <span className="text-[13px] font-medium text-[#1A1714] whitespace-nowrap">
                       {category.name}
                     </span>
                     {typeof category.productCount === "number" && (
