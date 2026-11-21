@@ -63,18 +63,13 @@ export default function VerifyMagicLinkPage() {
     verify();
   }, [token, navigate, signIn, openAuthModal]);
 
+  // Identical to the app splash (same #f3f4f6 background, same 168px
+  // animation, no text) so the splash fades into this screen seamlessly —
+  // the user sees one continuous loading animation, not two loaders.
+  // Success and failure both navigate home with a toast.
   return (
-    <div className="flex flex-col items-center justify-center min-h-screen bg-[#F8F9FA] font-dm-sans">
-      <div className="p-8 bg-white border border-neutral-100 rounded-2xl shadow-sm text-center max-w-sm w-full mx-4 space-y-4 flex flex-col items-center">
-        {/* The one standard loading animation (BrandLoader). */}
-        <BrandLoader size={96} />
-        <h2 className="text-[18px] font-bold text-[#1A1714] pt-2">
-          Verifying your sign-in link...
-        </h2>
-        <p className="text-[#64748B] text-[13px]">
-          Please wait while we authenticate you.
-        </p>
-      </div>
+    <div className="flex items-center justify-center min-h-screen bg-[#f3f4f6]">
+      <BrandLoader size={168} />
     </div>
   );
 }

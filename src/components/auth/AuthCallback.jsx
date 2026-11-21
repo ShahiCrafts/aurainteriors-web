@@ -57,15 +57,12 @@ export default function AuthCallback() {
     handleOAuthCallback();
   }, [signIn, navigate]);
 
+  // Identical to the app splash (same #f3f4f6 background, same 168px
+  // animation, no text) so the splash fades into this screen seamlessly —
+  // the user sees one continuous loading animation, not two loaders.
   return (
-    <div className="min-h-screen flex items-center justify-center bg-[#FDFDFD]">
-      <div className="text-center flex flex-col items-center">
-        {/* The one standard loading animation (BrandLoader). */}
-        <BrandLoader size={120} />
-        <p className="text-neutral-600 font-dm-sans text-sm mt-4">
-          Signing you in...
-        </p>
-      </div>
+    <div className="min-h-screen flex items-center justify-center bg-[#f3f4f6]">
+      <BrandLoader size={168} />
     </div>
   );
 }

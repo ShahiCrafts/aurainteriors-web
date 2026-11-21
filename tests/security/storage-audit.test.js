@@ -17,6 +17,12 @@
 //   aura_chat_greeted          ChatWidget greeting dismissal
 //   admin_sidebar_collapsed    AdminLayout UI preference
 //   aura-ar-tutorial-dismissed NativeARView UI preference
+//   aura.recentSearches        SearchModal recent-search history
+//                              (device-local UI preference, kept on
+//                              logout; holds only the user's own search
+//                              terms as plain strings — no credentials,
+//                              no email fields; user-clearable via the
+//                              search popup's Clear History control)
 //
 // sessionStorage: exactly ONE sanctioned key —
 //   buy_now_item               buyNowStore (direct-checkout line;
@@ -71,6 +77,7 @@ const ALLOWED_LOCAL_KEYS = new Set([
   "aura_chat_greeted",
   "admin_sidebar_collapsed",
   "aura-ar-tutorial-dismissed",
+  "aura.recentSearches",
 ]);
 // Keys that may be REFERENCED in src/ only to be removed, never to be
 // persisted: the legacy auth keys (authStore/AuthCallback cleanup) and,
