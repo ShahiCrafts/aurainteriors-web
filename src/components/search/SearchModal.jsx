@@ -307,7 +307,7 @@ export default function SearchModal({ onClose }) {
         onClick={onClose}
         aria-hidden="true"
       />
-      <div className="relative w-full max-w-4xl bg-white rounded-2xl shadow-[0_24px_70px_rgba(0,0,0,0.28)] animate-in fade-in duration-300 max-h-[90dvh] flex flex-col">
+      <div className="relative w-full max-w-3xl bg-white rounded-2xl shadow-[0_24px_70px_rgba(0,0,0,0.28)] animate-in fade-in duration-300 max-h-[90dvh] flex flex-col">
         <button
           type="button"
           onClick={onClose}
