@@ -26,6 +26,7 @@ import {
   Layers,
   DoorOpen,
   LayoutGrid,
+  Plug,
 } from "lucide-react";
 import AdminSidebar from "./AdminSidebar";
 import AdminTopbar from "./AdminTopbar";
@@ -259,6 +260,17 @@ export default function AdminLayout() {
           label: "Announcements",
           icon: Bell,
           path: "/dashboard/announcements",
+        },
+      ],
+    },
+    {
+      title: "System",
+      items: [
+        {
+          id: "integrations",
+          label: "Integrations",
+          icon: Plug,
+          path: "/dashboard/integrations",
         },
       ],
     },
