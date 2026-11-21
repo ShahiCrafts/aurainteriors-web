@@ -5,6 +5,7 @@ import {
   X,
   Clock,
   Sparkles,
+  Star,
   ArrowRight,
   LayoutGrid,
   Armchair,
@@ -22,7 +23,6 @@ import { useCategoryTree } from "../../hooks/product/useCategoryTan";
 import { getProductImageUrl } from "../../utils/imageUrl";
 import { formatNPR } from "../../utils/formatCurrency";
 import { shopCategoryUrl } from "../../utils/shopFilters";
-import Rating from "../ui/Rating";
 import BrandLoader from "../common/BrandLoader";
 
 const RECENTS_KEY = "aura.recentSearches";
@@ -286,17 +286,38 @@ export default function SearchModal({ onClose }) {
           <p className="text-[12px] text-[#8C8782] truncate mt-0.5">
             {product.category?.name}
           </p>
-          {ratingAverage > 0 && ratingCount > 0 && (
-            <div className="mt-1">
-              <Rating value={ratingAverage} count={ratingCount} size="sm" />
-            </div>
-          )}
+          {/* Always shown, even with no reviews yet (0.0 / 0 Reviews). */}
+          <div
+            className="flex items-center gap-1.5 mt-1"
+            role="img"
+            aria-label={`Rated ${ratingAverage.toFixed(1)} out of 5 from ${ratingCount} reviews`}
+          >
+            <span className="flex items-center gap-0.5" aria-hidden="true">
+              {[1, 2, 3, 4, 5].map((star) => (
+                <Star
+                  key={star}
+                  size={13}
+                  className={
+                    star <= Math.round(ratingAverage)
+                      ? "fill-brand text-brand"
+                      : "fill-neutral-200 text-neutral-200"
+                  }
+                />
+              ))}
+            </span>
+            <span className="text-[12px] font-semibold text-neutral-800">
+              {ratingAverage.toFixed(1)}
+            </span>
+            <span className="text-[12px] text-neutral-400">
+              ({ratingCount} Reviews)
+            </span>
+          </div>
         </div>
         <div className="flex flex-col items-end gap-1.5 shrink-0">
           <span className="text-[15px] font-bold text-brand whitespace-nowrap">
             {formatNPR(product.price)}
           </span>
-          <span className="text-[12px] font-semibold text-[#6A6058] border border-[#F0EFED] rounded-full px-3 py-1 group-hover:border-brand group-hover:text-brand transition-colors whitespace-nowrap">
+          <span className="text-[12px] font-semibold text-[#6A6058] rounded-full px-3 py-1 group-hover:text-brand transition-colors whitespace-nowrap">
             View Details →
           </span>
         </div>

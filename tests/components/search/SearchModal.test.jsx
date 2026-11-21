@@ -67,6 +67,8 @@ describe("SearchModal", () => {
       screen.getByText("Aranya Textured Sofa Throw in Rust"),
     ).toBeInTheDocument();
     expect(screen.getByText("NPR 5,799")).toBeInTheDocument();
+    expect(screen.getByText("4.8")).toBeInTheDocument();
+    expect(screen.getByText("(124 Reviews)")).toBeInTheDocument();
     expect(screen.getAllByText("Sofas & Seating").length).toBeGreaterThan(0);
     expect(screen.getByText("No recent searches yet")).toBeInTheDocument();
   });
