@@ -108,7 +108,13 @@ function renderPage(template, page) {
     /(<meta\s+name="description"\s+content=")[^"]*(")/,
     `$1${esc(page.description)}$2`,
   );
-  html = html.replace("</head>", `    ${headHtml(page)}\n  </head>`);
+  // Replace the template's default-head block (marked in index.html)
+  // with this page's own tags. Appending instead would ship duplicate
+  // canonical/OG/robots tags — one set pointing at the homepage.
+  html = html.replace(
+    /<!-- prerender:default-head:start -->[\s\S]*?<!-- prerender:default-head:end -->/,
+    headHtml(page),
+  );
   html = html.replace(
     '<div id="root"></div>',
     `<div id="root">\n${page.body}\n</div>`,
@@ -491,6 +497,15 @@ ${indexedCategories.map((c) => `- ${c.name}: ${SITE_URL}/shop/${c.slug}`).join("
 
 ## Rooms
 ${rooms.map((r) => `- ${r.label}: ${SITE_URL}/rooms/${r.slug}`).join("\n")}
+
+## Collections
+${collections.map((c) => `- ${c.label || c.name || c.slug}: ${SITE_URL}/collections/${c.slug}`).join("\n")}
+
+## Good to know
+- Prices are in Nepali Rupees (NPR) and include the product as described on its page.
+- Delivery is available across Nepal; delivery details and support are on the contact page.
+- Many products offer an augmented-reality "View in Room" preview from the product page.
+- Product pages list dimensions, materials, colours and stock status.
 `;
   await writeFile(path.join(distDir, "llms.txt"), llms);
 

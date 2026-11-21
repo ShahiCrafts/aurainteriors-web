@@ -34,14 +34,17 @@
       rel="stylesheet"
     />
 
-    <!-- Default head for routes without a prerendered page. Indexable
-         routes get their own title/meta/canonical/OG/JSON-LD from
-         scripts/prerender.mjs at build time. -->
-    <meta name="robots" content="index, follow" />
     <meta name="theme-color" content="#1E2C4A" />
     <meta name="geo.region" content="NP-3" />
     <meta name="geo.placename" content="Lalitpur" />
-    <link rel="canonical" href="https://aurainteriors.live/" />
+    <!-- Default head for routes without a prerendered page. Indexable
+         routes get their own title/meta/canonical/OG/JSON-LD from
+         scripts/prerender.mjs at build time: the prerenderer REPLACES
+         the block between the markers below with the page's own tags,
+         so a served page never carries two canonicals/OG sets. -->
+    <!-- prerender:default-head:start -->
+    <meta name="robots" content="index, follow" />
+    <link rel="canonical" href="https://www.aurainteriors.live/" />
     <meta property="og:site_name" content="Aura Interiors" />
     <meta property="og:type" content="website" />
     <meta property="og:title" content="Aura Interiors – Redefine Your Space" />
@@ -49,14 +52,51 @@
       property="og:description"
       content="Aura Interiors – Discover handcrafted furniture and home décor that transforms your living space. Shop sofas, beds, dining sets, wardrobes and more."
     />
-    <meta property="og:url" content="https://aurainteriors.live/" />
-    <meta property="og:image" content="https://aurainteriors.live/promo-ad-banner.webp" />
+    <meta property="og:url" content="https://www.aurainteriors.live/" />
+    <meta property="og:image" content="https://www.aurainteriors.live/promo-ad-banner.webp" />
     <meta name="twitter:card" content="summary_large_image" />
+    <!-- prerender:default-head:end -->
 
     <title>Aura Interiors – Redefine Your Space</title>
+
+    <!--
+      First-paint shell: inline critical styles + a branded splash so the
+      very first paint is the brand, never unstyled prerendered text.
+      The splash sits above everything (including the SEO content the
+      prerenderer stamps into #root) and is removed by main.jsx as soon
+      as the app mounts; the CSS animation below also fades it out on
+      its own if the bundle ever fails to load. Inline <style> is
+      permitted by the CSP (style-src 'unsafe-inline'); no inline
+      scripts are used anywhere.
+    -->
+    <style>
+      html { background: #1e2c4a; }
+      body { margin: 0; }
+      #app-splash {
+        position: fixed; inset: 0; z-index: 9999;
+        display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 18px;
+        background: #1e2c4a; color: #fff;
+        font-family: "DM Sans", system-ui, -apple-system, "Segoe UI", sans-serif;
+        animation: app-splash-failsafe 0.6s ease 7s forwards;
+      }
+      #app-splash .wordmark { font-size: 22px; font-weight: 700; letter-spacing: 0.35em; text-transform: uppercase; }
+      #app-splash .wordmark span { color: #f97316; }
+      #app-splash .bar { width: 148px; height: 2px; background: rgba(255, 255, 255, 0.18); overflow: hidden; border-radius: 2px; }
+      #app-splash .bar::before {
+        content: ""; display: block; height: 100%; width: 40%;
+        background: #f97316; border-radius: 2px;
+        animation: app-splash-slide 1.1s ease-in-out infinite;
+      }
+      @keyframes app-splash-slide { 0% { transform: translateX(-110%);} 100% { transform: translateX(280%);} }
+      @keyframes app-splash-failsafe { to { opacity: 0; visibility: hidden; } }
+    </style>
   </head>
   <body>
     <div id="root"></div>
+    <div id="app-splash" role="status" aria-label="Loading Aura Interiors">
+      <div class="wordmark">Aura<span>&nbsp;Interiors</span></div>
+      <div class="bar"></div>
+    </div>
     <script type="module" src="/src/main.jsx"></script>
   </body>
 </html>

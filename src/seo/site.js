@@ -2,7 +2,7 @@
 // runtime <Seo> component and by scripts/prerender.mjs so the two can
 // never drift. If the preferred host ever becomes www, change SITE_URL
 // here only.
-export const SITE_URL = "https://aurainteriors.live";
+export const SITE_URL = "https://www.aurainteriors.live";
 export const SITE_NAME = "Aura Interiors";
 export const SITE_DESCRIPTION =
   "Aura Interiors – furniture and home décor made for Nepali homes. Shop sofas, beds, dining sets, wardrobes, lighting and décor online with delivery across Nepal.";
