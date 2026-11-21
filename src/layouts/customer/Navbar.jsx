@@ -186,7 +186,10 @@ export default function Navbar() {
             />
           </Link>
 
-          <div className="hidden md:block flex-1 max-w-140 relative">
+          <div
+            id="navbar-search-anchor"
+            className="hidden md:block flex-1 max-w-140 relative"
+          >
             <form onSubmit={handleSearchTriggerSubmit} className="relative">
               <Search
                 size={16}

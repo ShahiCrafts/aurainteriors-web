@@ -24,7 +24,6 @@ import { formatNPR } from "../../utils/formatCurrency";
 import { shopCategoryUrl } from "../../utils/shopFilters";
 import Rating from "../ui/Rating";
 import BrandLoader from "../common/BrandLoader";
-import promoSofasImage from "../../assets/images/promo/promo-sofas-seating.webp";
 
 const RECENTS_KEY = "aura.recentSearches";
 const MAX_RECENTS = 6;
@@ -167,13 +166,26 @@ export default function SearchModal({ onClose }) {
     return list;
   }, [products, sort]);
 
-  const sofasCategory = useMemo(
-    () =>
-      topCategories.find((category) =>
-        category.name?.toLowerCase().includes("sofa"),
-      ),
-    [topCategories],
-  );
+  // The popup is anchored to the navbar search bar — same left edge and
+  // same width — so it exactly covers the bar behind it, whatever the
+  // viewport size. Measured from the live element and re-measured on
+  // resize. On mobile the bar is hidden, so there is no anchor and the
+  // popup falls back to the centered layout.
+  const [anchor, setAnchor] = useState(null);
+  useEffect(() => {
+    const measure = () => {
+      const el = document.getElementById("navbar-search-anchor");
+      const rect = el?.getBoundingClientRect();
+      setAnchor(
+        rect && rect.width > 0
+          ? { left: rect.left, width: rect.width, top: rect.top }
+          : null,
+      );
+    };
+    measure();
+    window.addEventListener("resize", measure);
+    return () => window.removeEventListener("resize", measure);
+  }, []);
 
   useEffect(() => {
     inputRef.current?.focus();
@@ -295,7 +307,21 @@ export default function SearchModal({ onClose }) {
         onClick={onClose}
         aria-hidden="true"
       />
-      <div className="relative w-full max-w-[560px] bg-white rounded-2xl shadow-[0_24px_70px_rgba(0,0,0,0.28)] animate-in fade-in zoom-in-95 duration-200 max-h-[90dvh] flex flex-col">
+      <div
+        style={
+          anchor
+            ? {
+                position: "fixed",
+                left: anchor.left,
+                width: anchor.width,
+                top: Math.max(8, anchor.top - 18),
+              }
+            : undefined
+        }
+        className={`bg-white rounded-2xl shadow-[0_24px_70px_rgba(0,0,0,0.28)] animate-in fade-in zoom-in-95 duration-200 max-h-[90dvh] flex flex-col ${
+          anchor ? "" : "relative w-full max-w-[560px]"
+        }`}
+      >
         <button
           type="button"
           onClick={onClose}
@@ -411,35 +437,6 @@ export default function SearchModal({ onClose }) {
               )}
             </div>
 
-            {!searching && (
-              <div className="flex mt-5 rounded-2xl overflow-hidden bg-[#FDF0E7]">
-                <div className="flex-1 p-3.5">
-                  <h4 className="text-[14.5px] font-bold text-[#1A1714] leading-snug">
-                    Upgrade Your Space
-                  </h4>
-                  <p className="text-[12.5px] text-[#6A6058] mt-0.5">
-                    with Timeless Comfort
-                  </p>
-                  <button
-                    type="button"
-                    onClick={() =>
-                      sofasCategory
-                        ? goToCategory(sofasCategory)
-                        : (navigate("/shop"), onClose())
-                    }
-                    className="mt-2.5 bg-brand hover:bg-brand-hover text-white border-none rounded-lg px-3 py-1.5 font-sans text-[12.5px] font-semibold cursor-pointer transition-colors"
-                  >
-                    Shop Sofas →
-                  </button>
-                </div>
-                <img
-                  src={promoSofasImage}
-                  alt="Sofas and seating collection"
-                  loading="lazy"
-                  className="w-24 object-cover shrink-0"
-                />
-              </div>
-            )}
           </div>
 
           <div>
