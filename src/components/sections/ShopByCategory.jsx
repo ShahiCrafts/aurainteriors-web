@@ -37,7 +37,7 @@ export default function ShopByCategory() {
   return (
     <section
       ref={sectionRef}
-      className="mt-0 bg-white px-2 pt-8 font-dm-sans md:px-6 lg:px-8"
+      className="mt-0 bg-white px-4 pt-8 font-dm-sans md:px-6 lg:px-8"
     >
       <div className="mx-auto max-w-360">
         <div className="mb-6 flex flex-wrap items-end justify-between gap-4">

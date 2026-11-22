@@ -61,7 +61,7 @@ export default function FeaturedPieces() {
   return (
     <section
       ref={sectionRef}
-      className="bg-white px-2 pb-10 pt-8 font-dm-sans md:px-6 lg:px-8"
+      className="bg-white px-4 pb-10 pt-8 font-dm-sans md:px-6 lg:px-8"
     >
       <div className="mx-auto max-w-360">
         {/* Section Header */}

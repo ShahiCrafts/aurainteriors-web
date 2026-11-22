@@ -90,7 +90,7 @@ export default function Testimonials() {
 
   return (
     <section className="py-8 md:py-12 bg-white font-dm-sans overflow-hidden">
-      <div className="max-w-360 mx-auto px-2 md:px-6 lg:px-8 relative">
+      <div className="max-w-360 mx-auto px-4 md:px-6 lg:px-8 relative">
         {/* HEADER */}
         <div className="flex flex-col items-center text-center mb-6">
           <h2 className="text-[28px] md:text-[36px] font-semibold text-[#1A1714]">
@@ -122,7 +122,7 @@ export default function Testimonials() {
           </div>
 
           {/* SLIDER WINDOW */}
-          <div className="overflow-hidden -mx-2 px-2 md:-mx-6 md:px-6 lg:-mx-6 lg:px-6 py-10 -my-10">
+          <div className="overflow-hidden -mx-4 px-4 md:-mx-6 md:px-6 lg:-mx-6 lg:px-6 py-10 -my-10">
             <div
               className="flex transition-transform duration-700 ease-out gap-2 md:gap-4 lg:gap-8 py-6"
               style={{

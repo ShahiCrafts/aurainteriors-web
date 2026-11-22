@@ -286,7 +286,7 @@ const ChatWidget = () => {
             initial={{ opacity: 0, scale: 0.95, y: 20 }}
             animate={{ opacity: 1, scale: 1, y: 0 }}
             exit={{ opacity: 0, scale: 0.95, y: 20 }}
-            className="fixed inset-x-4 top-4 bottom-[calc(76px+env(safe-area-inset-bottom))] md:inset-auto md:bottom-24 md:right-6 md:w-[430px] md:h-[650px] md:max-h-[82vh] bg-white rounded-2xl border border-stone-200/60 overflow-hidden pointer-events-auto"
+            className="fixed inset-x-4 bottom-[calc(76px+env(safe-area-inset-bottom))] h-[min(560px,72dvh)] md:inset-auto md:bottom-24 md:right-6 md:w-[430px] md:h-[650px] md:max-h-[82vh] bg-white rounded-2xl border border-stone-200/60 overflow-hidden pointer-events-auto"
           >
             <ChatWindow
               chat={activeChat}
