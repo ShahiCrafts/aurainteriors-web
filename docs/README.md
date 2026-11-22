@@ -49,6 +49,7 @@ two audiences:
 | Guide | What it covers |
 | --- | --- |
 | [Storefront & Catalog](features/storefront-and-catalog.md) | Home page, categories, rooms, collections, product pages, search, reviews |
+| [Screenshots & Responsiveness](features/screenshots-and-responsiveness.md) | Visual tour of the storefront and admin, and the responsive design rules |
 | [Cart, Checkout & Orders](features/cart-checkout-and-orders.md) | Guest and account carts, checkout, order lifecycle, tracking, returns |
 | [Payments](features/payments.md) | Cash on Delivery and eSewa: flow, verification, refunds |
 | [Accounts & Authentication](features/accounts-and-auth.md) | Email/password, Google sign-in, magic links, sessions, profile |

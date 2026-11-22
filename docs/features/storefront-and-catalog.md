@@ -1,5 +1,10 @@
 # Storefront & Catalog
 
+![Storefront home page](https://docs.aurainteriors.live/assets/screenshots/storefront-home-desktop.jpg)
+
+*The live home page. More views — shop, product page, admin — are in
+[Screenshots & Responsiveness](screenshots-and-responsiveness.md).*
+
 ## Home page
 
 The home page is a stack of sections whose **order and visibility are

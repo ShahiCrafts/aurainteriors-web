@@ -7,6 +7,8 @@ Every significant admin action is written to the **audit log**
 
 ## Dashboard
 
+![Admin dashboard](https://docs.aurainteriors.live/assets/screenshots/admin-dashboard-desktop.jpg)
+
 The home dashboard (`/dashboard`) shows store analytics from
 `/api/v1/analytics`: headline stats, revenue over time, sales by category
 and top products (charts via `recharts`).
