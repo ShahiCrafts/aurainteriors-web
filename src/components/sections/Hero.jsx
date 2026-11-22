@@ -352,11 +352,11 @@ export default function Hero() {
           />
           <div className="absolute inset-0 bg-linear-to-t from-black/70 from-15% via-black/35 via-70% to-transparent pointer-events-none" />
           <div className="absolute inset-0 p-6 flex flex-col justify-end">
-            <h2 className="text-[34px] leading-[1.08] font-semibold text-white tracking-wide drop-shadow-md">
+            <h2 className="text-[28px] leading-[1.12] font-bold text-white tracking-[-0.01em] drop-shadow-md">
               {mainSlide.heading} <br />
               <span className="text-brand">{mainSlide.highlight}</span>
             </h2>
-            <p className="mt-2 text-[14px] leading-relaxed text-white/85 line-clamp-2 max-w-75 drop-shadow-sm">
+            <p className="mt-2 text-[13px] leading-[1.55] text-white/85 line-clamp-2 max-w-75 drop-shadow-sm">
               {mainSlide.desc}
             </p>
             <div className="mt-5 flex items-end justify-between gap-3">
@@ -390,12 +390,12 @@ export default function Hero() {
 
         {/* Shop by collection — the two bento side cards as a pair */}
         <div className="mt-7 flex items-center justify-between">
-          <h2 className="text-[22px] font-bold text-[#1A1714]">
+          <h2 className="text-[20px] font-bold leading-[1.25] tracking-[-0.01em] text-[#1A1714]">
             Shop by collection
           </h2>
           <Link
             to="/shop"
-            className="flex items-center gap-1 text-brand text-[14px] font-semibold no-underline"
+            className="flex items-center gap-1 text-brand text-[13px] font-semibold no-underline"
           >
             View all <ArrowRight size={15} />
           </Link>
@@ -417,7 +417,7 @@ export default function Hero() {
             />
             <div className="absolute inset-0 bg-linear-to-t from-black/70 from-15% via-black/35 via-70% to-transparent pointer-events-none" />
             <div className="absolute inset-0 p-3.5 flex flex-col justify-end">
-              <div className="text-[15px] sm:text-lg font-bold text-white leading-snug drop-shadow-sm">
+              <div className="text-[14px] sm:text-lg font-bold text-white leading-snug drop-shadow-sm">
                 {sideSlide.heading} {sideSlide.highlight}
               </div>
               <div className="mt-2.5">
@@ -444,7 +444,7 @@ export default function Hero() {
               />
               <div className="absolute inset-0 bg-linear-to-t from-black/70 from-15% via-black/35 via-70% to-transparent pointer-events-none" />
               <div className="absolute inset-0 p-3.5 flex flex-col justify-end">
-                <div className="text-[15px] sm:text-lg font-bold text-white leading-snug drop-shadow-sm">
+                <div className="text-[14px] sm:text-lg font-bold text-white leading-snug drop-shadow-sm">
                   {promo.headline || "Calmora Bed Frame"}
                 </div>
                 <div className="text-[15px] sm:text-base font-bold text-brand drop-shadow-sm">

@@ -93,11 +93,11 @@ export default function Testimonials() {
       <div className="max-w-360 mx-auto px-4 md:px-6 lg:px-8 relative">
         {/* HEADER */}
         <div className="flex flex-col items-center text-center mb-6">
-          <h2 className="text-[28px] md:text-[36px] font-semibold text-[#1A1714]">
+          <h2 className="text-[20px] md:text-[36px] font-semibold max-md:font-bold max-md:leading-[1.25] max-md:tracking-[-0.01em] text-[#1A1714]">
             Voices of Aura{" "}
             <em className="text-brand not-italic">Interiors</em>
           </h2>
-          <p className="text-[15px] text-black/40 max-w-125">
+          <p className="text-[15px] max-md:text-[13px] max-md:leading-[1.55] text-black/40 max-w-125">
             Hear from our global community about their journey in creating a
             curated, soul-filled home.
           </p>
@@ -151,7 +151,7 @@ export default function Testimonials() {
                   </div>
 
                   {/* TEXT */}
-                  <p className="text-[14px] md:text-[15px] text-[#1A1714] leading-[1.7] font-light italic mb-6 flex-1">
+                  <p className="text-[13px] md:text-[15px] text-[#1A1714] leading-[1.65] md:leading-[1.7] font-light max-md:font-normal italic mb-6 flex-1">
                     "{item.text}"
                   </p>
 

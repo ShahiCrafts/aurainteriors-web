@@ -42,15 +42,15 @@ export default function ShopByCategory() {
       <div className="mx-auto max-w-360">
         <div className="mb-6 flex flex-wrap items-end justify-between gap-4">
           <div>
-            <p className="text-[14px] font-light text-black/40">
+            <p className="text-[14px] font-light text-black/40 max-md:text-[11px] max-md:font-semibold max-md:uppercase max-md:tracking-[0.14em] max-md:text-black/45">
               Shop by Category
             </p>
 
-            <h2 className="mt-2 text-[28px] font-bold leading-tight text-[#1A1714] md:text-[36px]">
+            <h2 className="mt-2 text-[20px] font-bold leading-tight max-md:tracking-[-0.01em] text-[#1A1714] md:text-[36px]">
               Explore Our Categories
             </h2>
 
-            <p className="mt-1.5 text-[14px] text-black/45 md:text-[15px]">
+            <p className="mt-1.5 text-[13px] max-md:leading-[1.55] text-black/45 md:text-[15px]">
               Discover furniture and décor for every space, styled for modern
               living.
             </p>
@@ -58,7 +58,7 @@ export default function ShopByCategory() {
 
           <Link
             to="/shop"
-            className="text-[14px] font-semibold text-[#1A1714] underline underline-offset-4 transition-colors hover:text-brand focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand"
+            className="text-[14px] max-md:text-[13px] font-semibold text-[#1A1714] underline underline-offset-4 transition-colors hover:text-brand focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand"
           >
             View All Categories
           </Link>
