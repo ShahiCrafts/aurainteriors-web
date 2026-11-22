@@ -244,6 +244,14 @@ export const resolveChat = async (chatId) => {
   return response.data;
 };
 
+export const updateChatPriority = async (chatId, priority) => {
+  const response = await api.patch(
+    `/chats/${encodeURIComponent(chatId)}/priority`,
+    { priority },
+  );
+  return response.data;
+};
+
 export const getChatStats = async () => {
   const response = await api.get("/chats/admin/stats");
   return response.data;
@@ -289,6 +297,7 @@ export default {
   getAllChats,
   getWaitingQueue,
   resolveChat,
+  updateChatPriority,
   getChatStats,
   toggleBot,
   updateMessageAttachments,

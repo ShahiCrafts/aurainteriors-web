@@ -11,6 +11,8 @@ vi.mock("../../../../src/hooks/chat/useChatTan.js", () => ({
   useChatMessages: vi.fn(),
   useMarkMessagesRead: vi.fn(),
   useResolveChat: vi.fn(),
+  // Batch 3c: the redesigned header's priority dropdown uses this hook.
+  useUpdateChatPriority: vi.fn(),
 }));
 
 vi.mock("../../../../src/hooks/chat/useChatSocket.js", () => ({
@@ -29,8 +31,9 @@ vi.mock("../../../../src/store/authStore.js", () => ({
   default: () => ({ user: { _id: "admin-1" }, token: "test-token" }),
 }));
 
-// Shared chat children are not under test here.
-vi.mock("../../../../src/components/chat/ChatMessageList.jsx", () => ({
+// Shared chat children are not under test here. Batch 3c: the thread
+// renders through the admin-specific AdminMessageList.
+vi.mock("../../../../src/components/admin/chat/AdminMessageList.jsx", () => ({
   default: () => null,
 }));
 vi.mock("../../../../src/components/chat/ChatInput.jsx", () => ({
@@ -44,6 +47,7 @@ import {
   useChatMessages,
   useMarkMessagesRead,
   useResolveChat,
+  useUpdateChatPriority,
 } from "../../../../src/hooks/chat/useChatTan.js";
 import ChatConversation from "../../../../src/components/admin/chat/ChatConversation.jsx";
 
@@ -70,6 +74,7 @@ beforeEach(() => {
   });
   useMarkMessagesRead.mockReturnValue({ mutate: vi.fn() });
   useResolveChat.mockReturnValue({ mutate: vi.fn(), isPending: false });
+  useUpdateChatPriority.mockReturnValue({ mutate: vi.fn(), isPending: false });
 });
 
 describe("ChatConversation header (FE-14)", () => {

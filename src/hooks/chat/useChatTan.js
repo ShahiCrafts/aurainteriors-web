@@ -362,6 +362,20 @@ export const useChatStats = (options = {}) => {
   });
 };
 
+export const useUpdateChatPriority = () => {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: ({ chatId, priority }) =>
+      chatApi.updateChatPriority(chatId, priority),
+    onSuccess: (data, variables) => {
+      const { chatId } = variables;
+      queryClient.invalidateQueries({ queryKey: ["chats", chatId] });
+      queryClient.invalidateQueries({ queryKey: ["chats", "admin", "all"] });
+    },
+  });
+};
+
 export const useToggleBot = () => {
   const queryClient = useQueryClient();
 

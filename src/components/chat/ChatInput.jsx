@@ -4,7 +4,13 @@ import {
   ATTACHMENT_MIME_TYPES,
 } from "../../utils/chatAttachmentPolicy";
 import { useState, useRef, useEffect, useCallback } from "react";
-import { FileText, LucideSendHorizontal, Paperclip, X } from "lucide-react";
+import {
+  FileText,
+  LucideSendHorizontal,
+  Paperclip,
+  Smile,
+  X,
+} from "lucide-react";
 import { AnimatePresence } from "framer-motion";
 import {
   useSendMessage,
@@ -57,7 +63,22 @@ const UploadRing = ({ progress }) => {
   );
 };
 
-const ChatInput = ({ chatId, onTyping, draftReply }) => {
+// Batch 3c: the admin Support Chat redesign uses variant="admin" —
+// the same composer (same upload/send machinery) restyled to the
+// admin design: boxed attach button, a working emoji insert, and a
+// filled blue send button. The default variant renders exactly as
+// before for the customer chat; the emoji control exists ONLY in the
+// admin variant (FE-38 removed the dead customer-side emoji button —
+// this one is wired to a real insert, below).
+const ADMIN_EMOJIS = [
+  "😀", "😁", "😂", "🙂", "😉", "😍",
+  "👍", "🙏", "👏", "🎉", "🔥", "✅",
+  "📦", "🚚", "💬", "⭐", "❤️", "😊",
+];
+
+const ChatInput = ({ chatId, onTyping, draftReply, variant = "default" }) => {
+  const isAdminVariant = variant === "admin";
+  const [showEmojiPicker, setShowEmojiPicker] = useState(false);
   const [message, setMessage] = useState("");
   const [selectedFiles, setSelectedFiles] = useState([]);
   const [showAuthModal, setShowAuthModal] = useState(false);
@@ -339,6 +360,23 @@ const ChatInput = ({ chatId, onTyping, draftReply }) => {
     }, 300);
   };
 
+  // Admin variant only: insert the emoji at the textarea cursor (or
+  // at the end) and keep the typing indicator semantics by routing
+  // through handleTypingChange.
+  const insertEmoji = (emoji) => {
+    const textarea = textareaRef.current;
+    const start = textarea?.selectionStart ?? message.length;
+    const end = textarea?.selectionEnd ?? message.length;
+    const next = message.slice(0, start) + emoji + message.slice(end);
+    handleTypingChange(next);
+    setShowEmojiPicker(false);
+    requestAnimationFrame(() => {
+      textarea?.focus();
+      const pos = start + emoji.length;
+      textarea?.setSelectionRange?.(pos, pos);
+    });
+  };
+
   const handleFileSelect = (files) => {
     if (sendingRef.current) return;
     const incoming = Array.from(files || []);
@@ -514,7 +552,13 @@ const ChatInput = ({ chatId, onTyping, draftReply }) => {
 
   return (
     <>
-      <div className="bg-white px-4 py-3 border-t border-gray-100/35">
+      <div
+        className={
+          isAdminVariant
+            ? "bg-white px-4 py-3"
+            : "bg-white px-4 py-3 border-t border-gray-100/35"
+        }
+      >
         <AnimatePresence>
           {selectedFiles.length > 0 && (
             <div className="flex flex-wrap gap-2 pb-3">
@@ -610,12 +654,19 @@ const ChatInput = ({ chatId, onTyping, draftReply }) => {
             <button
               onClick={() => fileInputRef.current?.click()}
               disabled={isSending}
-              className="p-2 rounded-lg hover:bg-gray-100 hover:text-gray-600 transition-colors disabled:opacity-50"
+              aria-label="Attach a file"
+              className={
+                isAdminVariant
+                  ? "p-2.5 rounded-xl border border-gray-200 bg-white text-gray-500 shadow-sm hover:bg-gray-50 hover:text-gray-700 transition-colors disabled:opacity-50"
+                  : "p-2 rounded-lg hover:bg-gray-100 hover:text-gray-600 transition-colors disabled:opacity-50"
+              }
             >
               <Paperclip className="w-5 h-5" />
             </button>
 
-            <div className="h-6 w-px bg-gray-200 mx-1 shrink-0" />
+            {!isAdminVariant && (
+              <div className="h-6 w-px bg-gray-200 mx-1 shrink-0" />
+            )}
           </div>
 
           {/* Text Input */}
@@ -641,25 +692,73 @@ const ChatInput = ({ chatId, onTyping, draftReply }) => {
 
             {/* FE-38: an emoji button rendered here with no onClick and
                 no emoji picker anywhere in the app — removed rather
-                than left as a dead control. */}
+                than left as a dead control. Batch 3c: the ADMIN
+                variant brings it back as a wired control (real emoji
+                insert, below); the customer variant stays without it. */}
+            {isAdminVariant && (
+              <div className="relative shrink-0">
+                <button
+                  type="button"
+                  aria-label="Insert emoji"
+                  onClick={() => setShowEmojiPicker((open) => !open)}
+                  className="p-1.5 text-gray-400 hover:text-gray-600 transition-colors"
+                >
+                  <Smile className="w-5 h-5" />
+                </button>
+                {showEmojiPicker && (
+                  <div className="absolute bottom-full right-0 mb-2 w-60 rounded-xl border border-gray-200 bg-white p-2 shadow-lg z-20 grid grid-cols-6 gap-1">
+                    {ADMIN_EMOJIS.map((emoji) => (
+                      <button
+                        key={emoji}
+                        type="button"
+                        aria-label={`Insert emoji ${emoji}`}
+                        onClick={() => insertEmoji(emoji)}
+                        className="p-1.5 text-lg leading-none rounded-lg hover:bg-gray-100"
+                      >
+                        {emoji}
+                      </button>
+                    ))}
+                  </div>
+                )}
+              </div>
+            )}
           </div>
 
           {/* Send Button */}
-          <button
-            onClick={handleSend}
-            disabled={!canSend}
-            className={`p-2 transition-colors ${
-              canSend
-                ? "text-[#F27318] hover:text-[#D9620E]"
-                : "text-gray-300 cursor-not-allowed"
-            }`}
-          >
-            {isUploading ? (
-              <div className="h-4 w-4 rounded-full bg-[#F27318]/60 motion-safe:animate-pulse" />
-            ) : (
-              <LucideSendHorizontal className="h-6 w-6" />
-            )}
-          </button>
+          {isAdminVariant ? (
+            <button
+              onClick={handleSend}
+              disabled={!canSend}
+              aria-label="Send message"
+              className={`p-2.5 rounded-xl shadow-sm transition-colors shrink-0 ${
+                canSend
+                  ? "bg-[#2563EB] text-white hover:bg-blue-700"
+                  : "bg-gray-100 text-gray-300 cursor-not-allowed shadow-none"
+              }`}
+            >
+              {isUploading ? (
+                <div className="h-5 w-5 rounded-full bg-current opacity-60 motion-safe:animate-pulse" />
+              ) : (
+                <LucideSendHorizontal className="h-5 w-5" />
+              )}
+            </button>
+          ) : (
+            <button
+              onClick={handleSend}
+              disabled={!canSend}
+              className={`p-2 transition-colors ${
+                canSend
+                  ? "text-[#F27318] hover:text-[#D9620E]"
+                  : "text-gray-300 cursor-not-allowed"
+              }`}
+            >
+              {isUploading ? (
+                <div className="h-4 w-4 rounded-full bg-[#F27318]/60 motion-safe:animate-pulse" />
+              ) : (
+                <LucideSendHorizontal className="h-6 w-6" />
+              )}
+            </button>
+          )}
         </div>
       </div>
 
