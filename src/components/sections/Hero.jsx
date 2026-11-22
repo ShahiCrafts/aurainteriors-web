@@ -338,7 +338,7 @@ export default function Hero() {
           carousel (the desktop hero doesn't slide either): the main
           slide as one card, then the two side cards as a pair. ── */}
       <div className="lg:hidden px-4 pt-3 pb-2">
-        <div className="relative h-[380px] sm:h-[420px] rounded-2xl overflow-hidden bg-[#F9F8F6]">
+        <div className="relative h-[304px] sm:h-[336px] rounded-2xl overflow-hidden bg-[#F9F8F6]">
           <img
             src={mainImg.src}
             srcSet={mainImg.srcSet}
@@ -403,7 +403,7 @@ export default function Hero() {
         <div
           className={`mt-3.5 grid gap-3 ${promoVisible ? "grid-cols-2" : "grid-cols-1"}`}
         >
-          <div className="relative h-52 sm:h-64 rounded-2xl overflow-hidden group shadow-sm bg-[#F9F8F6]">
+          <div className="relative h-[187px] sm:h-[230px] rounded-2xl overflow-hidden group shadow-sm bg-[#F9F8F6]">
             <img
               src={sideImg.src}
               srcSet={sideImg.srcSet}
@@ -430,7 +430,7 @@ export default function Hero() {
             </div>
           </div>
           {promoVisible && (
-            <div className="relative h-52 sm:h-64 rounded-2xl overflow-hidden group shadow-sm bg-[#F9F8F6]">
+            <div className="relative h-[187px] sm:h-[230px] rounded-2xl overflow-hidden group shadow-sm bg-[#F9F8F6]">
               <img
                 src={promoImg.src}
                 srcSet={promoImg.srcSet}
