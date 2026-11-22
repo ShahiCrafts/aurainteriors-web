@@ -48,7 +48,7 @@ export function CategoryCardSkeleton({ className = "" }) {
   return (
     <div
       aria-hidden="true"
-      className={`flex aspect-square flex-col overflow-hidden rounded-sm border border-black/6 bg-white md:rounded-lg ${className}`}
+      className={`flex aspect-square flex-col overflow-hidden rounded-xl border border-black/6 bg-white md:rounded-lg ${className}`}
     >
       <div className="shimmer-element relative min-h-0 w-full flex-1 overflow-hidden bg-gray-100" />
 

@@ -79,7 +79,7 @@ export default function ShopByCategory() {
                 <Link
                   key={category._id}
                   to={shopCategoryUrl(category.slug)}
-                  className="group flex aspect-square flex-col overflow-hidden rounded-sm border border-black/6 bg-white focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand md:rounded-lg"
+                  className="group flex aspect-square flex-col overflow-hidden rounded-xl border border-black/6 bg-white focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand md:rounded-lg"
                 >
                   <div className="min-h-0 w-full flex-1 overflow-hidden bg-linear-to-br from-[#F4EFE7] to-[#EBE5DB]">
                     {category.image && (
