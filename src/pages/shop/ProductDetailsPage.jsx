@@ -346,8 +346,9 @@ export default function ProductDetailsPage() {
             </nav>
           )}
 
-          {/* Product Section */}
-          <div className="flex gap-10 mb-8">
+          {/* Product Section — stacked on mobile (gallery first, then
+              the purchase panel), side by side from lg up. */}
+          <div className="flex flex-col lg:flex-row gap-6 lg:gap-10 mb-8">
             {/* Image Gallery */}
             <Gallery
               product={product}
@@ -395,10 +396,10 @@ export default function ProductDetailsPage() {
             aria-labelledby="reviews-heading"
             className="scroll-mt-28"
           >
-            <div className="mb-6 flex items-center justify-between">
+            <div className="mb-6 flex flex-wrap items-center justify-between gap-3">
               <h2
                 id="reviews-heading"
-                className="font-dm-sans text-3xl font-bold tracking-tight text-neutral-900"
+                className="font-dm-sans text-2xl sm:text-3xl font-bold tracking-tight text-neutral-900"
               >
                 Customer Reviews
               </h2>

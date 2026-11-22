@@ -40,7 +40,7 @@ export default function PurchasePanel({
         </div>
       )}
       {/* Title */}
-      <h1 className="text-[30px] leading-[1.2] font-bold text-[#1A1714] mb-3">
+      <h1 className="text-[26px] sm:text-[30px] leading-[1.2] font-bold text-[#1A1714] mb-3">
         {product.name}
       </h1>
       {/* Rating row - single line */}
@@ -75,7 +75,7 @@ export default function PurchasePanel({
         )}
       </div>
       <div className="flex items-baseline gap-2.5 mb-1.5">
-        <span className="text-[30px] font-bold text-[#1A1714]">
+        <span className="text-[26px] sm:text-[30px] font-bold text-[#1A1714]">
           {formatNPR(displayPrice ?? 0)}
         </span>
         {displayCompareAt && displayCompareAt > displayPrice && (

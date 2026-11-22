@@ -15,16 +15,17 @@ export default function Gallery({
   setIsARModalOpen,
 }) {
   return (
-    <div className="flex-[1.2] flex gap-3 justify-end overflow-hidden">
-      {/* Thumbnails - left side */}
-      <div className="flex flex-col gap-3 overflow-y-auto no-scrollbar">
+    <div className="flex flex-col-reverse lg:flex-row lg:flex-[1.2] gap-3 lg:justify-end overflow-hidden">
+      {/* Thumbnails — a horizontal scroll row under the main image on
+          mobile, the left column on desktop */}
+      <div className="flex flex-row lg:flex-col gap-3 overflow-x-auto lg:overflow-x-visible lg:overflow-y-auto no-scrollbar">
         {images.slice(0, 5).map((image, index) => {
           const isLastVisible = index === 4 && images.length > 5;
           return (
             <button
               key={index}
               onClick={() => setSelectedImage(index)}
-              className={`relative shrink-0 w-20 h-20 rounded-lg overflow-hidden border-2 transition-all ${selectedImage === index
+              className={`relative shrink-0 w-16 h-16 lg:w-20 lg:h-20 rounded-lg overflow-hidden border-2 transition-all ${selectedImage === index
                   ? "border-brand"
                   : "border-transparent hover:border-black/10"
                 }`}
@@ -53,7 +54,7 @@ export default function Gallery({
       <div className="space-y-6 flex-1">
         {/* Main Image */}
         <div className="w-full overflow-hidden">
-          <div className="relative rounded-xl overflow-hidden bg-black/2 border border-black/5 w-full h-111">
+          <div className="relative rounded-xl overflow-hidden bg-black/2 border border-black/5 w-full h-80 sm:h-96 lg:h-111">
             {/* Bestseller badge on image */}
             {product.isFeatured && (
               <div className="absolute top-4 left-4 z-10 flex items-center gap-1.5 bg-white text-[#1A1714] text-[13px] font-bold px-3 py-1.5 rounded-md shadow-sm">

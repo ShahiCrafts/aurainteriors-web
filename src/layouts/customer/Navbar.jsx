@@ -470,7 +470,7 @@ export default function Navbar() {
             type="button"
             onClick={openSearch}
             aria-label="Search products"
-            className="w-full h-12 flex items-center gap-2.5 bg-[#F4F2EF] hover:bg-[#EFEBE7] rounded-[10px] pl-4 pr-1.5 border-none cursor-pointer transition-colors text-left font-sans"
+            className="w-full h-12 flex items-center gap-2.5 bg-[#FAFAFA] border-[1.5px] border-neutral-300 hover:border-brand rounded-[10px] pl-4 pr-1.5 cursor-pointer transition-colors text-left font-sans"
           >
             <Search size={18} className="text-neutral-400 shrink-0" />
             <span className="flex-1 text-[14px] text-[#A8A29E] truncate">

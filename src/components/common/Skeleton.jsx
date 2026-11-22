@@ -413,18 +413,18 @@ export function ProductDetailsSkeleton() {
           <ListingBlock className="h-lh w-20" />
           <ListingBlock className="h-lh w-36" />
         </nav>
-        <div className="flex gap-10 mb-14" aria-hidden="true">
-          <div className="flex-[1.2] flex gap-3 justify-end overflow-hidden">
-            <div className="flex flex-col gap-3 overflow-y-auto no-scrollbar">
+        <div className="flex flex-col lg:flex-row gap-6 lg:gap-10 mb-14" aria-hidden="true">
+          <div className="flex flex-col-reverse lg:flex-row lg:flex-[1.2] gap-3 lg:justify-end overflow-hidden">
+            <div className="flex flex-row lg:flex-col gap-3 overflow-x-auto lg:overflow-x-visible lg:overflow-y-auto no-scrollbar">
               {Array.from({ length: 5 }, (_, i) => (
                 <ListingBlock
                   key={i}
-                  className="shrink-0 w-20 h-20 rounded-lg border-2 border-transparent"
+                  className="shrink-0 w-16 h-16 lg:w-20 lg:h-20 rounded-lg border-2 border-transparent"
                 />
               ))}
             </div>
             <div className="space-y-6 flex-1">
-              <ListingBlock className="w-full h-111 rounded-xl border border-[#F0EFED]" />
+              <ListingBlock className="w-full h-80 sm:h-96 lg:h-111 rounded-xl border border-[#F0EFED]" />
             </div>
           </div>
           <div className="flex-1 min-w-0">
