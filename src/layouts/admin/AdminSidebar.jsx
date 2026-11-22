@@ -100,9 +100,9 @@ export default function AdminSidebar({
                 <img
                   src={safeLogoUrl}
                   alt={storeName}
-                  width={384}
-                  height={128}
-                  className="w-48 h-auto object-contain transition-all duration-300"
+                  width={212}
+                  height={84}
+                  className="h-11 w-auto max-w-40 object-contain transition-all duration-300"
                 />
               </Link>
             )}

@@ -207,7 +207,7 @@ export default function Navbar() {
               alt={storeName || "Aura Interiors"}
               width={212}
               height={84}
-              className="h-8 md:h-10 w-auto object-contain"
+              className="h-10 md:h-12 w-auto object-contain"
             />
           </Link>
 
