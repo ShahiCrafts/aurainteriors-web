@@ -461,26 +461,6 @@ export default function Navbar() {
             </div>
           </div>
         </div>
-        {/* Mobile search bar (design mockup): a full-width pill under
-            the header row with a solid orange search button; the whole
-            bar opens the search modal. Part of the sticky header, so
-            the CategoryBar's mobile sticky offset accounts for it. */}
-        <div className="md:hidden px-4 pb-3">
-          <button
-            type="button"
-            onClick={openSearch}
-            aria-label="Search products"
-            className="w-full h-12 flex items-center gap-2.5 bg-[#FAFAFA] border-[1.5px] border-neutral-300 hover:border-brand rounded-[10px] pl-4 pr-1.5 cursor-pointer transition-colors text-left font-sans"
-          >
-            <Search size={18} className="text-neutral-400 shrink-0" />
-            <span className="flex-1 text-[14px] text-[#A8A29E] truncate">
-              Search furniture, décor, colours...
-            </span>
-            <span className="h-9 w-11 shrink-0 flex items-center justify-center bg-brand rounded-lg">
-              <Search size={18} className="text-white" />
-            </span>
-          </button>
-        </div>
       </nav>
 
       <MobileBottomNav />

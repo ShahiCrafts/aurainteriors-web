@@ -209,7 +209,7 @@ export default function CategoryBar() {
     <>
       <div
         ref={rootRef}
-        className="sticky top-[124px] md:top-20 z-40 bg-white border-b border-[#F0EFED] font-dm-sans"
+        className="sticky top-16 md:top-20 z-40 bg-white border-b border-[#F0EFED] font-dm-sans"
         onMouseLeave={() => setOpenSlug(null)}
         onBlur={(event) => {
           if (!event.currentTarget.contains(event.relatedTarget))
