@@ -748,7 +748,7 @@ export function HeroSkeleton() {
     <>
       {/* Mobile/tablet: static hero card + collection pair */}
       <div className="lg:hidden px-4 pt-3 pb-2 bg-white" aria-hidden="true">
-        <div className="relative h-[430px] sm:h-[470px] rounded-3xl overflow-hidden">
+        <div className="relative h-[380px] sm:h-[420px] rounded-2xl overflow-hidden">
           <div className="absolute inset-0 bg-gray-100 shimmer-element" />
           <div className="absolute inset-0 flex flex-col justify-end p-6">
             <Skeleton className="h-9 w-3/5 rounded bg-white/70" />

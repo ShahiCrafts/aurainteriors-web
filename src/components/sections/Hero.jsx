@@ -338,7 +338,7 @@ export default function Hero() {
           carousel (the desktop hero doesn't slide either): the main
           slide as one card, then the two side cards as a pair. ── */}
       <div className="lg:hidden px-4 pt-3 pb-2">
-        <div className="relative h-[430px] sm:h-[470px] rounded-3xl overflow-hidden bg-[#F9F8F6]">
+        <div className="relative h-[380px] sm:h-[420px] rounded-2xl overflow-hidden bg-[#F9F8F6]">
           <img
             src={mainImg.src}
             srcSet={mainImg.srcSet}
@@ -364,7 +364,7 @@ export default function Hero() {
                 to={mainSlide.link || shopCategoryUrl("living-room")}
                 className="shrink-0"
               >
-                <span className="inline-flex items-center gap-2 bg-brand text-white text-[14px] font-semibold px-5 py-3 rounded-full shadow-sm">
+                <span className="inline-flex items-center gap-2 bg-brand text-white text-[14px] font-semibold px-5 py-3 rounded-lg shadow-sm">
                   {mainSlide.cta} <ArrowRight size={16} />
                 </span>
               </Link>
@@ -422,7 +422,7 @@ export default function Hero() {
               </div>
               <div className="mt-2.5">
                 <Link to={sideSlide.link || shopCategoryUrl("bedroom")}>
-                  <span className="inline-flex items-center gap-1 bg-white text-[#1A1714] text-[12px] font-bold px-3 py-1.75 rounded-full shadow-sm">
+                  <span className="inline-flex items-center gap-1 bg-white text-[#1A1714] text-[12px] font-bold px-3 py-1.75 rounded-lg shadow-sm">
                     {sideSlide.cta} <ArrowUpRight size={13} />
                   </span>
                 </Link>
@@ -452,7 +452,7 @@ export default function Hero() {
                 </div>
                 <div className="mt-2">
                   <Link to={promo.buttonLink || shopCategoryUrl("bedroom")}>
-                    <span className="inline-flex items-center gap-1 bg-white text-[#1A1714] text-[12px] font-bold px-3 py-1.75 rounded-full shadow-sm">
+                    <span className="inline-flex items-center gap-1 bg-white text-[#1A1714] text-[12px] font-bold px-3 py-1.75 rounded-lg shadow-sm">
                       {promo.buttonText || "Shop Sale"}{" "}
                       <ArrowUpRight size={13} />
                     </span>
