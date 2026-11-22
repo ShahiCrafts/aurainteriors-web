@@ -1,0 +1,594 @@
+openapi: 3.0.3
+info:
+  title: Aura Interiors API
+  version: 1.0.0
+  description: >
+    REST API for the Aura Interiors e-commerce platform. This spec covers the
+    platform's core surface as extracted from the server route files
+    (aurainteriors-server/routes/) — those files remain the final authority.
+    Authentication is a JWT session cookie (httpOnly); there is no API-key
+    scheme. Mutating requests must send an Origin header matching the
+    storefront or admin origin (CSRF origin check).
+servers:
+  - url: https://api.aurainteriors.live/api/v1
+    description: Production
+  - url: http://localhost:3001/api/v1
+    description: Local development
+security:
+  - cookieAuth: []
+tags:
+  - name: Auth
+  - name: Profile
+  - name: Catalog
+  - name: Cart & Wishlist
+  - name: Orders
+  - name: Reviews
+  - name: Engagement
+  - name: Chat
+  - name: Admin
+  - name: System
+components:
+  securitySchemes:
+    cookieAuth:
+      type: apiKey
+      in: cookie
+      name: jwt
+      description: Session JWT issued by the auth endpoints as an httpOnly cookie.
+  responses:
+    Error:
+      description: Normalised error
+      content:
+        application/json:
+          schema:
+            type: object
+            properties:
+              status: { type: string, example: fail }
+              message: { type: string }
+    Unauthorized:
+      description: No valid session (401)
+      content:
+        application/json:
+          schema:
+            $ref: "#/components/responses/Error/content/application~1json/schema"
+    Forbidden:
+      description: Session lacks the admin role (403)
+    NotFound:
+      description: Resource not found (404)
+    TooManyRequests:
+      description: Rate limited (429)
+paths:
+  /health:
+    get:
+      tags: [System]
+      security: []
+      summary: Liveness probe (mounted at the server root, outside /api/v1)
+      responses: { "200": { description: OK } }
+  /auth/send-magic-link:
+    post:
+      tags: [Auth]
+      security: []
+      summary: Email a one-time sign-in link
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [email]
+              properties: { email: { type: string, format: email } }
+      responses: { "200": { description: Link sent }, "400": { $ref: "#/components/responses/Error" } }
+  /auth/verify-magic-link:
+    post:
+      tags: [Auth]
+      security: []
+      summary: Exchange a magic-link token for a session cookie
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [token]
+              properties: { token: { type: string } }
+      responses: { "200": { description: Session created }, "401": { $ref: "#/components/responses/Unauthorized" } }
+  /auth/google:
+    get:
+      tags: [Auth]
+      security: []
+      summary: Start Google OAuth (redirects); callback completes at the API and hands off to the storefront /auth/success
+      responses: { "302": { description: Redirect to Google } }
+  /auth/admin/login:
+    post:
+      tags: [Auth]
+      security: []
+      summary: Admin sign-in step 1 — email + password
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [email, password]
+              properties:
+                email: { type: string, format: email }
+                password: { type: string, format: password }
+      responses: { "200": { description: OTP issued }, "401": { $ref: "#/components/responses/Unauthorized" } }
+  /auth/admin/verify-otp:
+    post:
+      tags: [Auth]
+      security: []
+      summary: Admin sign-in step 2 — one-time code, issues the admin session
+      responses: { "200": { description: Session created }, "401": { $ref: "#/components/responses/Unauthorized" } }
+  /auth/me:
+    get:
+      tags: [Auth]
+      summary: Current session user
+      responses: { "200": { description: User object }, "401": { $ref: "#/components/responses/Unauthorized" } }
+  /auth/logout:
+    post:
+      tags: [Auth]
+      summary: End the session; the token is revoked server-side
+      responses: { "200": { description: Logged out } }
+  /profile:
+    get:
+      tags: [Profile]
+      summary: Own profile
+      responses: { "200": { description: Profile } }
+    patch:
+      tags: [Profile]
+      summary: Update own profile
+      responses: { "200": { description: Updated profile } }
+    delete:
+      tags: [Profile]
+      summary: Delete own account
+      responses: { "200": { description: Deleted } }
+  /profile/avatar:
+    delete:
+      tags: [Profile]
+      summary: Remove avatar
+      responses: { "200": { description: Removed } }
+  /profile/preferences:
+    patch:
+      tags: [Profile]
+      summary: Update preferences
+      responses: { "200": { description: Updated } }
+  /addresses:
+    get:
+      tags: [Profile]
+      summary: List own addresses
+      responses: { "200": { description: Address list } }
+    post:
+      tags: [Profile]
+      summary: Add an address
+      responses: { "201": { description: Created } }
+  /addresses/{id}:
+    parameters: [{ name: id, in: path, required: true, schema: { type: string } }]
+    get:
+      tags: [Profile]
+      summary: Get an address
+      responses: { "200": { description: Address }, "404": { $ref: "#/components/responses/NotFound" } }
+    patch:
+      tags: [Profile]
+      summary: Update an address
+      responses: { "200": { description: Updated } }
+    delete:
+      tags: [Profile]
+      summary: Delete an address
+      responses: { "200": { description: Deleted } }
+  /addresses/{id}/set-default:
+    parameters: [{ name: id, in: path, required: true, schema: { type: string } }]
+    patch:
+      tags: [Profile]
+      summary: Make an address the default
+      responses: { "200": { description: Updated } }
+  /settings/public:
+    get:
+      tags: [Catalog]
+      security: []
+      summary: Public store settings (identity, theme, homepage, commerce)
+      responses: { "200": { description: Public settings object } }
+  /catalog/schema:
+    get:
+      tags: [Catalog]
+      security: []
+      summary: Catalog registry (product types, attributes)
+      responses: { "200": { description: Schema } }
+  /catalog/navigation:
+    get:
+      tags: [Catalog]
+      security: []
+      summary: Navigation tree for the storefront
+      responses: { "200": { description: Navigation } }
+  /catalog/rooms:
+    get:
+      tags: [Catalog]
+      security: []
+      summary: List rooms
+      responses: { "200": { description: Rooms } }
+  /catalog/rooms/{slug}:
+    parameters: [{ name: slug, in: path, required: true, schema: { type: string } }]
+    get:
+      tags: [Catalog]
+      security: []
+      summary: Room landing data
+      responses: { "200": { description: Room }, "404": { $ref: "#/components/responses/NotFound" } }
+  /catalog/collections/{slug}:
+    parameters: [{ name: slug, in: path, required: true, schema: { type: string } }]
+    get:
+      tags: [Catalog]
+      security: []
+      summary: Collection landing data
+      responses: { "200": { description: Collection }, "404": { $ref: "#/components/responses/NotFound" } }
+  /products:
+    get:
+      tags: [Catalog]
+      security: []
+      summary: Product listing with facets, filters, sort and pagination
+      parameters:
+        - { name: page, in: query, schema: { type: integer } }
+        - { name: limit, in: query, schema: { type: integer } }
+        - { name: category, in: query, schema: { type: string } }
+        - { name: sort, in: query, schema: { type: string } }
+        - { name: search, in: query, schema: { type: string } }
+      responses: { "200": { description: Paginated product list with facets } }
+    post:
+      tags: [Admin]
+      summary: Create a product (admin, multipart for images)
+      responses: { "201": { description: Created }, "403": { $ref: "#/components/responses/Forbidden" } }
+  /products/featured:
+    get:
+      tags: [Catalog]
+      security: []
+      summary: Featured products
+      responses: { "200": { description: Product list } }
+  /products/new-arrivals:
+    get:
+      tags: [Catalog]
+      security: []
+      summary: New-arrival products
+      responses: { "200": { description: Product list } }
+  /products/{id}:
+    parameters: [{ name: id, in: path, required: true, schema: { type: string }, description: Product slug or id }]
+    get:
+      tags: [Catalog]
+      security: []
+      summary: Product detail
+      responses: { "200": { description: Product }, "404": { $ref: "#/components/responses/NotFound" } }
+    patch:
+      tags: [Admin]
+      summary: Update a product (admin)
+      responses: { "200": { description: Updated } }
+    delete:
+      tags: [Admin]
+      summary: Soft-delete a product (admin)
+      responses: { "200": { description: Deleted } }
+  /products/{id}/variants:
+    parameters: [{ name: id, in: path, required: true, schema: { type: string } }]
+    get:
+      tags: [Catalog]
+      security: []
+      summary: Product variants
+      responses: { "200": { description: Variants } }
+  /categories:
+    get:
+      tags: [Catalog]
+      security: []
+      summary: List categories
+      responses: { "200": { description: Categories } }
+  /categories/{id}:
+    parameters: [{ name: id, in: path, required: true, schema: { type: string } }]
+    get:
+      tags: [Catalog]
+      security: []
+      summary: Category detail
+      responses: { "200": { description: Category } }
+  /categories/{id}/products:
+    parameters: [{ name: id, in: path, required: true, schema: { type: string } }]
+    get:
+      tags: [Catalog]
+      security: []
+      summary: Products in a category
+      responses: { "200": { description: Product list } }
+  /feeds/google.xml:
+    get:
+      tags: [Catalog]
+      security: []
+      summary: Google Merchant product feed (XML)
+      responses: { "200": { description: XML feed } }
+  /cart:
+    get:
+      tags: [Cart & Wishlist]
+      summary: Own account cart
+      responses: { "200": { description: Cart } }
+    post:
+      tags: [Cart & Wishlist]
+      summary: Add or set a cart item
+      responses: { "200": { description: Updated cart } }
+    delete:
+      tags: [Cart & Wishlist]
+      summary: Clear the cart
+      responses: { "200": { description: Cleared } }
+  /cart/items/{itemId}:
+    parameters: [{ name: itemId, in: path, required: true, schema: { type: string } }]
+    patch:
+      tags: [Cart & Wishlist]
+      summary: Update a line item (quantity)
+      responses: { "200": { description: Updated cart } }
+    delete:
+      tags: [Cart & Wishlist]
+      summary: Remove a line item
+      responses: { "200": { description: Updated cart } }
+  /wishlist:
+    get:
+      tags: [Cart & Wishlist]
+      summary: Own wishlist
+      responses: { "200": { description: Wishlist } }
+    post:
+      tags: [Cart & Wishlist]
+      summary: Add a product to the wishlist
+      responses: { "200": { description: Updated wishlist } }
+    delete:
+      tags: [Cart & Wishlist]
+      summary: Clear the wishlist
+      responses: { "200": { description: Cleared } }
+  /wishlist/check/{productId}:
+    parameters: [{ name: productId, in: path, required: true, schema: { type: string } }]
+    get:
+      tags: [Cart & Wishlist]
+      summary: Is a product wishlisted?
+      responses: { "200": { description: Boolean result } }
+  /wishlist/{productId}:
+    parameters: [{ name: productId, in: path, required: true, schema: { type: string } }]
+    delete:
+      tags: [Cart & Wishlist]
+      summary: Remove a product from the wishlist
+      responses: { "200": { description: Updated wishlist } }
+  /discounts/validate/{code}:
+    parameters: [{ name: code, in: path, required: true, schema: { type: string } }]
+    get:
+      tags: [Cart & Wishlist]
+      security: []
+      summary: Validate a discount code against the current cart
+      responses: { "200": { description: Validation result with discount }, "404": { $ref: "#/components/responses/NotFound" } }
+  /orders/checkout:
+    post:
+      tags: [Orders]
+      summary: Place an order (signed-in)
+      responses: { "201": { description: Order created }, "400": { $ref: "#/components/responses/Error" } }
+  /orders/guest-checkout:
+    post:
+      tags: [Orders]
+      security: []
+      summary: Place an order as a guest (rate-limited)
+      responses: { "201": { description: Order created }, "429": { $ref: "#/components/responses/TooManyRequests" } }
+  /orders/track:
+    post:
+      tags: [Orders]
+      security: []
+      summary: Guest order tracking (rate-limited)
+      responses: { "200": { description: Order status }, "404": { $ref: "#/components/responses/NotFound" } }
+  /orders/my-orders:
+    get:
+      tags: [Orders]
+      summary: Own order history
+      responses: { "200": { description: Orders } }
+  /orders/{id}:
+    parameters: [{ name: id, in: path, required: true, schema: { type: string } }]
+    get:
+      tags: [Orders]
+      summary: Order detail (owner)
+      responses: { "200": { description: Order }, "404": { $ref: "#/components/responses/NotFound" } }
+  /orders/{id}/cancel:
+    parameters: [{ name: id, in: path, required: true, schema: { type: string } }]
+    patch:
+      tags: [Orders]
+      summary: Cancel an unshipped order
+      responses: { "200": { description: Updated order } }
+  /orders/{id}/return:
+    parameters: [{ name: id, in: path, required: true, schema: { type: string } }]
+    post:
+      tags: [Orders]
+      summary: Request a return
+      responses: { "200": { description: Return requested } }
+  /orders/esewa/success:
+    get:
+      tags: [Orders]
+      security: []
+      summary: eSewa success return — the API verifies and captures server-side before marking paid
+      responses: { "302": { description: Redirect to the storefront confirmation } }
+  /orders/esewa/failure:
+    get:
+      tags: [Orders]
+      security: []
+      summary: eSewa failure return
+      responses: { "302": { description: Redirect to the storefront payment-failed page } }
+  /products/{productId}/reviews:
+    parameters: [{ name: productId, in: path, required: true, schema: { type: string } }]
+    get:
+      tags: [Reviews]
+      security: []
+      summary: Approved reviews for a product
+      responses: { "200": { description: Reviews } }
+    post:
+      tags: [Reviews]
+      summary: Create a review (purchase-gated)
+      responses: { "201": { description: Created, pending moderation } }
+  /products/{productId}/reviews/can-review:
+    parameters: [{ name: productId, in: path, required: true, schema: { type: string } }]
+    get:
+      tags: [Reviews]
+      summary: Whether the session user may review this product
+      responses: { "200": { description: Eligibility } }
+  /reviews/{reviewId}/toggle-approval:
+    parameters: [{ name: reviewId, in: path, required: true, schema: { type: string } }]
+    patch:
+      tags: [Admin]
+      summary: Approve/hide a review (admin moderation)
+      responses: { "200": { description: Updated review }, "403": { $ref: "#/components/responses/Forbidden" } }
+  /notifications:
+    get:
+      tags: [Engagement]
+      summary: Own notifications
+      responses: { "200": { description: Notifications } }
+  /notifications/unread-count:
+    get:
+      tags: [Engagement]
+      summary: Unread notification count
+      responses: { "200": { description: Count } }
+  /notifications/preferences:
+    get:
+      tags: [Engagement]
+      summary: Notification preferences
+      responses: { "200": { description: Preferences } }
+    put:
+      tags: [Engagement]
+      summary: Update notification preferences
+      responses: { "200": { description: Updated } }
+  /notifications/{id}/read:
+    parameters: [{ name: id, in: path, required: true, schema: { type: string } }]
+    put:
+      tags: [Engagement]
+      summary: Mark a notification read
+      responses: { "200": { description: Updated } }
+  /newsletter/subscribe:
+    post:
+      tags: [Engagement]
+      security: []
+      summary: Subscribe (double opt-in — confirmation email follows)
+      responses: { "200": { description: Confirmation sent } }
+  /newsletter/confirm:
+    get:
+      tags: [Engagement]
+      security: []
+      summary: Confirm a subscription from the email link
+      responses: { "200": { description: Confirmed } }
+  /newsletter/unsubscribe:
+    get:
+      tags: [Engagement]
+      security: []
+      summary: Unsubscribe from the email link
+      responses: { "200": { description: Unsubscribed } }
+  /announcements:
+    get:
+      tags: [Engagement]
+      security: []
+      summary: Published announcements
+      responses: { "200": { description: Announcements } }
+  /contacts:
+    post:
+      tags: [Engagement]
+      security: []
+      summary: Submit the contact form
+      responses: { "201": { description: Received } }
+  /chats/{id}:
+    parameters: [{ name: id, in: path, required: true, schema: { type: string } }]
+    get:
+      tags: [Chat]
+      summary: A conversation and its messages
+      responses: { "200": { description: Conversation } }
+  /chats/{id}/read:
+    parameters: [{ name: id, in: path, required: true, schema: { type: string } }]
+    patch:
+      tags: [Chat]
+      summary: Mark a conversation read
+      responses: { "200": { description: Updated } }
+  /analytics/stats:
+    get:
+      tags: [Admin]
+      summary: Dashboard headline stats (admin)
+      responses: { "200": { description: Stats }, "403": { $ref: "#/components/responses/Forbidden" } }
+  /analytics/revenue:
+    get:
+      tags: [Admin]
+      summary: Revenue series (admin)
+      responses: { "200": { description: Series } }
+  /analytics/categories:
+    get:
+      tags: [Admin]
+      summary: Sales by category (admin)
+      responses: { "200": { description: Breakdown } }
+  /analytics/top-products:
+    get:
+      tags: [Admin]
+      summary: Top products (admin)
+      responses: { "200": { description: Products } }
+  /users:
+    get:
+      tags: [Admin]
+      summary: List users (admin)
+      responses: { "200": { description: Users }, "403": { $ref: "#/components/responses/Forbidden" } }
+  /users/{id}/role:
+    parameters: [{ name: id, in: path, required: true, schema: { type: string } }]
+    patch:
+      tags: [Admin]
+      summary: Change a user's role (admin)
+      responses: { "200": { description: Updated } }
+  /users/{id}/status:
+    parameters: [{ name: id, in: path, required: true, schema: { type: string } }]
+    patch:
+      tags: [Admin]
+      summary: Change a user's status (admin)
+      responses: { "200": { description: Updated } }
+  /admin/settings:
+    get:
+      tags: [Admin]
+      summary: All settings sections (admin; secrets never included)
+      responses: { "200": { description: Settings }, "403": { $ref: "#/components/responses/Forbidden" } }
+  /admin/settings/{section}:
+    parameters: [{ name: section, in: path, required: true, schema: { type: string }, description: identity | theme | contact | seo | homepage | pages | commerce | chat | notifications | maintenance | integrations }]
+    get:
+      tags: [Admin]
+      summary: One settings section (admin)
+      responses: { "200": { description: Section } }
+    patch:
+      tags: [Admin]
+      summary: Update one settings section (admin)
+      responses: { "200": { description: Updated section } }
+  /admin/settings/reset:
+    post:
+      tags: [Admin]
+      summary: Reset settings to defaults (admin)
+      responses: { "200": { description: Reset } }
+  /admin/settings/test-email:
+    post:
+      tags: [Admin]
+      summary: Send a test email through the configured provider (admin)
+      responses: { "200": { description: Sent } }
+  /admin/integrations:
+    get:
+      tags: [Admin]
+      summary: Integration status per service — configured flags only, never secret values (admin)
+      responses: { "200": { description: Integrations } }
+  /admin/integrations/{service}/secret:
+    parameters: [{ name: service, in: path, required: true, schema: { type: string } }]
+    put:
+      tags: [Admin]
+      summary: Set/replace a service secret in the encrypted vault (admin)
+      responses: { "200": { description: Stored } }
+    delete:
+      tags: [Admin]
+      summary: Remove a service secret (admin)
+      responses: { "200": { description: Removed } }
+  /admin/integrations/{service}/test:
+    parameters: [{ name: service, in: path, required: true, schema: { type: string } }]
+    post:
+      tags: [Admin]
+      summary: Live connection test for a service (admin)
+      responses: { "200": { description: Test result } }
+  /admin/knowledge/reindex:
+    post:
+      tags: [Admin]
+      summary: Rebuild the chat knowledge index in Qdrant (admin)
+      responses: { "202": { description: Reindex job queued } }
+  /jobs/{id}:
+    parameters: [{ name: id, in: path, required: true, schema: { type: string } }]
+    get:
+      tags: [Admin]
+      summary: Background job status (admin)
+      responses: { "200": { description: Job } }
+  /system/keep-alive-status:
+    get:
+      tags: [System]
+      security: []
+      summary: Keep-alive/uptime status (detail gated by HEALTH_DETAIL_TOKEN)
+      responses: { "200": { description: Status } }
