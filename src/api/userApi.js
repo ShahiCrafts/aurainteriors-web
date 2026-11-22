@@ -28,6 +28,15 @@ export const userApi = {
     return response.data;
   },
 
+  // Admin: Update user role (Batch 5)
+  updateRole: async (id, role) => {
+    const response = await api.patch(
+      `/users/${encodeURIComponent(id)}/role`,
+      { role },
+    );
+    return response.data;
+  },
+
   // Admin: Reset user password
   resetPassword: async (id, password) => {
     const response = await api.patch(

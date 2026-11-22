@@ -8,6 +8,7 @@ import {
   useChatDetails,
 } from "../../hooks/chat/useChatTan";
 import useAuthStore from "../../store/authStore";
+import { useSiteSettings } from "../../store/siteSettingsStore";
 import { useShallow } from "zustand/react/shallow";
 import {
   getGuestSessionId,
@@ -25,7 +26,13 @@ const ChatWidget = () => {
   });
   const [activeChatId, setActiveChatId] = useState(null);
   const [activeChatData, setActiveChatData] = useState(null); // Store guest chat data directly
+  const [offlineDismissed, setOfflineDismissed] = useState(false);
   const { user } = useAuthStore(useShallow((state) => ({ user: state.user })));
+  // Batch 4: live-chat settings from the public site settings. The
+  // store starts at defaults (enabled, no offline copy), so nothing
+  // changes until an admin actually disables chat / writes a
+  // message in Store Operations.
+  const chatSettings = useSiteSettings((state) => state.settings.chat);
 
   // Handle guest session lifecycle
   useEffect(() => {
@@ -180,6 +187,51 @@ const ChatWidget = () => {
   // Admin users don't see the chat widget
   if (user && user.role === "admin") return null;
 
+  // Batch 4: live chat disabled in Store Operations → the
+  // interactive widget (launcher, window, composer) does not render.
+  // If the admin wrote an offline message, a static notice card
+  // takes its place (no way to start a conversation from it).
+  if (chatSettings && chatSettings.enabled === false) {
+    if (!chatSettings.offlineMessage || offlineDismissed) return null;
+    return (
+      <div className="fixed bottom-6 right-6 z-60 pointer-events-auto">
+        <div className="bg-white rounded-[20px] border border-stone-200/60 p-5 w-64 relative">
+          <button
+            onClick={() => setOfflineDismissed(true)}
+            aria-label="Dismiss"
+            className="absolute top-3 right-3 w-6 h-6 flex items-center justify-center bg-[#F1F3F5] text-stone-500 rounded-full hover:bg-stone-200 transition-colors"
+          >
+            <X size={12} strokeWidth={3} />
+          </button>
+          <div className="flex items-center gap-3 mb-3">
+            <div className="w-10 h-10 rounded-full bg-[#1A1714] flex items-center justify-center text-white font-bold text-base border border-black/20">
+              A
+            </div>
+            <div>
+              <h4 className="font-bold text-gray-800 text-sm leading-tight">
+                Aura Support
+              </h4>
+              <div className="flex items-center gap-1.5">
+                <span className="w-2 h-2 rounded-full bg-stone-400" />
+                <span className="text-[11px] font-bold text-stone-500 uppercase tracking-tighter">
+                  Offline
+                </span>
+              </div>
+            </div>
+          </div>
+          <p className="text-[13px] text-gray-600 font-medium leading-relaxed">
+            {chatSettings.offlineMessage}
+          </p>
+          {chatSettings.businessHours ? (
+            <p className="text-[12px] text-gray-400 font-medium leading-relaxed mt-2">
+              {chatSettings.businessHours}
+            </p>
+          ) : null}
+        </div>
+      </div>
+    );
+  }
+
   return (
     <div className="fixed bottom-6 right-6 z-60 flex flex-col items-end gap-4 pointer-events-none">
       <AnimatePresence>
@@ -217,8 +269,8 @@ const ChatWidget = () => {
               </div>
 
               <p className="text-[13px] text-gray-600 font-medium leading-relaxed">
-                Hi there! 👋 Need help finding the perfect furniture? We're here
-                to assist you!
+                {chatSettings?.welcomeMessage ||
+                  "Hi there! 👋 Need help finding the perfect furniture? We're here to assist you!"}
               </p>
 
               {/* Tooltip Arrow - Flat */}

@@ -11,6 +11,7 @@ import {
 import useChatSocket from "../../hooks/chat/useChatSocket";
 import useNotificationSocket from "../../hooks/notification/useNotificationSocket";
 import useAuthStore from "../../store/authStore";
+import { useSiteSettings } from "../../store/siteSettingsStore";
 import { useShallow } from "zustand/react/shallow";
 import { getGuestSessionId } from "../../utils/guestSessionStorage";
 import ChatMessageList from "./ChatMessageList";
@@ -34,6 +35,12 @@ const ChatWindow = ({
 }) => {
   const { user, token } = useAuthStore(
     useShallow((state) => ({ user: state.user, token: state.token })),
+  );
+  // Batch 4: the header subtitle carries the admin's business-hours
+  // line when one is set in Store Operations; otherwise it keeps
+  // its current text.
+  const chatBusinessHours = useSiteSettings(
+    (state) => state.settings.chat?.businessHours,
   );
   const guestSessionId = getGuestSessionId();
   const { socket, error: socketError } = useNotificationSocket(
@@ -138,7 +145,7 @@ const ChatWindow = ({
                 Aura Assistant
               </h3>
               <p className="text-[10px] sm:text-[13px] text-gray-500 mt-0.5">
-                Expert help for your home
+                {chatBusinessHours || "Expert help for your home"}
               </p>
             </div>
           </div>

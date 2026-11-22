@@ -28,6 +28,9 @@ import {
   LayoutGrid,
   Plug,
   Store,
+  Rocket,
+  ScrollText,
+  Image as ImageIcon,
 } from "lucide-react";
 import AdminSidebar from "./AdminSidebar";
 import AdminTopbar from "./AdminTopbar";
@@ -272,16 +275,52 @@ export default function AdminLayout() {
           label: "Integrations",
           icon: Plug,
           path: "/dashboard/integrations",
+          minRole: "admin",
+        },
+        {
+          id: "setup-wizard",
+          label: "Setup Wizard",
+          icon: Rocket,
+          path: "/dashboard/setup-wizard",
+          minRole: "manager",
+        },
+        {
+          id: "audit-log",
+          label: "Audit Log",
+          icon: ScrollText,
+          path: "/dashboard/audit-log",
+          minRole: "manager",
+        },
+        {
+          id: "media-library",
+          label: "Media Library",
+          icon: ImageIcon,
+          path: "/dashboard/media-library",
+          minRole: "manager",
         },
         {
           id: "store-settings",
           label: "Store Settings",
           icon: Store,
           path: "/dashboard/store-settings",
+          minRole: "manager",
         },
       ],
     },
   ];
+
+  const ROLE_RANK = { customer: 0, staff: 1, manager: 2, admin: 3 };
+  const currentRole = user?.role || "admin";
+  const visibleMenuGroups = menuGroups
+    .map((group) => ({
+      ...group,
+      items: group.items.filter(
+        (item) =>
+          !item.minRole ||
+          (ROLE_RANK[currentRole] ?? 3) >= (ROLE_RANK[item.minRole] ?? 0),
+      ),
+    }))
+    .filter((group) => group.items.length > 0);
 
   const isActive = (path) =>
     path === "/dashboard"
@@ -295,7 +334,7 @@ export default function AdminLayout() {
         setMobileMenuOpen={setMobileMenuOpen}
         isCollapsed={isCollapsed}
         toggleCollapse={toggleCollapse}
-        menuGroups={menuGroups}
+        menuGroups={visibleMenuGroups}
         isActive={isActive}
       />
 

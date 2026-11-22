@@ -39,6 +39,27 @@ const settingsApi = {
     const response = await api.post("/admin/knowledge/reindex");
     return response.data;
   },
+
+  // POST /admin/settings/test-email { template, to } → { sent }
+  // (Batch 4). Renders the chosen notifications template with sample
+  // data and sends it via the server's Brevo path.
+  sendTestEmail: async (template, to) => {
+    const response = await api.post("/admin/settings/test-email", {
+      template,
+      to,
+    });
+    return response.data;
+  },
+
+  // POST /admin/settings/reset { section? } → full settings after
+  // the reset (Batch 3d). Omit `section` to reset every section.
+  resetSettings: async (section) => {
+    const response = await api.post(
+      "/admin/settings/reset",
+      section ? { section } : {},
+    );
+    return response.data;
+  },
 };
 
 export default settingsApi;

@@ -30,8 +30,23 @@ import { UserAvatar } from "../../components/common/InitialsAvatar";
 import { toast } from "../../lib/toast";
 import Pagination from "../../components/common/Pagination";
 import formatError from "../../utils/errorHandler";
+import userApi from "../../api/userApi";
+import useAuthStore from "../../store/authStore";
 
 export default function Users() {
+  const currentUser = useAuthStore((s) => s.user);
+  const queryClientOuter = useQueryClient();
+  const handleRoleChange = async (targetUser, newRole) => {
+    try {
+      await userApi.updateRole(targetUser._id, newRole);
+      toast.success("User role updated");
+      queryClientOuter.invalidateQueries({ queryKey: ["users"] });
+      queryClientOuter.invalidateQueries();
+    } catch (err) {
+      toast.error(formatError(err, "Failed to update role"));
+      queryClientOuter.invalidateQueries();
+    }
+  };
   const [search, setSearch] = useState("");
   const [page, setPage] = useState(1);
   const [role, setRole] = useState("all");
@@ -197,6 +212,8 @@ export default function Users() {
             >
               <option value="all">All Roles</option>
               <option value="customer">Customer</option>
+              <option value="staff">Staff</option>
+              <option value="manager">Manager</option>
               <option value="admin">Admin</option>
             </select>
             <select
@@ -346,19 +363,36 @@ export default function Users() {
                       </div>
                     </td>
                     <td className="px-6 py-4">
-                      <span
-                        className={`inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-[10px] font-bold uppercase tracking-wider ${user.role === "admin"
-                          ? "bg-purple-50 text-purple-700"
-                          : "bg-blue-50 text-blue-700"
-                          }`}
-                      >
-                        {user.role === "admin" ? (
-                          <Shield size={10} />
-                        ) : (
-                          <UserIcon size={10} />
-                        )}
-                        {user.role}
-                      </span>
+                      <div className="flex flex-col gap-2">
+                        <span
+                          className={`inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-[10px] font-bold uppercase tracking-wider w-fit ${user.role === "admin"
+                            ? "bg-purple-50 text-purple-700"
+                            : user.role === "customer"
+                              ? "bg-blue-50 text-blue-700"
+                              : "bg-gray-100 text-gray-700"
+                            }`}
+                        >
+                          {user.role === "admin" ? (
+                            <Shield size={10} />
+                          ) : (
+                            <UserIcon size={10} />
+                          )}
+                          {user.role}
+                        </span>
+                        <select
+                          aria-label={`Role for ${user.email}`}
+                          value={user.role}
+                          disabled={!!currentUser && (currentUser._id === user._id || currentUser.id === user._id)}
+                          title={!!currentUser && (currentUser._id === user._id || currentUser.id === user._id) ? "You cannot change your own role" : undefined}
+                          onChange={(e) => handleRoleChange(user, e.target.value)}
+                          className="px-2 py-1.5 bg-white border border-gray-200 rounded-lg text-xs cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed"
+                        >
+                          <option value="customer">Customer</option>
+                          <option value="staff">Staff</option>
+                          <option value="manager">Manager</option>
+                          <option value="admin">Admin</option>
+                        </select>
+                      </div>
                     </td>
                     <td className="px-6 py-4">
                       <div className="flex flex-col gap-1">

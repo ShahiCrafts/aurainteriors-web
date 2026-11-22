@@ -17,6 +17,8 @@
  * wraps this and substitutes "N/A").
  */
 
+import { getDateConfig } from "./formatConfig";
+
 const LOCALE = "en-NP";
 
 function toValidDate(value) {
@@ -26,17 +28,62 @@ function toValidDate(value) {
 }
 
 /**
+ * Batch 4: assemble a date in one of the admin-selectable patterns
+ * (commerce.dateFormat) in the configured timezone. Parts come from
+ * an en-US Intl formatter so the pattern is exact (YYYY-MM-DD can't
+ * be expressed with a single locale's defaults). The DEFAULT pattern
+ * "M/D/YYYY" + Asia/Kathmandu reproduces the bare en-NP rendering
+ * for the store's Nepal audience (whose browsers already run in
+ * Asia/Kathmandu).
+ */
+function formatWithPattern(date, pattern, timeZone) {
+  const parts = new Intl.DateTimeFormat("en-US", {
+    year: "numeric",
+    month: "2-digit",
+    day: "2-digit",
+    timeZone,
+  }).formatToParts(date);
+  const byType = {};
+  for (const p of parts) byType[p.type] = p.value;
+  const monthShort = new Intl.DateTimeFormat("en-US", {
+    month: "short",
+    timeZone,
+  }).format(date);
+  const yyyy = byType.year;
+  const mm = byType.month;
+  const dd = byType.day;
+  const m = String(Number(mm));
+  const d = String(Number(dd));
+  switch (pattern) {
+    case "MMM D, YYYY":
+      return `${monthShort} ${d}, ${yyyy}`;
+    case "DD/MM/YYYY":
+      return [dd, mm, yyyy].join("/");
+    case "YYYY-MM-DD":
+      return `${yyyy}-${mm}-${dd}`;
+    case "D MMM YYYY":
+      return `${d} ${monthShort} ${yyyy}`;
+    case "M/D/YYYY":
+    default:
+      return [m, d, yyyy].join("/");
+  }
+}
+
+/**
  * Date only. `options` are Intl.DateTimeFormat options, passed through
  * so a call site keeps the exact shape it rendered before (month
  * names, weekday, etc.) — only the locale is now fixed. With no
- * options this is the bare locale date (the previous locale-less
- * `toLocaleDateString()` call sites).
+ * options the admin-configured date pattern applies (Batch 4; the
+ * default pattern renders exactly what the bare locale date did).
  */
 export function formatDate(value, options) {
   const date = toValidDate(value);
-  return date === null
-    ? ""
-    : new Intl.DateTimeFormat(LOCALE, options).format(date);
+  if (date === null) return "";
+  if (options === undefined) {
+    const { dateFormat, timezone } = getDateConfig();
+    return formatWithPattern(date, dateFormat, timezone);
+  }
+  return new Intl.DateTimeFormat(LOCALE, options).format(date);
 }
 
 const DEFAULT_DATETIME_OPTIONS = {

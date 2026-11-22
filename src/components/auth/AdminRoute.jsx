@@ -12,7 +12,7 @@ export default function AdminRoute({ children }) {
   );
   if (loading) return null;
 
-  if (!isAuthenticated || user?.role !== "admin") {
+  if (!isAuthenticated || !["admin", "manager", "staff"].includes(user?.role)) {
     return <Navigate to="/login" replace />;
   }
 

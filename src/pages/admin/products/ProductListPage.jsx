@@ -1,4 +1,4 @@
-import { useState, useMemo } from "react";
+import { useState, useMemo, useEffect } from "react";
 import { motion } from "framer-motion";
 import {
   Plus,
@@ -25,6 +25,7 @@ import { getProductImageUrl } from "../../../utils/imageUrl";
 import formatError from "../../../utils/errorHandler";
 import { API_V1_URL } from "../../../config/constants";
 import { formatNPR } from "../../../utils/formatCurrency";
+import settingsApi from "../../../api/settingsApi";
 import ProductFormDrawer from "./ProductFormDrawer";
 import useProductFormState from "./hooks/useProductFormState";
 
@@ -43,6 +44,27 @@ export default function ProductListPage() {
 
   // Advanced filters state
   const [stockFilter, setStockFilter] = useState("all");
+  // Batch 4: the low-stock cut-off is an admin setting (Store
+  // Operations → Low Stock Threshold). 10 is the value this page
+  // hardcoded before, so the fallback keeps behaviour identical
+  // until an admin changes it.
+  const [lowStockThreshold, setLowStockThreshold] = useState(10);
+  useEffect(() => {
+    let cancelled = false;
+    settingsApi
+      .getSettings()
+      .then((res) => {
+        const value =
+          res?.data?.settings?.commerce?.orders?.lowStockThreshold;
+        if (!cancelled && typeof value === "number" && value >= 0) {
+          setLowStockThreshold(value);
+        }
+      })
+      .catch(() => {});
+    return () => {
+      cancelled = true;
+    };
+  }, []);
   const [modelFilter, setModelFilter] = useState("all");
   const [statusFilter, setStatusFilter] = useState("all");
   const { data: productsData, isLoading } = useProducts({
@@ -73,13 +95,15 @@ export default function ProductListPage() {
 
   const pageStats = useMemo(() => {
     return {
-      lowStockCount: pageProducts.filter((p) => p.stock > 0 && p.stock < 10)
+      lowStockCount: pageProducts.filter(
+        (p) => p.stock > 0 && p.stock < lowStockThreshold,
+      )
         .length,
       modelCount: pageProducts.filter(
         (p) => p.modelUrl || p.modelFiles?.length > 0,
       ).length,
     };
-  }, [pageProducts]);
+  }, [pageProducts, lowStockThreshold]);
   const lowStockCount = pageStats.lowStockCount;
   const modelCount = pageStats.modelCount;
 
@@ -90,7 +114,7 @@ export default function ProductListPage() {
         if (stockFilter === "outofstock" && product.stock !== 0) return false;
         if (
           stockFilter === "lowstock" &&
-          (product.stock === 0 || product.stock >= 10)
+          (product.stock === 0 || product.stock >= lowStockThreshold)
         )
           return false;
         if (stockFilter === "instock" && product.stock === 0) return false;
@@ -105,7 +129,7 @@ export default function ProductListPage() {
 
       return true;
     });
-  }, [pageProducts, stockFilter, modelFilter]);
+  }, [pageProducts, stockFilter, modelFilter, lowStockThreshold]);
 
   // Fetch categories for filter and form
   const { data: categoriesData } = useCategories();
@@ -307,7 +331,7 @@ export default function ProductListPage() {
               >
                 <option value="all">Stock Status: All (this page)</option>
                 <option value="instock">In Stock (this page)</option>
-                <option value="lowstock">Low Stock (&lt;10) (this page)</option>
+                <option value="lowstock">Low Stock (&lt;{lowStockThreshold}) (this page)</option>
                 <option value="outofstock">Out of Stock (this page)</option>
               </select>
 
@@ -492,7 +516,7 @@ export default function ProductListPage() {
                       <span
                         className={`font-semibold ${product.stock === 0
                           ? "text-red-500"
-                          : product.stock < 10
+                          : product.stock < lowStockThreshold
                             ? "text-amber-500"
                             : "text-gray-600"
                           }`}

@@ -13,7 +13,11 @@ import {
 } from "../../hooks/cart/useCartTan";
 import { usePreviewDiscount } from "../../hooks/admin/useDiscountTan";
 import { useGuestCheckout, useCheckout } from "../../hooks/order/useOrderTan";
-import { useCheckoutTotals } from "../../hooks/useCheckoutTotals";
+import {
+  useCheckoutTotals,
+  computeMinimumOrderState,
+} from "../../hooks/useCheckoutTotals";
+import { useSiteSettings } from "../../store/siteSettingsStore";
 import { useShippingFormSync } from "../../hooks/useShippingFormSync";
 import Navbar from "../../layouts/customer/Navbar";
 import Footer from "../../layouts/customer/Footer";
@@ -249,8 +253,23 @@ export default function CheckoutPage() {
     );
   };
 
+  // Batch 4: the summary mirrors the server's settings-driven math
+  // (zone delivery fee, VAT, minimum order) from the public settings
+  // + the address being entered. At default settings every figure
+  // is exactly what it was before (fee 0, tax 0, no minimum).
+  const commerce = useSiteSettings((s) => s.settings.commerce);
   const { subtotal, promoDiscount, shippingCost, taxAmount, total } =
-    useCheckoutTotals(selectedCartItems, appliedDiscount);
+    useCheckoutTotals(
+      selectedCartItems,
+      appliedDiscount,
+      commerce,
+      shippingAddress,
+    );
+  const { minimumOrderAmount, belowMinimum } = computeMinimumOrderState(
+    commerce,
+    subtotal,
+    promoDiscount,
+  );
 
   const getImageUrl = (product) => getProductImageUrl(product);
 
@@ -768,6 +787,22 @@ export default function CheckoutPage() {
             taxAmount={taxAmount}
             total={total}
           >
+            {/* Batch 4: delivery estimate + minimum-order notice —
+                both render only when an admin configured them. */}
+            {commerce?.shipping?.deliveryEstimateText ? (
+              <p className="text-[13px] text-neutral-500">
+                {commerce.shipping.deliveryEstimateText}
+              </p>
+            ) : null}
+            {belowMinimum ? (
+              <div
+                role="alert"
+                className="rounded-xl border border-amber-200 bg-amber-50 px-4 py-3 text-[13px] font-medium text-amber-800"
+              >
+                Minimum order amount is {formatNPR(minimumOrderAmount)}.
+                Please add more items to your order.
+              </div>
+            ) : null}
             {/* Promo code */}
             <div>
               {appliedPromo ? (

@@ -26,6 +26,9 @@ const AdminIntegrations = lazy(() => import("./pages/admin/Integrations"));
 const AdminStoreSettings = lazy(
   () => import("./pages/admin/StoreSettings"),
 );
+const AdminSetupWizard = lazy(() => import("./pages/admin/SetupWizard"));
+const AdminAuditLog = lazy(() => import("./pages/admin/AuditLog"));
+const AdminMediaLibrary = lazy(() => import("./pages/admin/MediaLibrary"));
 const NotFoundPage = lazy(() => import("./pages/info/NotFoundPage"));
 
 import Skeleton, { DashboardSkeleton } from "./components/common/Skeleton";
@@ -205,6 +208,30 @@ export default function AdminApp() {
             element={
               <Suspense fallback={<AdminPageSkeleton />}>
                 <AdminIntegrations />
+              </Suspense>
+            }
+          />
+          <Route
+            path="setup-wizard"
+            element={
+              <Suspense fallback={<AdminPageSkeleton />}>
+                <AdminSetupWizard />
+              </Suspense>
+            }
+          />
+          <Route
+            path="audit-log"
+            element={
+              <Suspense fallback={<AdminPageSkeleton />}>
+                <AdminAuditLog />
+              </Suspense>
+            }
+          />
+          <Route
+            path="media-library"
+            element={
+              <Suspense fallback={<AdminPageSkeleton />}>
+                <AdminMediaLibrary />
               </Suspense>
             }
           />
