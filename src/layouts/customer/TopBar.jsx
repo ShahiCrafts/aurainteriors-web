@@ -2,18 +2,11 @@ import { MapPin, Truck, Tag, Users, HelpCircle } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import { useDefaultAddress } from "../../hooks/profile/useAddressTan";
 import useAuthStore from "../../store/authStore";
+import useSiteSettingsStore from "../../store/siteSettingsStore";
 import { useShallow } from "zustand/react/shallow";
 import { formatNPR } from "../../utils/formatCurrency";
 
 const G = "#F27318";
-
-const topOffers = [
-  {
-    icon: <Truck size={12} />,
-    text: `Free delivery on orders above ${formatNPR(5000)}`,
-  },
-  { icon: <Tag size={12} />, text: "Use DECOR15 — flat 15% off sitewide" },
-];
 
 const topLinks = [
   { icon: <Users size={14} />, label: "Become a Partner" },
@@ -29,6 +22,18 @@ export default function TopBar() {
     })),
   );
   const { defaultAddress, isLoading } = useDefaultAddress();
+  // Batch 3b: the free-delivery threshold is a commerce setting
+  // (default 5000 — the value this bar has always shown).
+  const freeShippingThreshold = useSiteSettingsStore(
+    (state) => state.settings.commerce.freeShippingThreshold,
+  );
+  const topOffers = [
+    {
+      icon: <Truck size={12} />,
+      text: `Free delivery on orders above ${formatNPR(freeShippingThreshold ?? 5000)}`,
+    },
+    { icon: <Tag size={12} />, text: "Use DECOR15 — flat 15% off sitewide" },
+  ];
 
   const handleAddressClick = () => {
     if (isAuthenticated) {

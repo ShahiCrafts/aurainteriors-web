@@ -3,6 +3,9 @@ import { Suspense, lazy, useEffect } from "react";
 import { dismissSplash } from "./lib/splash";
 import "./styles/index.css";
 import ErrorBoundary from "./components/common/ErrorBoundary";
+import useSiteSettingsStore from "./store/siteSettingsStore";
+import SiteSettingsEffects from "./components/common/SiteSettingsEffects";
+import MaintenancePage, { useMaintenanceMode } from "./pages/info/MaintenancePage";
 
 import {
   RouteSkeleton,
@@ -54,6 +57,7 @@ const PaymentFailedPage = lazy(
 const TrackOrderPage = lazy(() => import("./pages/customer/TrackOrderPage"));
 const ContactPage = lazy(() => import("./pages/info/ContactPage"));
 const FAQPage = lazy(() => import("./pages/info/FAQPage"));
+const ContentPage = lazy(() => import("./pages/info/ContentPage"));
 const NotFoundPage = lazy(() => import("./pages/info/NotFoundPage"));
 const AnnouncementsPage = lazy(() => import("./pages/info/AnnouncementsPage"));
 
@@ -69,6 +73,7 @@ const catalogFallback = (
 
 function App() {
   const location = useLocation();
+  const { enabled: maintenanceEnabled } = useMaintenanceMode();
   // First commit is on screen: the branded splash has done its job.
   // Exception: the auth return routes (/auth/success, /auth/verify) keep
   // the splash up until sign-in completes — those pages dismiss it
@@ -77,11 +82,25 @@ function App() {
   // (the auth page's own loader), so users saw two loaders in a row
   // after login.
   useEffect(() => {
+    // Batch 3b: kick off the public site-settings load once. The store
+    // starts at built-in defaults identical to today's site, so this
+    // never blocks or changes first paint; it only swaps values if the
+    // server answers with admin-edited settings.
+    useSiteSettingsStore.getState().load();
     if (window.location.pathname.startsWith("/auth/")) return;
     dismissSplash();
   }, []);
+  if (maintenanceEnabled) {
+    return (
+      <>
+        <SiteSettingsEffects />
+        <MaintenancePage />
+      </>
+    );
+  }
   return (
     <>
+      <SiteSettingsEffects />
       <Suspense fallback={null}>
         <AuthModal />
       </Suspense>
@@ -239,6 +258,65 @@ function App() {
             element={
               <Suspense fallback={<FaqSkeleton />}>
                 <FAQPage />
+              </Suspense>
+            }
+          />
+          {/* Batch 3b (NEW): static content pages the footer has always
+              linked to — they 404'd before this batch. Copy comes from
+              site settings (pages.*). */}
+          <Route
+            path="/about"
+            element={
+              <Suspense fallback={<RouteSkeleton />}>
+                <ContentPage title="About Us" settingsKey="about" path="/about" />
+              </Suspense>
+            }
+          />
+          <Route
+            path="/privacy"
+            element={
+              <Suspense fallback={<RouteSkeleton />}>
+                <ContentPage
+                  title="Privacy Policy"
+                  settingsKey="privacyPolicy"
+                  path="/privacy"
+                />
+              </Suspense>
+            }
+          />
+          <Route
+            path="/terms"
+            element={
+              <Suspense fallback={<RouteSkeleton />}>
+                <ContentPage
+                  title="Terms & Conditions"
+                  settingsKey="terms"
+                  path="/terms"
+                />
+              </Suspense>
+            }
+          />
+          <Route
+            path="/shipping"
+            element={
+              <Suspense fallback={<RouteSkeleton />}>
+                <ContentPage
+                  title="Shipping & Delivery"
+                  settingsKey="shippingReturns"
+                  path="/shipping"
+                />
+              </Suspense>
+            }
+          />
+          <Route
+            path="/returns"
+            element={
+              <Suspense fallback={<RouteSkeleton />}>
+                <ContentPage
+                  title="Returns & Refunds"
+                  settingsKey="shippingReturns"
+                  path="/returns"
+                />
               </Suspense>
             }
           />

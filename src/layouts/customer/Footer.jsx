@@ -1,8 +1,24 @@
 import { shopCategoryUrl } from "../../utils/shopFilters";
 import { CONTACT } from "../../seo/site";
 import React from "react";
-import { Phone, Mail, MapPin, ArrowRight } from "lucide-react";
+import { Phone, Mail, MapPin, Clock, ArrowRight } from "lucide-react";
 import { Link } from "react-router-dom";
+import useSiteSettingsStore from "../../store/siteSettingsStore";
+import validateMediaUrl from "../../utils/safeUrl";
+
+// FE-03: social URLs are admin-entered server data. Only http(s)
+// URLs survive; anything else keeps the historical "#" placeholder.
+const safeSocialHref = (raw) => {
+  if (!raw) return "#";
+  try {
+    const url = new URL(raw);
+    return url.protocol === "https:" || url.protocol === "http:"
+      ? url.href
+      : "#";
+  } catch {
+    return "#";
+  }
+};
 
 import BrandMarquee from "../../components/sections/BrandMarquee";
 import promoNewsletterInspiration from "../../assets/images/promo/promo-newsletter-inspiration.webp";
@@ -113,10 +129,10 @@ const PinterestIcon = () => (
 );
 
 const socials = [
-  { label: "Facebook", Icon: FacebookIcon },
-  { label: "Instagram", Icon: InstagramIcon },
-  { label: "YouTube", Icon: YoutubeIcon },
-  { label: "Pinterest", Icon: PinterestIcon },
+  { label: "Facebook", Icon: FacebookIcon, key: "facebook" },
+  { label: "Instagram", Icon: InstagramIcon, key: "instagram" },
+  { label: "YouTube", Icon: YoutubeIcon, key: "youtube" },
+  { label: "Pinterest", Icon: PinterestIcon, key: "pinterest" },
 ];
 
 const GooglePlayBadge = () => (
@@ -180,6 +196,9 @@ const AppStoreBadge = () => (
 );
 
 function NewsletterBanner() {
+  const storeName = useSiteSettingsStore(
+    (state) => state.settings.identity.storeName,
+  );
   return (
     <section className="px-4 md:px-6 lg:px-8 pt-16 pb-6 bg-white font-dm-sans">
       <div className="relative overflow-hidden rounded-md bg-linear-to-r from-[#f6f6f6] via-[#f6f6f6] to-[#f6f6f6] min-h-[343px] flex items-center">
@@ -203,7 +222,7 @@ function NewsletterBanner() {
             Stay Inspired
           </p>
           <h2 className="text-[34px] sm:text-[38px] leading-[1.15] font-bold text-[#1A1714] tracking-tight">
-            Join the <span className="text-brand">Aura Interiors</span> Circle
+            Join the <span className="text-brand">{storeName || "Aura Interiors"}</span> Circle
           </h2>
           <p className="mt-4 text-[17px] leading-[1.6] text-black/60 max-w-[580px]">
             Get exclusive access to new arrivals, styling tips, special offers
@@ -232,10 +251,30 @@ function NewsletterBanner() {
 }
 
 export default function Footer() {
+  // Batch 3b: identity/contact from site settings. Every fallback is
+  // the value this footer has always rendered (the CONTACT constants),
+  // and the settings defaults equal them, so nothing changes until an
+  // admin edits Settings.
+  const identity = useSiteSettingsStore((state) => state.settings.identity);
+  const contact = useSiteSettingsStore((state) => state.settings.contact);
+  const newsletterEnabled = useSiteSettingsStore(
+    (state) => state.settings.homepage.newsletterEnabled,
+  );
+  const phone = contact?.phone || CONTACT.phoneDisplay;
+  const email = contact?.email || CONTACT.email;
+  const address =
+    contact?.address ||
+    `${CONTACT.street}, ${CONTACT.city}, ${CONTACT.country}`;
+  const hours = contact?.hours || "";
+  const socialUrls = contact?.socials || {};
+  // FE-03: the settings logo is server data — validate before use.
+  const logoSrc =
+    validateMediaUrl(identity?.logoUrl) || "/logo-aura-interiors.webp";
+
   return (
     <>
       <BrandMarquee />
-      <NewsletterBanner />
+      {newsletterEnabled !== false && <NewsletterBanner />}
 
       <footer className="bg-white font-dm-sans text-[#1A1714]">
         <div className="px-4 md:px-6 lg:px-8">
@@ -245,8 +284,8 @@ export default function Footer() {
             <div className="col-span-2 lg:col-span-1 flex flex-col">
               <Link to="/" className="no-underline inline-block">
                 <img
-                  src="/logo-aura-interiors.webp"
-                  alt="Aura Interiors"
+                  src={logoSrc}
+                  alt={identity?.storeName || "Aura Interiors"}
                   width={212}
                   height={84}
                   loading="lazy"
@@ -266,9 +305,7 @@ export default function Footer() {
                     fill="#F27318"
                     strokeWidth={1.5}
                   />
-                  <span className="text-[16px] text-[#1A1714]">
-                    {CONTACT.phoneDisplay}
-                  </span>
+                  <span className="text-[16px] text-[#1A1714]">{phone}</span>
                 </li>
                 <li className="flex items-center gap-3.5">
                   <Mail
@@ -276,9 +313,7 @@ export default function Footer() {
                     className="text-brand shrink-0"
                     strokeWidth={1.8}
                   />
-                  <span className="text-[16px] text-black/65">
-                    {CONTACT.email}
-                  </span>
+                  <span className="text-[16px] text-black/65">{email}</span>
                 </li>
                 <li className="flex items-center gap-3.5">
                   <MapPin
@@ -286,17 +321,25 @@ export default function Footer() {
                     className="text-brand shrink-0"
                     strokeWidth={1.8}
                   />
-                  <span className="text-[16px] text-black/65">
-                    {CONTACT.street}, {CONTACT.city}, {CONTACT.country}
-                  </span>
+                  <span className="text-[16px] text-black/65">{address}</span>
                 </li>
+                {hours && (
+                  <li className="flex items-center gap-3.5">
+                    <Clock
+                      size={19}
+                      className="text-brand shrink-0"
+                      strokeWidth={1.8}
+                    />
+                    <span className="text-[16px] text-black/65">{hours}</span>
+                  </li>
+                )}
               </ul>
 
               <div className="mt-6 flex items-center gap-3">
-                {socials.map(({ label, Icon }) => (
+                {socials.map(({ label, Icon, key }) => (
                   <a
                     key={label}
-                    href="#"
+                    href={safeSocialHref(socialUrls[key])}
                     aria-label={label}
                     className="w-11 h-11 rounded-full bg-[#f4f1ef] hover:bg-[#ece7e3] flex items-center justify-center transition-colors"
                   >
@@ -387,7 +430,7 @@ export default function Footer() {
           {/* BOTTOM STRIP */}
           <div className="border-t border-black/10 py-7 flex flex-col md:flex-row items-center justify-between gap-4">
             <p className="text-[15px] text-black/55">
-              &copy; 2024 Aura Interiors Private Limited. All rights reserved.
+              &copy; 2024 {identity?.storeName || "Aura Interiors"} Private Limited. All rights reserved.
             </p>
             <nav className="flex items-center text-[15px] text-black/60">
               {legalLinks.map((link, i) => (

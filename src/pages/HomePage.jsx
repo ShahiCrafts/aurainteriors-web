@@ -6,6 +6,8 @@ import Seo from "../components/common/Seo.jsx";
 import Navbar from "../layouts/customer/Navbar";
 import CategoryBar from "../components/navigation/CategoryBar";
 import Hero from "../components/sections/Hero";
+import useSiteSettingsStore from "../store/siteSettingsStore";
+import { orderedHomeSections } from "../utils/homeSections";
 
 const TrustBanner = lazy(() => import("../components/sections/TrustBanner"));
 const ShopByCategory = lazy(
@@ -26,8 +28,40 @@ function SectionSkeleton({ minHeight, className = "" }) {
   );
 }
 
+// Batch 3b: homepage section order/visibility come from site settings
+// (homepage.sections / homepage.sectionsOrder). The settings defaults
+// are the order below with every section enabled, so the default page
+// is byte-for-byte the composition this file always rendered. Each
+// section keeps its exact original wrapper (Hero eager, the rest lazy
+// behind their original skeletons); Footer is not a settings section
+// and always renders last.
+const SECTION_RENDERERS = {
+  hero: () => <Hero key="hero" />,
+  trustBanner: () => (
+    <Suspense key="trustBanner" fallback={<SectionSkeleton minHeight="120px" />}>
+      <TrustBanner />
+    </Suspense>
+  ),
+  shopByCategory: () => (
+    <Suspense key="shopByCategory" fallback={<SectionSkeleton minHeight="300px" />}>
+      <ShopByCategory />
+    </Suspense>
+  ),
+  featuredPieces: () => (
+    <Suspense key="featuredPieces" fallback={<SectionSkeleton minHeight="400px" />}>
+      <FeaturedPieces />
+    </Suspense>
+  ),
+  testimonials: () => (
+    <Suspense key="testimonials" fallback={<SectionSkeleton minHeight="400px" />}>
+      <Testimonials />
+    </Suspense>
+  ),
+};
+
 export default function HomePage() {
   const queryClient = useQueryClient();
+  const homepage = useSiteSettingsStore((s) => s.settings.homepage);
 
   useEffect(() => {
     prefetchHomeData(queryClient);
@@ -45,23 +79,7 @@ export default function HomePage() {
       <CategoryBar />
 
       <main className="min-h-screen">
-        <Hero />
-
-        <Suspense fallback={<SectionSkeleton minHeight="120px" />}>
-          <TrustBanner />
-        </Suspense>
-
-        <Suspense fallback={<SectionSkeleton minHeight="300px" />}>
-          <ShopByCategory />
-        </Suspense>
-
-        <Suspense fallback={<SectionSkeleton minHeight="400px" />}>
-          <FeaturedPieces />
-        </Suspense>
-
-        <Suspense fallback={<SectionSkeleton minHeight="400px" />}>
-          <Testimonials />
-        </Suspense>
+        {orderedHomeSections(homepage).map((key) => SECTION_RENDERERS[key]())}
 
         <Suspense fallback={<SectionSkeleton minHeight="360px" />}>
           <Footer />

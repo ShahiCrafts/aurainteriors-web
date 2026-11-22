@@ -17,6 +17,7 @@ import {
   LOGO_URL,
   absoluteUrl,
 } from "./site.js";
+import { getSeoDefaults } from "./settingsBridge.js";
 
 export const organizationJsonLd = () => ({
   "@context": "https://schema.org",
@@ -125,12 +126,59 @@ export const productJsonLd = (product) => {
   return data;
 };
 
+// Batch 3d: settings noindex page keys -> the route prefixes they
+// cover at runtime. "orders" covers the two standalone order pages
+// (the orders tab itself lives under /profile, which has its own
+// key); "cart"/"wishlist" have no standalone routes today (drawer /
+// profile tab), so those keys apply the moment such routes exist
+// and to any same-prefixed path in the meantime.
+const NOINDEX_ROUTE_PREFIXES = {
+  cart: ["/cart"],
+  checkout: ["/checkout"],
+  profile: ["/profile"],
+  orders: ["/order-confirmation", "/track-order"],
+  wishlist: ["/wishlist"],
+};
+
+const pathMatchesNoindexPages = (path, pages) => {
+  if (!Array.isArray(pages) || pages.length === 0) return false;
+  return pages.some((key) =>
+    (NOINDEX_ROUTE_PREFIXES[key] || []).some(
+      (prefix) => path === prefix || path.startsWith(`${prefix}/`),
+    ),
+  );
+};
+
 // Runtime head application for client-side navigation. Tags written here
 // carry data-seo="runtime" so the next page can replace exactly its own.
 export function applyHead({ title, description, path = "/", image, type = "website", noindex = false, jsonLd = [] }) {
   if (typeof document === "undefined") return;
   const url = absoluteUrl(path);
-  document.title = title || SITE_NAME;
+  // Batch 3b: fallbacks come from the admin's SEO settings once the
+  // site-settings store has loaded them into the bridge; until then
+  // (and on any load failure) these are exactly the constants above.
+  const seoDefaults = getSeoDefaults();
+  const fallbackTitle = seoDefaults?.defaultTitle || SITE_NAME;
+  const fallbackDescription =
+    seoDefaults?.metaDescription || SITE_DESCRIPTION;
+  const fallbackImage = seoDefaults?.ogImage || DEFAULT_OG_IMAGE;
+  const fallbackCard = seoDefaults?.twitterCard || "summary_large_image";
+  // Batch 3d feature gates — the bridge defaults every flag to ON
+  // (and the bridge itself is null until settings load), so with
+  // default settings every branch below behaves exactly as before.
+  const features = seoDefaults?.features || {};
+  const autoGenerateMeta = features.autoGenerateMeta !== false;
+  const openGraph = features.openGraph !== false;
+  const twitterCards = features.twitterCards !== false;
+  const productSchema = features.productSchema !== false;
+  const breadcrumbsSchema = features.breadcrumbs !== false;
+
+  // With auto-generate off, a page that supplies no title/description
+  // gets no auto-filled primary meta (its <title> is left as-is).
+  const effectiveTitle = title || (autoGenerateMeta ? fallbackTitle : "");
+  if (effectiveTitle) document.title = effectiveTitle;
+  const effectiveDescription =
+    description || (autoGenerateMeta ? fallbackDescription : "");
 
   const upsertMeta = (selector, attrs) => {
     let el = document.head.querySelector(selector);
@@ -141,17 +189,26 @@ export function applyHead({ title, description, path = "/", image, type = "websi
     Object.entries(attrs).forEach(([k, v]) => el.setAttribute(k, v));
     el.setAttribute("data-seo", "runtime");
   };
-  upsertMeta('meta[name="description"]', { name: "description", content: description || SITE_DESCRIPTION });
-  upsertMeta('meta[name="robots"]', { name: "robots", content: noindex ? "noindex, nofollow" : "index, follow" });
-  upsertMeta('meta[property="og:title"]', { property: "og:title", content: title || SITE_NAME });
-  upsertMeta('meta[property="og:description"]', { property: "og:description", content: description || SITE_DESCRIPTION });
-  upsertMeta('meta[property="og:url"]', { property: "og:url", content: url });
-  upsertMeta('meta[property="og:type"]', { property: "og:type", content: type });
-  upsertMeta('meta[property="og:image"]', { property: "og:image", content: image || DEFAULT_OG_IMAGE });
-  upsertMeta('meta[name="twitter:card"]', { name: "twitter:card", content: "summary_large_image" });
-  upsertMeta('meta[name="twitter:title"]', { name: "twitter:title", content: title || SITE_NAME });
-  upsertMeta('meta[name="twitter:description"]', { name: "twitter:description", content: description || SITE_DESCRIPTION });
-  upsertMeta('meta[name="twitter:image"]', { name: "twitter:image", content: image || DEFAULT_OG_IMAGE });
+  if (effectiveDescription) {
+    upsertMeta('meta[name="description"]', { name: "description", content: effectiveDescription });
+  }
+  const settingsNoindex =
+    seoDefaults?.indexingEnabled === false ||
+    pathMatchesNoindexPages(path, seoDefaults?.noindexPages);
+  upsertMeta('meta[name="robots"]', { name: "robots", content: noindex || settingsNoindex ? "noindex, nofollow" : "index, follow" });
+  if (openGraph) {
+    upsertMeta('meta[property="og:title"]', { property: "og:title", content: title || fallbackTitle });
+    upsertMeta('meta[property="og:description"]', { property: "og:description", content: description || fallbackDescription });
+    upsertMeta('meta[property="og:url"]', { property: "og:url", content: url });
+    upsertMeta('meta[property="og:type"]', { property: "og:type", content: type });
+    upsertMeta('meta[property="og:image"]', { property: "og:image", content: image || fallbackImage });
+  }
+  if (twitterCards) {
+    upsertMeta('meta[name="twitter:card"]', { name: "twitter:card", content: fallbackCard });
+    upsertMeta('meta[name="twitter:title"]', { name: "twitter:title", content: title || fallbackTitle });
+    upsertMeta('meta[name="twitter:description"]', { name: "twitter:description", content: description || fallbackDescription });
+    upsertMeta('meta[name="twitter:image"]', { name: "twitter:image", content: image || fallbackImage });
+  }
 
   let canonical = document.head.querySelector('link[rel="canonical"]');
   if (!canonical) {
@@ -159,17 +216,27 @@ export function applyHead({ title, description, path = "/", image, type = "websi
     canonical.setAttribute("rel", "canonical");
     document.head.appendChild(canonical);
   }
-  canonical.setAttribute("href", url);
+  // Batch 3d: an admin-set canonical base replaces the site origin
+  // for canonical URLs; "" (default) keeps the per-page canonical.
+  const canonicalBase = (seoDefaults?.canonicalUrl || "").replace(/\/+$/, "");
+  canonical.setAttribute(
+    "href",
+    canonicalBase ? `${canonicalBase}${path}` : url,
+  );
   canonical.setAttribute("data-seo", "runtime");
 
   document.head
     .querySelectorAll('script[type="application/ld+json"][data-seo="runtime"]')
     .forEach((el) => el.remove());
-  jsonLd.filter(Boolean).forEach((obj) => {
-    const script = document.createElement("script");
-    script.type = "application/ld+json";
-    script.setAttribute("data-seo", "runtime");
-    script.textContent = JSON.stringify(obj);
-    document.head.appendChild(script);
-  });
+  jsonLd
+    .filter(Boolean)
+    .filter((obj) => productSchema || obj["@type"] !== "Product")
+    .filter((obj) => breadcrumbsSchema || obj["@type"] !== "BreadcrumbList")
+    .forEach((obj) => {
+      const script = document.createElement("script");
+      script.type = "application/ld+json";
+      script.setAttribute("data-seo", "runtime");
+      script.textContent = JSON.stringify(obj);
+      document.head.appendChild(script);
+    });
 }

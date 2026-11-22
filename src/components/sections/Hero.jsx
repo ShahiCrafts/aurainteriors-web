@@ -9,8 +9,10 @@ import heroWorkspace1200 from "../../assets/images/hero/hero-workspace-office-12
 import heroDecor600 from "../../assets/images/hero/hero-decor-dining-room-600w.webp";
 import heroDecor1200 from "../../assets/images/hero/hero-decor-dining-room-1200w.webp";
 import { formatNPR } from "../../utils/formatCurrency";
+import validateMediaUrl from "../../utils/safeUrl";
 import { ArrowUpRight, Star } from "lucide-react";
 import { Link } from "react-router-dom";
+import useSiteSettingsStore from "../../store/siteSettingsStore";
 
 const slides = [
   {
@@ -45,14 +47,125 @@ const slides = [
   },
 ];
 
-const mainSlideSrc = heroFurniture1200;
-const mainSlideSrcSet = `${heroFurniture600} 600w, ${heroFurniture1200} 1200w, ${heroFurniture1920} 1920w`;
-const sideSlideSrc = heroBedroom600;
-const sideSlideSrcSet = `${heroBedroom600} 600w, ${heroBedroom1200} 1200w, ${heroBedroom1920} 1920w`;
-const decorSlideSrc = heroDecor600;
-const decorSlideSrcSet = `${heroDecor600} 600w, ${heroDecor1200} 1200w`;
+// Batch 3b: hero copy/images now come from site settings
+// (homepage.heroSlides / homepage.promoBanner). The settings defaults
+// ARE the `slides` data above (extracted verbatim in Batch 3a), so
+// with defaults this component renders exactly what it always has —
+// including the responsive srcSets, which are rebuilt from the same
+// bundled variants whenever a settings imageUrl names one of the
+// bundled hero files. Tag + price are not part of the settings shape
+// and stay local, paired by slide position.
+
+// Bundled hero variants by file stem, so a settings imageUrl like
+// "src/assets/images/hero/hero-bedroom-comfort-1200w.webp" resolves to
+// the full variant set of that photo.
+const HERO_VARIANTS = {
+  "hero-furniture-living-room": {
+    600: heroFurniture600,
+    1200: heroFurniture1200,
+    1920: heroFurniture1920,
+  },
+  "hero-bedroom-comfort": {
+    600: heroBedroom600,
+    1200: heroBedroom1200,
+    1920: heroBedroom1920,
+  },
+  "hero-workspace-office": { 1200: heroWorkspace1200 },
+  "hero-decor-dining-room": { 600: heroDecor600, 1200: heroDecor1200 },
+};
+
+// Resolve a settings imageUrl to { src, srcSet } for a slot whose
+// preferred width is `preferred` (main 1200, side/promo 600 — the
+// widths the hardcoded component used). Remote/absolute URLs are used
+// directly with no srcSet; unknown values fall back to the slot's
+// current bundled image.
+function resolveHeroImage(imageUrl, fallback) {
+  if (!imageUrl) return fallback;
+  if (/^(https?:)?\/\//.test(imageUrl) || imageUrl.startsWith("/")) {
+    // Settings are server data: remote/absolute URLs go through the
+    // FE-03 media validator (own origins / Cloudinary / S3 / site
+    // paths); anything it rejects falls back to the bundled image.
+    const validated = validateMediaUrl(imageUrl);
+    return validated ? { src: validated, srcSet: undefined } : fallback;
+  }
+  const file = imageUrl.split("/").pop() || "";
+  const stem = file.replace(/-\d+w\.webp$/, "").replace(/\.webp$/, "");
+  const variants = HERO_VARIANTS[stem];
+  if (!variants) return fallback;
+  const widths = Object.keys(variants)
+    .map(Number)
+    .sort((a, b) => a - b);
+  const srcSet = widths.map((w) => `${variants[w]} ${w}w`).join(", ");
+  const src =
+    variants[fallback.preferred] ||
+    variants[widths[widths.length - 1]] ||
+    fallback.src;
+  return { src, srcSet };
+}
+
+// Settings headlines are a single string ("Furniture That Fits You");
+// the layout renders a heading + highlighted tail. When the headline
+// still equals a local slide's heading + highlight, split exactly
+// there; otherwise highlight the last two words (last word for a
+// two-word headline).
+function splitHeadline(headline, local) {
+  const text = String(headline || "").trim();
+  if (local && text === `${local.heading} ${local.highlight}`) {
+    return { heading: local.heading, highlight: local.highlight };
+  }
+  const words = text.split(/\s+/).filter(Boolean);
+  if (words.length <= 1) return { heading: text, highlight: "" };
+  if (words.length === 2)
+    return { heading: words[0], highlight: words[1] };
+  return {
+    heading: words.slice(0, -2).join(" "),
+    highlight: words.slice(-2).join(" "),
+  };
+}
+
+// Merge one settings slide over the local slide at the same position.
+function mergeSlide(local, remote) {
+  if (!remote) return { ...local, link: null };
+  const { heading, highlight } = splitHeadline(remote.headline, local);
+  return {
+    ...local,
+    heading,
+    highlight,
+    desc: remote.subtext || local.desc,
+    cta: remote.buttonText || local.cta,
+    link: remote.buttonLink || null,
+  };
+}
+
+const mainSlideFallback = {
+  preferred: 1200,
+  src: heroFurniture1200,
+  srcSet: `${heroFurniture600} 600w, ${heroFurniture1200} 1200w, ${heroFurniture1920} 1920w`,
+};
+const sideSlideFallback = {
+  preferred: 600,
+  src: heroBedroom600,
+  srcSet: `${heroBedroom600} 600w, ${heroBedroom1200} 1200w, ${heroBedroom1920} 1920w`,
+};
+const decorSlideFallback = {
+  preferred: 600,
+  src: heroDecor600,
+  srcSet: `${heroDecor600} 600w, ${heroDecor1200} 1200w`,
+};
 
 export default function Hero() {
+  const homepage = useSiteSettingsStore((s) => s.settings.homepage);
+  const enabledSlides = (homepage?.heroSlides || []).filter(
+    (s) => s && s.enabled !== false,
+  );
+  const mainSlide = mergeSlide(slides[0], enabledSlides[0]);
+  const sideSlide = mergeSlide(slides[1], enabledSlides[1]);
+  const mainImg = resolveHeroImage(enabledSlides[0]?.imageUrl, mainSlideFallback);
+  const sideImg = resolveHeroImage(enabledSlides[1]?.imageUrl, sideSlideFallback);
+  const promo = homepage?.promoBanner || {};
+  const promoImg = resolveHeroImage(promo.imageUrl, decorSlideFallback);
+  const promoVisible = promo.enabled !== false;
+
   return (
     <div className="font-dm-sans bg-white">
       {/* ── BENTO ── */}
@@ -61,10 +174,10 @@ export default function Hero() {
         <div className="lg:col-start-1 lg:row-start-1 lg:row-span-2 h-92.5 sm:h-112.5 lg:h-auto rounded-sm md:rounded-2xl overflow-hidden relative shadow-[0_4px_28px_rgba(0,0,0,0.10)] group">
           <div className="min-w-full h-full rounded-sm md:rounded-2xl overflow-hidden relative after:content-[''] after:absolute after:inset-0 after:bg-linear-to-t after:from-black/70 after:from-15% after:via-black/35 after:via-70% after:to-transparent after:pointer-events-none">
             <img
-              src={mainSlideSrc}
-              srcSet={mainSlideSrcSet}
+              src={mainImg.src}
+              srcSet={mainImg.srcSet}
               sizes="(max-width: 1024px) 100vw, 66vw"
-              alt={slides[0].heading}
+              alt={mainSlide.heading}
               width={1920}
               height={1279}
               fetchPriority="high"
@@ -77,21 +190,21 @@ export default function Hero() {
           {/* Main Card Content Overlay */}
           <div className="absolute inset-0 p-6 sm:p-8 md:p-[42px_48px] pointer-events-none flex flex-col justify-end">
             <h1 className="text-[40px] sm:text-[48px] md:text-[64px] font-semibold text-white tracking-wide leading-[1.05] mb-2 sm:mb-3 drop-shadow-md max-w-200">
-              {slides[0].heading} <br />
+              {mainSlide.heading} <br />
               <em className="text-brand font-semibold not-italic">
-                {slides[0].highlight}
+                {mainSlide.highlight}
               </em>
             </h1>
             <div className="text-[14px] sm:text-[15px] md:text-[15px] font-normal text-white/90 leading-normal sm:leading-[1.6] mb-5 sm:mb-8 max-w-115 drop-shadow-sm">
-              {slides[0].desc}
+              {mainSlide.desc}
             </div>
             <div className="flex flex-col sm:flex-row items-start sm:items-center gap-4 sm:gap-6">
               <Link
-                to={shopCategoryUrl("living-room")}
+                to={mainSlide.link || shopCategoryUrl("living-room")}
                 className="pointer-events-auto"
               >
                 <button className="flex items-center justify-center gap-2 bg-brand text-white hover:bg-brand-hover shadow-sm rounded-lg px-8 sm:px-8 py-2.75 sm:py-3 font-sans text-[14px] sm:text-[16px] font-semibold cursor-pointer transition-colors duration-250">
-                  {slides[0].cta}
+                  {mainSlide.cta}
                 </button>
               </Link>
               <div className="flex flex-col">
@@ -114,7 +227,7 @@ export default function Hero() {
                     Starting from
                   </span>
                   <span className="text-[20px] sm:text-[24px] font-bold text-white tracking-[-0.02em] drop-shadow-sm">
-                    {formatNPR(slides[0].price)}
+                    {formatNPR(mainSlide.price)}
                   </span>
                 </div>
               </div>
@@ -126,10 +239,10 @@ export default function Hero() {
         <div className="hidden md:block lg:col-start-2 lg:row-start-1 h-62.5 sm:h-71.5 rounded-sm md:rounded-2xl overflow-hidden relative group shadow-sm bg-[#F9F8F6]">
           <div className="absolute inset-0 after:content-[''] after:absolute after:inset-0 after:bg-linear-to-t after:from-black/70 after:from-15% after:via-black/35 after:via-70% after:to-transparent">
             <img
-              src={sideSlideSrc}
-              srcSet={sideSlideSrcSet}
+              src={sideImg.src}
+              srcSet={sideImg.srcSet}
               sizes="(max-width: 768px) 100vw, 33vw"
-              alt={slides[1].heading}
+              alt={sideSlide.heading}
               width={1920}
               height={1080}
               loading="lazy"
@@ -141,23 +254,23 @@ export default function Hero() {
           <div className="absolute inset-0 p-5 sm:p-[28px_32px] flex flex-col justify-between pointer-events-none">
             <div className="flex justify-between items-start w-full">
               <span className="bg-white/95 backdrop-blur-sm text-[#1A1714] text-[10px] sm:text-[11px] font-bold px-2.5 sm:px-3 py-1 sm:py-1.25 rounded-md tracking-wide uppercase shadow-sm">
-                {slides[1].tag}
+                {sideSlide.tag}
               </span>
             </div>
             <div>
               <div className="text-[20px] sm:text-[24px] font-bold text-white tracking-em] leading-[1.15] mb-1 sm:mb-1.5 drop-shadow-sm">
-                {slides[1].heading} {slides[1].highlight}
+                {sideSlide.heading} {sideSlide.highlight}
               </div>
               <div className="text-[12.5px] sm:text-[13.5px] font-normal text-white/80 leading-[1.4] max-w-[320px] line-clamp-2">
-                {slides[1].desc}
+                {sideSlide.desc}
               </div>
               <div className="mt-3 sm:mt-4.5">
                 <Link
-                  to={shopCategoryUrl("bedroom")}
+                  to={sideSlide.link || shopCategoryUrl("bedroom")}
                   className="pointer-events-auto"
                 >
                   <button className="flex items-center justify-center gap-1.5 bg-white text-[#1A1714] hover:bg-brand hover:text-white rounded-lg px-3.5 sm:px-4 py-1.75 sm:py-2.25 font-sans text-[12px] sm:text-[13px] font-bold cursor-pointer transition-colors duration-200 shadow-sm">
-                    {slides[1].cta} <ArrowUpRight size={14} />
+                    {sideSlide.cta} <ArrowUpRight size={14} />
                   </button>
                 </Link>
               </div>
@@ -166,56 +279,59 @@ export default function Hero() {
         </div>
 
         {/* RIGHT BOTTOM: Static Banner */}
-        <div className="hidden md:block lg:col-start-2 lg:row-start-2 h-62.5 sm:h-71.5 rounded-sm md:rounded-2xl overflow-hidden relative group shadow-sm bg-[#F9F8F6]">
-          <div className="absolute inset-0 after:content-[''] after:absolute after:inset-0 after:bg-linear-to-t after:from-black/70 after:from-15% after:via-black/35 after:via-70% after:to-transparent">
-            <img
-              src={decorSlideSrc}
-              srcSet={decorSlideSrcSet}
-              sizes="(max-width: 768px) 100vw, 33vw"
-              alt="Premium Decor"
-              width={1200}
-              height={800}
-              loading="lazy"
-              decoding="async"
-              className="w-full h-full object-cover transition-transform duration-800 group-hover:scale-105"
-            />
-          </div>
-          <div className="absolute inset-0 p-5 sm:p-[28px_32px] flex flex-col justify-end">
-            <div className="flex justify-between items-end">
-              <div>
-                <div className="text-[20px] sm:text-[24px] font-bold text-white tracking-[-0.02em] leading-[1.15] mb-1 sm:mb-1.5 drop-shadow-sm">
-                  Calmora Bed Frame
-                </div>
-                <div className="flex items-baseline gap-1.5 sm:gap-2">
-                  <span className="text-[12px] sm:text-[13px] font-normal text-white/60 line-through">
-                    {formatNPR(24999)}
-                  </span>
-                  <span className="text-[16px] sm:text-[18px] font-bold text-brand drop-shadow-sm">
-                    {formatNPR(19999)}
-                  </span>
+        {promoVisible && (
+          <div className="hidden md:block lg:col-start-2 lg:row-start-2 h-62.5 sm:h-71.5 rounded-sm md:rounded-2xl overflow-hidden relative group shadow-sm bg-[#F9F8F6]">
+            <div className="absolute inset-0 after:content-[''] after:absolute after:inset-0 after:bg-linear-to-t after:from-black/70 after:from-15% after:via-black/35 after:via-70% after:to-transparent">
+              <img
+                src={promoImg.src}
+                srcSet={promoImg.srcSet}
+                sizes="(max-width: 768px) 100vw, 33vw"
+                alt="Premium Decor"
+                width={1200}
+                height={800}
+                loading="lazy"
+                decoding="async"
+                className="w-full h-full object-cover transition-transform duration-800 group-hover:scale-105"
+              />
+            </div>
+            <div className="absolute inset-0 p-5 sm:p-[28px_32px] flex flex-col justify-end">
+              <div className="flex justify-between items-end">
+                <div>
+                  <div className="text-[20px] sm:text-[24px] font-bold text-white tracking-[-0.02em] leading-[1.15] mb-1 sm:mb-1.5 drop-shadow-sm">
+                    {promo.headline || "Calmora Bed Frame"}
+                  </div>
+                  <div className="flex items-baseline gap-1.5 sm:gap-2">
+                    <span className="text-[12px] sm:text-[13px] font-normal text-white/60 line-through">
+                      {formatNPR(24999)}
+                    </span>
+                    <span className="text-[16px] sm:text-[18px] font-bold text-brand drop-shadow-sm">
+                      {formatNPR(19999)}
+                    </span>
+                  </div>
                 </div>
               </div>
-            </div>
 
-            {/* Actions */}
-            <div className="mt-2 sm:mt-3">
-              <div className="text-[12.5px] sm:text-[13.5px] font-normal text-white/80 leading-[1.4] max-w-[320px] line-clamp-2">
-                Handcrafted solid sheesham wood frame with a plush upholstered
-                headboard
-              </div>
-              <div className="mt-3 sm:mt-4.5">
-                <Link
-                  to={shopCategoryUrl("bedroom")}
-                  className="pointer-events-auto"
-                >
-                  <button className="flex items-center justify-center gap-1.5 bg-white text-[#1A1714] hover:bg-brand hover:text-white rounded-lg px-3.5 sm:px-4 py-1.75 sm:py-2.25 font-sans text-[12px] sm:text-[13px] font-bold cursor-pointer transition-colors duration-200 shadow-sm">
-                    Shop Sale <ArrowUpRight size={14} />
-                  </button>
-                </Link>
+              {/* Actions */}
+              <div className="mt-2 sm:mt-3">
+                <div className="text-[12.5px] sm:text-[13.5px] font-normal text-white/80 leading-[1.4] max-w-[320px] line-clamp-2">
+                  {promo.subtext ||
+                    "Handcrafted solid sheesham wood frame with a plush upholstered headboard"}
+                </div>
+                <div className="mt-3 sm:mt-4.5">
+                  <Link
+                    to={promo.buttonLink || shopCategoryUrl("bedroom")}
+                    className="pointer-events-auto"
+                  >
+                    <button className="flex items-center justify-center gap-1.5 bg-white text-[#1A1714] hover:bg-brand hover:text-white rounded-lg px-3.5 sm:px-4 py-1.75 sm:py-2.25 font-sans text-[12px] sm:text-[13px] font-bold cursor-pointer transition-colors duration-200 shadow-sm">
+                      {promo.buttonText || "Shop Sale"}{" "}
+                      <ArrowUpRight size={14} />
+                    </button>
+                  </Link>
+                </div>
               </div>
             </div>
           </div>
-        </div>
+        )}
       </div>
     </div>
   );

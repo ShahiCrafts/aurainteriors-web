@@ -14,13 +14,17 @@ import {
 import Navbar from "../../layouts/customer/Navbar";
 import Footer from "../../layouts/customer/Footer";
 
-import { faqData } from "../../data/faqData.js";
 import Seo from "../../components/common/Seo.jsx";
+import useSiteSettingsStore from "../../store/siteSettingsStore";
+import { faqGroupsFromSettings } from "../../utils/faqGroups";
 
 const FAQ_ICONS = { ShoppingBag, Truck, RotateCcw, Smartphone };
 
 export default function FAQPage() {
   const [activeId, setActiveId] = useState(null);
+  const settingsFaq = useSiteSettingsStore((s) => s.settings.pages.faq);
+  const settingsLoaded = useSiteSettingsStore((s) => s.loaded);
+  const faqGroups = faqGroupsFromSettings(settingsFaq, settingsLoaded);
 
   const toggleAccordion = (id) => {
     setActiveId(activeId === id ? null : id);
@@ -53,7 +57,7 @@ export default function FAQPage() {
 
           {/* FAQ Sections */}
           <div className="space-y-10 max-w-2xl mx-auto">
-            {faqData.map((category) => (
+            {faqGroups.map((category) => (
               <div key={category.category} className="space-y-4">
                 <div className="flex items-center gap-3">
                   <div className="w-9 h-9 rounded-xl bg-brand/10 flex items-center justify-center text-brand">

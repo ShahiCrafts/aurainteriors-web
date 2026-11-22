@@ -105,3 +105,163 @@ html::-webkit-scrollbar {
 *::-webkit-scrollbar {
   display: none;
 }
+
+/* ── Site-settings theme layer (Batch 3b) ──────────────────────────
+   Appended only — no existing rule above is modified. The variables
+   default to the site's current brand values, and SiteSettingsEffects
+   overrides them inline on <html> when an admin changes Settings →
+   Theme, so with default settings rendering is identical.
+
+   How surfaces follow the theme:
+   - Tailwind v4 utilities generated from @theme (bg-brand,
+     text-brand, border-brand, ring-brand, bg-brand-hover, …) resolve
+     through var(--color-brand) / var(--color-brand-hover), which the
+     effects module sets inline — they follow automatically.
+   - The literal arbitrary-value classes below (bg-[#F27318] and
+     friends, compiled to fixed hex by Tailwind) are re-pointed at the
+     variables here. These rules are unlayered, so they win over the
+     layered utilities at equal specificity.
+   - Remaining literal hexes that are NOT the brand tokens (e.g.
+     #1A1714 ink, #cd5704 / #E6651B one-off shades) intentionally stay
+     fixed — they are content colours, not the brand palette. */
+:root {
+  --brand-primary: #f27318;
+  --brand-primary-hover: #d9620e;
+  --brand-navy: #1e2c4a;
+  --brand-font: "DM Sans", sans-serif;
+  --brand-radius: 0.5rem;
+}
+
+body {
+  font-family: var(--brand-font);
+}
+
+.bg-\[\#F27318\] {
+  background-color: var(--brand-primary);
+}
+.text-\[\#F27318\] {
+  color: var(--brand-primary);
+}
+.border-\[\#F27318\] {
+  border-color: var(--brand-primary);
+}
+.ring-\[\#F27318\] {
+  --tw-ring-color: var(--brand-primary);
+}
+.fill-\[\#F27318\] {
+  fill: var(--brand-primary);
+}
+.hover\:bg-\[\#F27318\]:hover {
+  background-color: var(--brand-primary);
+}
+.hover\:text-\[\#F27318\]:hover {
+  color: var(--brand-primary);
+}
+.focus\:border-\[\#F27318\]:focus {
+  border-color: var(--brand-primary);
+}
+.focus\:ring-\[\#F27318\]:focus {
+  --tw-ring-color: var(--brand-primary);
+}
+.group:hover .group-hover\:bg-\[\#F27318\] {
+  background-color: var(--brand-primary);
+}
+.group:hover .group-hover\:text-\[\#F27318\] {
+  color: var(--brand-primary);
+}
+.from-\[\#F27318\]\/5 {
+  --tw-gradient-from: color-mix(
+      in oklab,
+      var(--brand-primary) 5%,
+      transparent
+    )
+    var(--tw-gradient-via-position);
+}
+
+.bg-\[\#D9620E\] {
+  background-color: var(--brand-primary-hover);
+}
+.text-\[\#D9620E\] {
+  color: var(--brand-primary-hover);
+}
+.hover\:bg-\[\#D9620E\]:hover {
+  background-color: var(--brand-primary-hover);
+}
+.hover\:text-\[\#D9620E\]:hover {
+  color: var(--brand-primary-hover);
+}
+
+/* Brand buttons: the dominant CTA pattern pairs a brand background
+   with rounded-lg; the radius token drives exactly those. Default
+   --brand-radius (0.5rem) IS rounded-lg, so nothing changes until an
+   admin picks square/pill. */
+.bg-brand.rounded-lg,
+.bg-\[\#F27318\].rounded-lg {
+  border-radius: var(--brand-radius);
+}
+
+/* ── Site-settings Batch 3d layer ────────────────────────────────
+   Appended only — no rule above is modified. Defaults reproduce the
+   current look exactly: --brand-bg is the #f3f4f6 page background
+   index.html ships, header-style defaults to "light" (no rules
+   match), dark mode is off. SiteSettingsEffects sets the variables
+   and the <html> data attributes from Settings → Theme. */
+:root {
+  --brand-bg: #f3f4f6;
+  --brand-card-radius: 0.5rem;
+  --brand-card-shadow: 0 1px 3px rgb(0 0 0 / 0.08);
+}
+
+/* Scoped off the admin app (its <body> carries .admin-theme). */
+body:not(.admin-theme) {
+  background-color: var(--brand-bg);
+}
+
+/* Dark mode (theme.darkMode): a single-point body-level effect —
+   the page background swaps to dark slate and the base text colour
+   to a light slate. Sections that paint their own backgrounds
+   (bg-white cards and bands) keep them; this is deliberately NOT a
+   full component-level dark theme. */
+html[data-theme-mode="dark"] {
+  --brand-bg: #0f172a;
+}
+html[data-theme-mode="dark"] body {
+  color: #f1f5f9;
+}
+
+/* Header styles (theme.headerStyle): the customer navbar is the
+   only nav.sticky on the storefront. "light" (default) has no rules
+   and renders exactly as today. The ink-colour overrides below are
+   re-asserted inside .bg-white descendants afterwards — the profile
+   dropdown is a white card inside the nav and must keep its dark
+   text. */
+html[data-header-style="navy"] nav.sticky {
+  background-color: var(--brand-navy);
+  border-bottom-color: rgb(255 255 255 / 0.12);
+  color: #fff;
+}
+html[data-header-style="black"] nav.sticky {
+  background-color: #000;
+  border-bottom-color: rgb(255 255 255 / 0.12);
+  color: #fff;
+}
+html[data-header-style="navy"] nav.sticky .text-\[\#1A1714\],
+html[data-header-style="black"] nav.sticky .text-\[\#1A1714\] {
+  color: #fff;
+}
+html[data-header-style="navy"] nav.sticky .text-\[\#6A6058\],
+html[data-header-style="black"] nav.sticky .text-\[\#6A6058\] {
+  color: rgb(255 255 255 / 0.72);
+}
+html[data-header-style="navy"] nav.sticky .group:hover .group-hover\:text-\[\#1A1714\],
+html[data-header-style="black"] nav.sticky .group:hover .group-hover\:text-\[\#1A1714\] {
+  color: #fff;
+}
+html[data-header-style="navy"] nav.sticky .bg-white .text-\[\#1A1714\],
+html[data-header-style="black"] nav.sticky .bg-white .text-\[\#1A1714\] {
+  color: #1a1714;
+}
+html[data-header-style="navy"] nav.sticky .bg-white .text-\[\#6A6058\],
+html[data-header-style="black"] nav.sticky .bg-white .text-\[\#6A6058\] {
+  color: #6a6058;
+}

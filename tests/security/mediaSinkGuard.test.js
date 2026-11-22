@@ -172,6 +172,137 @@ const ALLOWLIST = [
     reason:
       "Bundled static import of the official Visa logo (src/assets/images/payments/, as published from visa.com; replaces the previous styled-text 'VISA' span), compile-time constant — same class as the arIcon entry.",
   },
+  // Batch 3b (site settings): the expressions below render
+  // admin-entered settings values, each sanitised in-file first.
+  {
+    file: "src/components/sections/Hero.jsx",
+    expr: "mainImg.src",
+    reason:
+      "Batch 3b: local const from resolveHeroImage in the same file — a bundled variant import, or a settings URL passed through validateMediaUrl, or the bundled fallback when validation rejects it.",
+  },
+  {
+    file: "src/components/sections/Hero.jsx",
+    expr: "sideImg.src",
+    reason:
+      "Batch 3b: same resolveHeroImage provenance as mainImg.src above.",
+  },
+  {
+    file: "src/components/sections/Hero.jsx",
+    expr: "promoImg.src",
+    reason:
+      "Batch 3b: same resolveHeroImage provenance as mainImg.src above.",
+  },
+  {
+    file: "src/layouts/customer/Navbar.jsx",
+    expr: "safeLogoUrl",
+    reason:
+      "Batch 3b: local const assigned from validateMediaUrl(settings identity.logoUrl) in the same file, falling back to the bundled /logo-aura-interiors.webp path.",
+  },
+  {
+    file: "src/layouts/customer/Footer.jsx",
+    expr: "logoSrc",
+    reason:
+      "Batch 3b: local const assigned from validateMediaUrl(settings identity.logoUrl) in the same file, falling back to the bundled /logo-aura-interiors.webp path.",
+  },
+  {
+    file: "src/layouts/customer/Footer.jsx",
+    expr: "safeSocialHref",
+    reason:
+      "Batch 3b: in-file helper that returns the settings social URL only when URL-parsing yields an http:/https: protocol, otherwise the historical '#' placeholder.",
+  },
+  {
+    file: "src/pages/info/MaintenancePage.jsx",
+    expr: "mailto:",
+    reason:
+      "Batch 5: mailto: composed by a template literal whose scheme is fixed in the source; the interpolated value is the admin-set support email (plain text, React-escaped as an attribute value) and cannot introduce a different scheme. Same class as the ContentPage supportEmail entry.",
+  },
+  {
+    file: "src/pages/info/MaintenancePage.jsx",
+    expr: "tel:",
+    reason:
+      "Batch 5: tel: composed by a template literal whose scheme is fixed in the source; the interpolated value is the admin-set contact phone with whitespace stripped, React-escaped as an attribute value, and cannot introduce a different scheme.",
+  },
+  {
+    file: "src/pages/info/ContentPage.jsx",
+    expr: "supportEmail",
+    reason:
+      "Batch 3b: mailto: composed by a template literal whose scheme is fixed in the source; the interpolated value is the admin-set support email (plain text, React-escaped as an attribute value) and cannot introduce a different scheme.",
+  },
+  // Batch 3d (admin Settings redesign): the expressions below are
+  // previews INSIDE the admin panel of values the signed-in admin
+  // themselves entered or uploaded through the settings API (their
+  // own store's logo / hero / share images and map embed). They are
+  // never rendered on the public storefront from these components —
+  // the storefront consumers of the same fields (Navbar, Footer,
+  // Hero) pass them through validateMediaUrl (allowlisted above).
+  // Same trust class as the CategoryFormModal / ProductImageUploader
+  // local-preview entries.
+  {
+    file: "src/components/admin/settings/StorePreview.jsx",
+    expr: "logoSrc",
+    reason:
+      "Batch 3d: admin Settings mini-preview; logoSrc is the admin-entered identity logo URL (light/dark variant) shown back to the admin in the admin panel only.",
+  },
+  {
+    file: "src/components/admin/settings/StorePreview.jsx",
+    expr: "heroImage",
+    reason:
+      "Batch 3d: admin Settings mini-preview; heroImage is the first enabled hero slide image URL from the admin's own homepage settings, admin panel only.",
+  },
+  {
+    file: "src/components/admin/settings/tabs/IdentityTab.jsx",
+    expr: "value",
+    reason:
+      "Batch 3d: LogoUploadCard preview img; value is the logo URL the admin typed or just uploaded via the settings image endpoint, admin panel only.",
+  },
+  {
+    file: "src/components/admin/settings/tabs/IdentityTab.jsx",
+    expr: "identity.faviconUrl",
+    reason:
+      "Batch 3d: favicon preview img of the admin-entered favicon URL, admin panel only.",
+  },
+  {
+    file: "src/components/admin/settings/tabs/SeoTab.jsx",
+    expr: "seo.ogImage",
+    reason:
+      "Batch 3d: share-image preview thumbnail of the admin-entered/uploaded OG image URL, admin panel only.",
+  },
+  {
+    file: "src/components/admin/settings/tabs/SeoTab.jsx",
+    expr: "identity.faviconUrl",
+    reason:
+      "Batch 3d: Google-result SEO preview favicon of the admin-entered favicon URL, admin panel only.",
+  },
+  {
+    file: "src/components/admin/settings/tabs/HomepageTab.jsx",
+    expr: "src",
+    reason:
+      "Batch 3d: SlideThumb preview img; src is the hero/promo image URL from the admin's own homepage settings, admin panel only.",
+  },
+  {
+    file: "src/components/admin/settings/tabs/HomepageTab.jsx",
+    expr: "slide.imageUrl",
+    reason:
+      "Batch 3d: SlideThumb src prop passed the admin's own hero slide image URL, admin panel only.",
+  },
+  {
+    file: "src/components/admin/settings/tabs/HomepageTab.jsx",
+    expr: "homepage.promoBanner.imageUrl",
+    reason:
+      "Batch 3d: SlideThumb src prop passed the admin's own promo banner image URL, admin panel only.",
+  },
+  {
+    file: "src/components/admin/settings/tabs/ContactTab.jsx",
+    expr: "contact.mapUrl",
+    reason:
+      "Batch 3d: Store Location preview iframe; renders only when the admin-entered mapUrl contains google + embed/maps (in-file isMapEmbed check), admin panel only.",
+  },
+  {
+    file: "src/components/chat/ChatInput.jsx",
+    expr: "entry.blobUrl",
+    reason:
+      "Local optimistic attachment preview: blobUrl is minted in the same file by URL.createObjectURL(file) for a file the user just picked (line ~171) and revoked on remove/send; a server payload cannot supply it. Same class as the CategoryFormModal file-picker preview entry.",
+  },
 ];
 
 function collectSourceFiles(dir) {

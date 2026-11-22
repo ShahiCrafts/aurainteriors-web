@@ -79,6 +79,20 @@ async function fetchCategories() {
   return json?.data?.categories || [];
 }
 
+// Batch 3b: public site settings for the static content pages
+// (/about, /privacy, /terms, /shipping, /returns). OPTIONAL — unlike
+// the catalog, a settings hiccup must never fail the build; the pages
+// then prerender with their coming-soon body, exactly what the client
+// app shows for empty settings copy.
+async function fetchPublicSettings() {
+  try {
+    const json = await fetchJson(`${API}/settings/public`, 1);
+    return json?.data?.settings || null;
+  } catch {
+    return null;
+  }
+}
+
 const headHtml = ({ title, description, path: routePath, image, type = "website", jsonLd = [] }) => {
   const url = `${SITE_URL}${routePath}`;
   const tags = [
@@ -163,6 +177,8 @@ async function main() {
   console.log(
     `[prerender] catalog: ${products.length} products, ${categories.length} categories, ${rooms.length} rooms, ${collections.length} collections`,
   );
+
+  const publicSettings = await fetchPublicSettings();
 
   const template = await readFile(path.join(distDir, "index.html"), "utf8");
   const pages = []; // { path, title, description, ... , lastmod, priority }
@@ -423,6 +439,42 @@ async function main() {
       </ul>
     </main>`,
   });
+
+  // ---- Static content pages (Batch 3b — NEW routes; the footer has
+  // always linked here but they 404'd). Copy comes from the public
+  // settings (pages.*); empty copy prerenders the same coming-soon
+  // body the client app renders.
+  const contentPages = [
+    { path: "/about", title: "About Us", key: "about" },
+    { path: "/privacy", title: "Privacy Policy", key: "privacyPolicy" },
+    { path: "/terms", title: "Terms & Conditions", key: "terms" },
+    { path: "/shipping", title: "Shipping & Delivery", key: "shippingReturns" },
+    { path: "/returns", title: "Returns & Refunds", key: "shippingReturns" },
+  ];
+  for (const cp of contentPages) {
+    const raw = publicSettings?.pages?.[cp.key] || "";
+    const paragraphs = String(raw)
+      .split(/\n\s*\n/)
+      .map((p) => p.trim())
+      .filter(Boolean);
+    const supportEmail =
+      publicSettings?.identity?.supportEmail || CONTACT.email;
+    pages.push({
+      path: cp.path,
+      title: `${cp.title} | ${SITE_NAME}`,
+      description: `${cp.title} – ${SITE_NAME}. Questions? Email ${supportEmail}.`,
+      priority: "0.4",
+      jsonLd: baseLd,
+      body: `<main>
+      <h1>${esc(cp.title)}</h1>
+      ${
+        paragraphs.length
+          ? paragraphs.map((p) => `<p>${esc(p)}</p>`).join("\n      ")
+          : `<p>This page is being updated — content is coming soon. Reach us at <a href="mailto:${esc(supportEmail)}">${esc(supportEmail)}</a>.</p>`
+      }
+    </main>`,
+    });
+  }
 
   // ---- Write pages
   let written = 0;

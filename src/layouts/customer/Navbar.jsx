@@ -21,6 +21,8 @@ import {
 } from "../../components/common/Skeleton";
 import { useQueryClient } from "@tanstack/react-query";
 import useAuthStore from "../../store/authStore";
+import useSiteSettingsStore from "../../store/siteSettingsStore";
+import validateMediaUrl from "../../utils/safeUrl";
 import { useShallow } from "zustand/react/shallow";
 import useGuestCartStore from "../../store/guestCartStore";
 import { useCart } from "../../hooks/cart/useCartTan";
@@ -64,6 +66,29 @@ export default function Navbar() {
       user: state.user,
     })),
   );
+  // Batch 3b: brand identity from site settings (defaults = the
+  // hardcoded logo/name this header has always rendered).
+  // Batch 3d: with a navy/black header style (Settings → Theme) the
+  // dark logo variant is used when the admin has provided one — an
+  // <img> src cannot be swapped from the CSS layer, so the choice
+  // happens here. "light" (default) always uses the standard logo,
+  // exactly as before.
+  const { logoUrl, logoDarkUrl, headerStyle, storeName } =
+    useSiteSettingsStore(
+      useShallow((state) => ({
+        logoUrl: state.settings.identity.logoUrl,
+        logoDarkUrl: state.settings.identity.logoDarkUrl,
+        headerStyle: state.settings.theme.headerStyle,
+        storeName: state.settings.identity.storeName,
+      })),
+    );
+  // FE-03: the settings logo is server data — validate before use.
+  const safeLogoUrl =
+    validateMediaUrl(
+      headerStyle && headerStyle !== "light" && logoDarkUrl
+        ? logoDarkUrl
+        : logoUrl,
+    ) || "/logo-aura-interiors.webp";
   const { data: cartData, isLoading: isCartLoading } = useCart({
     enabled: isAuthenticated,
   });
@@ -178,8 +203,8 @@ export default function Navbar() {
             className="flex items-center gap-2 md:gap-2.75 cursor-pointer shrink-0 select-none no-underline"
           >
             <img
-              src="/logo-aura-interiors.webp"
-              alt="AuraInteriors Logo"
+              src={safeLogoUrl}
+              alt={storeName || "Aura Interiors"}
               width={212}
               height={84}
               className="h-8 md:h-10 w-auto object-contain"
