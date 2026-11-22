@@ -1,51 +1,33 @@
 {
   "$schema": "https://openapi.vercel.sh/vercel.json",
   "framework": "vite",
-  "cleanUrls": true,
-  "rewrites": [
+  "routes": [
     {
-      "source": "/(.*)",
-      "destination": "/index.html"
-    }
-  ],
-  "headers": [
-    {
-      "source": "/assets/(.*)",
-      "headers": [
-        {
-          "key": "Cache-Control",
-          "value": "public, max-age=31536000, immutable"
-        }
-      ]
+      "src": "/assets/(.*)",
+      "headers": {
+        "Cache-Control": "public, max-age=31536000, immutable"
+      },
+      "continue": true
     },
     {
-      "source": "/(.*)",
-      "headers": [
-        {
-          "key": "Content-Security-Policy",
-          "value": "default-src 'self'; script-src 'self'; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src 'self' data: https://fonts.gstatic.com; img-src 'self' data: blob: https://res.cloudinary.com https://*.amazonaws.com https://api.dicebear.com https://upload.wikimedia.org https://cdn.brandfetch.io https://developer.apple.com https://khaltibyime.khalti.com https://img.favpng.com; connect-src 'self' https://api.aurainteriors.live wss://api.aurainteriors.live https://res.cloudinary.com https://*.amazonaws.com; media-src 'self' blob: https://res.cloudinary.com https://*.amazonaws.com; worker-src 'self' blob:; frame-src 'self'; object-src 'none'; base-uri 'self'; frame-ancestors 'none'; form-action 'self' https://*.esewa.com.np"
-        },
-        {
-          "key": "Permissions-Policy",
-          "value": "camera=(self), microphone=(), geolocation=(), payment=()"
-        },
-        {
-          "key": "X-Frame-Options",
-          "value": "DENY"
-        },
-        {
-          "key": "X-Content-Type-Options",
-          "value": "nosniff"
-        },
-        {
-          "key": "Referrer-Policy",
-          "value": "strict-origin-when-cross-origin"
-        },
-        {
-          "key": "Strict-Transport-Security",
-          "value": "max-age=31536000; includeSubDomains"
-        }
-      ]
+      "src": "/(.*)",
+      "headers": {
+        "Content-Security-Policy": "default-src 'self'; script-src 'self'; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src 'self' data: https://fonts.gstatic.com; img-src 'self' data: blob: https://res.cloudinary.com https://*.amazonaws.com https://api.dicebear.com https://upload.wikimedia.org https://cdn.brandfetch.io https://developer.apple.com https://khaltibyime.khalti.com https://img.favpng.com; connect-src 'self' https://api.aurainteriors.live wss://api.aurainteriors.live https://res.cloudinary.com https://*.amazonaws.com; media-src 'self' blob: https://res.cloudinary.com https://*.amazonaws.com; worker-src 'self' blob:; frame-src 'self'; object-src 'none'; base-uri 'self'; frame-ancestors 'none'; form-action 'self' https://*.esewa.com.np",
+        "Permissions-Policy": "camera=(self), microphone=(), geolocation=(), payment=()",
+        "X-Frame-Options": "DENY",
+        "X-Content-Type-Options": "nosniff",
+        "Referrer-Policy": "strict-origin-when-cross-origin",
+        "Strict-Transport-Security": "max-age=31536000; includeSubDomains"
+      },
+      "continue": true
+    },
+    {
+      "handle": "filesystem"
+    },
+    {
+      "src": "/(.*)",
+      "dest": "/index.html",
+      "status": 200
     }
   ]
 }
