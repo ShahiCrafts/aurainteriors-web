@@ -25,7 +25,8 @@ export const NAV = [
   { group: "Development", items: ["development/architecture", "development/frontend-architecture", "development/styling-and-theming", "development/routing-and-seo", "development/testing"] },
   { group: "Features", items: ["features/storefront-and-catalog", "features/cart-checkout-and-orders", "features/payments", "features/accounts-and-auth", "features/admin-panel", "features/store-settings-and-integrations", "features/ai-support-chat", "features/ar-experience"] },
   { group: "API Reference", items: ["api/overview", "api/endpoints", "api/data-models"] },
-  { group: "Deployment", items: ["deployment/environment-variables", "deployment/deployment-guide", "deployment/operations-and-troubleshooting"] },
+  { group: "Deployment", items: ["deployment/environment-variables", "deployment/deployment-guide", "deployment/operations-and-troubleshooting", "deployment/backup-and-restore"] },
+  { group: "Handover", items: ["handover/asset-inventory-and-transfer", "handover/known-limitations", "handover/licenses"] },
   { group: "Owner & Support", items: ["owner/owner-handbook", "support/faq"] },
 ];
 

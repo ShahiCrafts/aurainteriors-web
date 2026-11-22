@@ -5,6 +5,10 @@ server's route files (`aurainteriors-server/routes/`) — the route file is
 always the final authority. **Auth** key: 🌐 public · 🔓 optional session ·
 🔒 session required · 🛡 admin only.
 
+A machine-readable version of the core surface is available as an
+[OpenAPI 3.0 spec](openapi.yaml) — import it into Postman or a code
+generator.
+
 ## Auth — `/auth`
 
 | Method & path | Auth | Purpose |

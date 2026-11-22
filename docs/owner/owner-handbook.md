@@ -66,7 +66,11 @@ manager). Whoever holds these accounts holds the business.
 
 ## Selling or handing over the store
 
-The store was built to be handed over:
+The full transfer inventory and checklist live in
+[Asset Inventory & Transfer](../handover/asset-inventory-and-transfer.md),
+and the honest list of what's unfinished is in
+[Known Limitations](../handover/known-limitations.md). In short, the store
+was built to be handed over:
 
 1. The buyer gets their own accounts for the services above (or you
    transfer yours).

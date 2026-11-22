@@ -64,6 +64,7 @@ two audiences:
 | [API Overview](api/overview.md) | Base URL, authentication, errors, rate limits, caching, conventions |
 | [Endpoints](api/endpoints.md) | Endpoint catalogue grouped by resource |
 | [Data Models](api/data-models.md) | The MongoDB collections and what they store |
+| [OpenAPI spec](api/openapi.yaml) | Machine-readable API definition (OpenAPI 3.0) for Postman/codegen |
 
 ## Deployment
 
@@ -72,6 +73,15 @@ two audiences:
 | [Environment Variables](deployment/environment-variables.md) | Every variable in both repos, what it does, and where it lives |
 | [Deployment Guide](deployment/deployment-guide.md) | Render, Vercel, Cloudflare and domain setup, step by step |
 | [Operations & Troubleshooting](deployment/operations-and-troubleshooting.md) | Health checks, monitoring, known quirks, and fixes |
+| [Backup & Restore](deployment/backup-and-restore.md) | What to back up, how, and how to restore it (incl. the pre-handover backup) |
+
+## Handover (selling the store)
+
+| Guide | What it covers |
+| --- | --- |
+| [Asset Inventory & Transfer](handover/asset-inventory-and-transfer.md) | Every account, asset and credential that changes hands, with the transfer checklist |
+| [Known Limitations](handover/known-limitations.md) | The honest list: what is unfinished, unverified, or deliberately simplified |
+| [Licenses & Third-Party Software](handover/licenses.md) | Open-source dependencies and their licenses, from the lockfiles |
 
 ## Owner & Support
 
