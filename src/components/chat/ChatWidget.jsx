@@ -194,7 +194,7 @@ const ChatWidget = () => {
   if (chatSettings && chatSettings.enabled === false) {
     if (!chatSettings.offlineMessage || offlineDismissed) return null;
     return (
-      <div className="fixed bottom-6 right-6 z-60 pointer-events-auto">
+      <div className="fixed bottom-[calc(76px+env(safe-area-inset-bottom))] right-4 md:bottom-6 md:right-6 z-60 pointer-events-auto">
         <div className="bg-white rounded-[20px] border border-stone-200/60 p-5 w-64 relative">
           <button
             onClick={() => setOfflineDismissed(true)}
@@ -233,7 +233,7 @@ const ChatWidget = () => {
   }
 
   return (
-    <div className="fixed bottom-6 right-6 z-60 flex flex-col items-end gap-4 pointer-events-none">
+    <div className="fixed bottom-[calc(76px+env(safe-area-inset-bottom))] right-4 md:bottom-6 md:right-6 z-60 flex flex-col items-end gap-4 pointer-events-none">
       <AnimatePresence>
         {!isOpen && showGreeting && (
           <motion.div
@@ -286,7 +286,7 @@ const ChatWidget = () => {
             initial={{ opacity: 0, scale: 0.95, y: 20 }}
             animate={{ opacity: 1, scale: 1, y: 0 }}
             exit={{ opacity: 0, scale: 0.95, y: 20 }}
-            className="fixed inset-4 sm:fixed sm:inset-auto sm:bottom-24 sm:right-6 sm:w-[430px] sm:h-[650px] sm:max-h-[82vh] bg-white rounded-2xl border border-stone-200/60 overflow-hidden pointer-events-auto"
+            className="fixed inset-x-4 top-4 bottom-[calc(76px+env(safe-area-inset-bottom))] md:inset-auto md:bottom-24 md:right-6 md:w-[430px] md:h-[650px] md:max-h-[82vh] bg-white rounded-2xl border border-stone-200/60 overflow-hidden pointer-events-auto"
           >
             <ChatWindow
               chat={activeChat}
@@ -303,7 +303,7 @@ const ChatWidget = () => {
         onClick={handleToggle}
         className={`w-14 h-14 rounded-full items-center justify-center transition-all duration-300 hover:scale-105 pointer-events-auto relative z-10 border ${
           isOpen
-            ? "hidden sm:flex bg-white text-[#1A1714] border-stone-200"
+            ? "hidden md:flex bg-white text-[#1A1714] border-stone-200"
             : "flex bg-[#1A1714] text-white border-black/30"
         }`}
       >
