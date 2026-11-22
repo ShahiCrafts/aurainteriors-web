@@ -98,8 +98,7 @@ export default function App() {
             navigate("");
           }}
         >
-          <span className="brand-mark">A</span>
-          <span className="brand-name">Aura Interiors</span>
+          <img className="brand-logo" src="/logo-aura-interiors.webp" alt="Aura Interiors" />
           <span className="brand-doc">Documentation</span>
         </a>
         <div className="topbar-links">

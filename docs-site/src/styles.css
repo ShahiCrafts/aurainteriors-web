@@ -6,7 +6,7 @@
   --muted: rgba(26, 23, 20, 0.55);
   --line: rgba(26, 23, 20, 0.09);
   --bg: #ffffff;
-  --side-bg: #faf9f7;
+  --side-bg: #ffffff;
 }
 
 * { box-sizing: border-box; }
@@ -61,6 +61,7 @@ html, body {
   justify-content: center;
   font-size: 17px;
 }
+.brand-logo { height: 30px; width: auto; display: block; }
 .brand-name { font-weight: 700; font-size: 16.5px; letter-spacing: -0.01em; }
 .brand-doc { color: var(--muted); font-size: 14.5px; border-left: 1px solid var(--line); padding-left: 10px; }
 .topbar-links { margin-left: auto; display: flex; gap: 22px; }
