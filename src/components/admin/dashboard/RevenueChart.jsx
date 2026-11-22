@@ -46,7 +46,7 @@ export default function RevenueChart({
           aria-label="Revenue period"
           value={activePeriod.value}
           onChange={(e) => onPeriodChange?.(e.target.value)}
-          className="text-xs border border-gray-200 rounded-lg px-2.5 py-1.5 text-gray-600 bg-white focus:outline-none focus:ring-2 focus:ring-teal-500/20 focus:border-teal-500 transition-all cursor-pointer hover:border-teal-200 shrink-0"
+          className="text-xs border border-gray-200 rounded-lg px-2.5 py-1.5 text-gray-600 bg-white focus:outline-none focus:ring-2 focus:ring-brand/20 focus:border-brand transition-all cursor-pointer hover:border-brand/30 shrink-0"
         >
           {REVENUE_PERIODS.map((p) => (
             <option key={p.value} value={p.value}>
@@ -64,8 +64,8 @@ export default function RevenueChart({
             >
               <defs>
                 <linearGradient id="colorRevenue" x1="0" y1="0" x2="0" y2="1">
-                  <stop offset="5%" stopColor="#0066ff" stopOpacity={0.15} />
-                  <stop offset="95%" stopColor="#0066ff" stopOpacity={0} />
+                  <stop offset="5%" stopColor="#F27318" stopOpacity={0.15} />
+                  <stop offset="95%" stopColor="#F27318" stopOpacity={0} />
                 </linearGradient>
               </defs>
               <CartesianGrid
@@ -115,12 +115,12 @@ export default function RevenueChart({
               <Area
                 type="monotone"
                 dataKey="revenue"
-                stroke="#0066ff"
+                stroke="#F27318"
                 strokeWidth={2.5}
                 fillOpacity={1}
                 fill="url(#colorRevenue)"
                 dot={false}
-                activeDot={{ r: 5, fill: "#0066ff", strokeWidth: 0 }}
+                activeDot={{ r: 5, fill: "#F27318", strokeWidth: 0 }}
               />
             </AreaChart>
           </ResponsiveContainer>

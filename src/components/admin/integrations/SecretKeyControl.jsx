@@ -107,7 +107,7 @@ export default function SecretKeyControl({
 
   return (
     <div>
-      <label className="block text-sm font-medium text-gray-700 mb-2">
+      <label className="block text-sm font-medium text-gray-700 mb-1.5">
         {label}
       </label>
       <div className="flex flex-col sm:flex-row gap-2">
@@ -118,14 +118,14 @@ export default function SecretKeyControl({
           value={value}
           onChange={(e) => setValue(e.target.value)}
           placeholder={placeholder}
-          className="flex-1 px-4 py-2.5 border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-teal-500/20 focus:border-teal-500"
+          className="flex-1 px-3.5 py-2.5 border border-gray-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-brand/25 focus:border-brand"
         />
         <div className="flex gap-2">
           <button
             type="button"
             onClick={handleSave}
             disabled={!value.trim() || busy !== null}
-            className="px-4 py-2.5 bg-teal-600 text-white rounded-xl text-sm font-medium hover:bg-teal-700 transition-colors disabled:opacity-50"
+            className="px-4 py-2.5 bg-brand text-white rounded-lg text-sm font-medium hover:bg-brand-hover transition-colors disabled:opacity-50"
           >
             {busy === "save" ? "Saving…" : "Save"}
           </button>
@@ -133,7 +133,7 @@ export default function SecretKeyControl({
             type="button"
             onClick={handleTest}
             disabled={busy !== null}
-            className="px-4 py-2.5 border border-gray-200 text-gray-700 rounded-xl text-sm font-medium hover:bg-gray-50 transition-colors disabled:opacity-50"
+            className="px-4 py-2.5 border border-gray-200 text-gray-700 rounded-lg text-sm font-medium hover:bg-gray-50 transition-colors disabled:opacity-50"
           >
             {busy === "test" ? "Testing…" : "Test"}
           </button>
@@ -142,7 +142,7 @@ export default function SecretKeyControl({
               type="button"
               onClick={handleRemove}
               disabled={busy !== null}
-              className="inline-flex items-center gap-1 px-3 py-2.5 border border-red-200 text-red-600 rounded-xl text-sm font-medium hover:bg-red-50 transition-colors disabled:opacity-50"
+              className="inline-flex items-center gap-1 px-3 py-2.5 border border-red-200 text-red-600 rounded-lg text-sm font-medium hover:bg-red-50 transition-colors disabled:opacity-50"
             >
               <Trash2 className="w-4 h-4" />
               {busy === "remove" ? "Removing…" : "Remove"}

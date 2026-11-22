@@ -199,7 +199,7 @@ export default function Users() {
                   setSearch(e.target.value);
                   setPage(1);
                 }}
-                className="w-full pl-10 pr-4 py-2.5 bg-white border border-gray-200 rounded-lg text-sm focus:outline-none focus:border-teal-500 focus:ring-2 focus:ring-teal-500/20 transition-all placeholder:text-gray-400"
+                className="w-full pl-10 pr-4 py-2.5 bg-white border border-gray-200 rounded-lg text-sm focus:outline-none focus:border-brand focus:ring-2 focus:ring-brand/20 transition-all placeholder:text-gray-400"
               />
             </div>
             <select
@@ -208,7 +208,7 @@ export default function Users() {
                 setRole(e.target.value);
                 setPage(1);
               }}
-              className="px-4 py-2.5 bg-white border border-gray-200 rounded-lg text-sm focus:outline-none focus:border-teal-500 focus:ring-2 focus:ring-teal-500/20 cursor-pointer min-w-35"
+              className="px-4 py-2.5 bg-white border border-gray-200 rounded-lg text-sm focus:outline-none focus:border-brand focus:ring-2 focus:ring-brand/20 cursor-pointer min-w-35"
             >
               <option value="all">All Roles</option>
               <option value="customer">Customer</option>
@@ -222,7 +222,7 @@ export default function Users() {
                 setStatus(e.target.value);
                 setPage(1);
               }}
-              className="px-4 py-2.5 bg-white border border-gray-200 rounded-lg text-sm focus:outline-none focus:border-teal-500 focus:ring-2 focus:ring-teal-500/20 cursor-pointer min-w-35"
+              className="px-4 py-2.5 bg-white border border-gray-200 rounded-lg text-sm focus:outline-none focus:border-brand focus:ring-2 focus:ring-brand/20 cursor-pointer min-w-35"
             >
               <option value="all">All Status</option>
               <option value="active">Active</option>
@@ -368,7 +368,7 @@ export default function Users() {
                           className={`inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-[10px] font-bold uppercase tracking-wider w-fit ${user.role === "admin"
                             ? "bg-purple-50 text-purple-700"
                             : user.role === "customer"
-                              ? "bg-blue-50 text-blue-700"
+                              ? "bg-brand/10 text-brand-hover"
                               : "bg-gray-100 text-gray-700"
                             }`}
                         >
@@ -398,7 +398,7 @@ export default function Users() {
                       <div className="flex flex-col gap-1">
                         <span
                           className={`inline-flex items-center w-fit px-2.5 py-1 rounded-full text-[10px] font-bold uppercase tracking-wider ${user.isActive
-                            ? "bg-teal-50 text-teal-700"
+                            ? "bg-brand/10 text-brand"
                             : "bg-red-50 text-red-700"
                             }`}
                         >
@@ -454,7 +454,7 @@ export default function Users() {
                           onClick={() => handleOpenStatusModal(user)}
                           className={`p-2 rounded-lg transition-colors ${user.isActive
                             ? "text-gray-500 hover:bg-red-50 hover:text-red-600"
-                            : "text-teal-600 hover:bg-teal-50"
+                            : "text-brand hover:bg-brand/10"
                             }`}
                           title={
                             user.isActive
@@ -521,7 +521,7 @@ export default function Users() {
                 value={newPassword}
                 onChange={(e) => setNewPassword(e.target.value)}
                 placeholder="At least 8 characters"
-                className="w-full px-4 py-2.5 border border-gray-200 rounded-lg text-sm focus:outline-none focus:border-teal-500 focus:ring-2 focus:ring-teal-500/20"
+                className="w-full px-4 py-2.5 border border-gray-200 rounded-lg text-sm focus:outline-none focus:border-brand focus:ring-2 focus:ring-brand/20"
               />
               <label
                 htmlFor="reset-confirm-password"
@@ -536,7 +536,7 @@ export default function Users() {
                 value={confirmPassword}
                 onChange={(e) => setConfirmPassword(e.target.value)}
                 placeholder="Confirm the new password"
-                className="w-full px-4 py-2.5 border border-gray-200 rounded-lg text-sm focus:outline-none focus:border-teal-500 focus:ring-2 focus:ring-teal-500/20"
+                className="w-full px-4 py-2.5 border border-gray-200 rounded-lg text-sm focus:outline-none focus:border-brand focus:ring-2 focus:ring-brand/20"
               />
             </div>
             <div className="flex gap-3">
@@ -549,7 +549,7 @@ export default function Users() {
               <button
                 onClick={handleResetPassword}
                 disabled={resetMutation.isPending}
-                className="flex-1 px-4 py-2.5 bg-teal-600 text-white rounded-lg hover:bg-teal-700 text-sm font-medium flex items-center justify-center gap-2"
+                className="flex-1 px-4 py-2.5 bg-brand text-white rounded-lg hover:bg-brand-hover text-sm font-medium flex items-center justify-center gap-2"
               >
                 Reset Password
               </button>

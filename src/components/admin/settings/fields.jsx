@@ -70,7 +70,7 @@ export function ColorField({ label, value, onChange }) {
   const valid = /^#[0-9a-fA-F]{6}$/.test(value || "");
   return (
     <Field label={label}>
-      <div className="flex items-center gap-2.5 border border-gray-200 rounded-lg px-2.5 py-2 bg-white focus-within:ring-2 focus-within:ring-blue-500/20 focus-within:border-blue-600">
+      <div className="flex items-center gap-2.5 border border-gray-200 rounded-lg px-2.5 py-2 bg-white focus-within:ring-2 focus-within:ring-brand/20 focus-within:border-brand">
         <span className="relative w-7 h-7 shrink-0 rounded-full border border-gray-200 overflow-hidden">
           <span
             className="absolute inset-0"
@@ -89,7 +89,7 @@ export function ColorField({ label, value, onChange }) {
           aria-label={`${label} hex`}
           value={value || ""}
           onChange={(e) => onChange(e.target.value)}
-          placeholder="#2563EB"
+          placeholder="#F27318"
           className="w-full text-sm text-gray-900 focus:outline-none uppercase"
         />
       </div>

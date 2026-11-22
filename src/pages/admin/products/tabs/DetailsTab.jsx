@@ -48,7 +48,7 @@ export default function DetailsTab({ form }) {
                   },
                 })
               }
-              className="w-full pl-9 pr-14 h-10 rounded-lg border border-gray-200 focus:border-teal-500 focus:ring-2 focus:ring-teal-500/10 outline-none text-sm transition-all"
+              className="w-full pl-9 pr-14 h-10 rounded-lg border border-gray-200 focus:border-brand focus:ring-2 focus:ring-brand/10 outline-none text-sm transition-all"
               placeholder="0"
             />
             <span className="absolute right-3 top-1/2 -translate-y-1/2 text-[11px] font-semibold text-gray-400 pointer-events-none select-none">
@@ -71,7 +71,7 @@ export default function DetailsTab({ form }) {
                   },
                 })
               }
-              className="w-full pl-9 pr-16 h-10 rounded-lg border border-gray-200 focus:border-teal-500 focus:ring-2 focus:ring-teal-500/10 outline-none text-sm transition-all"
+              className="w-full pl-9 pr-16 h-10 rounded-lg border border-gray-200 focus:border-brand focus:ring-2 focus:ring-brand/10 outline-none text-sm transition-all"
               placeholder="0"
             />
             <span className="absolute right-3 top-1/2 -translate-y-1/2 text-[11px] font-semibold text-gray-400 pointer-events-none select-none">
@@ -94,7 +94,7 @@ export default function DetailsTab({ form }) {
                   },
                 })
               }
-              className="w-full pl-9 pr-14 h-10 rounded-lg border border-gray-200 focus:border-teal-500 focus:ring-2 focus:ring-teal-500/10 outline-none text-sm transition-all"
+              className="w-full pl-9 pr-14 h-10 rounded-lg border border-gray-200 focus:border-brand focus:ring-2 focus:ring-brand/10 outline-none text-sm transition-all"
               placeholder="0"
             />
             <span className="absolute right-3 top-1/2 -translate-y-1/2 text-[11px] font-semibold text-gray-400 pointer-events-none select-none">
@@ -126,7 +126,7 @@ export default function DetailsTab({ form }) {
                   },
                 })
               }
-              className="w-full pl-9 pr-16 h-10 rounded-lg border border-gray-200 focus:border-teal-500 focus:ring-2 focus:ring-teal-500/10 outline-none text-sm transition-all"
+              className="w-full pl-9 pr-16 h-10 rounded-lg border border-gray-200 focus:border-brand focus:ring-2 focus:ring-brand/10 outline-none text-sm transition-all"
               placeholder="0"
             />
             <span className="absolute right-3 top-1/2 -translate-y-1/2 text-[11px] font-semibold text-gray-400 pointer-events-none select-none">
@@ -144,7 +144,7 @@ export default function DetailsTab({ form }) {
                 },
               })
             }
-            className="w-24 px-4 h-10 rounded-lg border border-gray-200 focus:border-teal-500 focus:ring-2 focus:ring-teal-500/10 outline-none text-sm transition-all bg-white"
+            className="w-24 px-4 h-10 rounded-lg border border-gray-200 focus:border-brand focus:ring-2 focus:ring-brand/10 outline-none text-sm transition-all bg-white"
           >
             <option value="kg">kg</option>
             <option value="lb">lb</option>
@@ -157,7 +157,7 @@ export default function DetailsTab({ form }) {
         <label className="block text-sm font-semibold text-gray-700 mb-2">
           Materials
         </label>
-        <div className="w-full min-h-12 px-3 py-2.5 rounded-lg border border-gray-200 focus-within:border-teal-500 focus-within:ring-2 focus-within:ring-teal-500/10 bg-white transition-all flex flex-wrap gap-2 items-center">
+        <div className="w-full min-h-12 px-3 py-2.5 rounded-lg border border-gray-200 focus-within:border-brand focus-within:ring-2 focus-within:ring-brand/10 bg-white transition-all flex flex-wrap gap-2 items-center">
           {productForm.materials.map((material, idx) => (
             <div
               key={`${material}-${idx}`}

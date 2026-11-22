@@ -32,7 +32,7 @@ const orderStatusPill = (status) => {
     case "cancelled":
       return "bg-red-50 text-red-500";
     case "shipped":
-      return "bg-blue-50 text-blue-600";
+      return "bg-brand/10 text-brand";
     case "processing":
     case "confirmed":
     case "pending":
@@ -89,7 +89,7 @@ const AiAssistantPanel = ({ chat, onClose, onUseReply, onEditReply }) => {
       <div className="bg-white rounded-2xl border border-gray-200 shadow-sm overflow-hidden">
         <div className="flex items-center justify-between px-4 py-3.5">
           <div className="flex items-center gap-2 min-w-0">
-            <Sparkles className="w-5 h-5 text-[#2563EB] shrink-0" />
+            <Sparkles className="w-5 h-5 text-brand shrink-0" />
             <span className="font-bold text-gray-900 text-[15px] whitespace-nowrap">
               AI Copilot & Details
             </span>
@@ -117,7 +117,7 @@ const AiAssistantPanel = ({ chat, onClose, onUseReply, onEditReply }) => {
               <span
                 className={`text-[10px] px-2 py-1 rounded-md font-bold uppercase tracking-wider ${
                   isBotActive
-                    ? "bg-blue-50 text-blue-600"
+                    ? "bg-brand/10 text-brand"
                     : "bg-amber-50 text-amber-600"
                 }`}
               >
@@ -131,7 +131,7 @@ const AiAssistantPanel = ({ chat, onClose, onUseReply, onEditReply }) => {
               className={`w-full py-2.5 px-3 rounded-xl text-sm font-semibold transition-all flex items-center justify-center gap-2 disabled:opacity-60 ${
                 isBotActive
                   ? "bg-white text-gray-700 border border-gray-300 hover:bg-gray-50"
-                  : "bg-[#2563EB] text-white hover:bg-blue-700 shadow-sm"
+                  : "bg-brand text-white hover:bg-brand-hover shadow-sm"
               }`}
             >
               {isBotActive ? (
@@ -153,7 +153,7 @@ const AiAssistantPanel = ({ chat, onClose, onUseReply, onEditReply }) => {
         <div className={cardClass}>
           <div className="flex items-center justify-between mb-2.5">
             <div className="flex items-center gap-2 font-bold text-gray-900 text-[15px]">
-              <Zap className="w-4 h-4 text-[#2563EB]" />
+              <Zap className="w-4 h-4 text-brand" />
               Suggested Response
             </div>
             <button
@@ -162,7 +162,7 @@ const AiAssistantPanel = ({ chat, onClose, onUseReply, onEditReply }) => {
               title="Copy suggested response"
             >
               {copied ? (
-                <span className="text-[10px] text-blue-600 font-bold">
+                <span className="text-[10px] text-brand font-bold">
                   Copied!
                 </span>
               ) : (
@@ -175,7 +175,7 @@ const AiAssistantPanel = ({ chat, onClose, onUseReply, onEditReply }) => {
           </div>
           <button
             onClick={() => onUseReply?.(suggestedReply)}
-            className="w-full bg-[#2563EB] hover:bg-blue-700 text-white text-sm font-semibold py-2.5 px-3 rounded-xl transition-colors flex items-center justify-center gap-1.5 shadow-sm"
+            className="w-full bg-brand hover:bg-brand-hover text-white text-sm font-semibold py-2.5 px-3 rounded-xl transition-colors flex items-center justify-center gap-1.5 shadow-sm"
           >
             <CheckCircle2 className="w-4 h-4" /> Send to Input
           </button>
@@ -185,7 +185,7 @@ const AiAssistantPanel = ({ chat, onClose, onUseReply, onEditReply }) => {
       {/* 3. Conversation Summary */}
       <div className={cardClass}>
         <div className={`${cardTitleClass} mb-2`}>
-          <FileText className="w-4 h-4 text-[#2563EB]" />
+          <FileText className="w-4 h-4 text-brand" />
           Conversation Summary
         </div>
         <p className="text-sm text-gray-600 leading-relaxed">
@@ -196,7 +196,7 @@ const AiAssistantPanel = ({ chat, onClose, onUseReply, onEditReply }) => {
       {/* 4. Customer Profile */}
       <div className={cardClass}>
         <div className={`${cardTitleClass} mb-3`}>
-          <User className="w-4 h-4 text-[#2563EB]" />
+          <User className="w-4 h-4 text-brand" />
           Customer Profile
         </div>
         <div className="flex items-center gap-3">
@@ -236,7 +236,7 @@ const AiAssistantPanel = ({ chat, onClose, onUseReply, onEditReply }) => {
           </span>
           <a
             href="/dashboard/orders"
-            className="text-sm font-medium text-[#2563EB] flex items-center gap-1 hover:underline"
+            className="text-sm font-medium text-brand flex items-center gap-1 hover:underline"
           >
             View all <ArrowRight className="w-3.5 h-3.5" />
           </a>

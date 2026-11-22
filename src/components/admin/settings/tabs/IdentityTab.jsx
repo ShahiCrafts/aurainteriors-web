@@ -277,19 +277,19 @@ export default function IdentityTab({
           </div>
         </Card>
 
-        <Card className="bg-blue-50 !border-blue-100">
+        <Card className="bg-brand/10 !border-brand/20">
           <div className="flex flex-col items-start gap-2">
-            <span className="flex items-center gap-2 text-blue-700 font-semibold">
+            <span className="flex items-center gap-2 text-brand-hover font-semibold">
               <Headset className="w-5 h-5" />
               Need Help?
             </span>
-            <p className="text-sm text-blue-900/70">
+            <p className="text-sm text-brand-hover/70">
               If you're unsure about these settings, check the knowledge
               base for guides and answers.
             </p>
             <Link
               to="/dashboard/knowledge"
-              className="inline-flex items-center gap-1.5 px-3.5 py-2 bg-white border border-blue-200 text-blue-700 rounded-lg text-sm font-medium hover:bg-blue-100/60 transition-colors"
+              className="inline-flex items-center gap-1.5 px-3.5 py-2 bg-white border border-brand/30 text-brand-hover rounded-lg text-sm font-medium hover:bg-brand/20 transition-colors"
             >
               View Documentation
               <ArrowRight className="w-4 h-4" />

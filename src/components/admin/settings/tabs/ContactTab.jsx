@@ -111,7 +111,7 @@ export default function ContactTab({ contact, onContact }) {
               />
             </Field>
           </div>
-          <div className="flex items-start gap-2.5 bg-blue-50 text-blue-800 rounded-lg px-4 py-3 mt-5">
+          <div className="flex items-start gap-2.5 bg-brand/10 text-brand-hover rounded-lg px-4 py-3 mt-5">
             <Info className="w-4 h-4 mt-0.5 shrink-0" />
             <p className="text-sm">
               These details will appear on your store's footer, contact
@@ -143,7 +143,7 @@ export default function ContactTab({ contact, onContact }) {
                     aria-label={`Open ${platform.label} link`}
                     disabled={!value}
                     onClick={() => window.open(value, "_blank", "noopener")}
-                    className="p-2.5 border border-gray-200 rounded-lg text-blue-600 hover:bg-blue-50 transition-colors disabled:opacity-40 disabled:hover:bg-transparent"
+                    className="p-2.5 border border-gray-200 rounded-lg text-brand hover:bg-brand/10 transition-colors disabled:opacity-40 disabled:hover:bg-transparent"
                   >
                     <ExternalLink className="w-4 h-4" />
                   </button>
@@ -180,7 +180,7 @@ export default function ContactTab({ contact, onContact }) {
             onClick={() =>
               window.open("https://www.google.com/maps", "_blank", "noopener")
             }
-            className="mt-4 w-full inline-flex items-center justify-center gap-2 px-4 py-2.5 border border-gray-200 text-blue-600 rounded-lg text-sm font-medium hover:bg-blue-50 transition-colors"
+            className="mt-4 w-full inline-flex items-center justify-center gap-2 px-4 py-2.5 border border-gray-200 text-brand rounded-lg text-sm font-medium hover:bg-brand/10 transition-colors"
           >
             <MapPin className="w-4 h-4" />
             Update Location on Map
@@ -215,7 +215,7 @@ export default function ContactTab({ contact, onContact }) {
               </div>
             ))}
           </div>
-          <div className="flex items-start gap-2.5 bg-blue-50 text-blue-800 rounded-lg px-4 py-3 mt-5">
+          <div className="flex items-start gap-2.5 bg-brand/10 text-brand-hover rounded-lg px-4 py-3 mt-5">
             <Info className="w-4 h-4 mt-0.5 shrink-0" />
             <p className="text-sm">
               When you save, open days are combined into the

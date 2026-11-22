@@ -15,7 +15,7 @@ export default function AIInsights({ insights }) {
           to="/dashboard/support"
           className="mt-6 w-full flex items-center justify-center gap-1.5 py-2.5 rounded-xl border border-gray-200 text-gray-700 text-sm font-semibold hover:bg-gray-50 transition-colors"
         >
-          <Sparkles className="w-4 h-4 text-teal-600" />
+          <Sparkles className="w-4 h-4 text-brand" />
           View all insights
         </Link>
       </div>
@@ -29,7 +29,7 @@ export default function AIInsights({ insights }) {
       <div className="flex items-center justify-between mb-1">
         <div className="flex items-center gap-2">
           <h2 className="text-base font-bold text-gray-900">AI Insights</h2>
-          <span className="inline-flex items-center gap-1 text-[10px] font-bold uppercase tracking-wide bg-teal-50 text-teal-600 px-2 py-0.5 rounded-full">
+          <span className="inline-flex items-center gap-1 text-[10px] font-bold uppercase tracking-wide bg-brand/10 text-brand px-2 py-0.5 rounded-full">
             New
           </span>
         </div>
@@ -91,7 +91,7 @@ export default function AIInsights({ insights }) {
         to="/dashboard/support"
         className="mt-6 w-full flex items-center justify-center gap-1.5 py-2.5 rounded-xl border border-gray-200 text-gray-700 text-sm font-semibold hover:bg-gray-50 transition-colors"
       >
-        <Sparkles className="w-4 h-4 text-teal-600" />
+        <Sparkles className="w-4 h-4 text-brand" />
         View all insights
       </Link>
     </div>

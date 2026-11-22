@@ -69,7 +69,7 @@ const TYPE_OPTIONS = [
 
 const PRIORITY_OPTIONS = [
   { value: "low", label: "Low", color: "text-gray-500" },
-  { value: "normal", label: "Normal", color: "text-blue-500" },
+  { value: "normal", label: "Normal", color: "text-blue-600" },
   { value: "high", label: "High", color: "text-orange-500" },
   { value: "critical", label: "Critical", color: "text-red-500" },
 ];
@@ -82,7 +82,7 @@ const TARGET_OPTIONS = [
 
 const STATUS_BADGE = {
   draft: { bg: "bg-gray-100", text: "text-gray-700", label: "Draft" },
-  scheduled: { bg: "bg-blue-100", text: "text-blue-700", label: "Scheduled" },
+  scheduled: { bg: "bg-brand/20", text: "text-brand-hover", label: "Scheduled" },
   published: { bg: "bg-green-100", text: "text-green-700", label: "Published" },
   archived: { bg: "bg-yellow-100", text: "text-yellow-700", label: "Archived" },
 };
@@ -362,7 +362,7 @@ export default function Announcements() {
         </div>
         <button
           onClick={() => handleOpenModal()}
-          className="inline-flex items-center gap-2 px-4 py-2 bg-teal-600 text-white rounded-lg text-sm font-medium hover:bg-teal-700 transition-colors"
+          className="inline-flex items-center gap-2 px-4 py-2 bg-brand text-white rounded-lg text-sm font-medium hover:bg-brand-hover transition-colors"
         >
           <Plus className="w-4 h-4" />
           New Announcement
@@ -379,7 +379,7 @@ export default function Announcements() {
         </div>
         <div className="bg-white rounded-2xl p-4 border border-gray-200">
           <div className="text-sm text-gray-500 font-dm-sans">Scheduled</div>
-          <div className="text-2xl font-bold text-blue-600">
+          <div className="text-2xl font-bold text-brand">
             {stats.byStatus?.scheduled || 0}
           </div>
         </div>
@@ -391,7 +391,7 @@ export default function Announcements() {
         </div>
         <div className="bg-white rounded-2xl p-4 border border-gray-200">
           <div className="text-sm text-gray-500 font-dm-sans">Total Views</div>
-          <div className="text-2xl font-bold text-teal-600">
+          <div className="text-2xl font-bold text-brand">
             {stats.totalViews || 0}
           </div>
         </div>
@@ -409,7 +409,7 @@ export default function Announcements() {
               setSearchQuery(e.target.value);
               setPage(1);
             }}
-            className="w-full pl-10 pr-4 py-2.5 border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-teal-500/20 focus:border-teal-500"
+            className="w-full pl-10 pr-4 py-2.5 border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-brand/20 focus:border-brand"
           />
         </div>
         <select
@@ -418,7 +418,7 @@ export default function Announcements() {
             setStatusFilter(e.target.value);
             setPage(1);
           }}
-          className="px-4 py-2.5 border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-teal-500/20 focus:border-teal-500 bg-white"
+          className="px-4 py-2.5 border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-brand/20 focus:border-brand bg-white"
         >
           <option value="all">All Status</option>
           <option value="draft">Draft</option>
@@ -432,7 +432,7 @@ export default function Announcements() {
             setTypeFilter(e.target.value);
             setPage(1);
           }}
-          className="px-4 py-2.5 border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-teal-500/20 focus:border-teal-500 bg-white"
+          className="px-4 py-2.5 border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-brand/20 focus:border-brand bg-white"
         >
           <option value="all">All Types</option>
           {TYPE_OPTIONS.map((t) => (
@@ -465,7 +465,7 @@ export default function Announcements() {
           </p>
           <button
             onClick={() => handleOpenModal()}
-            className="inline-flex items-center gap-2 px-4 py-2 bg-teal-600 text-white rounded-lg hover:bg-teal-700 transition-colors"
+            className="inline-flex items-center gap-2 px-4 py-2 bg-brand text-white rounded-lg hover:bg-brand-hover transition-colors"
           >
             <Plus className="w-4 h-4" />
             Create Announcement
@@ -519,7 +519,7 @@ export default function Announcements() {
                                 {announcement.title}
                               </p>
                               {announcement.isPinned && (
-                                <Pin className="w-4 h-4 text-teal-500" />
+                                <Pin className="w-4 h-4 text-brand" />
                               )}
                             </div>
                             <p className="text-sm text-gray-500 line-clamp-1 max-w-xs">
@@ -571,27 +571,27 @@ export default function Announcements() {
                             <>
                               <button
                                 onClick={() => handlePublish(announcement._id)}
-                                className="p-2 hover:bg-teal-50 rounded-lg transition-colors"
+                                className="p-2 hover:bg-brand/10 rounded-lg transition-colors"
                                 title="Publish Now"
                               >
-                                <Send className="w-4 h-4 text-teal-600" />
+                                <Send className="w-4 h-4 text-brand" />
                               </button>
                               <button
                                 onClick={() => setScheduleModal(announcement)}
-                                className="p-2 hover:bg-blue-50 rounded-lg transition-colors"
+                                className="p-2 hover:bg-brand/10 rounded-lg transition-colors"
                                 title="Schedule"
                               >
-                                <Calendar className="w-4 h-4 text-blue-600" />
+                                <Calendar className="w-4 h-4 text-brand" />
                               </button>
                             </>
                           )}
                           {announcement.status === "scheduled" && (
                             <button
                               onClick={() => handlePublish(announcement._id)}
-                              className="p-2 hover:bg-teal-50 rounded-lg transition-colors"
+                              className="p-2 hover:bg-brand/10 rounded-lg transition-colors"
                               title="Publish Now"
                             >
-                              <Send className="w-4 h-4 text-teal-600" />
+                              <Send className="w-4 h-4 text-brand" />
                             </button>
                           )}
                           {announcement.status === "published" && (
@@ -695,7 +695,7 @@ export default function Announcements() {
                         })
                       }
                       placeholder="Enter announcement title"
-                      className="w-full px-4 py-2.5 border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-teal-500/20 focus:border-teal-500"
+                      className="w-full px-4 py-2.5 border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-brand/20 focus:border-brand"
                       maxLength={200}
                     />
                   </div>
@@ -715,7 +715,7 @@ export default function Announcements() {
                       }
                       placeholder="Enter announcement content"
                       rows={5}
-                      className="w-full px-4 py-2.5 border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-teal-500/20 focus:border-teal-500 resize-none"
+                      className="w-full px-4 py-2.5 border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-brand/20 focus:border-brand resize-none"
                       maxLength={5000}
                     />
                     <p className="text-xs text-gray-400 mt-1">
@@ -738,7 +738,7 @@ export default function Announcements() {
                         })
                       }
                       placeholder="Short summary for notifications"
-                      className="w-full px-4 py-2.5 border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-teal-500/20 focus:border-teal-500"
+                      className="w-full px-4 py-2.5 border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-brand/20 focus:border-brand"
                       maxLength={300}
                     />
                   </div>
@@ -757,7 +757,7 @@ export default function Announcements() {
                             type: e.target.value,
                           })
                         }
-                        className="w-full px-4 py-2.5 border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-teal-500/20 focus:border-teal-500 bg-white"
+                        className="w-full px-4 py-2.5 border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-brand/20 focus:border-brand bg-white"
                       >
                         {TYPE_OPTIONS.map((t) => (
                           <option key={t.value} value={t.value}>
@@ -778,7 +778,7 @@ export default function Announcements() {
                             priority: e.target.value,
                           })
                         }
-                        className="w-full px-4 py-2.5 border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-teal-500/20 focus:border-teal-500 bg-white"
+                        className="w-full px-4 py-2.5 border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-brand/20 focus:border-brand bg-white"
                       >
                         {PRIORITY_OPTIONS.map((p) => (
                           <option key={p.value} value={p.value}>
@@ -803,7 +803,7 @@ export default function Announcements() {
                           targetAudienceType: e.target.value,
                         })
                       }
-                      className="w-full px-4 py-2.5 border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-teal-500/20 focus:border-teal-500 bg-white"
+                      className="w-full px-4 py-2.5 border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-brand/20 focus:border-brand bg-white"
                     >
                       {TARGET_OPTIONS.map((t) => (
                         <option key={t.value} value={t.value}>
@@ -825,7 +825,7 @@ export default function Announcements() {
                           isPinned: e.target.checked,
                         })
                       }
-                      className="w-4 h-4 text-teal-600 border-gray-300 rounded focus:ring-teal-500"
+                      className="w-4 h-4 text-brand border-gray-300 rounded focus:ring-brand"
                     />
                     <label
                       htmlFor="isPinned"
@@ -856,7 +856,7 @@ export default function Announcements() {
                         }));
                       }}
                       placeholder="https://example.com/image.jpg"
-                      className="w-full px-4 py-2.5 border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-teal-500/20 focus:border-teal-500"
+                      className="w-full px-4 py-2.5 border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-brand/20 focus:border-brand"
                     />
                     {urlErrors.imageUrl && (
                       <p role="alert" className="text-xs text-red-500 mt-1">
@@ -886,7 +886,7 @@ export default function Announcements() {
                           }));
                         }}
                         placeholder="/dashboard/orders or https://…"
-                        className="w-full px-4 py-2.5 border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-teal-500/20 focus:border-teal-500"
+                        className="w-full px-4 py-2.5 border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-brand/20 focus:border-brand"
                       />
                       {urlErrors.actionUrl && (
                         <p role="alert" className="text-xs text-red-500 mt-1">
@@ -908,7 +908,7 @@ export default function Announcements() {
                           })
                         }
                         placeholder="Learn More"
-                        className="w-full px-4 py-2.5 border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-teal-500/20 focus:border-teal-500"
+                        className="w-full px-4 py-2.5 border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-brand/20 focus:border-brand"
                         maxLength={50}
                       />
                     </div>
@@ -929,7 +929,7 @@ export default function Announcements() {
                           expiresAt: e.target.value,
                         })
                       }
-                      className="w-full px-4 py-2.5 border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-teal-500/20 focus:border-teal-500"
+                      className="w-full px-4 py-2.5 border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-brand/20 focus:border-brand"
                     />
                   </div>
 
@@ -949,7 +949,7 @@ export default function Announcements() {
                         })
                       }
                       placeholder="important, sale, new-feature"
-                      className="w-full px-4 py-2.5 border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-teal-500/20 focus:border-teal-500"
+                      className="w-full px-4 py-2.5 border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-brand/20 focus:border-brand"
                     />
                   </div>
                 </div>
@@ -967,7 +967,7 @@ export default function Announcements() {
                     disabled={
                       createMutation.isPending || updateMutation.isPending
                     }
-                    className="inline-flex items-center gap-2 px-4 py-2.5 bg-teal-600 text-white rounded-xl hover:bg-teal-700 transition-colors font-medium disabled:opacity-50"
+                    className="inline-flex items-center gap-2 px-4 py-2.5 bg-brand text-white rounded-xl hover:bg-brand-hover transition-colors font-medium disabled:opacity-50"
                   >
                     {editingAnnouncement
                       ? "Update Announcement"
@@ -1005,7 +1005,7 @@ export default function Announcements() {
               >
                 <div className="flex items-center justify-between p-6 border-b border-gray-100">
                   <h2 className="text-xl font-bold text-gray-900 font-playfair flex items-center gap-2">
-                    <Calendar className="w-5 h-5 text-blue-600" />
+                    <Calendar className="w-5 h-5 text-brand" />
                     Schedule Announcement
                   </h2>
                   <button
@@ -1030,7 +1030,7 @@ export default function Announcements() {
                     value={scheduledTime}
                     onChange={(e) => setScheduledTime(e.target.value)}
                     min={new Date().toISOString().slice(0, 16)}
-                    className="w-full px-4 py-2.5 border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500"
+                    className="w-full px-4 py-2.5 border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-brand/20 focus:border-brand"
                   />
                 </div>
 
@@ -1044,7 +1044,7 @@ export default function Announcements() {
                   <button
                     onClick={handleSchedule}
                     disabled={scheduleMutation.isPending}
-                    className="inline-flex items-center gap-2 px-4 py-2.5 bg-blue-600 text-white rounded-xl hover:bg-blue-700 transition-colors font-medium disabled:opacity-50"
+                    className="inline-flex items-center gap-2 px-4 py-2.5 bg-brand text-white rounded-xl hover:bg-brand-hover transition-colors font-medium disabled:opacity-50"
                   >
                     Schedule
                   </button>

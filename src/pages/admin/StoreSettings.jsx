@@ -404,7 +404,7 @@ export default function StoreSettings() {
             <button
               type="button"
               onClick={load}
-              className="mt-4 px-4 py-2.5 bg-blue-600 text-white rounded-lg text-sm font-medium hover:bg-blue-700"
+              className="mt-4 px-4 py-2.5 bg-brand text-white rounded-lg text-sm font-medium hover:bg-brand-hover"
             >
               Retry
             </button>

@@ -1,5 +1,32 @@
+import { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
 import { ChevronLeft, ChevronRight } from "lucide-react";
+import publicSettingsApi from "../../api/publicSettingsApi";
+import validateMediaUrl from "../../utils/safeUrl";
+
+// The sidebar brand mark is the store's configured logo (Settings →
+// Store Identity), falling back to the bundled official Aura
+// Interiors logo while settings load or when no logo is configured.
+const FALLBACK_LOGO_URL = "/logo-aura-interiors.webp";
+
+function useStoreIdentity() {
+  const [identity, setIdentity] = useState(null);
+  useEffect(() => {
+    let cancelled = false;
+    publicSettingsApi
+      .getPublicSettings()
+      .then((settings) => {
+        if (!cancelled) setIdentity(settings?.identity ?? null);
+      })
+      .catch(() => {
+        // Settings feed unavailable — the fallback logo renders.
+      });
+    return () => {
+      cancelled = true;
+    };
+  }, []);
+  return identity;
+}
 
 function NavLink({ item, active, isCollapsed, onClick }) {
   return (
@@ -8,12 +35,12 @@ function NavLink({ item, active, isCollapsed, onClick }) {
       onClick={onClick}
       title={isCollapsed ? item.label : undefined}
       className={`group flex items-center px-4.5 py-2.5 mx-2.5 rounded-lg transition-all duration-200 relative overflow-hidden focus:outline-none ${isCollapsed ? "justify-center gap-0 px-2" : "gap-3.5"} ${active
-          ? "bg-teal-50 text-teal-700 font-semibold"
+          ? "bg-brand/10 text-brand font-semibold"
           : "text-gray-600 hover:bg-gray-50 hover:text-gray-900 font-medium"
         }`}
     >
       <item.icon
-        className={`w-5 h-5 shrink-0 transition-all duration-200 ${active ? "text-teal-600" : "text-gray-400 group-hover:text-gray-700"
+        className={`w-5 h-5 shrink-0 transition-all duration-200 ${active ? "text-brand" : "text-gray-400 group-hover:text-gray-700"
           }`}
         strokeWidth={active ? 2.5 : 2}
       />
@@ -35,6 +62,12 @@ export default function AdminSidebar({
   menuGroups,
   isActive,
 }) {
+  const identity = useStoreIdentity();
+  // FE-03: the settings logo is server data — validate before use.
+  const safeLogoUrl =
+    validateMediaUrl(identity?.logoUrl) || FALLBACK_LOGO_URL;
+  const storeName = identity?.storeName || "Aura Interiors";
+
   return (
     <>
       {/* Sidebar Overlay (mobile) - covers full screen including header */}
@@ -65,8 +98,8 @@ export default function AdminSidebar({
                 className="flex items-center min-w-0 shrink"
               >
                 <img
-                  src="/logo-aura-interiors-admin.webp"
-                  alt="Aura"
+                  src={safeLogoUrl}
+                  alt={storeName}
                   width={384}
                   height={128}
                   className="w-48 h-auto object-contain transition-all duration-300"

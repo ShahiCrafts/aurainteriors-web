@@ -30,7 +30,7 @@ import {
 // and its errors are shown verbatim.
 
 const inputClass =
-  "w-full px-4 h-10 rounded-lg border border-gray-200 focus:border-teal-500 focus:ring-2 focus:ring-teal-500/10 outline-none text-sm transition-all bg-white";
+  "w-full px-4 h-10 rounded-lg border border-gray-200 focus:border-brand focus:ring-2 focus:ring-brand/10 outline-none text-sm transition-all bg-white";
 const smallLabelClass = "block text-xs font-medium text-gray-500 mb-1";
 
 function toOwnEntry(assignment) {
@@ -328,7 +328,7 @@ export default function CategoryAttributesEditor({
                           {definition.type}
                         </span>
                         {isOwn && !deactivatedHere ? (
-                          <span className="px-2 py-0.5 rounded-full text-[10px] font-bold uppercase tracking-wider bg-teal-50 text-teal-700 border border-teal-100">
+                          <span className="px-2 py-0.5 rounded-full text-[10px] font-bold uppercase tracking-wider bg-brand/10 text-brand border border-brand/20">
                             Set here
                           </span>
                         ) : deactivatedHere ? (
@@ -455,7 +455,7 @@ export default function CategoryAttributesEditor({
                             <button
                               type="button"
                               onClick={() => addOwn(key)}
-                              className="px-3 py-1.5 text-xs font-semibold bg-white border border-gray-200 rounded-lg hover:border-teal-500 hover:text-teal-700 transition-colors"
+                              className="px-3 py-1.5 text-xs font-semibold bg-white border border-gray-200 rounded-lg hover:border-brand hover:text-brand transition-colors"
                             >
                               Override here
                             </button>
@@ -495,7 +495,7 @@ export default function CategoryAttributesEditor({
                       addOwn(pickerKey);
                       setPickerKey("");
                     }}
-                    className="inline-flex items-center gap-1.5 px-4 h-10 bg-teal-600 hover:bg-teal-700 disabled:opacity-50 text-white rounded-lg text-sm font-medium transition-colors shrink-0"
+                    className="inline-flex items-center gap-1.5 px-4 h-10 bg-brand hover:bg-brand-hover disabled:opacity-50 text-white rounded-lg text-sm font-medium transition-colors shrink-0"
                   >
                     <Plus className="w-4 h-4" /> Add
                   </button>
@@ -522,7 +522,7 @@ export default function CategoryAttributesEditor({
               type="button"
               onClick={handleSave}
               disabled={isLoading || setAssignments.isPending}
-              className="flex-1 px-4 py-2 bg-teal-600 text-white rounded-lg font-medium hover:bg-teal-700 transition-colors disabled:opacity-50 text-sm"
+              className="flex-1 px-4 py-2 bg-brand text-white rounded-lg font-medium hover:bg-brand-hover transition-colors disabled:opacity-50 text-sm"
             >
               {"Save assignments"}
             </button>

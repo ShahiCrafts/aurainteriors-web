@@ -198,7 +198,7 @@ const KnowledgeBase = () => {
 
         {/* Upload Button */}
         <label
-          className={`flex items-center gap-2 px-5 py-3 bg-teal-600 hover:bg-teal-700 text-white rounded-xl font-medium shadow-sm transition-all duration-200 cursor-pointer ${uploading ? "opacity-75 cursor-not-allowed" : ""}`}
+          className={`flex items-center gap-2 px-5 py-3 bg-brand hover:bg-brand-hover text-white rounded-xl font-medium shadow-sm transition-all duration-200 cursor-pointer ${uploading ? "opacity-75 cursor-not-allowed" : ""}`}
         >
           <Upload className="w-5 h-5" />
           <span>{uploading ? "Uploading..." : "Upload File"}</span>
@@ -285,7 +285,7 @@ const KnowledgeBase = () => {
       {/* Stats Board */}
       <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
         <div className="bg-white rounded-xl p-5 border border-gray-100 shadow-sm flex items-center gap-4">
-          <div className="w-12 h-12 rounded-lg bg-teal-50 flex items-center justify-center text-teal-600">
+          <div className="w-12 h-12 rounded-lg bg-brand/10 flex items-center justify-center text-brand">
             <Database className="w-6 h-6" />
           </div>
           <div>
@@ -380,7 +380,7 @@ const KnowledgeBase = () => {
                   >
                     <td className="px-6 py-4">
                       <div className="flex items-center gap-3">
-                        <div className="w-10 h-10 rounded-lg bg-teal-50/50 text-teal-600 flex items-center justify-center shrink-0">
+                        <div className="w-10 h-10 rounded-lg bg-brand/10 text-brand flex items-center justify-center shrink-0">
                           <FileText className="w-5 h-5" />
                         </div>
                         <div className="min-w-0">
@@ -393,7 +393,7 @@ const KnowledgeBase = () => {
                             }
                             target="_blank"
                             rel="noopener noreferrer"
-                            className="font-bold text-gray-900 hover:text-teal-600 truncate block text-sm"
+                            className="font-bold text-gray-900 hover:text-brand truncate block text-sm"
                           >
                             {doc.fileName}
                           </a>
@@ -417,8 +417,8 @@ const KnowledgeBase = () => {
                         </span>
                       )}
                       {doc.status === "processing" && (
-                        <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-semibold bg-blue-50 text-blue-700 border border-blue-100">
-                          <span className="w-1.5 h-1.5 rounded-full bg-blue-600 motion-safe:animate-pulse" />
+                        <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-semibold bg-brand/10 text-brand-hover border border-brand/20">
+                          <span className="w-1.5 h-1.5 rounded-full bg-brand motion-safe:animate-pulse" />
                           Processing
                         </span>
                       )}
@@ -448,7 +448,7 @@ const KnowledgeBase = () => {
                           <button
                             onClick={() => handleRetry(doc._id)}
                             title="Retry Indexing"
-                            className="p-2 hover:bg-gray-100 text-teal-600 hover:text-teal-700 rounded-lg transition-colors"
+                            className="p-2 hover:bg-gray-100 text-brand hover:text-brand rounded-lg transition-colors"
                           >
                             <RefreshCw className="w-4 h-4" />
                           </button>

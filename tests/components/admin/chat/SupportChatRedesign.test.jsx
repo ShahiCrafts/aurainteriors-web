@@ -5,8 +5,8 @@
 //    unread avatar badges, selected-row state, search filtering, and
 //    the "Load more conversations" pagination footer.
 //  - AdminMessageList/AdminMessage: agent (left, gray), customer
-//    (right, light blue, blue read ticks), AI (green, "AI Assistant"
-//    label + blue bot avatar) bubbles, image messages, day dividers.
+//    (right, light brand tint, brand read ticks), AI (green, "AI Assistant"
+//    label + brand bot avatar) bubbles, image messages, day dividers.
 //  - ChatConversation: the header priority dropdown PATCHes priority
 //    through useUpdateChatPriority; "Close conversation" resolves.
 //  - AiAssistantPanel: chat-mode badge + auto-reply toggle wiring,
@@ -73,14 +73,14 @@ describe("ChatList redesign (Batch 3c)", () => {
     expect(screen.getByText("11/13/2026")).toBeInTheDocument();
   });
 
-  it("marks the selected row with the blue background and accent bar", () => {
+  it("marks the selected row with the brand background and accent bar", () => {
     const chat = listChat("c1");
     const { container } = render(
       <ChatList {...listProps} chats={[chat]} selectedChat={chat} />,
     );
     const row = screen.getByText(/Asha Rai/).closest("div[class*='cursor-pointer']");
-    expect(row.className).toContain("bg-blue-50");
-    expect(container.querySelector(".bg-\\[\\#2563EB\\]")).not.toBeNull();
+    expect(row.className).toContain("bg-brand/10");
+    expect(container.querySelector(".bg-brand")).not.toBeNull();
   });
 
   it("filters rows by the search input", () => {
@@ -157,7 +157,7 @@ describe("AdminMessageList redesign (Batch 3c)", () => {
     expect(bubble.className).toContain("bg-gray-100");
   });
 
-  it("renders the customer bubble light blue with blue read ticks when read", () => {
+  it("renders the customer bubble light brand with brand read ticks when read", () => {
     const { container } = render(
       <AdminMessageList
         {...listMessagesProps}
@@ -165,13 +165,13 @@ describe("AdminMessageList redesign (Batch 3c)", () => {
       />,
     );
     const bubble = screen.getByText("Great, thank you!");
-    expect(bubble.className).toContain("bg-blue-100");
+    expect(bubble.className).toContain("bg-brand/20");
     const ticks = container.querySelector(".lucide-check-check");
     expect(ticks).not.toBeNull();
-    expect(ticks.getAttribute("class")).toContain("text-[#2563EB]");
+    expect(ticks.getAttribute("class")).toContain("text-brand");
   });
 
-  it("renders the AI bubble green with the AI Assistant label and blue bot avatar", () => {
+  it("renders the AI bubble green with the AI Assistant label and brand bot avatar", () => {
     const { container } = render(
       <AdminMessageList
         {...listMessagesProps}

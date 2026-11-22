@@ -57,7 +57,7 @@ function HeaderStyleThumb({ option, selected, onSelect, navyColor }) {
       <span
         className={`relative block rounded-lg border-2 overflow-hidden transition-colors ${
           selected
-            ? "border-blue-600"
+            ? "border-brand"
             : "border-gray-200 group-hover:border-gray-300"
         }`}
       >
@@ -67,13 +67,13 @@ function HeaderStyleThumb({ option, selected, onSelect, navyColor }) {
           <span className="block h-1.5 w-1/2 bg-gray-200 rounded" />
         </span>
         {selected && (
-          <span className="absolute top-1 right-1 flex items-center justify-center w-[1.125rem] h-[1.125rem] rounded-full bg-blue-600 text-white">
+          <span className="absolute top-1 right-1 flex items-center justify-center w-[1.125rem] h-[1.125rem] rounded-full bg-brand text-white">
             <Check className="w-3 h-3" />
           </span>
         )}
       </span>
       <span
-        className={`block text-xs mt-1.5 text-center ${selected ? "text-blue-700 font-medium" : "text-gray-500"}`}
+        className={`block text-xs mt-1.5 text-center ${selected ? "text-brand-hover font-medium" : "text-gray-500"}`}
       >
         {option.label}
       </span>
@@ -178,7 +178,7 @@ export default function ThemeTab({ theme, identity, heroImage, onTheme }) {
                     onClick={() => onTheme({ buttonRadius: value })}
                     className={`px-4 py-2 rounded-full border text-sm font-medium transition-colors ${
                       theme.buttonRadius === value
-                        ? "border-blue-600 text-blue-700 bg-blue-50"
+                        ? "border-brand text-brand-hover bg-brand/10"
                         : "border-gray-200 text-gray-600 hover:bg-gray-50"
                     }`}
                   >
@@ -229,7 +229,7 @@ export default function ThemeTab({ theme, identity, heroImage, onTheme }) {
               ].map(({ key, label, Icon, helper }) => (
                 <div key={key} className="flex items-start justify-between gap-3">
                   <span className="flex items-start gap-3">
-                    <span className="flex items-center justify-center w-9 h-9 rounded-lg bg-blue-50 text-blue-600 shrink-0">
+                    <span className="flex items-center justify-center w-9 h-9 rounded-lg bg-brand/10 text-brand shrink-0">
                       <Icon className="w-[1.125rem] h-[1.125rem]" />
                     </span>
                     <span>

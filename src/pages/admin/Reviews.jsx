@@ -159,7 +159,7 @@ export default function Reviews() {
                   setSearchQuery(e.target.value);
                   setPage(1);
                 }}
-                className="w-full pl-10 pr-4 py-2.5 bg-white border border-gray-200 rounded-lg text-sm focus:outline-none focus:border-teal-500 focus:ring-2 focus:ring-teal-500/20 transition-all placeholder:text-gray-400"
+                className="w-full pl-10 pr-4 py-2.5 bg-white border border-gray-200 rounded-lg text-sm focus:outline-none focus:border-brand focus:ring-2 focus:ring-brand/20 transition-all placeholder:text-gray-400"
               />
             </div>
             <select
@@ -168,7 +168,7 @@ export default function Reviews() {
                 setFilterRating(e.target.value);
                 setPage(1);
               }}
-              className="px-4 py-2.5 bg-white border border-gray-200 rounded-lg text-sm focus:outline-none focus:border-teal-500 cursor-pointer min-w-35"
+              className="px-4 py-2.5 bg-white border border-gray-200 rounded-lg text-sm focus:outline-none focus:border-brand cursor-pointer min-w-35"
             >
               <option value="all">All Ratings</option>
               {[5, 4, 3, 2, 1].map((n) => (
@@ -183,7 +183,7 @@ export default function Reviews() {
                 setFilterStatus(e.target.value);
                 setPage(1);
               }}
-              className="px-4 py-2.5 bg-white border border-gray-200 rounded-lg text-sm focus:outline-none focus:border-teal-500 cursor-pointer min-w-35"
+              className="px-4 py-2.5 bg-white border border-gray-200 rounded-lg text-sm focus:outline-none focus:border-brand cursor-pointer min-w-35"
             >
               <option value="all">All Status</option>
               <option value="approved">Approved</option>
@@ -217,7 +217,7 @@ export default function Reviews() {
                     setFilterRating("all");
                     setFilterStatus("all");
                   }}
-                  className="mt-6 text-sm font-medium text-teal-600 hover:text-teal-700"
+                  className="mt-6 text-sm font-medium text-brand hover:text-brand"
                 >
                   Clear all filters
                 </button>
@@ -311,18 +311,18 @@ export default function Reviews() {
                       <div className="flex flex-col gap-1">
                         <span
                           className={`inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-[10px] font-bold uppercase tracking-wider w-fit ${review.isApproved
-                            ? "bg-teal-50 text-teal-700"
+                            ? "bg-blue-50 text-blue-700"
                             : "bg-amber-50 text-amber-700"
                             }`}
                         >
                           <span
-                            className={`w-1 h-1 rounded-full ${review.isApproved ? "bg-teal-500" : "bg-amber-500"
+                            className={`w-1 h-1 rounded-full ${review.isApproved ? "bg-blue-500" : "bg-amber-500"
                               }`}
                           ></span>
                           {review.isApproved ? "Approved" : "Pending"}
                         </span>
                         {review.adminResponse && (
-                          <span className="text-[9px] text-blue-500 font-bold uppercase ml-1">
+                          <span className="text-[9px] text-brand font-bold uppercase ml-1">
                             ● Responded
                           </span>
                         )}
@@ -347,7 +347,7 @@ export default function Reviews() {
                             );
                             setShowResponseModal(true);
                           }}
-                          className="p-2 text-gray-500 hover:bg-blue-50 hover:text-blue-600 rounded-lg transition-colors"
+                          className="p-2 text-gray-500 hover:bg-brand/10 hover:text-brand rounded-lg transition-colors"
                         >
                           <MessageSquare size={16} />
                         </button>
@@ -355,7 +355,7 @@ export default function Reviews() {
                           onClick={() => handleToggleApproval(review)}
                           className={`p-2 rounded-lg transition-colors ${review.isApproved
                             ? "text-gray-500 hover:bg-amber-50 hover:text-amber-600"
-                            : "text-teal-600 hover:bg-teal-50"
+                            : "text-brand hover:bg-brand/10"
                             }`}
                         >
                           {review.isApproved ? (
@@ -435,7 +435,7 @@ export default function Reviews() {
                   helpful
                 </div>
                 {selectedReview.isVerifiedPurchase && (
-                  <div className="flex items-center gap-1.5 text-[10px] font-bold text-teal-600 uppercase">
+                  <div className="flex items-center gap-1.5 text-[10px] font-bold text-brand uppercase">
                     <Shield size={12} /> Verified Purchase
                   </div>
                 )}
@@ -457,11 +457,11 @@ export default function Reviews() {
             onClose={() => setShowResponseModal(false)}
           >
             <div className="space-y-4">
-              <div className="p-3 bg-blue-50/50 rounded-lg border border-blue-100">
-                <p className="text-xs text-blue-800 font-semibold mb-1">
+              <div className="p-3 bg-brand/10 rounded-lg border border-brand/20">
+                <p className="text-xs text-brand-hover font-semibold mb-1">
                   Customer said:
                 </p>
-                <p className="text-sm text-blue-900 line-clamp-2">
+                <p className="text-sm text-brand-hover line-clamp-2">
                   "{selectedReview.comment}"
                 </p>
               </div>
@@ -469,7 +469,7 @@ export default function Reviews() {
                 value={responseText}
                 onChange={(e) => setResponseText(e.target.value)}
                 placeholder="Write your response to the customer..."
-                className="w-full px-4 py-3 border border-gray-200 rounded-lg text-sm focus:outline-none focus:border-teal-500 focus:ring-2 focus:ring-teal-500/20 resize-none"
+                className="w-full px-4 py-3 border border-gray-200 rounded-lg text-sm focus:outline-none focus:border-brand focus:ring-2 focus:ring-brand/20 resize-none"
                 rows={4}
               />
               <div className="flex gap-3 mt-2">
@@ -484,7 +484,7 @@ export default function Reviews() {
                   disabled={
                     addResponseMutation.isPending || !responseText.trim()
                   }
-                  className="flex-1 px-4 py-2.5 bg-teal-600 text-white rounded-lg text-sm font-medium flex items-center justify-center gap-2 hover:bg-teal-700"
+                  className="flex-1 px-4 py-2.5 bg-brand text-white rounded-lg text-sm font-medium flex items-center justify-center gap-2 hover:bg-brand-hover"
                 >
                   <Send size={16} />
                   Send Response

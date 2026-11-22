@@ -85,7 +85,7 @@ export default function ProductFormDrawer({ form, categories }) {
                       onClick={() => setActiveTab(tab.id)}
                       className={`px-4 py-3 text-sm font-semibold border-b-2 transition-colors cursor-pointer flex items-center gap-2 ${
                         activeTab === tab.id
-                          ? "border-teal-600 text-teal-600"
+                          ? "border-brand text-brand"
                           : "border-transparent text-gray-500 hover:text-gray-700"
                       }`}
                     >
@@ -138,7 +138,7 @@ export default function ProductFormDrawer({ form, categories }) {
                       createMutation.isPending ||
                       updateMutation.isPending
                     }
-                    className="flex-1 bg-teal-600 text-white px-4 py-2 rounded-lg text-sm font-semibold hover:bg-teal-700 transition-colors disabled:opacity-50 disabled:cursor-not-allowed cursor-pointer"
+                    className="flex-1 bg-brand text-white px-4 py-2 rounded-lg text-sm font-semibold hover:bg-brand-hover transition-colors disabled:opacity-50 disabled:cursor-not-allowed cursor-pointer"
                   >
                     {editingProduct ? "Update Product" : "Add Product"}
                   </button>

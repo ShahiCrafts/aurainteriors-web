@@ -11,7 +11,7 @@ import { X } from "lucide-react";
 // dimensions → { length, width, height, unit }.
 
 const inputClass =
-  "w-full px-4 h-10 rounded-lg border border-gray-200 focus:border-teal-500 focus:ring-2 focus:ring-teal-500/10 outline-none text-sm transition-all bg-white";
+  "w-full px-4 h-10 rounded-lg border border-gray-200 focus:border-brand focus:ring-2 focus:ring-brand/10 outline-none text-sm transition-all bg-white";
 const labelClass = "block text-sm font-medium text-gray-700 mb-2";
 
 function acceptedUnitsFor(definition) {
@@ -234,7 +234,7 @@ export default function AttributeValueInput({
               value={current.unit || units[0]}
               onChange={(e) => onChange({ ...current, unit: e.target.value })}
               disabled={disabled}
-              className="w-24 px-3 h-10 rounded-lg border border-gray-200 focus:border-teal-500 focus:ring-2 focus:ring-teal-500/10 outline-none text-sm transition-all bg-white"
+              className="w-24 px-3 h-10 rounded-lg border border-gray-200 focus:border-brand focus:ring-2 focus:ring-brand/10 outline-none text-sm transition-all bg-white"
               aria-label={`${definition.label} unit`}
             >
               {units.map((unit) => (
@@ -249,7 +249,7 @@ export default function AttributeValueInput({
               value={current.unit || ""}
               onChange={(e) => onChange({ ...current, unit: e.target.value })}
               disabled={disabled}
-              className="w-24 px-3 h-10 rounded-lg border border-gray-200 focus:border-teal-500 focus:ring-2 focus:ring-teal-500/10 outline-none text-sm transition-all bg-white"
+              className="w-24 px-3 h-10 rounded-lg border border-gray-200 focus:border-brand focus:ring-2 focus:ring-brand/10 outline-none text-sm transition-all bg-white"
               placeholder="unit"
               aria-label={`${definition.label} unit`}
             />

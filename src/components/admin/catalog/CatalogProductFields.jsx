@@ -38,7 +38,7 @@ export default function CatalogProductFields({
           id="product-form-type"
           value={productType}
           onChange={(e) => onProductTypeChange(e.target.value)}
-          className="w-full px-4 h-10 rounded-lg border border-gray-200 focus:border-teal-500 focus:ring-2 focus:ring-teal-500/10 outline-none text-sm transition-all bg-white"
+          className="w-full px-4 h-10 rounded-lg border border-gray-200 focus:border-brand focus:ring-2 focus:ring-brand/10 outline-none text-sm transition-all bg-white"
         >
           <option value="">None (use the category's type)</option>
           {productTypes.map((type) => (

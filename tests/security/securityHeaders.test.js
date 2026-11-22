@@ -2,6 +2,10 @@
 // in vercel.json must be the tight allowlist — no bare `https:` wildcard
 // in the network/media directives, no Unsplash host anywhere — and HSTS
 // must be present. nginx.conf must carry the identical enforcing policy.
+// (vercel.json now carries its headers in the legacy `routes` entries —
+// the SPA rewrite only fires in that form on the admin project — so the
+// lookup below reads route header maps; the asserted values are the
+// same header strings as before.)
 import { readFileSync } from "node:fs";
 import { dirname, join } from "node:path";
 import { fileURLToPath } from "node:url";
@@ -12,8 +16,8 @@ const vercel = JSON.parse(readFileSync(join(root, "vercel.json"), "utf8"));
 const nginx = readFileSync(join(root, "nginx.conf"), "utf8");
 
 function headerValue(name) {
-  for (const block of vercel.headers) {
-    for (const h of block.headers) if (h.key === name) return h.value;
+  for (const route of vercel.routes ?? []) {
+    if (route.headers && route.headers[name]) return route.headers[name];
   }
   return null;
 }

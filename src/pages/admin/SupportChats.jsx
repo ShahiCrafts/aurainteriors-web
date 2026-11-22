@@ -89,11 +89,11 @@ const SupportChats = () => {
   };
 
   return (
-    <div className="flex flex-col h-[calc(100vh-80px)] gap-4 overflow-hidden">
+    <div className="flex flex-col h-[calc(100vh-8rem)] gap-4 overflow-hidden">
       {/* Page Header */}
       <div className="flex items-center gap-3 shrink-0">
-        <div className="w-11 h-11 rounded-xl bg-blue-50 flex items-center justify-center shrink-0">
-          <Headset className="w-6 h-6 text-[#2563EB]" />
+        <div className="w-11 h-11 rounded-xl bg-brand/10 flex items-center justify-center shrink-0">
+          <Headset className="w-6 h-6 text-brand" />
         </div>
         <div>
           <h1 className="text-xl font-bold text-gray-900 leading-tight">
@@ -155,8 +155,8 @@ const SupportChats = () => {
             /* Empty State */
             <div className="flex-1 bg-white rounded-2xl border border-gray-200 shadow-sm flex items-center justify-center">
               <div className="text-center p-8 max-w-sm">
-                <div className="w-16 h-16 rounded-full bg-blue-50 flex items-center justify-center mx-auto mb-4">
-                  <MessageCircle className="w-8 h-8 text-[#2563EB]" />
+                <div className="w-16 h-16 rounded-full bg-brand/10 flex items-center justify-center mx-auto mb-4">
+                  <MessageCircle className="w-8 h-8 text-brand" />
                 </div>
                 <h3 className="text-lg font-bold text-gray-900 mb-2">
                   No Chat Selected

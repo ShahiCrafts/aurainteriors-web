@@ -27,13 +27,13 @@ export default function ProductImageUploader({
           /* ── Empty State: Styled Dashed Dropzone ── */
           <div
             onClick={() => fileInputRef.current?.click()}
-            className="border-2 border-dashed border-gray-300 rounded-xl py-8 px-6 text-center hover:border-teal-400 transition-all cursor-pointer group bg-gray-50/30 hover:bg-teal-50/20"
+            className="border-2 border-dashed border-gray-300 rounded-xl py-8 px-6 text-center hover:border-brand transition-all cursor-pointer group bg-gray-50/30 hover:bg-brand/10"
           >
-            <div className="w-12 h-12 rounded-xl bg-teal-50 flex items-center justify-center mx-auto mb-3 group-hover:bg-teal-100 transition-colors">
-              <Image className="w-6 h-6 text-teal-500" />
+            <div className="w-12 h-12 rounded-xl bg-brand/10 flex items-center justify-center mx-auto mb-3 group-hover:bg-brand/20 transition-colors">
+              <Image className="w-6 h-6 text-brand" />
             </div>
             <p className="text-sm font-semibold text-gray-600">
-              <span className="text-teal-600">Click to upload</span> product
+              <span className="text-brand">Click to upload</span> product
               images
             </p>
             <p className="text-xs text-gray-400 mt-1">
@@ -144,13 +144,13 @@ export default function ProductImageUploader({
                   {/* Add Image Dashed Card */}
                   <div
                     onClick={() => fileInputRef.current?.click()}
-                    className="w-30.5 h-30.5 rounded-xl border-2 border-dashed border-gray-300 hover:border-teal-400 bg-gray-50/50 flex flex-col items-center justify-center cursor-pointer transition-all hover:bg-teal-50/30 group shrink-0"
+                    className="w-30.5 h-30.5 rounded-xl border-2 border-dashed border-gray-300 hover:border-brand bg-gray-50/50 flex flex-col items-center justify-center cursor-pointer transition-all hover:bg-brand/10 group shrink-0"
                     title="Upload more images"
                   >
-                    <div className="w-8 h-8 rounded-lg bg-gray-100 group-hover:bg-teal-100 flex items-center justify-center transition-colors mb-1.5">
-                      <Plus className="w-4 h-4 text-gray-400 group-hover:text-teal-600 transition-colors" />
+                    <div className="w-8 h-8 rounded-lg bg-gray-100 group-hover:bg-brand/20 flex items-center justify-center transition-colors mb-1.5">
+                      <Plus className="w-4 h-4 text-gray-400 group-hover:text-brand transition-colors" />
                     </div>
-                    <span className="text-xs font-semibold text-gray-400 group-hover:text-teal-600 transition-colors">
+                    <span className="text-xs font-semibold text-gray-400 group-hover:text-brand transition-colors">
                       Add Image
                     </span>
                   </div>

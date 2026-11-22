@@ -324,7 +324,7 @@ export default function Categories() {
   }
 
   return (
-    <div className="p-6 lg:p-6 space-y-6">
+    <div className="space-y-6">
       {/* Page Header */}
       <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
         <div>
@@ -335,7 +335,7 @@ export default function Categories() {
         </div>
         <button
           onClick={() => handleAddCategory()}
-          className="inline-flex items-center gap-2 px-4 py-2 bg-teal-600 hover:bg-teal-700 text-white rounded-lg text-sm font-medium transition-colors shadow-sm cursor-pointer"
+          className="inline-flex items-center gap-2 px-4 py-2 bg-brand hover:bg-brand-hover text-white rounded-lg text-sm font-medium transition-colors shadow-sm cursor-pointer"
         >
           <Plus className="w-4 h-4" />
           Add Category
@@ -355,7 +355,7 @@ export default function Categories() {
                 {categories.length}
               </p>
             </div>
-            <div className="p-2.5 rounded-xl bg-blue-600 text-white shadow-sm">
+            <div className="p-2.5 rounded-xl bg-brand text-white shadow-sm">
               <FolderTree size={20} />
             </div>
           </div>
@@ -436,7 +436,7 @@ export default function Categories() {
               placeholder="Search categories by name, slug or description..."
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
-              className="w-full pl-10 pr-4 py-2 bg-white border border-gray-200 rounded-lg text-sm focus:outline-none focus:border-teal-500 focus:ring-2 focus:ring-teal-500/10 transition-all placeholder:text-gray-400 font-medium text-gray-800"
+              className="w-full pl-10 pr-4 py-2 bg-white border border-gray-200 rounded-lg text-sm focus:outline-none focus:border-brand focus:ring-2 focus:ring-brand/10 transition-all placeholder:text-gray-400 font-medium text-gray-800"
             />
           </div>
 
@@ -446,7 +446,7 @@ export default function Categories() {
             <select
               value={statusFilter}
               onChange={(e) => setStatusFilter(e.target.value)}
-              className="px-3.5 py-2 bg-white border border-gray-200 rounded-lg text-sm font-medium text-gray-600 focus:outline-none focus:border-teal-500 transition-colors cursor-pointer hover:border-gray-300"
+              className="px-3.5 py-2 bg-white border border-gray-200 rounded-lg text-sm font-medium text-gray-600 focus:outline-none focus:border-brand transition-colors cursor-pointer hover:border-gray-300"
             >
               <option value="all">Status: All</option>
               <option value="active">Active</option>
@@ -457,7 +457,7 @@ export default function Categories() {
             <select
               value={typeFilter}
               onChange={(e) => setTypeFilter(e.target.value)}
-              className="px-3.5 py-2 bg-white border border-gray-200 rounded-lg text-sm font-medium text-gray-600 focus:outline-none focus:border-teal-500 transition-colors cursor-pointer hover:border-gray-300"
+              className="px-3.5 py-2 bg-white border border-gray-200 rounded-lg text-sm font-medium text-gray-600 focus:outline-none focus:border-brand transition-colors cursor-pointer hover:border-gray-300"
             >
               <option value="all">Hierarchy: All</option>
               <option value="parent">Parent Groups</option>
@@ -468,7 +468,7 @@ export default function Categories() {
             <select
               value={densityFilter}
               onChange={(e) => setDensityFilter(e.target.value)}
-              className="px-3.5 py-2 bg-white border border-gray-200 rounded-lg text-sm font-medium text-gray-600 focus:outline-none focus:border-teal-500 transition-colors cursor-pointer hover:border-gray-300"
+              className="px-3.5 py-2 bg-white border border-gray-200 rounded-lg text-sm font-medium text-gray-600 focus:outline-none focus:border-brand transition-colors cursor-pointer hover:border-gray-300"
             >
               <option value="all">Density: All</option>
               <option value="assigned">Has Products</option>
@@ -479,7 +479,7 @@ export default function Categories() {
             <select
               value={sortBy}
               onChange={(e) => setSortBy(e.target.value)}
-              className="px-3.5 py-2 bg-white border border-gray-200 rounded-lg text-sm font-medium text-gray-600 focus:outline-none focus:border-teal-500 transition-colors cursor-pointer hover:border-gray-300"
+              className="px-3.5 py-2 bg-white border border-gray-200 rounded-lg text-sm font-medium text-gray-600 focus:outline-none focus:border-brand transition-colors cursor-pointer hover:border-gray-300"
             >
               <option value="sortOrder">Sort: Default Order</option>
               <option value="name">Sort: Name A-Z</option>
@@ -552,7 +552,7 @@ export default function Categories() {
                     {category.description}
                   </p>
                   <div className="flex items-center gap-2 mt-3.5">
-                    <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-[10px] font-bold uppercase tracking-wider bg-blue-50 text-blue-700 border border-blue-100">
+                    <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-[10px] font-bold uppercase tracking-wider bg-brand/10 text-brand-hover border border-brand/20">
                       <Package className="w-3.5 h-3.5" />
                       {category.productCount || 0} products
                     </span>

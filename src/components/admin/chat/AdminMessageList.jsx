@@ -104,8 +104,8 @@ const AdminMessageList = ({
   if (messages.length === 0) {
     return (
       <div className="flex flex-col items-center justify-center h-full text-neutral-500 p-6">
-        <div className="w-16 h-16 rounded-full bg-blue-50 flex items-center justify-center mb-4">
-          <MessageCircle className="w-8 h-8 text-[#2563EB]" />
+        <div className="w-16 h-16 rounded-full bg-brand/10 flex items-center justify-center mb-4">
+          <MessageCircle className="w-8 h-8 text-brand" />
         </div>
         <p className="text-neutral-700 font-semibold text-base">
           No messages yet
@@ -144,7 +144,7 @@ const AdminMessageList = ({
         <div className="flex justify-center py-3">
           <div className="flex items-center gap-2 text-sm text-neutral-500 bg-white px-4 py-2 rounded-full shadow-sm border border-neutral-100">
             <span
-              className="h-2 w-2 shrink-0 rounded-full bg-[#2563EB] motion-safe:animate-pulse"
+              className="h-2 w-2 shrink-0 rounded-full bg-brand motion-safe:animate-pulse"
               aria-hidden="true"
             />
             <span>Loading earlier messages...</span>
@@ -156,7 +156,7 @@ const AdminMessageList = ({
         <div className="flex justify-center py-2">
           <button
             onClick={onLoadMore}
-            className="text-xs text-[#2563EB] hover:text-blue-700 bg-blue-50 hover:bg-blue-100 px-3 py-1.5 rounded-full transition-colors"
+            className="text-xs text-brand hover:text-brand-hover bg-brand/10 hover:bg-brand/20 px-3 py-1.5 rounded-full transition-colors"
           >
             Load earlier messages
           </button>
@@ -187,7 +187,7 @@ const AdminMessageList = ({
               <BrandLoader size={28} />
             </div>
             {typingStatus.userRole === "ai" && (
-              <div className="w-9 h-9 rounded-full bg-[#2563EB] text-white flex items-center justify-center shrink-0">
+              <div className="w-9 h-9 rounded-full bg-brand text-white flex items-center justify-center shrink-0">
                 <Bot size={18} />
               </div>
             )}
@@ -204,7 +204,7 @@ const AdminMessageList = ({
               messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
               setHasNewMessages(false);
             }}
-            className="pointer-events-auto flex items-center gap-1.5 px-3 py-1.5 bg-[#2563EB] text-white text-[11px] font-bold rounded-full shadow-lg hover:bg-blue-700 transition-colors animate-bounce"
+            className="pointer-events-auto flex items-center gap-1.5 px-3 py-1.5 bg-brand text-white text-[11px] font-bold rounded-full shadow-lg hover:bg-brand-hover transition-colors animate-bounce"
           >
             <ChevronDown size={13} strokeWidth={3} />
             New message

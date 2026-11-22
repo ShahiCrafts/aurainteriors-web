@@ -38,7 +38,7 @@ const timeLabel = (message) =>
 const ReadTicks = ({ message }) => {
   if (message.isRead)
     return (
-      <CheckCheck size={14} strokeWidth={2.5} className="text-[#2563EB]" />
+      <CheckCheck size={14} strokeWidth={2.5} className="text-brand" />
     );
   if (message.deliveredAt)
     return (
@@ -73,7 +73,7 @@ const MessageAttachments = ({ message }) => {
               {isOptimistic && !attachment._syncFailed && (
                 <div className="absolute inset-0 rounded-xl bg-black/5 flex items-center justify-center pointer-events-none">
                   <div className="flex items-center gap-1 bg-white/90 px-2 py-1 rounded-full text-[10px] font-bold text-gray-600 shadow-sm backdrop-blur-sm">
-                    <div className="w-2.5 h-2.5 rounded-full bg-[#2563EB] motion-safe:animate-pulse" />
+                    <div className="w-2.5 h-2.5 rounded-full bg-brand motion-safe:animate-pulse" />
                     Uploading
                   </div>
                 </div>
@@ -149,7 +149,7 @@ const AdminMessage = ({ message, currentUserId, onRetry }) => {
       <div className="flex w-full justify-end px-5">
         <div className="flex items-end gap-2 max-w-[85%] sm:max-w-[75%]">
           <div className="flex flex-col items-end gap-1 min-w-0">
-            <span className="text-xs font-semibold text-[#2563EB] px-1">
+            <span className="text-xs font-semibold text-brand px-1">
               AI Assistant
             </span>
             {message.content && (
@@ -165,7 +165,7 @@ const AdminMessage = ({ message, currentUserId, onRetry }) => {
               <ReadTicks message={message} />
             </div>
           </div>
-          <div className="w-9 h-9 rounded-full bg-[#2563EB] text-white flex items-center justify-center shrink-0">
+          <div className="w-9 h-9 rounded-full bg-brand text-white flex items-center justify-center shrink-0">
             <Bot size={18} />
           </div>
         </div>
@@ -221,7 +221,7 @@ const AdminMessage = ({ message, currentUserId, onRetry }) => {
                   <button
                     type="button"
                     onClick={() => onRetry(message)}
-                    className="flex items-center gap-1 text-[11px] font-bold text-[#2563EB] hover:text-blue-700 underline underline-offset-2"
+                    className="flex items-center gap-1 text-[11px] font-bold text-brand hover:text-brand-hover underline underline-offset-2"
                   >
                     <RotateCcw size={12} strokeWidth={2.5} />
                     Retry
@@ -249,7 +249,7 @@ const AdminMessage = ({ message, currentUserId, onRetry }) => {
     <div className="flex w-full justify-end px-5">
       <div className="flex flex-col items-end gap-1 max-w-[85%] sm:max-w-[75%] min-w-0">
         {message.content && (
-          <div className="bg-blue-100 text-gray-800 px-3.5 py-2.5 rounded-2xl rounded-br-md text-[14.5px] leading-[1.6] w-fit wrap-break-word whitespace-pre-wrap">
+          <div className="bg-brand/20 text-gray-800 px-3.5 py-2.5 rounded-2xl rounded-br-md text-[14.5px] leading-[1.6] w-fit wrap-break-word whitespace-pre-wrap">
             {message.content}
           </div>
         )}

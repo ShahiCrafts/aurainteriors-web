@@ -149,13 +149,13 @@ export default function Orders() {
       case "pending":
         return "bg-amber-50 text-amber-700 border border-amber-100";
       case "confirmed":
-        return "bg-blue-50 text-blue-700 border border-blue-100";
+        return "bg-brand/10 text-brand-hover border border-brand/20";
       case "processing":
         return "bg-indigo-50 text-indigo-700 border border-indigo-100";
       case "shipped":
         return "bg-violet-50 text-violet-700 border border-violet-100";
       case "delivered":
-        return "bg-teal-50 text-teal-700 border border-teal-100";
+        return "bg-brand/10 text-brand border border-brand/20";
       case "cancelled":
         return "bg-red-50 text-red-600 border border-red-100";
       default:
@@ -187,7 +187,7 @@ export default function Orders() {
       case "pending":
         return "bg-amber-50 text-amber-700 border border-amber-100";
       case "paid":
-        return "bg-teal-50 text-teal-700 border border-teal-100";
+        return "bg-brand/10 text-brand border border-brand/20";
       case "failed":
         return "bg-red-50 text-red-600 border border-red-100";
       case "refunded":
@@ -202,11 +202,11 @@ export default function Orders() {
       case "requested":
         return "bg-amber-50 text-amber-700 border border-amber-100";
       case "approved":
-        return "bg-teal-50 text-teal-700 border border-teal-100";
+        return "bg-brand/10 text-brand border border-brand/20";
       case "rejected":
         return "bg-red-50 text-red-600 border border-red-100";
       case "completed":
-        return "bg-blue-50 text-blue-700 border border-blue-100";
+        return "bg-brand/10 text-brand-hover border border-brand/20";
       default:
         return "";
     }
@@ -226,7 +226,7 @@ export default function Orders() {
   }
 
   return (
-    <div className="p-6 lg:p-6 space-y-6">
+    <div className="space-y-6">
       <style>{`
         @keyframes order-highlight-blink {
           0%, 100% { background-color: transparent; }
@@ -259,7 +259,7 @@ export default function Orders() {
                   setSearchQuery(e.target.value);
                   setPage(1);
                 }}
-                className="w-full pl-10 pr-4 py-2.5 bg-white border border-gray-200 rounded-lg text-sm focus:outline-none focus:border-teal-500 focus:ring-2 focus:ring-teal-500/20 transition-all placeholder:text-gray-400"
+                className="w-full pl-10 pr-4 py-2.5 bg-white border border-gray-200 rounded-lg text-sm focus:outline-none focus:border-brand focus:ring-2 focus:ring-brand/20 transition-all placeholder:text-gray-400"
               />
             </div>
             <select
@@ -268,7 +268,7 @@ export default function Orders() {
                 setFilterStatus(e.target.value);
                 setPage(1);
               }}
-              className="px-4 py-2.5 bg-white border border-gray-200 rounded-lg text-sm focus:outline-none focus:border-teal-500 focus:ring-2 focus:ring-teal-500/20 cursor-pointer"
+              className="px-4 py-2.5 bg-white border border-gray-200 rounded-lg text-sm focus:outline-none focus:border-brand focus:ring-2 focus:ring-brand/20 cursor-pointer"
             >
               <option value="all">All Status</option>
               {statusOptions.map((status) => (
@@ -283,7 +283,7 @@ export default function Orders() {
                 setFilterPaymentStatus(e.target.value);
                 setPage(1);
               }}
-              className="px-4 py-2.5 bg-white border border-gray-200 rounded-lg text-sm focus:outline-none focus:border-teal-500 focus:ring-2 focus:ring-teal-500/20 cursor-pointer"
+              className="px-4 py-2.5 bg-white border border-gray-200 rounded-lg text-sm focus:outline-none focus:border-brand focus:ring-2 focus:ring-brand/20 cursor-pointer"
             >
               <option value="all">All Payment</option>
               {paymentStatusOptions.map((status) => (
@@ -746,7 +746,7 @@ export default function Orders() {
                   <select
                     value={newStatus}
                     onChange={(e) => setNewStatus(e.target.value)}
-                    className="w-full px-4 py-2.5 border border-gray-200 rounded-lg text-sm focus:outline-none focus:border-teal-500 focus:ring-2 focus:ring-teal-500/20"
+                    className="w-full px-4 py-2.5 border border-gray-200 rounded-lg text-sm focus:outline-none focus:border-brand focus:ring-2 focus:ring-brand/20"
                   >
                     {statusOptions.map((status) => (
                       <option key={status} value={status}>
@@ -766,7 +766,7 @@ export default function Orders() {
                   <button
                     onClick={handleUpdateStatus}
                     disabled={updateStatusMutation.isPending}
-                    className="flex-1 px-4 py-2.5 bg-teal-600 text-white rounded-lg hover:bg-teal-700 transition-colors disabled:opacity-50 flex items-center justify-center gap-2 text-sm font-medium"
+                    className="flex-1 px-4 py-2.5 bg-brand text-white rounded-lg hover:bg-brand-hover transition-colors disabled:opacity-50 flex items-center justify-center gap-2 text-sm font-medium"
                   >
                     Update
                   </button>
@@ -838,8 +838,8 @@ export default function Orders() {
                     <button
                       onClick={() => setReturnDecision("approved")}
                       className={`flex-1 px-4 py-2.5 rounded-lg border-2 text-sm font-medium transition-all ${returnDecision === "approved"
-                        ? "border-teal-500 bg-teal-50 text-teal-700"
-                        : "border-gray-200 text-gray-600 hover:border-teal-300"
+                        ? "border-brand bg-brand/10 text-brand"
+                        : "border-gray-200 text-gray-600 hover:border-brand/40"
                         }`}
                     >
                       Approve
@@ -864,7 +864,7 @@ export default function Orders() {
                     value={adminNote}
                     onChange={(e) => setAdminNote(e.target.value)}
                     placeholder="Add a note for the customer..."
-                    className="w-full px-4 py-2.5 border border-gray-200 rounded-lg text-sm focus:outline-none focus:border-teal-500 focus:ring-2 focus:ring-teal-500/20 resize-none"
+                    className="w-full px-4 py-2.5 border border-gray-200 rounded-lg text-sm focus:outline-none focus:border-brand focus:ring-2 focus:ring-brand/20 resize-none"
                     rows={3}
                   />
                 </div>
@@ -881,7 +881,7 @@ export default function Orders() {
                     disabled={
                       !returnDecision || processReturnMutation.isPending
                     }
-                    className="flex-1 px-4 py-2.5 bg-teal-600 text-white rounded-lg hover:bg-teal-700 transition-colors disabled:opacity-50 flex items-center justify-center gap-2 text-sm font-medium"
+                    className="flex-1 px-4 py-2.5 bg-brand text-white rounded-lg hover:bg-brand-hover transition-colors disabled:opacity-50 flex items-center justify-center gap-2 text-sm font-medium"
                   >
                     Process
                   </button>

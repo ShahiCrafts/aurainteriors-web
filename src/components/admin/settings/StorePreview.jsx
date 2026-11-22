@@ -27,7 +27,7 @@ export default function StorePreview({
     : "#ffffff";
   const logoSrc =
     dark && identity?.logoDarkUrl ? identity.logoDarkUrl : identity?.logoUrl;
-  const primary = theme?.primaryColor || "#2563EB";
+  const primary = theme?.primaryColor || "#F27318";
   const radius = RADIUS_CSS[theme?.buttonRadius] || "0.5rem";
   const headline =
     heroHeadline || identity?.tagline || identity?.storeName || "Your store";

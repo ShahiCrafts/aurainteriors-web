@@ -18,7 +18,7 @@ const actions = [
     label: "Create Order",
     icon: ClipboardPlus,
     path: "/dashboard/orders",
-    iconBg: "bg-blue-50 text-blue-600",
+    iconBg: "bg-brand/10 text-brand",
   },
   {
     label: "Add User",

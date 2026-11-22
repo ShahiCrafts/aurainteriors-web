@@ -175,7 +175,7 @@ export default function ProductListPage() {
   };
 
   return (
-    <div className="p-6 lg:p-6 space-y-6">
+    <div className="space-y-6">
       {/* Page Header */}
       <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
         <div>
@@ -186,7 +186,7 @@ export default function ProductListPage() {
         </div>
         <button
           onClick={() => handleOpenModal()}
-          className="inline-flex items-center gap-2 px-4 py-2 bg-teal-600 hover:bg-teal-700 text-white rounded-lg text-sm font-medium transition-colors shadow-sm cursor-pointer"
+          className="inline-flex items-center gap-2 px-4 py-2 bg-brand hover:bg-brand-hover text-white rounded-lg text-sm font-medium transition-colors shadow-sm cursor-pointer"
         >
           <Plus className="w-4 h-4" />
           Add Product
@@ -206,7 +206,7 @@ export default function ProductListPage() {
                 {totalProductsCount}
               </p>
             </div>
-            <div className="p-2.5 rounded-xl bg-blue-600 text-white shadow-sm">
+            <div className="p-2.5 rounded-xl bg-brand text-white shadow-sm">
               <Package size={20} />
             </div>
           </div>
@@ -297,7 +297,7 @@ export default function ProductListPage() {
                   setSearchQuery(e.target.value);
                   setPage(1);
                 }}
-                className="w-full pl-10 pr-4 py-2 bg-white border border-gray-200 rounded-lg text-sm focus:outline-none focus:border-teal-500 focus:ring-2 focus:ring-teal-500/10 transition-all placeholder:text-gray-400 font-medium text-gray-800"
+                className="w-full pl-10 pr-4 py-2 bg-white border border-gray-200 rounded-lg text-sm focus:outline-none focus:border-brand focus:ring-2 focus:ring-brand/10 transition-all placeholder:text-gray-400 font-medium text-gray-800"
               />
             </div>
 
@@ -310,7 +310,7 @@ export default function ProductListPage() {
                   setSelectedCategory(e.target.value);
                   setPage(1);
                 }}
-                className="px-3.5 py-2 bg-white border border-gray-200 rounded-lg text-sm font-medium text-gray-600 focus:outline-none focus:border-teal-500 transition-colors cursor-pointer hover:border-gray-300"
+                className="px-3.5 py-2 bg-white border border-gray-200 rounded-lg text-sm font-medium text-gray-600 focus:outline-none focus:border-brand transition-colors cursor-pointer hover:border-gray-300"
               >
                 <option value="all">All Categories</option>
                 {categories.map((cat) => (
@@ -327,7 +327,7 @@ export default function ProductListPage() {
                   setStockFilter(e.target.value);
                   setPage(1);
                 }}
-                className="px-3.5 py-2 bg-white border border-gray-200 rounded-lg text-sm font-medium text-gray-600 focus:outline-none focus:border-teal-500 transition-colors cursor-pointer hover:border-gray-300"
+                className="px-3.5 py-2 bg-white border border-gray-200 rounded-lg text-sm font-medium text-gray-600 focus:outline-none focus:border-brand transition-colors cursor-pointer hover:border-gray-300"
               >
                 <option value="all">Stock Status: All (this page)</option>
                 <option value="instock">In Stock (this page)</option>
@@ -342,7 +342,7 @@ export default function ProductListPage() {
                   setModelFilter(e.target.value);
                   setPage(1);
                 }}
-                className="px-3.5 py-2 bg-white border border-gray-200 rounded-lg text-sm font-medium text-gray-600 focus:outline-none focus:border-teal-500 transition-colors cursor-pointer hover:border-gray-300"
+                className="px-3.5 py-2 bg-white border border-gray-200 rounded-lg text-sm font-medium text-gray-600 focus:outline-none focus:border-brand transition-colors cursor-pointer hover:border-gray-300"
               >
                 <option value="all">3D Model: All (this page)</option>
                 <option value="hasmodel">Has 3D Model (this page)</option>
@@ -356,7 +356,7 @@ export default function ProductListPage() {
                   setStatusFilter(e.target.value);
                   setPage(1);
                 }}
-                className="px-3.5 py-2 bg-white border border-gray-200 rounded-lg text-sm font-medium text-gray-600 focus:outline-none focus:border-teal-500 transition-colors cursor-pointer hover:border-gray-300"
+                className="px-3.5 py-2 bg-white border border-gray-200 rounded-lg text-sm font-medium text-gray-600 focus:outline-none focus:border-brand transition-colors cursor-pointer hover:border-gray-300"
               >
                 <option value="all">Status: All</option>
                 <option value="active">Active</option>
@@ -485,7 +485,7 @@ export default function ProductListPage() {
                           )}
                         </div>
                         <div>
-                          <p className="font-semibold text-gray-900 text-[14px] group-hover:text-teal-600 transition-colors">
+                          <p className="font-semibold text-gray-900 text-[14px] group-hover:text-brand transition-colors">
                             {product.name}
                           </p>
                           <p className="font-mono text-xs text-gray-400 mt-0.5">

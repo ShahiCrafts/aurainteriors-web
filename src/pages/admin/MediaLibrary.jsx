@@ -94,10 +94,10 @@ export default function MediaLibrary() {
   };
 
   return (
-    <div className="bg-slate-50 min-h-full px-6 py-6 lg:px-8">
+    <div className="min-h-full">
       <div className="space-y-6">
         <div className="flex items-start gap-4">
-          <span className="flex items-center justify-center w-12 h-12 rounded-2xl bg-blue-50 text-blue-600 shrink-0"><ImageIcon className="w-6 h-6" /></span>
+          <span className="flex items-center justify-center w-12 h-12 rounded-2xl bg-brand/10 text-brand shrink-0"><ImageIcon className="w-6 h-6" /></span>
           <div>
             <h1 className="text-2xl font-bold text-gray-900">Media Library</h1>
             <p className="text-sm text-gray-500 mt-0.5">Images stored for this store.</p>
@@ -113,7 +113,7 @@ export default function MediaLibrary() {
           {loading ? <p className="text-sm text-gray-500">Loading media…</p> : error ? (
             <div className="bg-amber-50 border border-amber-200 rounded-xl p-5">
               <p className="text-sm text-amber-800">{error}</p>
-              <button type="button" onClick={load} className="mt-4 px-4 py-2.5 bg-blue-600 text-white rounded-lg text-sm font-medium">Retry</button>
+              <button type="button" onClick={load} className="mt-4 px-4 py-2.5 bg-brand text-white rounded-lg text-sm font-medium">Retry</button>
             </div>
           ) : resources.length === 0 ? <p className="text-sm text-gray-500">No media found.</p> : (
             <>

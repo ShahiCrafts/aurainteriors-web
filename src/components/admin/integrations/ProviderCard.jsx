@@ -1,6 +1,10 @@
+import { inputClass } from "../settings/ui";
+
 // One AI provider's config card on the admin Integrations page:
 // enabled toggle + model + base URL inputs. The provider's
 // SecretKeyControl is rendered by the parent as `children`.
+// (Batch 3d: restyled to the Settings design — blue accent,
+// rounded-lg inputs.)
 export default function ProviderCard({
   displayName,
   provider,
@@ -8,8 +12,6 @@ export default function ProviderCard({
   children,
 }) {
   const config = provider || {};
-  const inputClass =
-    "w-full px-4 py-2.5 border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-teal-500/20 focus:border-teal-500";
 
   return (
     <div className="border border-gray-200 rounded-2xl p-4 space-y-4">
@@ -21,14 +23,14 @@ export default function ProviderCard({
             aria-label={`Enable ${displayName}`}
             checked={!!config.enabled}
             onChange={(e) => onChange("enabled", e.target.checked)}
-            className="w-4 h-4 text-teal-600 border-gray-300 rounded focus:ring-teal-500"
+            className="w-4 h-4 accent-brand border-gray-300 rounded"
           />
           Enabled
         </label>
       </div>
       <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
         <div>
-          <label className="block text-sm font-medium text-gray-700 mb-2">
+          <label className="block text-sm font-medium text-gray-700 mb-1.5">
             Model
           </label>
           <input
@@ -41,7 +43,7 @@ export default function ProviderCard({
           />
         </div>
         <div>
-          <label className="block text-sm font-medium text-gray-700 mb-2">
+          <label className="block text-sm font-medium text-gray-700 mb-1.5">
             Base URL
           </label>
           <input

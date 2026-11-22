@@ -25,7 +25,7 @@ export default function SupportOverview({ stats }) {
 
           <Link
             to="/dashboard/support"
-            className="text-teal-600 text-xs font-medium hover:text-teal-700 flex items-center gap-1 transition-colors"
+            className="text-brand text-xs font-medium hover:text-brand flex items-center gap-1 transition-colors"
           >
             View all <ArrowRight className="w-3.5 h-3.5" />
           </Link>
@@ -92,7 +92,7 @@ export default function SupportOverview({ stats }) {
 
         <Link
           to="/dashboard/support"
-          className="text-teal-600 text-xs font-medium hover:text-teal-700 flex items-center gap-1 transition-colors"
+          className="text-brand text-xs font-medium hover:text-brand flex items-center gap-1 transition-colors"
         >
           View all <ArrowRight className="w-3.5 h-3.5" />
         </Link>

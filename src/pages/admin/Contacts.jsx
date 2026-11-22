@@ -109,7 +109,7 @@ export default function Contacts() {
   const getStatusStyle = (status) => {
     switch (status) {
       case "new":
-        return "bg-teal-50 text-teal-700 border-teal-100 dot-teal-500";
+        return "bg-brand/10 text-brand border-brand/20 dot-teal-500";
       case "in-progress":
         return "bg-amber-50 text-amber-700 border-amber-100 dot-amber-500";
       case "resolved":
@@ -167,7 +167,7 @@ export default function Contacts() {
                   setSearchQuery(e.target.value);
                   setPage(1);
                 }}
-                className="w-full pl-10 pr-4 py-2.5 bg-white border border-gray-200 rounded-lg text-sm focus:outline-none focus:border-teal-500 focus:ring-2 focus:ring-teal-500/20 transition-all placeholder:text-gray-400"
+                className="w-full pl-10 pr-4 py-2.5 bg-white border border-gray-200 rounded-lg text-sm focus:outline-none focus:border-brand focus:ring-2 focus:ring-brand/20 transition-all placeholder:text-gray-400"
               />
             </div>
             <div className="flex flex-wrap gap-3">
@@ -177,7 +177,7 @@ export default function Contacts() {
                   setFilterStatus(e.target.value);
                   setPage(1);
                 }}
-                className="px-4 py-2.5 bg-white border border-gray-200 rounded-lg text-sm focus:outline-none focus:border-teal-500 cursor-pointer min-w-32.5"
+                className="px-4 py-2.5 bg-white border border-gray-200 rounded-lg text-sm focus:outline-none focus:border-brand cursor-pointer min-w-32.5"
               >
                 <option value="all">All Status</option>
                 <option value="new">New</option>
@@ -190,7 +190,7 @@ export default function Contacts() {
                   setFilterCategory(e.target.value);
                   setPage(1);
                 }}
-                className="px-4 py-2.5 bg-white border border-gray-200 rounded-lg text-sm focus:outline-none focus:border-teal-500 cursor-pointer min-w-32.5"
+                className="px-4 py-2.5 bg-white border border-gray-200 rounded-lg text-sm focus:outline-none focus:border-brand cursor-pointer min-w-32.5"
               >
                 <option value="all">All Categories</option>
                 {Object.keys(categoryLabels).map((cat) => (
@@ -248,14 +248,14 @@ export default function Contacts() {
                     key={contact._id}
                     initial={{ opacity: 0 }}
                     animate={{ opacity: 1 }}
-                    className={`hover:bg-gray-50/50 transition-colors ${!contact.isRead ? "bg-teal-50/20" : ""
+                    className={`hover:bg-gray-50/50 transition-colors ${!contact.isRead ? "bg-brand/10" : ""
                       }`}
                   >
                     <td className="px-6 py-4">
                       <div className="flex items-center gap-3">
                         <div
                           className={`w-8 h-8 rounded-full flex items-center justify-center font-bold text-xs ${!contact.isRead
-                            ? "bg-teal-100 text-teal-700"
+                            ? "bg-brand/20 text-brand"
                             : "bg-gray-100 text-gray-500"
                             }`}
                         >
@@ -336,7 +336,7 @@ export default function Contacts() {
                             setResponseText("");
                             setShowResponseModal(true);
                           }}
-                          className="p-2 text-gray-500 hover:bg-blue-50 hover:text-blue-600 rounded-lg transition-colors"
+                          className="p-2 text-gray-500 hover:bg-brand/10 hover:text-brand rounded-lg transition-colors"
                         >
                           <Send size={16} />
                         </button>
@@ -351,7 +351,7 @@ export default function Contacts() {
                             );
                           }}
                           className={`p-2 rounded-lg transition-colors ${!contact.isRead
-                            ? "text-teal-600 hover:bg-teal-50"
+                            ? "text-brand hover:bg-brand/10"
                             : "text-gray-400 hover:bg-gray-100"
                             }`}
                         >
@@ -398,7 +398,7 @@ export default function Contacts() {
           >
             <div className="space-y-6">
               <div className="flex items-center gap-4 p-4 bg-gray-50 rounded-xl">
-                <div className="w-12 h-12 bg-white rounded-full flex items-center justify-center border border-gray-200 shadow-sm text-teal-600 font-bold">
+                <div className="w-12 h-12 bg-white rounded-full flex items-center justify-center border border-gray-200 shadow-sm text-brand font-bold">
                   {(selectedContact.name || "?")[0]}
                 </div>
                 <div>
@@ -422,7 +422,7 @@ export default function Contacts() {
                       className={
                         selectedContact.priority === "high"
                           ? "text-red-500"
-                          : "text-blue-500"
+                          : "text-brand"
                       }
                     />
                     {(selectedContact.priority || "").toUpperCase()}
@@ -454,10 +454,10 @@ export default function Contacts() {
 
               {selectedContact.response?.message && (
                 <div>
-                  <p className="text-[10px] uppercase text-teal-600 font-bold mb-2">
+                  <p className="text-[10px] uppercase text-brand font-bold mb-2">
                     Admin Response
                   </p>
-                  <div className="p-4 bg-teal-50/50 rounded-xl text-sm text-teal-900 border border-teal-100">
+                  <div className="p-4 bg-brand/10 rounded-xl text-sm text-brand-hover border border-brand/20">
                     {selectedContact.response.message}
                   </div>
                 </div>
@@ -469,7 +469,7 @@ export default function Contacts() {
                     setShowDetailModal(false);
                     setShowResponseModal(true);
                   }}
-                  className="flex-1 py-2.5 bg-teal-600 text-white rounded-lg text-sm font-medium hover:bg-teal-700 flex items-center justify-center gap-2"
+                  className="flex-1 py-2.5 bg-brand text-white rounded-lg text-sm font-medium hover:bg-brand-hover flex items-center justify-center gap-2"
                 >
                   <Send size={16} /> Respond Now
                 </button>
@@ -485,14 +485,14 @@ export default function Contacts() {
             onClose={() => setShowResponseModal(false)}
           >
             <div className="space-y-4">
-              <div className="p-3 bg-blue-50 rounded-lg border border-blue-100 text-xs text-blue-700">
+              <div className="p-3 bg-brand/10 rounded-lg border border-brand/20 text-xs text-brand-hover">
                 Responding to: <strong>{selectedContact?.subject}</strong>
               </div>
               <textarea
                 value={responseText}
                 onChange={(e) => setResponseText(e.target.value)}
                 placeholder="Type your reply to the customer..."
-                className="w-full px-4 py-3 border border-gray-200 rounded-lg text-sm focus:border-teal-500 focus:ring-2 focus:ring-teal-500/10 outline-none resize-none"
+                className="w-full px-4 py-3 border border-gray-200 rounded-lg text-sm focus:border-brand focus:ring-2 focus:ring-brand/10 outline-none resize-none"
                 rows={6}
               />
               <div className="flex gap-3">
@@ -505,7 +505,7 @@ export default function Contacts() {
                 <button
                   onClick={handleSubmitResponse}
                   disabled={respondMutation.isPending || !responseText.trim()}
-                  className="flex-1 py-2.5 bg-teal-600 text-white rounded-lg text-sm font-medium hover:bg-teal-700 flex items-center justify-center gap-2"
+                  className="flex-1 py-2.5 bg-brand text-white rounded-lg text-sm font-medium hover:bg-brand-hover flex items-center justify-center gap-2"
                 >
                   <Send size={16} />
                   Send Reply

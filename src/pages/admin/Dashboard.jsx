@@ -128,7 +128,7 @@ export default function Dashboard() {
     ordersLoading
   ) {
     return (
-      <div className="p-6 space-y-5">
+      <div className="space-y-5">
         <DashboardSkeleton />
       </div>
     );
@@ -140,7 +140,7 @@ export default function Dashboard() {
         <p>Failed to load dashboard data.</p>
         <button
           onClick={() => window.location.reload()}
-          className="mt-4 px-4 py-2 bg-teal-600 text-white rounded-lg hover:bg-teal-700 transition-colors"
+          className="mt-4 px-4 py-2 bg-brand text-white rounded-lg hover:bg-brand-hover transition-colors"
         >
           Retry
         </button>
@@ -149,7 +149,7 @@ export default function Dashboard() {
   }
 
   return (
-    <div className="p-6 lg:p-6 space-y-5">
+    <div className="space-y-5">
       {/* Page Header */}
       <div className="flex items-center justify-between">
         <div>
@@ -165,7 +165,7 @@ export default function Dashboard() {
         </div>
         <button
           onClick={handleDownloadReport}
-          className="flex items-center gap-2 px-4 py-2 bg-teal-600 text-white rounded-lg hover:bg-teal-700 transition-colors shadow-sm text-sm font-medium"
+          className="flex items-center gap-2 px-4 py-2 bg-brand text-white rounded-lg hover:bg-brand-hover transition-colors shadow-sm text-sm font-medium"
         >
           <Download className="w-4 h-4" />
           Download Report

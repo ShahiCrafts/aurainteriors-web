@@ -157,8 +157,8 @@ export default function SeoTab({ seo, identity, onSeo }) {
                   )}
                 </span>
                 <label className="flex-1 border-2 border-dashed border-gray-200 rounded-lg flex flex-col items-center justify-center gap-1 py-3 cursor-pointer hover:bg-gray-50 transition-colors">
-                  <Upload className="w-5 h-5 text-blue-600" />
-                  <span className="text-sm font-medium text-blue-600">
+                  <Upload className="w-5 h-5 text-brand" />
+                  <span className="text-sm font-medium text-brand">
                     Upload Image
                   </span>
                   <span className="text-xs text-gray-400">
@@ -202,7 +202,7 @@ export default function SeoTab({ seo, identity, onSeo }) {
               Google Maps API key — are managed under{" "}
               <Link
                 to="/dashboard/integrations"
-                className="text-blue-600 hover:text-blue-700 font-medium"
+                className="text-brand hover:text-brand-hover font-medium"
               >
                 Integrations → Analytics &amp; Marketing
               </Link>
@@ -230,7 +230,7 @@ export default function SeoTab({ seo, identity, onSeo }) {
               </span>
             </div>
             <div className="flex gap-5 text-xs text-gray-500 border-b border-gray-100 pb-2">
-              <span className="text-blue-600 font-medium border-b-2 border-blue-600 -mb-2.5 pb-2">
+              <span className="text-brand font-medium border-b-2 border-brand -mb-2.5 pb-2">
                 All
               </span>
               <span>Shopping</span>
@@ -259,7 +259,7 @@ export default function SeoTab({ seo, identity, onSeo }) {
                 <p className="text-xs text-gray-500 truncate">
                   {seo.siteUrl}
                 </p>
-                <p className="text-lg text-blue-700 leading-snug mt-1">
+                <p className="text-lg text-brand-hover leading-snug mt-1">
                   {previewTitle || "Your page title"}
                 </p>
                 <p className="text-sm text-gray-600 mt-0.5">
@@ -273,7 +273,7 @@ export default function SeoTab({ seo, identity, onSeo }) {
                 onClick={() => setPreviewNonce((n) => n + 1)}
                 className={smallButtonClass}
               >
-                <RefreshCw className="w-4 h-4 text-blue-600" />
+                <RefreshCw className="w-4 h-4 text-brand" />
                 Refresh Preview
               </button>
             </div>
@@ -323,7 +323,7 @@ export default function SeoTab({ seo, identity, onSeo }) {
                   onClick={() =>
                     window.open(sitemapUrl, "_blank", "noopener")
                   }
-                  className="p-2.5 border border-gray-200 rounded-lg text-blue-600 hover:bg-blue-50 transition-colors shrink-0"
+                  className="p-2.5 border border-gray-200 rounded-lg text-brand hover:bg-brand/10 transition-colors shrink-0"
                 >
                   <ExternalLink className="w-4 h-4" />
                 </button>
@@ -399,7 +399,7 @@ export default function SeoTab({ seo, identity, onSeo }) {
                       aria-label={`Noindex ${label}`}
                       checked={seo.noindexPages.includes(key)}
                       onChange={(e) => toggleNoindex(key, e.target.checked)}
-                      className="w-4 h-4 accent-blue-600"
+                      className="w-4 h-4 accent-brand"
                     />
                     {label}
                   </label>

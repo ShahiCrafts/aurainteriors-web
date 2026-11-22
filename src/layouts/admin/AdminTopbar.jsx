@@ -58,7 +58,7 @@ export default function AdminTopbar({
               value={searchValue}
               onChange={(e) => setSearchValue(e.target.value)}
               placeholder="Search customers, orders, products, conversations..."
-              className="w-full pl-10 pr-14 py-2.5 bg-gray-100/90 rounded-lg text-sm text-gray-700 placeholder:text-gray-400 focus:outline-none focus:ring-2 focus:ring-teal-500/20 focus:border-teal-400 transition-all"
+              className="w-full pl-10 pr-14 py-2.5 bg-gray-100/90 rounded-lg text-sm text-gray-700 placeholder:text-gray-400 focus:outline-none focus:ring-2 focus:ring-brand/20 focus:border-brand transition-all"
             />
             <span className="absolute right-3 top-1/2 -translate-y-1/2 text-[11px] font-semibold text-gray-400 bg-white border border-gray-200 rounded-md px-1.5 py-0.5">
               ⌘K
@@ -121,14 +121,14 @@ export default function AdminTopbar({
               onClick={() => setProfileMenuOpen((prev) => !prev)}
               className="flex items-center gap-3 pl-1 rounded-xl hover:bg-gray-50 py-1.5 pr-2 transition-colors"
             >
-              <div className="w-9 h-9 rounded-xl bg-teal-600/10 flex items-center justify-center text-teal-700 font-bold text-sm border border-teal-100 shrink-0">
+              <div className="w-9 h-9 rounded-xl bg-brand/10 flex items-center justify-center text-brand font-bold text-sm border border-brand/20 shrink-0">
                 {user?.firstName?.charAt(0)?.toUpperCase() || "A"}
               </div>
               <div className="text-right hidden xl:block">
                 <p className="text-[14px] font-bold text-gray-900 leading-none">
                   {user?.firstName} {user?.lastName}
                 </p>
-                <p className="text-[11px] font-bold text-teal-600 mt-1 uppercase tracking-wider">
+                <p className="text-[11px] font-bold text-brand mt-1 uppercase tracking-wider">
                   Administrator
                 </p>
               </div>
@@ -144,7 +144,7 @@ export default function AdminTopbar({
                   <p className="text-sm font-bold text-gray-900 truncate">
                     {user?.firstName} {user?.lastName}
                   </p>
-                  <p className="text-[11px] font-bold text-teal-600 uppercase tracking-wider mt-0.5">
+                  <p className="text-[11px] font-bold text-brand uppercase tracking-wider mt-0.5">
                     Administrator
                   </p>
                 </div>

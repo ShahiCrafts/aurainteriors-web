@@ -328,7 +328,7 @@ export default function AdminLayout() {
       : location.pathname.startsWith(path);
 
   return (
-    <div className="min-h-screen bg-gray-50/50 font-dm-sans text-slate-900">
+    <div className="min-h-screen bg-slate-50 font-dm-sans text-slate-900">
       <AdminSidebar
         mobileMenuOpen={mobileMenuOpen}
         setMobileMenuOpen={setMobileMenuOpen}
@@ -360,12 +360,15 @@ export default function AdminLayout() {
         setLogoutModalOpen={setLogoutModalOpen}
       />
 
-      {/* Main Content Area - no padding here, each page controls its own */}
+      {/* Main Content Area — one shared page canvas for every admin
+          page: the Store Settings reference look (slate-50 background,
+          px-6 py-6 lg:px-8 padding). Pages must not add their own
+          outer padding or full-bleed backgrounds. */}
       <div
         className={`min-h-screen pt-20 transition-all duration-300 ease-in-out ${isCollapsed ? "lg:ml-20" : "lg:ml-72"
           }`}
       >
-        <main className="min-h-[calc(100vh-5rem)]">
+        <main className="min-h-[calc(100vh-5rem)] bg-slate-50 px-6 py-6 lg:px-8">
           <ErrorBoundary resetKey={location.pathname}>
             <Outlet />
           </ErrorBoundary>
@@ -382,7 +385,7 @@ export default function AdminLayout() {
               animation: "slideInRight 0.3s ease-out",
             }}
           >
-            <div className="w-10 h-10 rounded-lg bg-teal-50 flex items-center justify-center text-lg shrink-0">
+            <div className="w-10 h-10 rounded-lg bg-brand/10 flex items-center justify-center text-lg shrink-0">
               {toast.type === "order:new" && "🛒"}
               {toast.type === "order:cancelled" && "❌"}
               {toast.type === "return:requested" && "↩️"}
@@ -421,7 +424,7 @@ export default function AdminLayout() {
                     }
                     removeToast(toast.id);
                   }}
-                  className="text-xs text-teal-600 font-medium mt-1 hover:text-teal-700"
+                  className="text-xs text-brand font-medium mt-1 hover:text-brand"
                 >
                   View Details →
                 </button>
@@ -455,7 +458,7 @@ export default function AdminLayout() {
               <X size={16} />
             </button>
             <div className="flex items-center gap-3 mb-4">
-              <div className="w-10 h-10 rounded-xl bg-teal-50 flex items-center justify-center text-teal-600">
+              <div className="w-10 h-10 rounded-xl bg-brand/10 flex items-center justify-center text-brand">
                 <HelpCircle size={20} />
               </div>
               <h3
@@ -473,7 +476,7 @@ export default function AdminLayout() {
               <p>
                 For technical inquiries or system configuration issues, please
                 contact your systems administrator or write to{" "}
-                <span className="font-semibold text-teal-600">
+                <span className="font-semibold text-brand">
                   admin-support@aurainteriors.com
                 </span>
                 .
@@ -481,7 +484,7 @@ export default function AdminLayout() {
             </div>
             <button
               onClick={() => setHelpModalOpen(false)}
-              className="w-full mt-6 py-2.5 bg-teal-600 hover:bg-teal-700 text-white font-medium rounded-lg transition-colors shadow-sm text-sm"
+              className="w-full mt-6 py-2.5 bg-brand hover:bg-brand-hover text-white font-medium rounded-lg transition-colors shadow-sm text-sm"
             >
               Okay
             </button>
@@ -506,7 +509,7 @@ export default function AdminLayout() {
               <X size={16} />
             </button>
             <div className="flex items-center gap-3 mb-4">
-              <div className="w-10 h-10 rounded-xl bg-teal-50 flex items-center justify-center text-teal-600">
+              <div className="w-10 h-10 rounded-xl bg-brand/10 flex items-center justify-center text-brand">
                 <ShieldCheck size={20} />
               </div>
               <h3
@@ -551,7 +554,7 @@ export default function AdminLayout() {
             </div>
             <button
               onClick={() => setPolicyModalOpen(false)}
-              className="w-full mt-6 py-2.5 bg-teal-600 hover:bg-teal-700 text-white font-medium rounded-lg transition-colors shadow-sm text-sm"
+              className="w-full mt-6 py-2.5 bg-brand hover:bg-brand-hover text-white font-medium rounded-lg transition-colors shadow-sm text-sm"
             >
               Close Policies
             </button>

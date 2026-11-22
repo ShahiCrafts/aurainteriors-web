@@ -205,6 +205,12 @@ const ALLOWLIST = [
       "Batch 3b: local const assigned from validateMediaUrl(settings identity.logoUrl) in the same file, falling back to the bundled /logo-aura-interiors.webp path.",
   },
   {
+    file: "src/layouts/admin/AdminSidebar.jsx",
+    expr: "safeLogoUrl",
+    reason:
+      "Admin theme fix: local const assigned from validateMediaUrl(settings identity.logoUrl) in the same file, falling back to the bundled /logo-aura-interiors.webp path — same pattern as the Navbar/Footer entries above.",
+  },
+  {
     file: "src/layouts/customer/Footer.jsx",
     expr: "safeSocialHref",
     reason:

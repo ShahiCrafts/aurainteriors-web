@@ -84,18 +84,26 @@ html::-webkit-scrollbar {
   }
 }
 
+/* Admin accent unification: the legacy admin accent was teal, later
+   remapped here to a blue scale. It now maps to the Aura Interiors
+   brand orange scale (primary #F27318 at 600, hover #D9620E at 700 —
+   the --color-brand / --color-brand-hover values), so any teal-*
+   utility that survives in shared components rendered inside the
+   admin app (dialogs, notification bell, toasts) renders on-brand
+   instead of blue. Admin-scoped files use the brand utilities
+   (bg-brand, text-brand, …) directly. */
 .admin-theme {
-  --color-teal-50: #f0f5ff;
-  --color-teal-100: #e5eeff;
-  --color-teal-200: #cce0ff;
-  --color-teal-300: #99c2ff;
-  --color-teal-400: #66a3ff;
-  --color-teal-500: #3385ff;
-  --color-teal-600: #0066ff;
-  --color-teal-700: #0052cc;
-  --color-teal-800: #003d99;
-  --color-teal-900: #002966;
-  --color-teal-950: #001433;
+  --color-teal-50: #fff7ee;
+  --color-teal-100: #ffeedd;
+  --color-teal-200: #fdd9b8;
+  --color-teal-300: #f8b983;
+  --color-teal-400: #f5954e;
+  --color-teal-500: #f27318;
+  --color-teal-600: #f27318;
+  --color-teal-700: #d9620e;
+  --color-teal-800: #b44a08;
+  --color-teal-900: #8f3b06;
+  --color-teal-950: #572304;
 }
 
 * {

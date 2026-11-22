@@ -35,7 +35,7 @@ import {
 // verbatim in the form, never as a generic failure.
 
 const inputClass =
-  "w-full px-4 h-10 rounded-lg border border-gray-200 focus:border-teal-500 focus:ring-2 focus:ring-teal-500/10 outline-none text-sm transition-all bg-white";
+  "w-full px-4 h-10 rounded-lg border border-gray-200 focus:border-brand focus:ring-2 focus:ring-brand/10 outline-none text-sm transition-all bg-white";
 const labelClass = "block text-sm font-medium text-gray-700 mb-2";
 
 const EMPTY_FORM = {
@@ -321,7 +321,7 @@ export default function VariantEditor({ product }) {
                 type="button"
                 onClick={saveOptionKeys}
                 disabled={updateProduct.isPending}
-                className="mt-3 px-4 py-2 bg-teal-600 text-white rounded-lg text-sm font-medium hover:bg-teal-700 transition-colors disabled:opacity-50"
+                className="mt-3 px-4 py-2 bg-brand text-white rounded-lg text-sm font-medium hover:bg-brand-hover transition-colors disabled:opacity-50"
               >
                 Save variant options
               </button>
@@ -340,7 +340,7 @@ export default function VariantEditor({ product }) {
             type="button"
             onClick={openCreate}
             disabled={optionKeys.length === 0}
-            className="inline-flex items-center gap-1.5 px-3 py-1.5 bg-teal-600 hover:bg-teal-700 disabled:opacity-50 text-white rounded-lg text-xs font-semibold transition-colors"
+            className="inline-flex items-center gap-1.5 px-3 py-1.5 bg-brand hover:bg-brand-hover disabled:opacity-50 text-white rounded-lg text-xs font-semibold transition-colors"
           >
             <Plus className="w-3.5 h-3.5" /> Add Variant
           </button>
@@ -669,7 +669,7 @@ export default function VariantEditor({ product }) {
                         <select
                           value={form.weightUnit}
                           onChange={(e) => set({ weightUnit: e.target.value })}
-                          className="w-24 px-3 h-10 rounded-lg border border-gray-200 focus:border-teal-500 outline-none text-sm bg-white"
+                          className="w-24 px-3 h-10 rounded-lg border border-gray-200 focus:border-brand outline-none text-sm bg-white"
                           aria-label="Variant weight unit"
                         >
                           {["kg", "lb", "g"].map((unit) => (
@@ -762,7 +762,7 @@ export default function VariantEditor({ product }) {
                       disabled={
                         createVariant.isPending || updateVariant.isPending
                       }
-                      className="flex-1 px-4 py-2 bg-teal-600 text-white rounded-lg font-medium hover:bg-teal-700 transition-colors disabled:opacity-50 text-sm"
+                      className="flex-1 px-4 py-2 bg-brand text-white rounded-lg font-medium hover:bg-brand-hover transition-colors disabled:opacity-50 text-sm"
                     >
                       {editingVariant ? "Save Variant" : "Add Variant"}
                     </button>

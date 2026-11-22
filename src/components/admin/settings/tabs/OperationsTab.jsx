@@ -357,8 +357,8 @@ export default function OperationsTab({
                 </select>
               </Field>
             </div>
-            <div className="w-44 shrink-0 bg-blue-50/60 border border-blue-100 rounded-xl p-4 self-start">
-              <div className="flex items-center gap-2 text-blue-600 mb-3">
+            <div className="w-44 shrink-0 bg-brand/10 border border-brand/20 rounded-xl p-4 self-start">
+              <div className="flex items-center gap-2 text-brand mb-3">
                 <Globe className="w-5 h-5" />
                 <span className="text-sm font-semibold text-gray-900">
                   Current Locale Preview
@@ -451,7 +451,7 @@ export default function OperationsTab({
                 <button
                   type="button"
                   onClick={() => setManagingZones((v) => !v)}
-                  className="text-sm font-medium text-blue-600 hover:text-blue-700"
+                  className="text-sm font-medium text-brand hover:text-brand-hover"
                 >
                   {managingZones ? "Done" : "Manage Zones →"}
                 </button>
@@ -584,8 +584,8 @@ export default function OperationsTab({
                 className={inputClass}
               />
             </Field>
-            <div className="bg-blue-50/60 border border-blue-100 rounded-xl p-3.5 self-end">
-              <div className="flex items-center gap-2 text-blue-600">
+            <div className="bg-brand/10 border border-brand/20 rounded-xl p-3.5 self-end">
+              <div className="flex items-center gap-2 text-brand">
                 <ShoppingCart className="w-4 h-4" />
                 <span className="text-xs font-semibold">Order Number Format</span>
               </div>
@@ -649,15 +649,15 @@ export default function OperationsTab({
                   <button
                     type="button"
                     onClick={() => setEditingTemplate(key)}
-                    className="inline-flex items-center gap-1 px-2.5 py-1 text-sm font-medium text-blue-600 hover:bg-blue-50 rounded-lg transition-colors"
+                    className="inline-flex items-center gap-1 px-2.5 py-1 text-sm font-medium text-brand hover:bg-brand/10 rounded-lg transition-colors"
                   >
                     <Pencil className="w-3.5 h-3.5" /> Edit
                   </button>
                 </li>
               ))}
             </ul>
-            <div className="w-52 shrink-0 bg-blue-50/60 border border-blue-100 rounded-xl p-4 self-start text-center">
-              <Send className="w-7 h-7 text-blue-600 mx-auto" />
+            <div className="w-52 shrink-0 bg-brand/10 border border-brand/20 rounded-xl p-4 self-start text-center">
+              <Send className="w-7 h-7 text-brand mx-auto" />
               <p className="text-sm font-semibold text-gray-900 mt-2">
                 Send a Test Email
               </p>

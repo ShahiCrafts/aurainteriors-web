@@ -58,7 +58,7 @@ const ChatList = ({
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
               placeholder="Search conversations..."
-              className="w-full pl-9 pr-3 py-2.5 rounded-xl border border-gray-200 text-sm text-gray-800 placeholder:text-gray-400 focus:outline-none focus:border-[#2563EB] focus:ring-2 focus:ring-blue-100"
+              className="w-full pl-9 pr-3 py-2.5 rounded-xl border border-gray-200 text-sm text-gray-800 placeholder:text-gray-400 focus:outline-none focus:border-brand focus:ring-2 focus:ring-brand/20"
             />
           </div>
           <div className="relative shrink-0">
@@ -104,8 +104,8 @@ const ChatList = ({
           </div>
         ) : filteredChats.length === 0 ? (
           <div className="p-8 text-center">
-            <div className="w-12 h-12 rounded-full bg-blue-50 flex items-center justify-center mx-auto mb-3">
-              <MessageCircle className="w-6 h-6 text-[#2563EB]" />
+            <div className="w-12 h-12 rounded-full bg-brand/10 flex items-center justify-center mx-auto mb-3">
+              <MessageCircle className="w-6 h-6 text-brand" />
             </div>
             <p className="text-sm font-medium text-gray-900">
               No conversations
@@ -126,11 +126,11 @@ const ChatList = ({
                   key={chat._id}
                   onClick={() => onSelectChat(chat)}
                   className={`px-3 py-3 cursor-pointer transition-colors relative flex items-start gap-3 rounded-xl ${
-                    isSelected ? "bg-blue-50" : "bg-white hover:bg-gray-50"
+                    isSelected ? "bg-brand/10" : "bg-white hover:bg-gray-50"
                   }`}
                 >
                   {isSelected && (
-                    <span className="absolute left-0 top-1/2 -translate-y-1/2 h-9 w-1 rounded-full bg-[#2563EB]" />
+                    <span className="absolute left-0 top-1/2 -translate-y-1/2 h-9 w-1 rounded-full bg-brand" />
                   )}
 
                   {/* Avatar + unread badge */}
@@ -144,7 +144,7 @@ const ChatList = ({
                       className="w-11 h-11 rounded-full text-sm"
                     />
                     {chat.unreadCountAdmin > 0 && (
-                      <span className="absolute -bottom-0.5 -right-0.5 min-w-5 h-5 px-1 rounded-full bg-[#2563EB] text-white text-[10px] font-bold flex items-center justify-center border-2 border-white">
+                      <span className="absolute -bottom-0.5 -right-0.5 min-w-5 h-5 px-1 rounded-full bg-brand text-white text-[10px] font-bold flex items-center justify-center border-2 border-white">
                         {chat.unreadCountAdmin}
                       </span>
                     )}

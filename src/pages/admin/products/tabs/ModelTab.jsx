@@ -63,7 +63,7 @@ export default function ModelTab({ form }) {
             type="button"
             onClick={() => setModelInputType("url")}
             className={`flex-1 flex items-center justify-center gap-2 px-4 h-10 rounded-lg border text-sm font-medium transition-all cursor-pointer ${modelInputType === "url"
-                ? "border-teal-600 bg-teal-50 text-teal-700"
+                ? "border-brand bg-brand/10 text-brand"
                 : "border-gray-200 text-gray-600 hover:bg-gray-50"
               }`}
           >
@@ -74,7 +74,7 @@ export default function ModelTab({ form }) {
             type="button"
             onClick={() => setModelInputType("upload")}
             className={`flex-1 flex items-center justify-center gap-2 px-4 h-10 rounded-lg border text-sm font-medium transition-all cursor-pointer ${modelInputType === "upload"
-                ? "border-teal-600 bg-teal-50 text-teal-700"
+                ? "border-brand bg-brand/10 text-brand"
                 : "border-gray-200 text-gray-600 hover:bg-gray-50"
               }`}
           >
@@ -98,13 +98,13 @@ export default function ModelTab({ form }) {
               onKeyDown={(e) =>
                 e.key === "Enter" && (e.preventDefault(), addModelUrl())
               }
-              className="flex-1 px-4 h-10 bg-white rounded-lg border border-gray-200 focus:border-teal-500 focus:ring-2 focus:ring-teal-500/10 outline-none text-sm font-medium transition-all"
+              className="flex-1 px-4 h-10 bg-white rounded-lg border border-gray-200 focus:border-brand focus:ring-2 focus:ring-brand/10 outline-none text-sm font-medium transition-all"
               placeholder="https://example.com/model.glb"
             />
             <button
               type="button"
               onClick={addModelUrl}
-              className="px-4 h-10 bg-teal-600 text-white rounded-lg text-sm font-semibold hover:bg-teal-700 transition-colors cursor-pointer"
+              className="px-4 h-10 bg-brand text-white rounded-lg text-sm font-semibold hover:bg-brand-hover transition-colors cursor-pointer"
             >
               Add
             </button>
@@ -131,8 +131,8 @@ export default function ModelTab({ form }) {
               onDragLeave={handleModelDragLeave}
               onDrop={handleModelDrop}
               className={`border-2 border-dashed rounded-lg p-6 text-center transition-colors cursor-pointer ${isDraggingModel
-                  ? "border-teal-500 bg-teal-500/5"
-                  : "border-gray-200 hover:border-teal-500"
+                  ? "border-brand bg-brand/5"
+                  : "border-gray-200 hover:border-brand"
                 }`}
             >
               <Box className="w-10 h-10 text-gray-400 mx-auto mb-2" />
@@ -151,8 +151,8 @@ export default function ModelTab({ form }) {
               onDragLeave={handleModelDragLeave}
               onDrop={handleModelDrop}
               className={`border-2 border-dashed rounded-lg py-3 px-4 text-center transition-colors cursor-pointer flex items-center justify-center gap-2 hover:bg-gray-50/80 ${isDraggingModel
-                  ? "border-teal-500 bg-teal-500/5"
-                  : "border-gray-200 hover:border-teal-500"
+                  ? "border-brand bg-brand/5"
+                  : "border-gray-200 hover:border-brand"
                 }`}
             >
               <Upload className="w-4 h-4 text-gray-400" />
@@ -187,19 +187,19 @@ export default function ModelTab({ form }) {
               {existingModelFiles.map((model, index) => (
                 <div
                   key={`existing-${index}`}
-                  className="border border-gray-100 bg-white hover:border-teal-200 transition-all rounded-lg p-3 flex items-center justify-between shadow-sm"
+                  className="border border-gray-100 bg-white hover:border-brand/30 transition-all rounded-lg p-3 flex items-center justify-between shadow-sm"
                 >
                   <div className="flex items-center gap-3 min-w-0">
                     <div
                       className={`w-9 h-9 rounded-lg flex items-center justify-center shrink-0 ${model.platform === "ios"
                           ? "bg-indigo-50 text-indigo-650"
-                          : "bg-blue-55 text-blue-650"
+                          : "bg-brand/10 text-brand"
                         }`}
                     >
                       {model.isExternal ? (
                         <LinkIcon className="w-4.5 h-4.5 text-indigo-600" />
                       ) : (
-                        <Box className="w-4.5 h-4.5 text-blue-600" />
+                        <Box className="w-4.5 h-4.5 text-brand" />
                       )}
                     </div>
                     <div className="min-w-0 flex-1">
@@ -213,7 +213,7 @@ export default function ModelTab({ form }) {
                         <span className="text-[10px] font-bold uppercase tracking-wider px-2 py-0.5 rounded bg-gray-50 text-gray-500 border border-gray-100">
                           {model.format}
                         </span>
-                        <span className="text-[10px] font-bold uppercase tracking-wider px-2 py-0.5 rounded bg-teal-50 text-teal-700 border border-teal-100/50">
+                        <span className="text-[10px] font-bold uppercase tracking-wider px-2 py-0.5 rounded bg-brand/10 text-brand border border-brand/20">
                           {model.isExternal ? "URL Link" : "Stored File"}
                         </span>
                         {model.fileSize && (
@@ -240,11 +240,11 @@ export default function ModelTab({ form }) {
               {modelFiles.map((model, index) => (
                 <div
                   key={`new-file-${index}`}
-                  className="border border-gray-100 bg-white hover:border-teal-200 transition-all rounded-lg p-3 flex items-center justify-between shadow-sm"
+                  className="border border-gray-100 bg-white hover:border-brand/30 transition-all rounded-lg p-3 flex items-center justify-between shadow-sm"
                 >
                   <div className="flex items-center gap-3 min-w-0">
-                    <div className="w-9 h-9 rounded-lg bg-blue-50 flex items-center justify-center shrink-0">
-                      <Box className="w-4.5 h-4.5 text-blue-600" />
+                    <div className="w-9 h-9 rounded-lg bg-brand/10 flex items-center justify-center shrink-0">
+                      <Box className="w-4.5 h-4.5 text-brand" />
                     </div>
                     <div className="min-w-0 flex-1">
                       <p
@@ -280,7 +280,7 @@ export default function ModelTab({ form }) {
               {modelUrls.map((model, index) => (
                 <div
                   key={`new-url-${index}`}
-                  className="border border-gray-100 bg-white hover:border-teal-200 transition-all rounded-lg p-3 flex items-center justify-between shadow-sm"
+                  className="border border-gray-100 bg-white hover:border-brand/30 transition-all rounded-lg p-3 flex items-center justify-between shadow-sm"
                 >
                   <div className="flex items-center gap-3 min-w-0">
                     <div className="w-9 h-9 rounded-lg bg-indigo-50 flex items-center justify-center shrink-0">
@@ -317,17 +317,17 @@ export default function ModelTab({ form }) {
         )}
 
       {/* Cross-platform AR Note */}
-      <div className="bg-blue-50 border border-blue-200 rounded-xl p-4">
+      <div className="bg-brand/10 border border-brand/30 rounded-xl p-4">
         <div className="flex items-start gap-3">
-          <AlertCircle className="w-5 h-5 text-blue-600 shrink-0 mt-0.5" />
+          <AlertCircle className="w-5 h-5 text-brand shrink-0 mt-0.5" />
           <div>
-            <p className="text-sm font-medium text-blue-800">
+            <p className="text-sm font-medium text-brand-hover">
               Cross-Platform AR Support
             </p>
-            <p className="text-sm text-blue-700 mt-0.5">
+            <p className="text-sm text-brand-hover mt-0.5">
               For the best AR experience across all devices:
             </p>
-            <ul className="text-sm text-blue-700 mt-1 list-disc list-inside">
+            <ul className="text-sm text-brand-hover mt-1 list-disc list-inside">
               <li>
                 <strong>.glb/.gltf</strong> - For Android devices and web
                 browsers

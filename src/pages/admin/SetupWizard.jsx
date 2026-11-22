@@ -63,14 +63,14 @@ export default function SetupWizard() {
   };
 
   if (loading && !status) {
-    return <div className="bg-slate-50 min-h-full px-6 py-6 lg:px-8"><div className="bg-white border border-gray-200 rounded-2xl p-10 text-sm text-gray-500">Loading setup status…</div></div>;
+    return <div className="min-h-full"><div className="bg-white border border-gray-200 rounded-2xl p-10 text-sm text-gray-500">Loading setup status…</div></div>;
   }
   if (error && !status) {
     return (
-      <div className="bg-slate-50 min-h-full px-6 py-6 lg:px-8">
+      <div className="min-h-full">
         <div className="bg-white border border-gray-200 rounded-2xl p-6">
           <p className="text-red-600 text-sm">{error}</p>
-          <button type="button" onClick={load} className="mt-4 px-4 py-2.5 bg-blue-600 text-white rounded-lg text-sm font-medium">Retry</button>
+          <button type="button" onClick={load} className="mt-4 px-4 py-2.5 bg-brand text-white rounded-lg text-sm font-medium">Retry</button>
         </div>
       </div>
     );
@@ -156,10 +156,10 @@ export default function SetupWizard() {
   const complete = steps.filter((s) => s.done).length;
 
   return (
-    <div className="bg-slate-50 min-h-full px-6 py-6 lg:px-8">
+    <div className="min-h-full">
       <div className="space-y-6">
         <div className="flex items-start gap-4">
-          <span className="flex items-center justify-center w-12 h-12 rounded-2xl bg-blue-50 text-blue-600 shrink-0"><Rocket className="w-6 h-6" /></span>
+          <span className="flex items-center justify-center w-12 h-12 rounded-2xl bg-brand/10 text-brand shrink-0"><Rocket className="w-6 h-6" /></span>
           <div>
             <h1 className="text-2xl font-bold text-gray-900">Setup Wizard</h1>
             <p className="text-sm text-gray-500 mt-0.5">Hand over or take over this store: work through the checklist against live store data.</p>
@@ -169,7 +169,7 @@ export default function SetupWizard() {
         <Card title="Progress">
           <p className="text-sm text-gray-700 mb-3">{complete} of 8 complete</p>
           <div className="h-2.5 bg-gray-100 rounded-full overflow-hidden" role="progressbar" aria-valuenow={complete} aria-valuemin={0} aria-valuemax={8}>
-            <div className="h-full bg-blue-600 rounded-full transition-all" style={{ width: `${(complete / 8) * 100}%` }} />
+            <div className="h-full bg-brand rounded-full transition-all" style={{ width: `${(complete / 8) * 100}%` }} />
           </div>
         </Card>
 

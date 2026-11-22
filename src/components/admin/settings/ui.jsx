@@ -17,7 +17,8 @@ import {
 // Both the Store Settings page and the Integrations page render the
 // same header + pill tab bar through SettingsShell, styled after the
 // owner's reference designs: light background, white rounded-2xl
-// cards, rounded-lg inputs, blue (#2563EB = blue-600) primaries.
+// cards, rounded-lg inputs, Aura brand primaries (bg-brand #F27318,
+// hover bg-brand-hover #D9620E — the @theme brand tokens).
 
 export const SETTINGS_TABS = [
   { key: "identity", label: "Store Identity", icon: Store },
@@ -32,11 +33,11 @@ export const SETTINGS_TABS = [
 ];
 
 export const inputClass =
-  "w-full px-3.5 py-2.5 border border-gray-200 rounded-lg text-sm text-gray-900 bg-white focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-600 disabled:bg-gray-50";
+  "w-full px-3.5 py-2.5 border border-gray-200 rounded-lg text-sm text-gray-900 bg-white focus:outline-none focus:ring-2 focus:ring-brand/20 focus:border-brand disabled:bg-gray-50";
 export const selectClass = `${inputClass} bg-white`;
 export const textareaClass = `${inputClass} min-h-28`;
 export const primaryButtonClass =
-  "inline-flex items-center gap-2 px-4 py-2.5 bg-blue-600 text-white rounded-lg text-sm font-medium hover:bg-blue-700 transition-colors disabled:opacity-50";
+  "inline-flex items-center gap-2 px-4 py-2.5 bg-brand text-white rounded-lg text-sm font-medium hover:bg-brand-hover transition-colors disabled:opacity-50";
 export const secondaryButtonClass =
   "inline-flex items-center gap-2 px-4 py-2.5 border border-gray-200 text-gray-700 bg-white rounded-lg text-sm font-medium hover:bg-gray-50 transition-colors disabled:opacity-50";
 export const smallButtonClass =
@@ -91,7 +92,7 @@ export function Toggle({ label, checked, onChange, ariaLabel }) {
     >
       <span
         className={`relative inline-flex h-6 w-11 shrink-0 rounded-full transition-colors ${
-          checked ? "bg-blue-600" : "bg-gray-200"
+          checked ? "bg-brand" : "bg-gray-200"
         }`}
       >
         <span
@@ -117,7 +118,7 @@ export function SettingsShell({ activeTab, onTabChange, children, tabs = SETTING
   const renderTab = ({ key, label, icon: Icon }) => {
     const active = activeTab === key;
     const className = active
-      ? "inline-flex items-center gap-2 px-4 py-2.5 bg-blue-600 text-white rounded-full text-sm font-medium transition-colors whitespace-nowrap"
+      ? "inline-flex items-center gap-2 px-4 py-2.5 bg-brand text-white rounded-full text-sm font-medium transition-colors whitespace-nowrap"
       : "inline-flex items-center gap-2 px-4 py-2.5 bg-white border border-gray-200 text-gray-700 rounded-full text-sm font-medium hover:bg-gray-50 transition-colors whitespace-nowrap";
     if (key === "integrations") {
       return (
@@ -165,7 +166,7 @@ export function SettingsShell({ activeTab, onTabChange, children, tabs = SETTING
   return (
     <div className="space-y-6">
       <div className="flex items-start gap-4">
-        <span className="flex items-center justify-center w-12 h-12 rounded-2xl bg-blue-50 text-blue-600 shrink-0">
+        <span className="flex items-center justify-center w-12 h-12 rounded-2xl bg-brand/10 text-brand shrink-0">
           <SettingsIcon className="w-6 h-6" />
         </span>
         <div>
@@ -211,10 +212,11 @@ export function SaveBar({ onCancel, onSave, saving, saveLabel = "Save Changes" }
   );
 }
 
-// Page background wrapper both Settings pages share (reference:
-// very light blue-grey canvas, white cards on top).
+// Page wrapper both Settings pages share. The canvas itself —
+// slate-50 background and px-6 py-6 lg:px-8 padding — now comes from
+// AdminLayout's <main>, which every admin page shares; this wrapper
+// only stretches to fill it (the SaveBar's negative margins stretch
+// across the layout padding exactly as they did across this one).
 export function SettingsPage({ children }) {
-  return (
-    <div className="bg-slate-50 min-h-full px-6 py-6 lg:px-8">{children}</div>
-  );
+  return <div className="min-h-full">{children}</div>;
 }

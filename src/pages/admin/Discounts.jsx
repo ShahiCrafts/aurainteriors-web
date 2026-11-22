@@ -187,7 +187,7 @@ export default function Discounts() {
         </span>
       );
     return (
-      <span className="inline-flex items-center px-2.5 py-1 rounded-full text-[10px] font-bold uppercase tracking-wider bg-teal-100 text-teal-700">
+      <span className="inline-flex items-center px-2.5 py-1 rounded-full text-[10px] font-bold uppercase tracking-wider bg-brand/20 text-brand">
         Active
       </span>
     );
@@ -209,7 +209,7 @@ export default function Discounts() {
         </div>
         <button
           onClick={() => handleOpenModal()}
-          className="flex items-center gap-2 px-4 py-2.5 bg-teal-600 text-white rounded-lg text-sm font-semibold hover:bg-teal-700 transition-all active:scale-95"
+          className="flex items-center gap-2 px-4 py-2.5 bg-brand text-white rounded-lg text-sm font-semibold hover:bg-brand-hover transition-all active:scale-95"
         >
           <Plus className="w-4 h-4" /> Add New Discount
         </button>
@@ -229,7 +229,7 @@ export default function Discounts() {
                   setSearchQuery(e.target.value);
                   setPage(1);
                 }}
-                className="w-full pl-10 pr-4 py-2.5 bg-white border border-gray-200 rounded-lg text-sm focus:outline-none focus:border-teal-500 focus:ring-2 focus:ring-teal-500/20 transition-all placeholder:text-gray-400"
+                className="w-full pl-10 pr-4 py-2.5 bg-white border border-gray-200 rounded-lg text-sm focus:outline-none focus:border-brand focus:ring-2 focus:ring-brand/20 transition-all placeholder:text-gray-400"
               />
             </div>
             <div className="relative">
@@ -239,7 +239,7 @@ export default function Discounts() {
                   setStatusFilter(e.target.value);
                   setPage(1);
                 }}
-                className="appearance-none pl-4 pr-10 py-2.5 bg-white border border-gray-200 rounded-lg text-sm font-medium focus:outline-none focus:border-teal-500 focus:ring-2 focus:ring-teal-500/20 cursor-pointer min-w-40"
+                className="appearance-none pl-4 pr-10 py-2.5 bg-white border border-gray-200 rounded-lg text-sm font-medium focus:outline-none focus:border-brand focus:ring-2 focus:ring-brand/20 cursor-pointer min-w-40"
               >
                 <option value="all">All Status</option>
                 <option value="active">Active</option>
@@ -313,7 +313,7 @@ export default function Discounts() {
                   >
                     <td className="px-6 py-4">
                       <div className="flex flex-col">
-                        <span className="font-mono font-bold text-teal-700 bg-teal-50 px-2 py-0.5 rounded w-fit text-sm">
+                        <span className="font-mono font-bold text-brand bg-brand/10 px-2 py-0.5 rounded w-fit text-sm">
                           {discount.code}
                         </span>
                         <span className="text-xs text-gray-400 mt-1">
@@ -421,7 +421,7 @@ export default function Discounts() {
                             code: e.target.value.toUpperCase(),
                           })
                         }
-                        className="w-full px-3 py-2 border border-gray-200 rounded-lg focus:border-teal-500 outline-none font-mono font-bold"
+                        className="w-full px-3 py-2 border border-gray-200 rounded-lg focus:border-brand outline-none font-mono font-bold"
                         placeholder="SALE50"
                       />
                     </div>
@@ -439,7 +439,7 @@ export default function Discounts() {
                               discountPercentage: e.target.value,
                             })
                           }
-                          className="w-full px-3 py-2 border border-gray-200 rounded-lg focus:border-teal-500 outline-none"
+                          className="w-full px-3 py-2 border border-gray-200 rounded-lg focus:border-brand outline-none"
                           placeholder="20"
                         />
                         <Percent
@@ -461,7 +461,7 @@ export default function Discounts() {
                           description: e.target.value,
                         })
                       }
-                      className="w-full px-3 py-2 border border-gray-200 rounded-lg focus:border-teal-500 outline-none text-sm"
+                      className="w-full px-3 py-2 border border-gray-200 rounded-lg focus:border-brand outline-none text-sm"
                       placeholder="Holiday season sale..."
                     />
                   </div>
@@ -479,7 +479,7 @@ export default function Discounts() {
                             minimumOrderAmount: e.target.value,
                           })
                         }
-                        className="w-full px-3 py-2 border border-gray-200 rounded-lg focus:border-teal-500 outline-none"
+                        className="w-full px-3 py-2 border border-gray-200 rounded-lg focus:border-brand outline-none"
                       />
                     </div>
                     <div>
@@ -495,7 +495,7 @@ export default function Discounts() {
                             maxUsageLimit: e.target.value,
                           })
                         }
-                        className="w-full px-3 py-2 border border-gray-200 rounded-lg focus:border-teal-500 outline-none"
+                        className="w-full px-3 py-2 border border-gray-200 rounded-lg focus:border-brand outline-none"
                         placeholder="Unlimited"
                       />
                     </div>
@@ -514,7 +514,7 @@ export default function Discounts() {
                             expiryDate: e.target.value,
                           })
                         }
-                        className="w-full px-3 py-2 border border-gray-200 rounded-lg focus:border-teal-500 outline-none text-sm"
+                        className="w-full px-3 py-2 border border-gray-200 rounded-lg focus:border-brand outline-none text-sm"
                         min={new Date().toISOString().split("T")[0]}
                       />
                     </div>
@@ -529,7 +529,7 @@ export default function Discounts() {
                               isActive: e.target.checked,
                             })
                           }
-                          className="w-4 h-4 text-teal-600 rounded border-gray-300 focus:ring-teal-500"
+                          className="w-4 h-4 text-brand rounded border-gray-300 focus:ring-brand"
                         />
                         <span className="text-xs font-bold text-gray-600 uppercase">
                           Active Now
@@ -551,7 +551,7 @@ export default function Discounts() {
                     disabled={
                       createMutation.isPending || updateMutation.isPending
                     }
-                    className="flex-1 bg-teal-600 text-white px-4 py-2.5 rounded-lg text-xs font-bold uppercase tracking-wider hover:bg-teal-700 shadow-md flex items-center justify-center gap-2"
+                    className="flex-1 bg-brand text-white px-4 py-2.5 rounded-lg text-xs font-bold uppercase tracking-wider hover:bg-brand-hover shadow-md flex items-center justify-center gap-2"
                   >
                     {editingDiscount ? "Update" : "Save"}
                   </button>

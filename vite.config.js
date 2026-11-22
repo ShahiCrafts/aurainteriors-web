@@ -38,7 +38,10 @@ export default defineConfig(({ mode, command }) => {
       // written. Reference proof per file (grep over src/**, both
       // index.html files and vite config; full evidence in
       // audit/fe/remediation/phase3-assets.md):
-      //   admin-only:    logo-aura-interiors-admin.webp — src/layouts/admin/AdminLayout.jsx
+      //   neither:       logo-aura-interiors-admin.webp — unreferenced since
+      //                  the admin sidebar switched to the settings-driven
+      //                  store logo (its content is a mislabeled third-party
+      //                  brand mark); pruned from BOTH dists below.
       //   customer-only: sofa-chair.glb — src/pages/shop/NativeARPage.jsx
       //                  promo-ad-banner.webp  — src/pages/shop/ShopPage.jsx
       // Everything else in public/ is referenced by both apps and is never
@@ -53,7 +56,11 @@ export default defineConfig(({ mode, command }) => {
         closeBundle() {
           const outDir = path.resolve(isAdmin ? "dist/admin" : "dist/customer");
           const drop = isAdmin
-            ? ["sofa-chair.glb", "promo-ad-banner.webp"]
+            ? [
+                "sofa-chair.glb",
+                "promo-ad-banner.webp",
+                "logo-aura-interiors-admin.webp",
+              ]
             : ["logo-aura-interiors-admin.webp"];
           for (const entry of drop) {
             fs.rmSync(path.join(outDir, entry), {

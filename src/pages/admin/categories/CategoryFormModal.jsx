@@ -66,7 +66,7 @@ export default function CategoryFormModal({
                     </label>
                     <div
                       onClick={() => fileInputRef.current?.click()}
-                      className="border-2 border-dashed border-gray-200 rounded-lg p-4 text-center hover:border-teal-500 transition-colors cursor-pointer bg-gray-50"
+                      className="border-2 border-dashed border-gray-200 rounded-lg p-4 text-center hover:border-brand transition-colors cursor-pointer bg-gray-50"
                     >
                       {imagePreview ? (
                         <div className="relative inline-block">
@@ -121,7 +121,7 @@ export default function CategoryFormModal({
                           name: e.target.value,
                         })
                       }
-                      className="w-full px-4 py-2 bg-white border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-teal-500/10 focus:border-teal-500 text-sm font-medium text-gray-800"
+                      className="w-full px-4 py-2 bg-white border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-brand/10 focus:border-brand text-sm font-medium text-gray-800"
                       required
                     />
                   </div>
@@ -157,7 +157,7 @@ export default function CategoryFormModal({
                         })
                       }
                       rows={3}
-                      className="w-full px-4 py-2 bg-white border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-teal-500/10 focus:border-teal-500 text-sm font-medium text-gray-800 resize-none"
+                      className="w-full px-4 py-2 bg-white border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-brand/10 focus:border-brand text-sm font-medium text-gray-800 resize-none"
                     />
                   </div>
 
@@ -173,7 +173,7 @@ export default function CategoryFormModal({
                           parent: e.target.value,
                         })
                       }
-                      className="w-full px-4 py-2 bg-white border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-teal-500/10 focus:border-teal-500 text-sm font-medium text-gray-600 cursor-pointer"
+                      className="w-full px-4 py-2 bg-white border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-brand/10 focus:border-brand text-sm font-medium text-gray-600 cursor-pointer"
                     >
                       <option value="">None (Top Level)</option>
                       {parentOptions.map(({ category, depth }) => (
@@ -202,7 +202,7 @@ export default function CategoryFormModal({
                           productType: e.target.value,
                         })
                       }
-                      className="w-full px-4 py-2 bg-white border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-teal-500/10 focus:border-teal-500 text-sm font-medium text-gray-600 cursor-pointer"
+                      className="w-full px-4 py-2 bg-white border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-brand/10 focus:border-brand text-sm font-medium text-gray-600 cursor-pointer"
                     >
                       <option value="">None (inherit from parent)</option>
                       {productTypes.map((type) => (
@@ -268,7 +268,7 @@ export default function CategoryFormModal({
                             status: e.target.value,
                           })
                         }
-                        className="w-full px-4 py-2 bg-white border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-teal-500/10 focus:border-teal-500 text-sm font-medium text-gray-600 cursor-pointer"
+                        className="w-full px-4 py-2 bg-white border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-brand/10 focus:border-brand text-sm font-medium text-gray-600 cursor-pointer"
                       >
                         <option value="active">Active</option>
                         <option value="inactive">Inactive</option>
@@ -287,7 +287,7 @@ export default function CategoryFormModal({
                             sortOrder: parseInt(e.target.value) || 0,
                           })
                         }
-                        className="w-full px-4 py-2 bg-white border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-teal-500/10 focus:border-teal-500 text-sm font-medium text-gray-800"
+                        className="w-full px-4 py-2 bg-white border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-brand/10 focus:border-brand text-sm font-medium text-gray-800"
                       />
                     </div>
                   </div>
@@ -305,7 +305,7 @@ export default function CategoryFormModal({
                       disabled={
                         createMutation.isPending || updateMutation.isPending
                       }
-                      className="flex-1 px-4 py-2 bg-teal-600 text-white rounded-lg font-medium hover:bg-teal-700 transition-colors disabled:opacity-50 text-sm cursor-pointer"
+                      className="flex-1 px-4 py-2 bg-brand text-white rounded-lg font-medium hover:bg-brand-hover transition-colors disabled:opacity-50 text-sm cursor-pointer"
                     >
                       {editingCategory ? "Save Changes" : "Add Category"}
                     </button>

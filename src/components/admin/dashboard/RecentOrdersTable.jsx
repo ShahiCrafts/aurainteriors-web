@@ -13,7 +13,7 @@ export default function RecentOrdersTable({ orders = [] }) {
 
         <Link
           to="/dashboard/orders"
-          className="text-teal-600 text-sm font-medium hover:text-teal-700 flex items-center gap-1 transition-colors"
+          className="text-brand text-sm font-medium hover:text-brand flex items-center gap-1 transition-colors"
         >
           View All <ArrowRight className="w-4 h-4" />
         </Link>

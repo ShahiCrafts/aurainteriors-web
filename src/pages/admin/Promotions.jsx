@@ -311,8 +311,8 @@ export default function Promotions() {
       },
       scheduled: {
         icon: Calendar,
-        bg: "bg-blue-50",
-        text: "text-blue-700",
+        bg: "bg-brand/10",
+        text: "text-brand-hover",
         label: "Scheduled",
       },
       sending: {
@@ -325,8 +325,8 @@ export default function Promotions() {
       },
       sent: {
         icon: CheckCircle,
-        bg: "bg-teal-50",
-        text: "text-teal-700",
+        bg: "bg-brand/10",
+        text: "text-brand",
         label: "Sent",
       },
       cancelled: {
@@ -387,7 +387,7 @@ export default function Promotions() {
         </div>
         <button
           onClick={() => handleOpenModal()}
-          className="inline-flex items-center gap-2 px-4 py-2.5 bg-teal-600 text-white rounded-lg text-sm font-semibold hover:bg-teal-700 transition-all active:scale-95"
+          className="inline-flex items-center gap-2 px-4 py-2.5 bg-brand text-white rounded-lg text-sm font-semibold hover:bg-brand-hover transition-all active:scale-95"
         >
           <Plus className="w-4 h-4" />
           New Campaign
@@ -409,7 +409,7 @@ export default function Promotions() {
                   setSearchQuery(e.target.value);
                   setPage(1);
                 }}
-                className="w-full pl-10 pr-4 py-2.5 bg-white border border-gray-200 rounded-lg text-sm focus:outline-none focus:border-teal-500 focus:ring-2 focus:ring-teal-500/20 transition-all placeholder:text-gray-400"
+                className="w-full pl-10 pr-4 py-2.5 bg-white border border-gray-200 rounded-lg text-sm focus:outline-none focus:border-brand focus:ring-2 focus:ring-brand/20 transition-all placeholder:text-gray-400"
               />
             </div>
             <select
@@ -418,7 +418,7 @@ export default function Promotions() {
                 setStatusFilter(e.target.value);
                 setPage(1);
               }}
-              className="px-4 py-2.5 bg-white border border-gray-200 rounded-lg text-sm focus:outline-none focus:border-teal-500 focus:ring-2 focus:ring-teal-500/20 cursor-pointer min-w-35"
+              className="px-4 py-2.5 bg-white border border-gray-200 rounded-lg text-sm focus:outline-none focus:border-brand focus:ring-2 focus:ring-brand/20 cursor-pointer min-w-35"
             >
               <option value="all">All Status</option>
               <option value="draft">Draft</option>
@@ -487,8 +487,8 @@ export default function Promotions() {
                   >
                     <td className="px-6 py-4">
                       <div className="flex items-start gap-3">
-                        <div className="shrink-0 w-10 h-10 rounded-lg bg-teal-50 flex items-center justify-center">
-                          <Megaphone size={18} className="text-teal-600" />
+                        <div className="shrink-0 w-10 h-10 rounded-lg bg-brand/10 flex items-center justify-center">
+                          <Megaphone size={18} className="text-brand" />
                         </div>
                         <div className="min-w-0">
                           <p className="text-sm font-semibold text-gray-900 truncate max-w-50">
@@ -499,7 +499,7 @@ export default function Promotions() {
                               promotion.description}
                           </p>
                           {promotion.discount && (
-                            <div className="mt-1.5 flex items-center gap-1 text-[10px] font-bold text-teal-600 bg-teal-50 w-fit px-1.5 py-0.5 rounded">
+                            <div className="mt-1.5 flex items-center gap-1 text-[10px] font-bold text-brand bg-brand/10 w-fit px-1.5 py-0.5 rounded">
                               <Tag size={10} /> {promotion.discount.code}
                             </div>
                           )}
@@ -545,7 +545,7 @@ export default function Promotions() {
                           <div className="text-xs font-bold text-gray-900">
                             {promotion.metrics?.sentCount || 0}
                           </div>
-                          <div className="text-xs font-bold text-teal-600">
+                          <div className="text-xs font-bold text-brand">
                             {promotion.metrics?.readCount || 0}
                           </div>
                         </div>
@@ -574,7 +574,7 @@ export default function Promotions() {
                             <>
                               <button
                                 onClick={() => handleSendPromotion(promotion._id)}
-                                className="p-2 text-teal-600 hover:bg-teal-50 rounded-lg transition-colors"
+                                className="p-2 text-brand hover:bg-brand/10 rounded-lg transition-colors"
                                 title="Send Now"
                               >
                                 <Send className="w-4 h-4" />
@@ -637,7 +637,7 @@ export default function Promotions() {
                     })
                   }
                   placeholder="e.g., Summer Clearance Sale"
-                  className="w-full px-4 py-2.5 bg-gray-50 border border-gray-200 rounded-lg text-sm focus:outline-none focus:border-teal-500 transition-all"
+                  className="w-full px-4 py-2.5 bg-gray-50 border border-gray-200 rounded-lg text-sm focus:outline-none focus:border-brand transition-all"
                 />
               </div>
 
@@ -654,7 +654,7 @@ export default function Promotions() {
                     })
                   }
                   rows={3}
-                  className="w-full px-4 py-2.5 bg-gray-50 border border-gray-200 rounded-lg text-sm focus:outline-none focus:border-teal-500 transition-all resize-none"
+                  className="w-full px-4 py-2.5 bg-gray-50 border border-gray-200 rounded-lg text-sm focus:outline-none focus:border-brand transition-all resize-none"
                 />
               </div>
 
@@ -671,7 +671,7 @@ export default function Promotions() {
                         targetAudienceType: e.target.value,
                       })
                     }
-                    className="w-full px-3 py-2.5 bg-gray-50 border border-gray-200 rounded-lg text-sm focus:outline-none focus:border-teal-500"
+                    className="w-full px-3 py-2.5 bg-gray-50 border border-gray-200 rounded-lg text-sm focus:outline-none focus:border-brand"
                   >
                     <option value="all">All Users</option>
                     <option value="subscribers">Subscribers Only</option>
@@ -690,7 +690,7 @@ export default function Promotions() {
                         priority: e.target.value,
                       })
                     }
-                    className="w-full px-3 py-2.5 bg-gray-50 border border-gray-200 rounded-lg text-sm focus:outline-none focus:border-teal-500"
+                    className="w-full px-3 py-2.5 bg-gray-50 border border-gray-200 rounded-lg text-sm focus:outline-none focus:border-brand"
                   >
                     <option value="low">Low</option>
                     <option value="normal">Normal</option>
@@ -726,7 +726,7 @@ export default function Promotions() {
                               targetCategories: updated,
                             });
                           }}
-                          className="rounded text-teal-600 focus:ring-teal-500 w-3.5 h-3.5"
+                          className="rounded text-brand focus:ring-brand w-3.5 h-3.5"
                         />
                         <span className="text-xs text-gray-600">
                           {cat.label}
@@ -789,7 +789,7 @@ export default function Promotions() {
               <button
                 onClick={handleSavePromotion}
                 disabled={createMutation.isPending || updateMutation.isPending}
-                className="flex-1 px-4 py-2.5 bg-teal-600 text-white rounded-lg hover:bg-teal-700 text-sm font-semibold flex items-center justify-center gap-2 transition-all active:scale-95 disabled:opacity-50"
+                className="flex-1 px-4 py-2.5 bg-brand text-white rounded-lg hover:bg-brand-hover text-sm font-semibold flex items-center justify-center gap-2 transition-all active:scale-95 disabled:opacity-50"
               >
                 {editingPromotion ? "Update Campaign" : "Launch Campaign"}
               </button>
@@ -921,7 +921,7 @@ function AnalyticsModal({ promotionId, onClose }) {
           {/* Bottom Section: Performance Ratios */}
           <div className="space-y-5">
             <h4 className="text-[11px] font-bold text-gray-900 uppercase tracking-widest flex items-center gap-2">
-              <BarChart3 size={14} className="text-teal-600" />
+              <BarChart3 size={14} className="text-brand" />
               Conversion Metrics
             </h4>
 
@@ -930,12 +930,12 @@ function AnalyticsModal({ promotionId, onClose }) {
                 {
                   label: "Delivery Rate",
                   rate: analytics.rates.deliveryRate,
-                  color: "bg-teal-600",
+                  color: "bg-brand",
                 },
                 {
                   label: "Engagement Rate",
                   rate: analytics.rates.engagementRate,
-                  color: "bg-blue-600",
+                  color: "bg-brand",
                 },
               ].map((bar, i) => (
                 <div key={i} className="space-y-2">

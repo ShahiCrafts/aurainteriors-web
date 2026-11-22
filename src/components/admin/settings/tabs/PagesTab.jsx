@@ -67,7 +67,7 @@ export default function PagesTab({ pages, onPages }) {
               key={key}
               className="flex items-center gap-4 py-3.5 first:pt-0 last:pb-0"
             >
-              <span className="flex items-center justify-center w-10 h-10 rounded-lg bg-blue-50 text-blue-600 shrink-0">
+              <span className="flex items-center justify-center w-10 h-10 rounded-lg bg-brand/10 text-brand shrink-0">
                 <Icon className="w-5 h-5" />
               </span>
               <span className="flex-1 text-sm font-medium text-gray-800">
@@ -76,7 +76,7 @@ export default function PagesTab({ pages, onPages }) {
               <button
                 type="button"
                 onClick={() => scrollToEditor(key)}
-                className="inline-flex items-center gap-1.5 text-sm font-medium text-blue-600 hover:text-blue-700"
+                className="inline-flex items-center gap-1.5 text-sm font-medium text-brand hover:text-brand-hover"
               >
                 <Pencil className="w-4 h-4" />
                 Edit

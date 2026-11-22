@@ -50,7 +50,7 @@ export default function BasicInfoTab({ form, categories }) {
               name: e.target.value,
             })
           }
-          className="w-full px-4 h-10 rounded-lg border border-gray-200 focus:border-teal-500 focus:ring-2 focus:ring-teal-500/10 outline-none text-sm transition-all"
+          className="w-full px-4 h-10 rounded-lg border border-gray-200 focus:border-brand focus:ring-2 focus:ring-brand/10 outline-none text-sm transition-all"
           placeholder="Enter product name"
         />
       </div>
@@ -68,7 +68,7 @@ export default function BasicInfoTab({ form, categories }) {
                 category: e.target.value,
               })
             }
-            className="w-full px-4 h-10 rounded-lg border border-gray-200 focus:border-teal-500 focus:ring-2 focus:ring-teal-500/10 outline-none text-sm transition-all bg-white"
+            className="w-full px-4 h-10 rounded-lg border border-gray-200 focus:border-brand focus:ring-2 focus:ring-brand/10 outline-none text-sm transition-all bg-white"
           >
             <option value="">Select Category</option>
             {categories.map((cat) => (
@@ -90,7 +90,7 @@ export default function BasicInfoTab({ form, categories }) {
                 status: e.target.value,
               })
             }
-            className="w-full px-4 h-10 rounded-lg border border-gray-200 focus:border-teal-500 focus:ring-2 focus:ring-teal-500/10 outline-none text-sm transition-all bg-white"
+            className="w-full px-4 h-10 rounded-lg border border-gray-200 focus:border-brand focus:ring-2 focus:ring-brand/10 outline-none text-sm transition-all bg-white"
           >
             <option value="active">Active</option>
             <option value="draft">Draft</option>
@@ -128,7 +128,7 @@ export default function BasicInfoTab({ form, categories }) {
                   price: e.target.value,
                 })
               }
-              className="w-full pl-12 pr-4 h-10 rounded-lg border border-gray-200 focus:border-teal-500 focus:ring-2 focus:ring-teal-500/10 outline-none text-sm transition-all"
+              className="w-full pl-12 pr-4 h-10 rounded-lg border border-gray-200 focus:border-brand focus:ring-2 focus:ring-brand/10 outline-none text-sm transition-all"
               placeholder="0"
             />
           </div>
@@ -150,7 +150,7 @@ export default function BasicInfoTab({ form, categories }) {
                   originalPrice: e.target.value,
                 })
               }
-              className="w-full pl-12 pr-4 h-10 rounded-lg border border-gray-200 focus:border-teal-500 focus:ring-2 focus:ring-teal-500/10 outline-none text-sm transition-all"
+              className="w-full pl-12 pr-4 h-10 rounded-lg border border-gray-200 focus:border-brand focus:ring-2 focus:ring-brand/10 outline-none text-sm transition-all"
               placeholder="0"
             />
           </div>
@@ -168,7 +168,7 @@ export default function BasicInfoTab({ form, categories }) {
                 stock: e.target.value,
               })
             }
-            className="w-full px-4 h-10 rounded-lg border border-gray-200 focus:border-teal-500 focus:ring-2 focus:ring-teal-500/10 outline-none text-sm transition-all"
+            className="w-full px-4 h-10 rounded-lg border border-gray-200 focus:border-brand focus:ring-2 focus:ring-brand/10 outline-none text-sm transition-all"
             placeholder="0"
           />
         </div>
@@ -188,7 +188,7 @@ export default function BasicInfoTab({ form, categories }) {
                 sku: e.target.value,
               })
             }
-            className="w-full px-4 h-10 rounded-lg border border-gray-200 focus:border-teal-500 focus:ring-2 focus:ring-teal-500/10 outline-none text-sm transition-all"
+            className="w-full px-4 h-10 rounded-lg border border-gray-200 focus:border-brand focus:ring-2 focus:ring-brand/10 outline-none text-sm transition-all"
             placeholder="SKU-001"
           />
         </div>
@@ -204,7 +204,7 @@ export default function BasicInfoTab({ form, categories }) {
                 style: e.target.value,
               })
             }
-            className="w-full px-4 h-10 rounded-lg border border-gray-200 focus:border-teal-500 focus:ring-2 focus:ring-teal-500/10 outline-none text-sm transition-all bg-white"
+            className="w-full px-4 h-10 rounded-lg border border-gray-200 focus:border-brand focus:ring-2 focus:ring-brand/10 outline-none text-sm transition-all bg-white"
           >
             <option value="">Select Style</option>
             {styleOptions.map((style) => (
@@ -229,7 +229,7 @@ export default function BasicInfoTab({ form, categories }) {
               shortDescription: e.target.value,
             })
           }
-          className="w-full px-4 h-10 rounded-lg border border-gray-200 focus:border-teal-500 focus:ring-2 focus:ring-teal-500/10 outline-none text-sm transition-all"
+          className="w-full px-4 h-10 rounded-lg border border-gray-200 focus:border-brand focus:ring-2 focus:ring-brand/10 outline-none text-sm transition-all"
           placeholder="Brief description for listings"
         />
       </div>
@@ -247,7 +247,7 @@ export default function BasicInfoTab({ form, categories }) {
             })
           }
           rows={3}
-          className="w-full px-4 py-2 rounded-lg border border-gray-200 focus:border-teal-500 focus:ring-2 focus:ring-teal-500/10 outline-none text-sm transition-all resize-none"
+          className="w-full px-4 py-2 rounded-lg border border-gray-200 focus:border-brand focus:ring-2 focus:ring-brand/10 outline-none text-sm transition-all resize-none"
           placeholder="Enter product description"
         />
       </div>

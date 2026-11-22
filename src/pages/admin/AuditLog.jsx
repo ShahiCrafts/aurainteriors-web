@@ -58,10 +58,10 @@ export default function AuditLog() {
   useEffect(() => { load(); }, [load]);
 
   return (
-    <div className="bg-slate-50 min-h-full px-6 py-6 lg:px-8">
+    <div className="min-h-full">
       <div className="space-y-6">
         <div className="flex items-start gap-4">
-          <span className="flex items-center justify-center w-12 h-12 rounded-2xl bg-blue-50 text-blue-600 shrink-0"><ScrollText className="w-6 h-6" /></span>
+          <span className="flex items-center justify-center w-12 h-12 rounded-2xl bg-brand/10 text-brand shrink-0"><ScrollText className="w-6 h-6" /></span>
           <div>
             <h1 className="text-2xl font-bold text-gray-900">Audit Log</h1>
             <p className="text-sm text-gray-500 mt-0.5">Recent admin actions recorded by the server.</p>
@@ -78,7 +78,7 @@ export default function AuditLog() {
           </div>
 
           {loading ? <p className="text-sm text-gray-500">Loading audit log…</p> : error ? (
-            <div><p className="text-red-600 text-sm">{error}</p><button type="button" onClick={load} className="mt-4 px-4 py-2.5 bg-blue-600 text-white rounded-lg text-sm font-medium">Retry</button></div>
+            <div><p className="text-red-600 text-sm">{error}</p><button type="button" onClick={load} className="mt-4 px-4 py-2.5 bg-brand text-white rounded-lg text-sm font-medium">Retry</button></div>
           ) : logs.length === 0 ? <p className="text-sm text-gray-500">No audit entries found.</p> : (
             <div className="overflow-x-auto">
               <table className="w-full text-sm">
