@@ -169,9 +169,9 @@ export default function Hero() {
   return (
     <div className="font-dm-sans bg-white">
       {/* ── BENTO ── */}
-      <div className="grid grid-cols-1 lg:grid-cols-[1.6fr_1fr] lg:grid-rows-[286px_286px] gap-2 sm:gap-3 px-2 md:px-6 lg:px-8 py-2 md:py-4 bg-white">
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-[1.6fr_1fr] lg:grid-rows-[286px_286px] gap-2 sm:gap-3 px-2 md:px-6 lg:px-8 py-2 md:py-4 bg-white">
         {/* LEFT STATIC HERO — LCP image: eager load, high fetch priority */}
-        <div className="lg:col-start-1 lg:row-start-1 lg:row-span-2 h-92.5 sm:h-112.5 lg:h-auto rounded-sm md:rounded-2xl overflow-hidden relative shadow-[0_4px_28px_rgba(0,0,0,0.10)] group">
+        <div className="md:col-span-2 lg:col-span-1 lg:col-start-1 lg:row-start-1 lg:row-span-2 h-[420px] sm:h-112.5 lg:h-auto rounded-sm md:rounded-2xl overflow-hidden relative shadow-[0_4px_28px_rgba(0,0,0,0.10)] group">
           <div className="min-w-full h-full rounded-sm md:rounded-2xl overflow-hidden relative after:content-[''] after:absolute after:inset-0 after:bg-linear-to-t after:from-black/70 after:from-15% after:via-black/35 after:via-70% after:to-transparent after:pointer-events-none">
             <img
               src={mainImg.src}
@@ -188,14 +188,14 @@ export default function Hero() {
           </div>
 
           {/* Main Card Content Overlay */}
-          <div className="absolute inset-0 p-6 sm:p-8 md:p-[42px_48px] pointer-events-none flex flex-col justify-end">
-            <h1 className="text-[40px] sm:text-[48px] md:text-[64px] font-semibold text-white tracking-wide leading-[1.05] mb-2 sm:mb-3 drop-shadow-md max-w-200">
+          <div className="absolute inset-0 p-5 sm:p-8 md:p-[42px_48px] pointer-events-none flex flex-col justify-end">
+            <h1 className="text-[36px] sm:text-[48px] md:text-[64px] font-semibold text-white tracking-wide leading-[1.05] mb-2 sm:mb-3 drop-shadow-md max-w-200">
               {mainSlide.heading} <br />
               <em className="text-brand font-semibold not-italic">
                 {mainSlide.highlight}
               </em>
             </h1>
-            <div className="text-[14px] sm:text-[15px] md:text-[15px] font-normal text-white/90 leading-normal sm:leading-[1.6] mb-5 sm:mb-8 max-w-115 drop-shadow-sm">
+            <div className="text-[14px] sm:text-[15px] md:text-[15px] font-normal text-white/90 leading-normal sm:leading-[1.6] mb-5 sm:mb-8 max-w-115 drop-shadow-sm line-clamp-4 sm:line-clamp-none">
               {mainSlide.desc}
             </div>
             <div className="flex flex-col sm:flex-row items-start sm:items-center gap-4 sm:gap-6">
@@ -235,13 +235,13 @@ export default function Hero() {
           </div>
         </div>
 
-        {/* RIGHT TOP: Static Banner — below-fold on mobile, load lazily */}
-        <div className="hidden md:block lg:col-start-2 lg:row-start-1 h-62.5 sm:h-71.5 rounded-sm md:rounded-2xl overflow-hidden relative group shadow-sm bg-[#F9F8F6]">
+        {/* RIGHT TOP: Static Banner — stacks under the main card on mobile, load lazily */}
+        <div className="lg:col-start-2 lg:row-start-1 h-62.5 sm:h-71.5 lg:h-auto rounded-sm md:rounded-2xl overflow-hidden relative group shadow-sm bg-[#F9F8F6]">
           <div className="absolute inset-0 after:content-[''] after:absolute after:inset-0 after:bg-linear-to-t after:from-black/70 after:from-15% after:via-black/35 after:via-70% after:to-transparent">
             <img
               src={sideImg.src}
               srcSet={sideImg.srcSet}
-              sizes="(max-width: 768px) 100vw, 33vw"
+              sizes="(max-width: 767px) 100vw, (max-width: 1023px) 50vw, 33vw"
               alt={sideSlide.heading}
               width={1920}
               height={1080}
@@ -258,7 +258,7 @@ export default function Hero() {
               </span>
             </div>
             <div>
-              <div className="text-[20px] sm:text-[24px] font-bold text-white tracking-em] leading-[1.15] mb-1 sm:mb-1.5 drop-shadow-sm">
+              <div className="text-[20px] sm:text-[24px] font-bold text-white tracking-[-0.02em] leading-[1.15] mb-1 sm:mb-1.5 drop-shadow-sm">
                 {sideSlide.heading} {sideSlide.highlight}
               </div>
               <div className="text-[12.5px] sm:text-[13.5px] font-normal text-white/80 leading-[1.4] max-w-[320px] line-clamp-2">
@@ -280,12 +280,12 @@ export default function Hero() {
 
         {/* RIGHT BOTTOM: Static Banner */}
         {promoVisible && (
-          <div className="hidden md:block lg:col-start-2 lg:row-start-2 h-62.5 sm:h-71.5 rounded-sm md:rounded-2xl overflow-hidden relative group shadow-sm bg-[#F9F8F6]">
+          <div className="lg:col-start-2 lg:row-start-2 h-62.5 sm:h-71.5 lg:h-auto rounded-sm md:rounded-2xl overflow-hidden relative group shadow-sm bg-[#F9F8F6]">
             <div className="absolute inset-0 after:content-[''] after:absolute after:inset-0 after:bg-linear-to-t after:from-black/70 after:from-15% after:via-black/35 after:via-70% after:to-transparent">
               <img
                 src={promoImg.src}
                 srcSet={promoImg.srcSet}
-                sizes="(max-width: 768px) 100vw, 33vw"
+                sizes="(max-width: 767px) 100vw, (max-width: 1023px) 50vw, 33vw"
                 alt="Premium Decor"
                 width={1200}
                 height={800}

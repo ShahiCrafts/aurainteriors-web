@@ -746,10 +746,10 @@ export function CategoryBarSkeleton() {
 export function HeroSkeleton() {
   return (
     <div
-      className="grid grid-cols-1 lg:grid-cols-[1.6fr_1fr] lg:grid-rows-[286px_286px] gap-2 sm:gap-3 px-2 md:px-6 lg:px-8 py-2 md:py-4 bg-white"
+      className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-[1.6fr_1fr] lg:grid-rows-[286px_286px] gap-2 sm:gap-3 px-2 md:px-6 lg:px-8 py-2 md:py-4 bg-white"
       aria-hidden="true"
     >
-      <div className="relative lg:row-span-2 h-92.5 sm:h-112.5 lg:h-auto rounded-sm md:rounded-2xl overflow-hidden">
+      <div className="relative md:col-span-2 lg:col-span-1 lg:row-span-2 h-[420px] sm:h-112.5 lg:h-auto rounded-sm md:rounded-2xl overflow-hidden">
         <div className="absolute inset-0 bg-gray-100 shimmer-element" />
         <div className="absolute inset-0 flex flex-col justify-end p-6 md:p-10">
           <Skeleton className="h-10 md:h-14 w-3/5 rounded bg-white/70" />
@@ -765,7 +765,7 @@ export function HeroSkeleton() {
       {[0, 1].map((i) => (
         <div
           key={i}
-          className="relative hidden md:block h-62.5 sm:h-71.5 rounded-sm md:rounded-2xl overflow-hidden"
+          className="relative h-62.5 sm:h-71.5 lg:h-auto rounded-sm md:rounded-2xl overflow-hidden"
         >
           <div className="absolute inset-0 bg-gray-100 shimmer-element" />
           <div className="absolute inset-0 flex flex-col justify-end p-5 sm:p-[28px_32px]">
