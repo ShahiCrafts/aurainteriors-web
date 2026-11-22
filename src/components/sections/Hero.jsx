@@ -10,7 +10,8 @@ import heroDecor600 from "../../assets/images/hero/hero-decor-dining-room-600w.w
 import heroDecor1200 from "../../assets/images/hero/hero-decor-dining-room-1200w.webp";
 import { formatNPR } from "../../utils/formatCurrency";
 import validateMediaUrl from "../../utils/safeUrl";
-import { ArrowUpRight, Star } from "lucide-react";
+import { useEffect, useRef, useState } from "react";
+import { ArrowRight, ArrowUpRight, Star } from "lucide-react";
 import { Link } from "react-router-dom";
 import useSiteSettingsStore from "../../store/siteSettingsStore";
 
@@ -152,6 +153,11 @@ const decorSlideFallback = {
   src: heroDecor600,
   srcSet: `${heroDecor600} 600w, ${heroDecor1200} 1200w`,
 };
+const workspaceSlideFallback = {
+  preferred: 1200,
+  src: heroWorkspace1200,
+  srcSet: undefined,
+};
 
 export default function Hero() {
   const homepage = useSiteSettingsStore((s) => s.settings.homepage);
@@ -160,18 +166,63 @@ export default function Hero() {
   );
   const mainSlide = mergeSlide(slides[0], enabledSlides[0]);
   const sideSlide = mergeSlide(slides[1], enabledSlides[1]);
+  const thirdSlide = mergeSlide(slides[2], enabledSlides[2]);
   const mainImg = resolveHeroImage(enabledSlides[0]?.imageUrl, mainSlideFallback);
   const sideImg = resolveHeroImage(enabledSlides[1]?.imageUrl, sideSlideFallback);
+  const thirdImg = resolveHeroImage(
+    enabledSlides[2]?.imageUrl,
+    workspaceSlideFallback,
+  );
   const promo = homepage?.promoBanner || {};
   const promoImg = resolveHeroImage(promo.imageUrl, decorSlideFallback);
   const promoVisible = promo.enabled !== false;
 
+  // Mobile/tablet hero (design mockup): a swipeable carousel of all
+  // three slides with dot indicators, then the two bento side cards
+  // as a "Shop by collection" pair. The desktop bento below is
+  // lg-only; below lg this block replaces it.
+  const carouselSlides = [
+    { ...mainSlide, img: mainImg, fallbackLink: shopCategoryUrl("living-room") },
+    { ...sideSlide, img: sideImg, fallbackLink: shopCategoryUrl("bedroom") },
+    { ...thirdSlide, img: thirdImg, fallbackLink: shopCategoryUrl("home-office") },
+  ];
+  const trackRef = useRef(null);
+  const interactedAtRef = useRef(0);
+  const [activeSlide, setActiveSlide] = useState(0);
+
+  useEffect(() => {
+    const id = setInterval(() => {
+      if (Date.now() - interactedAtRef.current < 9000) return;
+      const track = trackRef.current;
+      if (!track || track.clientWidth === 0) return;
+      const next =
+        (Math.round(track.scrollLeft / track.clientWidth) + 1) %
+        carouselSlides.length;
+      track.scrollTo({ left: next * track.clientWidth, behavior: "smooth" });
+    }, 5500);
+    return () => clearInterval(id);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
+
+  const handleTrackScroll = () => {
+    const track = trackRef.current;
+    if (!track || track.clientWidth === 0) return;
+    setActiveSlide(Math.round(track.scrollLeft / track.clientWidth));
+  };
+
+  const goToSlide = (index) => {
+    interactedAtRef.current = Date.now();
+    const track = trackRef.current;
+    if (!track) return;
+    track.scrollTo({ left: index * track.clientWidth, behavior: "smooth" });
+  };
+
   return (
     <div className="font-dm-sans bg-white">
-      {/* ── BENTO ── */}
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-[1.6fr_1fr] lg:grid-rows-[286px_286px] gap-2 sm:gap-3 px-2 md:px-6 lg:px-8 py-2 md:py-4 bg-white">
+      {/* ── BENTO (desktop, lg+) ── */}
+      <div className="hidden lg:grid lg:grid-cols-[1.6fr_1fr] lg:grid-rows-[286px_286px] gap-2 sm:gap-3 px-2 md:px-6 lg:px-8 py-2 md:py-4 bg-white">
         {/* LEFT STATIC HERO — LCP image: eager load, high fetch priority */}
-        <div className="md:col-span-2 lg:col-span-1 lg:col-start-1 lg:row-start-1 lg:row-span-2 h-[420px] sm:h-112.5 lg:h-auto rounded-sm md:rounded-2xl overflow-hidden relative shadow-[0_4px_28px_rgba(0,0,0,0.10)] group">
+        <div className="lg:col-start-1 lg:row-start-1 lg:row-span-2 h-full rounded-sm md:rounded-2xl overflow-hidden relative shadow-[0_4px_28px_rgba(0,0,0,0.10)] group">
           <div className="min-w-full h-full rounded-sm md:rounded-2xl overflow-hidden relative after:content-[''] after:absolute after:inset-0 after:bg-linear-to-t after:from-black/70 after:from-15% after:via-black/35 after:via-70% after:to-transparent after:pointer-events-none">
             <img
               src={mainImg.src}
@@ -235,8 +286,8 @@ export default function Hero() {
           </div>
         </div>
 
-        {/* RIGHT TOP: Static Banner — stacks under the main card on mobile, load lazily */}
-        <div className="lg:col-start-2 lg:row-start-1 h-62.5 sm:h-71.5 lg:h-auto rounded-sm md:rounded-2xl overflow-hidden relative group shadow-sm bg-[#F9F8F6]">
+        {/* RIGHT TOP: Static Banner (desktop bento) */}
+        <div className="lg:col-start-2 lg:row-start-1 h-full rounded-sm md:rounded-2xl overflow-hidden relative group shadow-sm bg-[#F9F8F6]">
           <div className="absolute inset-0 after:content-[''] after:absolute after:inset-0 after:bg-linear-to-t after:from-black/70 after:from-15% after:via-black/35 after:via-70% after:to-transparent">
             <img
               src={sideImg.src}
@@ -280,7 +331,7 @@ export default function Hero() {
 
         {/* RIGHT BOTTOM: Static Banner */}
         {promoVisible && (
-          <div className="lg:col-start-2 lg:row-start-2 h-62.5 sm:h-71.5 lg:h-auto rounded-sm md:rounded-2xl overflow-hidden relative group shadow-sm bg-[#F9F8F6]">
+          <div className="lg:col-start-2 lg:row-start-2 h-full rounded-sm md:rounded-2xl overflow-hidden relative group shadow-sm bg-[#F9F8F6]">
             <div className="absolute inset-0 after:content-[''] after:absolute after:inset-0 after:bg-linear-to-t after:from-black/70 after:from-15% after:via-black/35 after:via-70% after:to-transparent">
               <img
                 src={promoImg.src}
@@ -332,6 +383,165 @@ export default function Hero() {
             </div>
           </div>
         )}
+      </div>
+
+      {/* ── MOBILE / TABLET (below lg): carousel + collection pair ── */}
+      <div className="lg:hidden px-4 pt-3 pb-2">
+        <div className="relative">
+          <div
+            ref={trackRef}
+            onScroll={handleTrackScroll}
+            onPointerDown={() => {
+              interactedAtRef.current = Date.now();
+            }}
+            className="flex overflow-x-auto snap-x snap-mandatory no-scrollbar rounded-3xl"
+          >
+            {carouselSlides.map((slide, i) => (
+              <div
+                key={slide.id}
+                className="relative shrink-0 w-full snap-center h-[430px] sm:h-[470px] overflow-hidden bg-[#F9F8F6]"
+              >
+                <img
+                  src={slide.img.src}
+                  srcSet={slide.img.srcSet}
+                  sizes="100vw"
+                  alt={slide.heading}
+                  width={1200}
+                  height={800}
+                  loading={i === 0 ? "eager" : "lazy"}
+                  decoding="async"
+                  className="absolute inset-0 w-full h-full object-cover"
+                />
+                <div className="absolute inset-0 bg-linear-to-t from-black/70 from-15% via-black/35 via-70% to-transparent pointer-events-none" />
+                <div className="absolute inset-0 p-6 pb-11 flex flex-col justify-end">
+                  <h2 className="text-[34px] leading-[1.08] font-semibold text-white tracking-wide drop-shadow-md">
+                    {slide.heading} <br />
+                    <span className="text-brand">{slide.highlight}</span>
+                  </h2>
+                  <p className="mt-2 text-[14px] leading-relaxed text-white/85 line-clamp-2 max-w-75 drop-shadow-sm">
+                    {slide.desc}
+                  </p>
+                  <div className="mt-5 flex items-end justify-between gap-3">
+                    <Link
+                      to={slide.link || slide.fallbackLink}
+                      className="shrink-0"
+                    >
+                      <span className="inline-flex items-center gap-2 bg-brand text-white text-[14px] font-semibold px-5 py-3 rounded-full shadow-sm">
+                        {slide.cta} <ArrowRight size={16} />
+                      </span>
+                    </Link>
+                    <div className="shrink-0">
+                      <div className="flex items-center justify-end gap-0.5 text-brand">
+                        {[1, 2, 3, 4, 5].map((s) => (
+                          <Star key={s} size={12} className="fill-brand" />
+                        ))}
+                        <span className="text-[11px] font-medium text-white/90 ml-1">
+                          4.9/5 · 2k+ reviews
+                        </span>
+                      </div>
+                      <div className="mt-1 text-right text-[11px] font-medium tracking-[0.08em] text-white/70 uppercase">
+                        From{" "}
+                        <span className="text-[17px] font-bold text-white tracking-normal normal-case">
+                          {formatNPR(slide.price)}
+                        </span>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            ))}
+          </div>
+          <div className="absolute bottom-3.5 left-1/2 -translate-x-1/2 flex items-center gap-1.5">
+            {carouselSlides.map((slide, i) => (
+              <button
+                key={slide.id}
+                type="button"
+                aria-label={`Go to slide ${i + 1}`}
+                onClick={() => goToSlide(i)}
+                className={
+                  i === activeSlide
+                    ? "w-2.5 h-2.5 rounded-full bg-brand ring-2 ring-white/70 cursor-pointer border-none p-0"
+                    : "w-2 h-2 rounded-full bg-white/50 cursor-pointer border-none p-0"
+                }
+              />
+            ))}
+          </div>
+        </div>
+
+        {/* Shop by collection — the two bento side cards as a pair */}
+        <div className="mt-7 flex items-center justify-between">
+          <h2 className="text-[22px] font-bold text-[#1A1714]">
+            Shop by collection
+          </h2>
+          <Link
+            to="/shop"
+            className="flex items-center gap-1 text-brand text-[14px] font-semibold no-underline"
+          >
+            View all <ArrowRight size={15} />
+          </Link>
+        </div>
+        <div
+          className={`mt-3.5 grid gap-3 ${promoVisible ? "grid-cols-2" : "grid-cols-1"}`}
+        >
+          <div className="relative h-52 sm:h-64 rounded-2xl overflow-hidden group shadow-sm bg-[#F9F8F6]">
+            <img
+              src={sideImg.src}
+              srcSet={sideImg.srcSet}
+              sizes="50vw"
+              alt={sideSlide.heading}
+              width={600}
+              height={400}
+              loading="lazy"
+              decoding="async"
+              className="absolute inset-0 w-full h-full object-cover"
+            />
+            <div className="absolute inset-0 bg-linear-to-t from-black/70 from-15% via-black/35 via-70% to-transparent pointer-events-none" />
+            <div className="absolute inset-0 p-3.5 flex flex-col justify-end">
+              <div className="text-[15px] sm:text-lg font-bold text-white leading-snug drop-shadow-sm">
+                {sideSlide.heading} {sideSlide.highlight}
+              </div>
+              <div className="mt-2.5">
+                <Link to={sideSlide.link || shopCategoryUrl("bedroom")}>
+                  <span className="inline-flex items-center gap-1 bg-white text-[#1A1714] text-[12px] font-bold px-3 py-1.75 rounded-full shadow-sm">
+                    {sideSlide.cta} <ArrowUpRight size={13} />
+                  </span>
+                </Link>
+              </div>
+            </div>
+          </div>
+          {promoVisible && (
+            <div className="relative h-52 sm:h-64 rounded-2xl overflow-hidden group shadow-sm bg-[#F9F8F6]">
+              <img
+                src={promoImg.src}
+                srcSet={promoImg.srcSet}
+                sizes="50vw"
+                alt="Premium Decor"
+                width={600}
+                height={400}
+                loading="lazy"
+                decoding="async"
+                className="absolute inset-0 w-full h-full object-cover"
+              />
+              <div className="absolute inset-0 bg-linear-to-t from-black/70 from-15% via-black/35 via-70% to-transparent pointer-events-none" />
+              <div className="absolute inset-0 p-3.5 flex flex-col justify-end">
+                <div className="text-[15px] sm:text-lg font-bold text-white leading-snug drop-shadow-sm">
+                  {promo.headline || "Calmora Bed Frame"}
+                </div>
+                <div className="text-[15px] sm:text-base font-bold text-brand drop-shadow-sm">
+                  {formatNPR(19999)}
+                </div>
+                <div className="mt-2">
+                  <Link to={promo.buttonLink || shopCategoryUrl("bedroom")}>
+                    <span className="inline-flex items-center gap-1 bg-white text-[#1A1714] text-[12px] font-bold px-3 py-1.75 rounded-full shadow-sm">
+                      {promo.buttonText || "Shop Sale"}{" "}
+                      <ArrowUpRight size={13} />
+                    </span>
+                  </Link>
+                </div>
+              </div>
+            </div>
+          )}
+        </div>
       </div>
     </div>
   );

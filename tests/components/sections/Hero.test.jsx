@@ -21,6 +21,15 @@ import { MemoryRouter } from "react-router-dom";
 
 import Hero from "../../../src/components/sections/Hero.jsx";
 
+// The hero renders the same settings content twice in the DOM — the
+// desktop bento (lg+) and the mobile carousel/collection variants
+// (below lg) — with CSS choosing which is visible. jsdom has no
+// layout, so both render here; copy that appears in both variants is
+// asserted with getAllByText (present at least once), copy unique to
+// one variant keeps getByText.
+const expectPresent = (matcher) =>
+  expect(screen.getAllByText(matcher).length).toBeGreaterThan(0);
+
 describe("Hero: owner-restored rating and pricing render", () => {
   it("renders the aggregate rating and Starting-from price on the main card", () => {
     render(
@@ -31,7 +40,7 @@ describe("Hero: owner-restored rating and pricing render", () => {
 
     expect(screen.getByText(/4\.9\/5 \(2k\+ Reviews\)/)).toBeInTheDocument();
     expect(screen.getByText(/Starting from/)).toBeInTheDocument();
-    expect(screen.getByText(/NPR\s7,499/)).toBeInTheDocument();
+    expectPresent(/NPR\s7,499/);
   });
 
   it("renders the Calmora card's struck-through and sale prices", () => {
@@ -41,9 +50,9 @@ describe("Hero: owner-restored rating and pricing render", () => {
       </MemoryRouter>,
     );
 
-    expect(screen.getByText("Calmora Bed Frame")).toBeInTheDocument();
+    expectPresent("Calmora Bed Frame");
     expect(screen.getByText(/NPR\s24,999/)).toBeInTheDocument();
-    expect(screen.getByText(/NPR\s19,999/)).toBeInTheDocument();
+    expectPresent(/NPR\s19,999/);
   });
 
   it("still renders the genuine hero content and shop links", () => {
@@ -53,9 +62,9 @@ describe("Hero: owner-restored rating and pricing render", () => {
       </MemoryRouter>,
     );
 
-    expect(screen.getByText(/That Fits You/)).toBeInTheDocument();
-    expect(screen.getByText("Explore Now")).toBeInTheDocument();
-    expect(screen.getByText("Shop Beds")).toBeInTheDocument();
-    expect(screen.getByText("Shop Sale")).toBeInTheDocument();
+    expectPresent(/That Fits You/);
+    expectPresent("Explore Now");
+    expectPresent("Shop Beds");
+    expectPresent("Shop Sale");
   });
 });

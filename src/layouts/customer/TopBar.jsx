@@ -52,6 +52,26 @@ export default function TopBar() {
     : "Kathmandu 44600";
 
   return (
+    <>
+      {/* Mobile offer strip (design mockup): a single centred line on a
+          peach wash — free-delivery threshold + the DECOR15 offer. The
+          desktop bar below keeps its full layout from md up. */}
+      <div className="flex md:hidden bg-[#FFF1E6] px-4 h-9 items-center justify-center gap-2.5 font-dm-sans text-[11.5px] text-[#5A5248]">
+        <span className="flex items-center gap-1.25 whitespace-nowrap">
+          <MapPin size={13} color={G} className="shrink-0" />
+          <span>
+            Free delivery above{" "}
+            <span className="font-semibold text-[#1A1714]">
+              {formatNPR(freeShippingThreshold ?? 5000)}
+            </span>
+          </span>
+        </span>
+        <span className="w-px h-3.5 bg-brand/30 shrink-0" />
+        <span className="whitespace-nowrap">
+          <span className="font-semibold text-[#1A1714]">DECOR15</span>
+          {" · "}15% off
+        </span>
+      </div>
     <div className="hidden md:flex bg-gray-100 px-4 md:px-6 lg:px-8 h-10 md:h-11 items-center justify-between font-dm-sans">
       <div className="flex items-center gap-3 lg:gap-4.5">
         <div
@@ -93,5 +113,6 @@ export default function TopBar() {
         ))}
       </div>
     </div>
+    </>
   );
 }

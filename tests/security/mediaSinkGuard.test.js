@@ -193,6 +193,12 @@ const ALLOWLIST = [
       "Batch 3b: same resolveHeroImage provenance as mainImg.src above.",
   },
   {
+    file: "src/components/sections/Hero.jsx",
+    expr: "slide.img.src",
+    reason:
+      "Mobile hero carousel: each carouselSlides entry's img is one of the resolveHeroImage results above (mainImg / sideImg / thirdImg) carried through the slide array — same provenance, same file.",
+  },
+  {
     file: "src/layouts/customer/Navbar.jsx",
     expr: "safeLogoUrl",
     reason:

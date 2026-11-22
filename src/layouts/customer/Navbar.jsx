@@ -8,8 +8,6 @@ import {
   Package,
   MapPin,
   LogOut,
-  Bell,
-  Menu,
   X,
   ChevronDown,
 } from "lucide-react";
@@ -28,6 +26,7 @@ import useGuestCartStore from "../../store/guestCartStore";
 import { useCart } from "../../hooks/cart/useCartTan";
 import { useWishlist } from "../../hooks/cart/useWishlistTan";
 import { UserAvatar } from "../../components/common/InitialsAvatar";
+import MobileBottomNav from "./MobileBottomNav";
 
 const loadCartSlider = () => import("../../components/cart/CartSlider");
 const CartSlider = lazy(loadCartSlider);
@@ -239,13 +238,11 @@ export default function Navbar() {
             </form>
           </div>
 
-          <div className="flex md:hidden items-center gap-4.5 shrink-0 text-[#1A1714]">
-            <button
-              aria-label="Notifications"
-              className="bg-transparent border-none p-0 flex items-center justify-center cursor-pointer text-[#1A1714] hover:text-brand transition-colors"
-            >
-              <Bell size={22} />
-            </button>
+          {/* Mobile action cluster (design mockup): search, wishlist,
+              cart with badge. Notifications and the hamburger lived
+              here before; categories are covered by the pill bar and
+              the bottom nav, so both are gone on mobile. */}
+          <div className="flex md:hidden items-center gap-5 shrink-0 text-[#1A1714]">
             <button
               aria-label="Search"
               onClick={openSearch}
@@ -254,10 +251,29 @@ export default function Navbar() {
               <Search size={22} />
             </button>
             <button
-              aria-label="Open menu"
+              aria-label="Wishlist"
+              onClick={() =>
+                !isAuthenticated
+                  ? openAuthModal("login")
+                  : navigate("/profile", { state: { activeTab: "wishlist" } })
+              }
               className="bg-transparent border-none p-0 flex items-center justify-center cursor-pointer text-[#1A1714] hover:text-brand transition-colors"
             >
-              <Menu size={24} />
+              <Heart size={22} />
+            </button>
+            <button
+              aria-label="Cart"
+              onClick={handleOpenCart}
+              onPointerEnter={warmCartSlider}
+              onFocus={warmCartSlider}
+              className="bg-transparent border-none p-0 flex items-center justify-center cursor-pointer text-[#1A1714] hover:text-brand transition-colors relative"
+            >
+              <ShoppingCart size={22} />
+              {cartCount > 0 && (
+                <span className="absolute -top-1.5 -right-2 w-4.25 h-4.25 rounded-full bg-brand text-white text-[9px] font-bold flex items-center justify-center border-2 border-white">
+                  {cartCount}
+                </span>
+              )}
             </button>
           </div>
 
@@ -445,7 +461,29 @@ export default function Navbar() {
             </div>
           </div>
         </div>
+        {/* Mobile search bar (design mockup): a full-width pill under
+            the header row with a solid orange search button; the whole
+            bar opens the search modal. Part of the sticky header, so
+            the CategoryBar's mobile sticky offset accounts for it. */}
+        <div className="md:hidden px-4 pb-3">
+          <button
+            type="button"
+            onClick={openSearch}
+            aria-label="Search products"
+            className="w-full h-12 flex items-center gap-2.5 bg-[#F4F2EF] hover:bg-[#EFEBE7] rounded-2xl pl-4 pr-1.5 border-none cursor-pointer transition-colors text-left font-sans"
+          >
+            <Search size={18} className="text-neutral-400 shrink-0" />
+            <span className="flex-1 text-[14px] text-[#A8A29E] truncate">
+              Search furniture, décor, colours...
+            </span>
+            <span className="h-9 w-11 shrink-0 flex items-center justify-center bg-brand rounded-xl">
+              <Search size={18} className="text-white" />
+            </span>
+          </button>
+        </div>
       </nav>
+
+      <MobileBottomNav />
 
       {cartEverOpened && (
         <Suspense fallback={null}>

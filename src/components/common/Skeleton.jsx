@@ -745,11 +745,45 @@ export function CategoryBarSkeleton() {
 
 export function HeroSkeleton() {
   return (
+    <>
+      {/* Mobile/tablet: carousel card + collection pair */}
+      <div className="lg:hidden px-4 pt-3 pb-2 bg-white" aria-hidden="true">
+        <div className="relative h-[430px] sm:h-[470px] rounded-3xl overflow-hidden">
+          <div className="absolute inset-0 bg-gray-100 shimmer-element" />
+          <div className="absolute inset-0 flex flex-col justify-end p-6">
+            <Skeleton className="h-9 w-3/5 rounded bg-white/70" />
+            <Skeleton className="mt-2 h-9 w-2/5 rounded bg-white/70" />
+            <Skeleton className="mt-3 h-4 w-1/2 rounded bg-white/70" />
+            <div className="mt-5 flex items-center justify-between">
+              <Skeleton className="h-11 w-36 rounded-full bg-white/70" />
+              <Skeleton className="h-8 w-32 rounded bg-white/70" />
+            </div>
+          </div>
+        </div>
+        <div className="mt-7 flex items-center justify-between">
+          <Skeleton className="h-6 w-44 rounded" />
+          <Skeleton className="h-5 w-16 rounded" />
+        </div>
+        <div className="mt-3.5 grid grid-cols-2 gap-3">
+          {[0, 1].map((i) => (
+            <div
+              key={i}
+              className="relative h-52 sm:h-64 rounded-2xl overflow-hidden"
+            >
+              <div className="absolute inset-0 bg-gray-100 shimmer-element" />
+              <div className="absolute inset-0 flex flex-col justify-end p-3.5">
+                <Skeleton className="h-5 w-4/5 rounded bg-white/70" />
+                <Skeleton className="mt-2.5 h-7 w-24 rounded-full bg-white/70" />
+              </div>
+            </div>
+          ))}
+        </div>
+      </div>
     <div
-      className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-[1.6fr_1fr] lg:grid-rows-[286px_286px] gap-2 sm:gap-3 px-2 md:px-6 lg:px-8 py-2 md:py-4 bg-white"
+      className="hidden lg:grid lg:grid-cols-[1.6fr_1fr] lg:grid-rows-[286px_286px] gap-2 sm:gap-3 px-2 md:px-6 lg:px-8 py-2 md:py-4 bg-white"
       aria-hidden="true"
     >
-      <div className="relative md:col-span-2 lg:col-span-1 lg:row-span-2 h-[420px] sm:h-112.5 lg:h-auto rounded-sm md:rounded-2xl overflow-hidden">
+      <div className="relative lg:row-span-2 h-92.5 sm:h-112.5 lg:h-auto rounded-sm md:rounded-2xl overflow-hidden">
         <div className="absolute inset-0 bg-gray-100 shimmer-element" />
         <div className="absolute inset-0 flex flex-col justify-end p-6 md:p-10">
           <Skeleton className="h-10 md:h-14 w-3/5 rounded bg-white/70" />
@@ -765,7 +799,7 @@ export function HeroSkeleton() {
       {[0, 1].map((i) => (
         <div
           key={i}
-          className="relative h-62.5 sm:h-71.5 lg:h-auto rounded-sm md:rounded-2xl overflow-hidden"
+          className="relative h-62.5 sm:h-71.5 rounded-sm md:rounded-2xl overflow-hidden"
         >
           <div className="absolute inset-0 bg-gray-100 shimmer-element" />
           <div className="absolute inset-0 flex flex-col justify-end p-5 sm:p-[28px_32px]">
@@ -776,6 +810,7 @@ export function HeroSkeleton() {
         </div>
       ))}
     </div>
+    </>
   );
 }
 

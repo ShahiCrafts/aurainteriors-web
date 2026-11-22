@@ -208,7 +208,7 @@ export default function CategoryBar() {
     <>
       <div
         ref={rootRef}
-        className="sticky top-16 md:top-20 z-40 bg-white border-b border-[#F0EFED] font-dm-sans"
+        className="sticky top-[124px] md:top-20 z-40 bg-white border-b border-[#F0EFED] font-dm-sans"
         onMouseLeave={() => setOpenSlug(null)}
         onBlur={(event) => {
           if (!event.currentTarget.contains(event.relatedTarget))
@@ -217,19 +217,19 @@ export default function CategoryBar() {
       >
         <nav aria-label="Product categories" className="flex items-center">
           <div
-            className="flex flex-1 items-center overflow-x-auto no-scrollbar px-4 md:px-6 lg:px-8"
+            className="flex flex-1 items-center overflow-x-auto no-scrollbar px-4 md:px-6 lg:px-8 gap-2 md:gap-0 py-2 md:py-0"
             aria-busy={isLoading}
           >
             {!isLoading && (
               <div
-                className="flex shrink-0 items-center whitespace-nowrap pr-6.5 py-2.5 text-[14px] md:pr-8.5 md:py-3 md:text-[15px]"
+                className="flex shrink-0 items-center whitespace-nowrap text-[14px] md:pr-8.5 md:py-3 md:text-[15px]"
                 onMouseEnter={() => setOpenSlug(null)}
               >
                 <Link
                   to="/shop"
                   onClick={() => setOpenSlug(null)}
                   aria-current={isAllActive ? "page" : undefined}
-                  className={`flex items-center gap-1.5 md:gap-2 py-1 font-medium transition-colors duration-300 focus-visible:outline-2 focus-visible:outline-brand ${isAllActive ? "text-brand" : "text-[#7A7068] hover:text-[#1A1714]"}`}
+                  className={`flex items-center gap-1.5 md:gap-2 py-1 font-medium transition-colors duration-300 focus-visible:outline-2 focus-visible:outline-brand max-md:border max-md:rounded-full max-md:px-3.5 max-md:py-2 max-md:bg-[#FAF9F7] ${isAllActive ? "text-brand max-md:bg-brand/10 max-md:border-brand/40" : "text-[#7A7068] hover:text-[#1A1714] max-md:border-[#ECE9E6]"}`}
                 >
                   <LayoutGrid size={15} />
                   <span>All</span>
@@ -241,7 +241,7 @@ export default function CategoryBar() {
               return (
                 <div
                   key={category._id || category.slug}
-                  className="flex shrink-0 items-center whitespace-nowrap pr-4 py-2.5 text-[14px] md:pr-6 md:py-3 md:text-[15px]"
+                  className="flex shrink-0 items-center whitespace-nowrap text-[14px] md:pr-6 md:py-3 md:text-[15px]"
                   onMouseEnter={() => setOpenSlug(category.slug)}
                 >
                   <Link
@@ -252,7 +252,7 @@ export default function CategoryBar() {
                         ? "page"
                         : undefined
                     }
-                    className={`flex items-center gap-1.5 md:gap-2 py-1 font-medium transition-colors duration-300 focus-visible:outline-2 focus-visible:outline-brand ${containsActive(category) || expanded ? "text-brand" : "text-[#7A7068] hover:text-[#1A1714]"}`}
+                    className={`flex items-center gap-1.5 md:gap-2 py-1 font-medium transition-colors duration-300 focus-visible:outline-2 focus-visible:outline-brand max-md:border max-md:rounded-full max-md:px-3.5 max-md:py-2 max-md:bg-[#FAF9F7] ${containsActive(category) || expanded ? "text-brand max-md:bg-brand/10 max-md:border-brand/40" : "text-[#7A7068] hover:text-[#1A1714] max-md:border-[#ECE9E6]"}`}
                   >
                     {getCategoryIcon(category.name)}
                     <span>{category.name}</span>
@@ -277,7 +277,7 @@ export default function CategoryBar() {
                         );
                       }
                     }}
-                    className={`relative ml-1 inline-flex h-8 w-6 shrink-0 items-center justify-start rounded cursor-pointer transition-colors duration-300 focus-visible:outline-2 focus-visible:outline-brand ${expanded ? "text-brand" : "text-[#7A7068] hover:text-[#1A1714]"}`}
+                    className={`relative ml-1 hidden md:inline-flex h-8 w-6 shrink-0 items-center justify-start rounded cursor-pointer transition-colors duration-300 focus-visible:outline-2 focus-visible:outline-brand ${expanded ? "text-brand" : "text-[#7A7068] hover:text-[#1A1714]"}`}
                   >
                     <ChevronDown
                       size={14}
@@ -309,7 +309,7 @@ export default function CategoryBar() {
               // edge lines up with the hero card's right edge at
               // every breakpoint. It was a flat px-4, which sat
               // 16px too far right on desktop (hero inset is 32px).
-              className="flex shrink-0 items-center gap-1.5 border-l border-[#F0EFED] py-2.5 pl-4 pr-2 text-xs font-semibold text-brand hover:text-brand-hover focus-visible:outline-2 focus-visible:outline-brand md:py-3 md:pr-6 lg:pr-8"
+              className="hidden md:flex shrink-0 items-center gap-1.5 border-l border-[#F0EFED] py-2.5 pl-4 pr-2 text-xs font-semibold text-brand hover:text-brand-hover focus-visible:outline-2 focus-visible:outline-brand md:py-3 md:pr-6 lg:pr-8"
             >
               <Scan size={16} />
               <span className="hidden sm:inline">Try AR View</span>

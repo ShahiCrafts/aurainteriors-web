@@ -144,6 +144,17 @@ body {
   font-family: var(--brand-font);
 }
 
+/* Mobile bottom navigation clearance: customer pages render a fixed
+   bottom nav below md (MobileBottomNav, from the Navbar); reserve
+   space at the document end so footers and page actions are never
+   hidden behind it. Admin pages don't use the customer Navbar, and
+   their body carries .admin-theme, so they are excluded. */
+@media (max-width: 767.98px) {
+  body:not(.admin-theme) {
+    padding-bottom: calc(57px + env(safe-area-inset-bottom));
+  }
+}
+
 .bg-\[\#F27318\] {
   background-color: var(--brand-primary);
 }
