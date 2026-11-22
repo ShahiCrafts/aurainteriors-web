@@ -36,11 +36,11 @@ export default function MobileBottomNav() {
   const profileActive = path.startsWith("/profile") && !wishlistActive;
 
   const itemClass = (active) =>
-    `flex flex-col items-center justify-center gap-0.5 flex-1 py-1.5 bg-transparent border-none cursor-pointer font-dm-sans transition-colors ${
+    `flex flex-col items-center justify-center gap-1 flex-1 py-2 bg-transparent border-none cursor-pointer font-dm-sans transition-colors ${
       active ? "text-brand" : "text-[#6A6058]"
     }`;
   const labelClass = (active) =>
-    `text-[10px] leading-3 ${active ? "font-bold" : "font-medium"}`;
+    `text-xs leading-4 ${active ? "font-bold" : "font-medium"}`;
 
   const handleWishlist = () => {
     if (!isAuthenticated) {
@@ -66,14 +66,14 @@ export default function MobileBottomNav() {
     >
       <div className="flex items-stretch px-2">
         <Link to="/" className={`${itemClass(homeActive)} no-underline`}>
-          <Home size={22} strokeWidth={homeActive ? 2.4 : 2} />
+          <Home size={26} strokeWidth={homeActive ? 2.4 : 2} />
           <span className={labelClass(homeActive)}>Home</span>
         </Link>
         <Link
           to="/shop"
           className={`${itemClass(categoriesActive)} no-underline`}
         >
-          <LayoutGrid size={22} strokeWidth={categoriesActive ? 2.4 : 2} />
+          <LayoutGrid size={26} strokeWidth={categoriesActive ? 2.4 : 2} />
           <span className={labelClass(categoriesActive)}>Categories</span>
         </Link>
         <button
@@ -81,7 +81,7 @@ export default function MobileBottomNav() {
           onClick={handleWishlist}
           className={itemClass(wishlistActive)}
         >
-          <Heart size={22} strokeWidth={wishlistActive ? 2.4 : 2} />
+          <Heart size={26} strokeWidth={wishlistActive ? 2.4 : 2} />
           <span className={labelClass(wishlistActive)}>Wishlist</span>
         </button>
         <button
@@ -93,12 +93,12 @@ export default function MobileBottomNav() {
           {isAuthenticated && user ? (
             <UserAvatar
               user={user}
-              className={`w-6.5 h-6.5 rounded-full text-[10px] ${
+              className={`w-7 h-7 rounded-full text-[11px] ${
                 profileActive ? "ring-2 ring-brand ring-offset-1" : ""
               }`}
             />
           ) : (
-            <User size={22} strokeWidth={profileActive ? 2.4 : 2} />
+            <User size={26} strokeWidth={profileActive ? 2.4 : 2} />
           )}
           <span className={labelClass(profileActive)}>Profile</span>
         </button>

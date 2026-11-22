@@ -746,7 +746,7 @@ export function CategoryBarSkeleton() {
 export function HeroSkeleton() {
   return (
     <>
-      {/* Mobile/tablet: carousel card + collection pair */}
+      {/* Mobile/tablet: static hero card + collection pair */}
       <div className="lg:hidden px-4 pt-3 pb-2 bg-white" aria-hidden="true">
         <div className="relative h-[430px] sm:h-[470px] rounded-3xl overflow-hidden">
           <div className="absolute inset-0 bg-gray-100 shimmer-element" />

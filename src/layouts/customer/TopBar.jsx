@@ -53,23 +53,27 @@ export default function TopBar() {
 
   return (
     <>
-      {/* Mobile offer strip (design mockup): a single centred line on a
-          peach wash — free-delivery threshold + the DECOR15 offer. The
-          desktop bar below keeps its full layout from md up. */}
-      <div className="flex md:hidden bg-[#FFF1E6] px-4 h-9 items-center justify-center gap-2.5 font-dm-sans text-[11.5px] text-[#5A5248]">
+      {/* Mobile offer strip: same design language as the desktop bar
+          below — gray-100 background, brand-orange offer icons, gray
+          dividers, dm-sans — carrying the two desktop offers on one
+          centred line (free-delivery threshold + DECOR15). */}
+      <div className="flex md:hidden bg-gray-100 px-4 h-10 items-center justify-center gap-3 font-dm-sans text-xs text-[#5A5248]">
         <span className="flex items-center gap-1.25 whitespace-nowrap">
-          <MapPin size={13} color={G} className="shrink-0" />
+          <Truck size={13} className="text-brand shrink-0" />
           <span>
             Free delivery above{" "}
-            <span className="font-semibold text-[#1A1714]">
+            <span className="font-bold text-[#1A1714]">
               {formatNPR(freeShippingThreshold ?? 5000)}
             </span>
           </span>
         </span>
-        <span className="w-px h-3.5 bg-brand/30 shrink-0" />
-        <span className="whitespace-nowrap">
-          <span className="font-semibold text-[#1A1714]">DECOR15</span>
-          {" · "}15% off
+        <span className="w-px h-3.5 bg-gray-300 shrink-0" />
+        <span className="flex items-center gap-1.25 whitespace-nowrap">
+          <Tag size={13} className="text-brand shrink-0" />
+          <span>
+            <span className="font-bold text-[#1A1714]">DECOR15</span>
+            {" · "}15% off
+          </span>
         </span>
       </div>
     <div className="hidden md:flex bg-gray-100 px-4 md:px-6 lg:px-8 h-10 md:h-11 items-center justify-between font-dm-sans">
