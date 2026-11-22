@@ -23,6 +23,7 @@ import {
   Monitor,
   Scan,
   ChevronDown,
+  ChevronRight,
 } from "lucide-react";
 import { useCategoryTree } from "../../hooks/product/useCategoryTan";
 import { CategoryBarSkeletonContent } from "../common/Skeleton";
@@ -217,19 +218,19 @@ export default function CategoryBar() {
       >
         <nav aria-label="Product categories" className="flex items-center">
           <div
-            className="flex flex-1 items-center overflow-x-auto no-scrollbar px-4 md:px-6 lg:px-8 gap-2 md:gap-0 py-2 md:py-0"
+            className="flex flex-1 items-center overflow-x-auto no-scrollbar px-4 md:px-6 lg:px-8 max-md:pr-28"
             aria-busy={isLoading}
           >
             {!isLoading && (
               <div
-                className="flex shrink-0 items-center whitespace-nowrap text-[14px] md:pr-8.5 md:py-3 md:text-[15px]"
+                className="flex shrink-0 items-center whitespace-nowrap pr-8.5 py-3 text-[15px]"
                 onMouseEnter={() => setOpenSlug(null)}
               >
                 <Link
                   to="/shop"
                   onClick={() => setOpenSlug(null)}
                   aria-current={isAllActive ? "page" : undefined}
-                  className={`flex items-center gap-1.5 md:gap-2 py-1 font-medium transition-colors duration-300 focus-visible:outline-2 focus-visible:outline-brand max-md:border max-md:rounded-full max-md:px-3.5 max-md:py-2 max-md:bg-[#FAF9F7] ${isAllActive ? "text-brand max-md:bg-brand/10 max-md:border-brand/40" : "text-[#7A7068] hover:text-[#1A1714] max-md:border-[#ECE9E6]"}`}
+                  className={`flex items-center gap-2 py-1 font-medium transition-colors duration-300 focus-visible:outline-2 focus-visible:outline-brand ${isAllActive ? "text-brand" : "text-[#7A7068] hover:text-[#1A1714]"}`}
                 >
                   <LayoutGrid size={15} />
                   <span>All</span>
@@ -241,7 +242,7 @@ export default function CategoryBar() {
               return (
                 <div
                   key={category._id || category.slug}
-                  className="flex shrink-0 items-center whitespace-nowrap text-[14px] md:pr-6 md:py-3 md:text-[15px]"
+                  className="flex shrink-0 items-center whitespace-nowrap pr-6 py-3 text-[15px]"
                   onMouseEnter={() => setOpenSlug(category.slug)}
                 >
                   <Link
@@ -252,7 +253,7 @@ export default function CategoryBar() {
                         ? "page"
                         : undefined
                     }
-                    className={`flex items-center gap-1.5 md:gap-2 py-1 font-medium transition-colors duration-300 focus-visible:outline-2 focus-visible:outline-brand max-md:border max-md:rounded-full max-md:px-3.5 max-md:py-2 max-md:bg-[#FAF9F7] ${containsActive(category) || expanded ? "text-brand max-md:bg-brand/10 max-md:border-brand/40" : "text-[#7A7068] hover:text-[#1A1714] max-md:border-[#ECE9E6]"}`}
+                    className={`flex items-center gap-2 py-1 font-medium transition-colors duration-300 focus-visible:outline-2 focus-visible:outline-brand ${containsActive(category) || expanded ? "text-brand" : "text-[#7A7068] hover:text-[#1A1714]"}`}
                   >
                     {getCategoryIcon(category.name)}
                     <span>{category.name}</span>
@@ -277,7 +278,7 @@ export default function CategoryBar() {
                         );
                       }
                     }}
-                    className={`relative ml-1 hidden md:inline-flex h-8 w-6 shrink-0 items-center justify-start rounded cursor-pointer transition-colors duration-300 focus-visible:outline-2 focus-visible:outline-brand ${expanded ? "text-brand" : "text-[#7A7068] hover:text-[#1A1714]"}`}
+                    className={`relative ml-1 inline-flex h-8 w-6 shrink-0 items-center justify-start rounded cursor-pointer transition-colors duration-300 focus-visible:outline-2 focus-visible:outline-brand ${expanded ? "text-brand" : "text-[#7A7068] hover:text-[#1A1714]"}`}
                   >
                     <ChevronDown
                       size={14}
@@ -317,6 +318,21 @@ export default function CategoryBar() {
             </button>
           )}
         </nav>
+
+        {/* Mobile: "View All" pinned at the end of the category row on
+            a white overlay (fade from transparent into solid white), so
+            the scrolling categories pass underneath it. The scroll row
+            carries extra right padding (max-md:pr-28) so the last
+            category can scroll fully clear of the overlay. */}
+        <div className="md:hidden absolute inset-y-0 right-0 z-10 flex items-center bg-[linear-gradient(to_right,rgba(255,255,255,0),#ffffff_38%)] pl-10 pr-4 pointer-events-none">
+          <Link
+            to="/shop"
+            onClick={() => setOpenSlug(null)}
+            className="pointer-events-auto flex items-center gap-0.5 whitespace-nowrap text-sm font-semibold text-brand no-underline"
+          >
+            View All <ChevronRight size={15} />
+          </Link>
+        </div>
 
         {openCategory && (
           <nav
