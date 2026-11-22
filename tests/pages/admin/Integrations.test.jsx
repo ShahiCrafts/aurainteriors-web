@@ -1,9 +1,12 @@
-// Batch 2 — admin Integrations page: renders all 8 sections + six AI
+// Batch 2 — admin Integrations page (Batch 3d: restyled into the
+// unified Settings shell — same header + pill tab bar as Store
+// Settings, blue design): renders all 8 sections + six AI
 // provider cards from the Batch 1 API contract, secret inputs stay
 // empty, AI config saves go to PUT /admin/settings/integrations and
 // analytics saves to PUT /admin/settings/seo. API layer is mocked.
 import { describe, it, expect, vi, beforeEach } from "vitest";
 import { render, screen, fireEvent, waitFor } from "@testing-library/react";
+import { MemoryRouter } from "react-router-dom";
 
 vi.mock("../../../src/api/integrationsApi.js", () => ({
   default: {
@@ -109,7 +112,11 @@ async function renderPage() {
     status: "success",
     data: {},
   });
-  render(<Integrations />);
+  render(
+    <MemoryRouter>
+      <Integrations />
+    </MemoryRouter>,
+  );
   await screen.findByRole("heading", { name: "AI Providers" });
 }
 
@@ -258,7 +265,11 @@ describe("Admin Integrations page", () => {
       status: "success",
       data: { settings: SETTINGS },
     });
-    render(<Integrations />);
+    render(
+      <MemoryRouter>
+        <Integrations />
+      </MemoryRouter>,
+    );
     expect(await screen.findByText("Server down")).toBeInTheDocument();
     expect(
       screen.getByRole("button", { name: "Retry" }),

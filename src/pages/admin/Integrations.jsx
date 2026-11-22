@@ -4,6 +4,15 @@ import integrationsApi from "../../api/integrationsApi";
 import settingsApi from "../../api/settingsApi";
 import SecretKeyControl from "../../components/admin/integrations/SecretKeyControl";
 import ProviderCard from "../../components/admin/integrations/ProviderCard";
+import {
+  SettingsPage,
+  SettingsShell,
+  Card,
+  Field,
+  inputClass,
+  selectClass,
+  primaryButtonClass,
+} from "../../components/admin/settings/ui";
 import { toast } from "../../lib/toast";
 import formatError from "../../utils/errorHandler";
 
@@ -95,35 +104,15 @@ function mergeIntegrations(fetched) {
   return merged;
 }
 
-const inputClass =
-  "w-full px-4 py-2.5 border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-teal-500/20 focus:border-teal-500";
-const selectClass = `${inputClass} bg-white`;
-const saveButtonClass =
-  "inline-flex items-center gap-2 px-4 py-2.5 bg-teal-600 text-white rounded-xl text-sm font-medium hover:bg-teal-700 transition-colors disabled:opacity-50";
+const saveButtonClass = primaryButtonClass;
 
+// Batch 3d: sections render as the shared Settings cards so this
+// page matches the Store Settings design exactly.
 function SectionCard({ title, description, children }) {
   return (
-    <section className="bg-white rounded-2xl border border-gray-200 p-6 space-y-5">
-      <div>
-        <h2 className="text-lg font-semibold text-gray-900">{title}</h2>
-        {description && (
-          <p className="text-sm text-gray-500 mt-1">{description}</p>
-        )}
-      </div>
-      {children}
-    </section>
-  );
-}
-
-function Field({ label, children, helper }) {
-  return (
-    <div>
-      <label className="block text-sm font-medium text-gray-700 mb-2">
-        {label}
-      </label>
-      {children}
-      {helper && <p className="text-xs text-gray-400 mt-1">{helper}</p>}
-    </div>
+    <Card title={title} description={description}>
+      <div className="space-y-5">{children}</div>
+    </Card>
   );
 }
 
@@ -289,50 +278,35 @@ export default function Integrations() {
 
   if (loading) {
     return (
-      <div className="space-y-6">
-        <div>
-          <h1 className="text-2xl font-bold text-gray-900 font-playfair">
-            Integrations
-          </h1>
-          <p className="text-gray-500 mt-1 font-dm-sans">
+      <SettingsPage>
+        <SettingsShell activeTab="integrations">
+          <div className="bg-white border border-gray-200 rounded-2xl p-10 text-sm text-gray-500">
             Loading integration settings…
-          </p>
-        </div>
-      </div>
+          </div>
+        </SettingsShell>
+      </SettingsPage>
     );
   }
 
   if (loadError) {
     return (
-      <div className="space-y-6">
-        <div>
-          <h1 className="text-2xl font-bold text-gray-900 font-playfair">
-            Integrations
-          </h1>
-          <p className="text-red-600 mt-2 font-dm-sans">{loadError}</p>
-          <button
-            onClick={load}
-            className={`${saveButtonClass} mt-4`}
-          >
-            Retry
-          </button>
-        </div>
-      </div>
+      <SettingsPage>
+        <SettingsShell activeTab="integrations">
+          <div className="bg-white border border-gray-200 rounded-2xl p-6">
+            <p className="text-red-600 text-sm">{loadError}</p>
+            <button onClick={load} className={`${saveButtonClass} mt-4`}>
+              Retry
+            </button>
+          </div>
+        </SettingsShell>
+      </SettingsPage>
     );
   }
 
   return (
-    <div className="space-y-6">
-      {/* Header */}
-      <div>
-        <h1 className="text-2xl font-bold text-gray-900 font-playfair">
-          Integrations
-        </h1>
-        <p className="text-gray-500 mt-1 font-dm-sans">
-          Connect AI providers and third-party services. Secret keys are
-          stored securely and never shown in full.
-        </p>
-      </div>
+    <SettingsPage>
+      <SettingsShell activeTab="integrations">
+        <div className="space-y-6">
 
       {/* 1. AI Providers */}
       <SectionCard
@@ -367,7 +341,7 @@ export default function Integrations() {
                 {fallbackList.map((name, index) => (
                   <li
                     key={name}
-                    className="flex items-center justify-between border border-gray-200 rounded-xl px-4 py-2.5"
+                    className="flex items-center justify-between border border-gray-200 rounded-lg px-4 py-2.5"
                   >
                     <span className="text-sm text-gray-800">
                       {index + 1}.{" "}
@@ -551,7 +525,7 @@ export default function Integrations() {
               type="button"
               onClick={reindexKnowledge}
               disabled={reindexing}
-              className="inline-flex items-center gap-2 px-4 py-2.5 border border-gray-200 text-gray-700 rounded-xl text-sm font-medium hover:bg-gray-50 transition-colors disabled:opacity-50"
+              className="inline-flex items-center gap-2 px-4 py-2.5 border border-gray-200 text-gray-700 rounded-lg text-sm font-medium hover:bg-gray-50 transition-colors disabled:opacity-50"
             >
               {reindexing ? "Scheduling…" : "Re-index knowledge base"}
             </button>
@@ -605,7 +579,7 @@ export default function Integrations() {
             <button
               type="button"
               onClick={copyRedirectUri}
-              className="inline-flex items-center gap-1 px-3 py-2.5 border border-gray-200 text-gray-700 rounded-xl text-sm font-medium hover:bg-gray-50 transition-colors shrink-0"
+              className="inline-flex items-center gap-1 px-3 py-2.5 border border-gray-200 text-gray-700 rounded-lg text-sm font-medium hover:bg-gray-50 transition-colors shrink-0"
             >
               {copied ? (
                 <Check className="w-4 h-4 text-emerald-600" />
@@ -906,11 +880,13 @@ export default function Integrations() {
         </div>
       </SectionCard>
 
-      <p className="flex items-center gap-2 text-xs text-gray-400">
-        <Plug className="w-4 h-4" />
-        Secret values are write-only here: they can be replaced or removed,
-        but never viewed.
-      </p>
-    </div>
+          <p className="flex items-center gap-2 text-xs text-gray-400">
+            <Plug className="w-4 h-4" />
+            Secret values are write-only here: they can be replaced or
+            removed, but never viewed.
+          </p>
+        </div>
+      </SettingsShell>
+    </SettingsPage>
   );
 }

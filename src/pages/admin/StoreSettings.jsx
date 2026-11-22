@@ -1,309 +1,314 @@
-import { useState, useEffect, useCallback } from "react";
-import { Link } from "react-router-dom";
-import {
-  ArrowUp,
-  ArrowDown,
-  Plus,
-  Trash2,
-  Upload,
-  Store,
-} from "lucide-react";
+import { useCallback, useEffect, useMemo, useState } from "react";
+import { useSearchParams } from "react-router-dom";
 import settingsApi from "../../api/settingsApi";
+import useAuthStore from "../../store/authStore";
 import { toast } from "../../lib/toast";
 import formatError from "../../utils/errorHandler";
+import { composeBusinessHours } from "../../lib/businessHours";
+import {
+  SettingsPage,
+  SettingsShell,
+  SaveBar,
+  SETTINGS_TABS,
+} from "../../components/admin/settings/ui";
+import IdentityTab from "../../components/admin/settings/tabs/IdentityTab";
+import ThemeTab from "../../components/admin/settings/tabs/ThemeTab";
+import ContactTab from "../../components/admin/settings/tabs/ContactTab";
+import HomepageTab from "../../components/admin/settings/tabs/HomepageTab";
+import SeoTab from "../../components/admin/settings/tabs/SeoTab";
+import PagesTab from "../../components/admin/settings/tabs/PagesTab";
+import OperationsTab from "../../components/admin/settings/tabs/OperationsTab";
+import AdvancedTab from "../../components/admin/settings/tabs/AdvancedTab";
 
-// Batch 3a — admin Store Settings page. Edits the Batch 1 settings
-// sections identity / theme / contact / homepage / pages / seo via
-// PUT /admin/settings/:section. Every default below mirrors the
-// server defaults (services/settings/defaults.js), which in turn
-// mirror the site's current live values — saving without changes is
-// a no-op for the storefront.
+// Store Settings (Batch 3d redesign — reference Settings screens).
+// One unified Settings experience with the Integrations route: this
+// page hosts the Store Identity / Theme & Branding / Contact &
+// Social / Homepage / SEO / Content Pages / Advanced tabs; the
+// Integrations tab links to /dashboard/integrations, which renders
+// the same header + tab bar.
+//
+// Saving is explicit per tab (sticky Cancel / Save Changes bar).
+// Cancel restores the tab's fields to the last loaded snapshot.
+// The Store Identity tab also saves the contact section when it is
+// dirty, because its bottom strip edits contact fields (single
+// source of truth). The Contact tab composes contact.hours from the
+// structured business-hours rows when at least one day is open.
 
-const FONTS = [
-  "DM Sans",
-  "Inter",
-  "Poppins",
-  "Montserrat",
-  "Roboto",
-  "Lato",
-  "Open Sans",
-  "Playfair Display",
-];
-
-const BUTTON_RADIUS_OPTIONS = [
-  { value: "rounded", label: "Rounded (current look)" },
-  { value: "square", label: "Square" },
-  { value: "pill", label: "Pill" },
-];
-const RADIUS_CSS = { rounded: "0.5rem", square: "0", pill: "9999px" };
-
-const HOMEPAGE_SECTION_LABELS = {
-  hero: "Hero",
-  trustBanner: "Trust banner",
-  shopByCategory: "Shop by category",
-  featuredPieces: "Featured pieces",
-  testimonials: "Testimonials",
+const TAB_SECTIONS = {
+  identity: ["identity"],
+  theme: ["theme"],
+  contact: ["contact"],
+  homepage: ["homepage"],
+  seo: ["seo"],
+  operations: ["commerce", "chat", "notifications"],
+  pages: ["pages"],
+  advanced: ["theme"],
 };
 
-const TABS = [
-  { key: "identity", label: "Identity" },
-  { key: "theme", label: "Theme" },
-  { key: "contact", label: "Contact & Socials" },
-  { key: "homepage", label: "Homepage" },
-  { key: "pages", label: "Content Pages" },
-  { key: "seo", label: "SEO" },
-];
-
-function defaultSettings() {
-  return {
-    identity: {
-      storeName: "",
-      tagline: "",
-      supportEmail: "",
-      logoUrl: "",
-      logoDarkUrl: "",
-      faviconUrl: "",
+const blankSettings = () => ({
+  identity: {
+    storeName: "",
+    tagline: "",
+    supportEmail: "",
+    logoUrl: "",
+    logoDarkUrl: "",
+    faviconUrl: "",
+  },
+  theme: {
+    primaryColor: "#F27318",
+    primaryHoverColor: "#D9620E",
+    navyColor: "#1E2C4A",
+    fontFamily: "DM Sans",
+    buttonRadius: "rounded",
+    backgroundColor: "#f3f4f6",
+    headerStyle: "light",
+    darkMode: false,
+    roundedCards: true,
+    showShadows: true,
+    customCss: "",
+  },
+  contact: {
+    phone: "",
+    email: "",
+    address: "",
+    hours: "",
+    mapUrl: "",
+    socials: {
+      facebook: "",
+      instagram: "",
+      tiktok: "",
+      youtube: "",
+      pinterest: "",
+      whatsapp: "",
+      twitter: "",
+      linkedin: "",
     },
-    theme: {
-      primaryColor: "#F27318",
-      primaryHoverColor: "#D9620E",
-      navyColor: "#1E2C4A",
-      fontFamily: "DM Sans",
-      buttonRadius: "rounded",
+    businessHours: [
+      "Monday",
+      "Tuesday",
+      "Wednesday",
+      "Thursday",
+      "Friday",
+      "Saturday",
+      "Sunday",
+    ].map((day) => ({ day, open: false, hours: "" })),
+  },
+  homepage: {
+    heroSlides: [],
+    promoBanner: {
+      imageUrl: "",
+      headline: "",
+      subtext: "",
+      buttonText: "",
+      buttonLink: "",
+      enabled: true,
     },
-    contact: {
-      email: "",
-      phone: "",
-      address: "",
-      hours: "",
-      mapUrl: "",
-      socials: {
-        facebook: "",
-        instagram: "",
-        youtube: "",
-        pinterest: "",
-        tiktok: "",
-        whatsapp: "",
-        twitter: "",
-        linkedin: "",
-      },
+    sections: {
+      hero: true,
+      trustBanner: true,
+      shopByCategory: true,
+      featuredPieces: true,
+      testimonials: true,
     },
-    homepage: {
-      sections: {
-        hero: true,
-        trustBanner: true,
-        shopByCategory: true,
-        featuredPieces: true,
-        testimonials: true,
-      },
-      sectionsOrder: [
-        "hero",
-        "trustBanner",
-        "shopByCategory",
-        "featuredPieces",
-        "testimonials",
+    sectionsOrder: [
+      "hero",
+      "trustBanner",
+      "shopByCategory",
+      "featuredPieces",
+      "testimonials",
+    ],
+    announcementsEnabled: true,
+    newsletterEnabled: true,
+  },
+  pages: {
+    about: "",
+    privacyPolicy: "",
+    termsOfService: "",
+    shippingInfo: "",
+    returnsRefunds: "",
+    faq: [],
+  },
+  seo: {
+    siteUrl: "",
+    defaultTitle: "",
+    metaDescription: "",
+    ogImage: "",
+    features: {
+      productSchema: true,
+      breadcrumbs: true,
+      openGraph: true,
+      twitterCards: true,
+      autoGenerateMeta: true,
+    },
+    canonicalUrl: "",
+    defaultLanguage: "en-NP",
+    indexingEnabled: true,
+    noindexPages: [],
+  },
+  // Batch 4 — Store Operations sections. Values mirror the server
+  // defaults (which reproduce the store's current behaviour).
+  commerce: {
+    currency: "NPR",
+    currencySymbol: "NPR",
+    symbolPosition: "before",
+    numberFormat: "en-NP",
+    dateFormat: "M/D/YYYY",
+    timezone: "Asia/Kathmandu",
+    locale: "en-NP",
+    freeShippingThreshold: 5000,
+    shipping: {
+      enabled: true,
+      deliveryEstimateText: "",
+      zones: [
+        { name: "Kathmandu Valley", rate: 0, enabled: true },
+        { name: "Other Nepal", rate: 0, enabled: true },
+        { name: "International", rate: 0, enabled: false },
       ],
-      heroSlides: [],
-      promoBanner: {
-        imageUrl: "",
-        headline: "",
-        subtext: "",
-        buttonText: "",
-        buttonLink: "",
-        enabled: true,
+      defaultZone: "Other Nepal",
+    },
+    tax: { vatEnabled: false, vatRate: 13 },
+    orders: { orderPrefix: "", lowStockThreshold: 10, minimumOrderAmount: 0 },
+    paymentMethods: { cod: true, esewa: false, khalti: false, card: false },
+  },
+  chat: {
+    enabled: true,
+    aiAssistantEnabled: true,
+    welcomeMessage: "",
+    offlineMessage: "",
+    businessHours: "",
+  },
+  notifications: {
+    templates: {
+      orderConfirmation: {
+        subject: "Order Confirmation - {order_id} | {store_name}",
+        heading: "Your {store_name} Order Has Been Confirmed! 🎉",
+        body: "Thank you for shopping with {store_name}! We've received your order and it's now being processed.",
       },
-      announcementsEnabled: true,
-      newsletterEnabled: true,
+      shippingNotification: {
+        subject: "Your order {order_id} has shipped | {store_name}",
+        heading: "Great news — your order is on its way!",
+        body: "Hi {customer_name}, your order {order_id} has been shipped. {tracking_info}",
+      },
+      accountWelcome: {
+        subject: "Welcome to {store_name}",
+        heading: "Welcome, {customer_name}!",
+        body: "We're thrilled to have you join the {store_name} community. Discover our curated collection of premium furniture and home decor designed to transform your living spaces.",
+      },
+      magicLink: {
+        subject: "Your sign-in link for {store_name}",
+        heading: "Sign in to {store_name}",
+        body: "Hi {customer_name}, click the button below to sign in to your account. This link will expire in 15 minutes.",
+      },
+      lowStockAlert: {
+        subject: "Low stock alert | {store_name}",
+        heading: "A product is running low",
+        body: "This is an automated alert from {store_name}: a product in your catalogue has fallen below the low-stock threshold you set. Please review your inventory and restock soon.",
+      },
     },
-    pages: {
-      about: "",
-      privacyPolicy: "",
-      terms: "",
-      shippingReturns: "",
-      faq: [],
-    },
-    seo: {
-      defaultTitle: "",
-      metaDescription: "",
-      ogImage: "",
-    },
-  };
-}
-
-function mergeSettings(fetched) {
-  const base = defaultSettings();
-  if (!fetched || typeof fetched !== "object") return base;
-  const merged = { ...base };
-  for (const section of Object.keys(base)) {
-    if (!fetched[section] || typeof fetched[section] !== "object") continue;
-    merged[section] = { ...base[section], ...fetched[section] };
-  }
-  merged.contact.socials = {
-    ...base.contact.socials,
-    ...(fetched.contact?.socials || {}),
-  };
-  merged.homepage.sections = {
-    ...base.homepage.sections,
-    ...(fetched.homepage?.sections || {}),
-  };
-  merged.homepage.promoBanner = {
-    ...base.homepage.promoBanner,
-    ...(fetched.homepage?.promoBanner || {}),
-  };
-  if (!Array.isArray(merged.homepage.heroSlides)) {
-    merged.homepage.heroSlides = [];
-  }
-  if (!Array.isArray(merged.homepage.sectionsOrder)) {
-    merged.homepage.sectionsOrder = base.homepage.sectionsOrder;
-  }
-  if (!Array.isArray(merged.pages.faq)) merged.pages.faq = [];
-  return merged;
-}
-
-const inputClass =
-  "w-full px-4 py-2.5 border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-teal-500/20 focus:border-teal-500";
-const selectClass = `${inputClass} bg-white`;
-const textareaClass = `${inputClass} min-h-28`;
-const saveButtonClass =
-  "inline-flex items-center gap-2 px-4 py-2.5 bg-teal-600 text-white rounded-xl text-sm font-medium hover:bg-teal-700 transition-colors disabled:opacity-50";
-const smallButtonClass =
-  "inline-flex items-center gap-1 px-3 py-2 border border-gray-200 text-gray-700 rounded-xl text-sm font-medium hover:bg-gray-50 transition-colors disabled:opacity-50";
-const iconButtonClass =
-  "p-1.5 hover:bg-gray-100 rounded-lg transition-colors disabled:opacity-40";
-
-function Field({ label, children, helper }) {
-  return (
-    <div>
-      <label className="block text-sm font-medium text-gray-700 mb-2">
-        {label}
-      </label>
-      {children}
-      {helper && <p className="text-xs text-gray-400 mt-1">{helper}</p>}
-    </div>
-  );
-}
-
-// Text input + upload button; uploads go through the existing
-// settings image endpoint (server category-image → Cloudinary
-// pipeline) and the returned URL replaces the field value.
-function ImageField({ label, value, onChange, helper }) {
-  const [uploading, setUploading] = useState(false);
-  const handleFile = async (event) => {
-    const file = event.target.files?.[0];
-    event.target.value = "";
-    if (!file) return;
-    setUploading(true);
-    try {
-      const res = await settingsApi.uploadSettingsImage(file);
-      if (res?.data?.url) onChange(res.data.url);
-      toast.success("Image uploaded");
-    } catch (err) {
-      toast.error(formatError(err, "Image upload failed"));
-    } finally {
-      setUploading(false);
-    }
-  };
-  return (
-    <Field label={label} helper={helper}>
-      <div className="flex gap-2">
-        <input
-          type="text"
-          aria-label={label}
-          value={value || ""}
-          onChange={(e) => onChange(e.target.value)}
-          className={inputClass}
-        />
-        <label
-          className={`${smallButtonClass} shrink-0 cursor-pointer ${uploading ? "opacity-50 pointer-events-none" : ""}`}
-        >
-          <Upload className="w-4 h-4" />
-          {uploading ? "Uploading…" : "Upload"}
-          <input
-            type="file"
-            accept="image/*"
-            aria-label={`Upload ${label}`}
-            onChange={handleFile}
-            className="hidden"
-          />
-        </label>
-      </div>
-    </Field>
-  );
-}
-
-function ColorField({ label, value, onChange }) {
-  return (
-    <Field label={label}>
-      <div className="flex gap-2">
-        <input
-          type="color"
-          aria-label={`${label} picker`}
-          value={/^#[0-9a-fA-F]{6}$/.test(value || "") ? value : "#000000"}
-          onChange={(e) => onChange(e.target.value)}
-          className="h-11 w-14 shrink-0 border border-gray-200 rounded-xl bg-white cursor-pointer"
-        />
-        <input
-          type="text"
-          aria-label={`${label} hex`}
-          value={value || ""}
-          onChange={(e) => onChange(e.target.value)}
-          placeholder="#F27318"
-          className={inputClass}
-        />
-      </div>
-    </Field>
-  );
-}
-
-function MoveButtons({ label, index, count, onMove }) {
-  return (
-    <span className="flex gap-1">
-      <button
-        type="button"
-        aria-label={`Move ${label} up`}
-        onClick={() => onMove(index, -1)}
-        disabled={index === 0}
-        className={iconButtonClass}
-      >
-        <ArrowUp className="w-4 h-4 text-gray-500" />
-      </button>
-      <button
-        type="button"
-        aria-label={`Move ${label} down`}
-        onClick={() => onMove(index, 1)}
-        disabled={index === count - 1}
-        className={iconButtonClass}
-      >
-        <ArrowDown className="w-4 h-4 text-gray-500" />
-      </button>
-    </span>
-  );
-}
-
-const emptySlide = () => ({
-  imageUrl: "",
-  headline: "",
-  subtext: "",
-  buttonText: "",
-  buttonLink: "",
-  enabled: true,
+  },
 });
 
+const mergeSettings = (loaded) => {
+  const base = blankSettings();
+  if (!loaded || typeof loaded !== "object") return base;
+  const out = { ...base };
+  for (const section of Object.keys(base)) {
+    const value = loaded[section];
+    if (!value || typeof value !== "object") continue;
+    out[section] = { ...base[section], ...value };
+    if (section === "contact") {
+      out.contact.socials = {
+        ...base.contact.socials,
+        ...(value.socials || {}),
+      };
+      if (
+        !Array.isArray(value.businessHours) ||
+        value.businessHours.length !== 7
+      ) {
+        out.contact.businessHours = base.contact.businessHours;
+      }
+    }
+    if (section === "homepage") {
+      out.homepage.sections = {
+        ...base.homepage.sections,
+        ...(value.sections || {}),
+      };
+      out.homepage.promoBanner = {
+        ...base.homepage.promoBanner,
+        ...(value.promoBanner || {}),
+      };
+      if (!Array.isArray(value.heroSlides)) out.homepage.heroSlides = [];
+      if (!Array.isArray(value.sectionsOrder) || !value.sectionsOrder.length) {
+        out.homepage.sectionsOrder = base.homepage.sectionsOrder;
+      }
+    }
+    if (section === "seo") {
+      out.seo.features = { ...base.seo.features, ...(value.features || {}) };
+      if (!Array.isArray(value.noindexPages)) out.seo.noindexPages = [];
+    }
+    if (section === "pages" && !Array.isArray(value.faq)) {
+      out.pages.faq = [];
+    }
+    if (section === "commerce") {
+      out.commerce.shipping = {
+        ...base.commerce.shipping,
+        ...(value.shipping || {}),
+      };
+      if (!Array.isArray(value.shipping?.zones)) {
+        out.commerce.shipping.zones = base.commerce.shipping.zones;
+      }
+      out.commerce.tax = { ...base.commerce.tax, ...(value.tax || {}) };
+      out.commerce.orders = {
+        ...base.commerce.orders,
+        ...(value.orders || {}),
+      };
+      out.commerce.paymentMethods = {
+        ...base.commerce.paymentMethods,
+        ...(value.paymentMethods || {}),
+      };
+    }
+    if (section === "notifications") {
+      out.notifications.templates = {
+        ...base.notifications.templates,
+        ...(value.templates || {}),
+      };
+    }
+  }
+  return out;
+};
+
+const same = (a, b) => JSON.stringify(a) === JSON.stringify(b);
+
 export default function StoreSettings() {
+  const [searchParams, setSearchParams] = useSearchParams();
+  const authRole = useAuthStore((s) => s.user?.role) || "admin";
+  const isAdmin = authRole === "admin";
+  const visibleTabs = SETTINGS_TABS.filter(
+    (t) => t.key !== "advanced" || isAdmin,
+  );
+  const requestedTab = searchParams.get("tab");
+  const activeTab = visibleTabs.some(
+    (t) => t.key === requestedTab && t.key !== "integrations",
+  )
+    ? requestedTab
+    : "identity";
+
+  const [settings, setSettings] = useState(blankSettings);
+  const [snapshot, setSnapshot] = useState(blankSettings);
   const [loading, setLoading] = useState(true);
   const [loadError, setLoadError] = useState(null);
-  const [tab, setTab] = useState("identity");
-  const [settings, setSettings] = useState(defaultSettings);
-  const [savingSection, setSavingSection] = useState(null);
+  const [saving, setSaving] = useState(false);
 
   const load = useCallback(async () => {
     setLoading(true);
     try {
       const res = await settingsApi.getSettings();
-      setSettings(mergeSettings(res?.data?.settings));
+      const merged = mergeSettings(res?.data?.settings);
+      setSettings(merged);
+      setSnapshot(structuredClone(merged));
       setLoadError(null);
     } catch (err) {
-      setLoadError(formatError(err, "Failed to load store settings"));
+      setLoadError(formatError(err, "Could not load store settings"));
     } finally {
       setLoading(false);
     }
@@ -313,861 +318,165 @@ export default function StoreSettings() {
     load();
   }, [load]);
 
-  const patchSection = (section, patch) =>
-    setSettings((prev) => ({
-      ...prev,
-      [section]: { ...prev[section], ...patch },
-    }));
+  const patch = useCallback(
+    (section) => (value) =>
+      setSettings((prev) => ({
+        ...prev,
+        [section]: { ...prev[section], ...value },
+      })),
+    [],
+  );
 
-  const save = async (section, payload) => {
-    setSavingSection(section);
+  const dirtySections = useMemo(() => {
+    const sections = TAB_SECTIONS[activeTab] || [];
+    const dirty = sections.filter(
+      (section) => !same(settings[section], snapshot[section]),
+    );
+    // The identity tab's bottom strip edits contact fields.
+    if (
+      activeTab === "identity" &&
+      !same(settings.contact, snapshot.contact) &&
+      !dirty.includes("contact")
+    ) {
+      dirty.push("contact");
+    }
+    return dirty;
+  }, [activeTab, settings, snapshot]);
+
+  const isDirty = dirtySections.length > 0;
+
+  const handleCancel = () => {
+    setSettings((prev) => {
+      const next = { ...prev };
+      for (const section of dirtySections) {
+        next[section] = structuredClone(snapshot[section]);
+      }
+      return next;
+    });
+  };
+
+  const handleSave = async () => {
+    if (!isDirty) return;
+    setSaving(true);
     try {
-      await settingsApi.updateSettingsSection(section, payload);
+      for (const section of dirtySections) {
+        let payload = settings[section];
+        if (section === "contact") {
+          // Compose the footer/contact opening-hours line from the
+          // structured rows when at least one day is open.
+          const composed = composeBusinessHours(
+            settings.contact.businessHours,
+          );
+          if (composed) payload = { ...payload, hours: composed };
+        }
+        // eslint-disable-next-line no-await-in-loop
+        await settingsApi.updateSettingsSection(section, payload);
+      }
       toast.success("Settings saved");
+      await load();
     } catch (err) {
-      toast.error(formatError(err, "Failed to save settings"));
+      toast.error(formatError(err, "Could not save settings"));
     } finally {
-      setSavingSection(null);
+      setSaving(false);
     }
   };
 
-  const saveButton = (section, label) => (
-    <div className="flex justify-end">
-      <button
-        type="button"
-        onClick={() => save(section, settings[section])}
-        disabled={savingSection === section}
-        className={saveButtonClass}
-      >
-        {savingSection === section ? "Saving…" : label}
-      </button>
-    </div>
-  );
+  const selectTab = (id) => setSearchParams({ tab: id });
 
-  // ---- homepage helpers -------------------------------------------------
-  const patchSlide = (index, field, value) =>
-    patchSection("homepage", {
-      heroSlides: settings.homepage.heroSlides.map((slide, i) =>
-        i === index ? { ...slide, [field]: value } : slide,
-      ),
-    });
-
-  const moveSlide = (index, delta) => {
-    const next = [...settings.homepage.heroSlides];
-    const target = index + delta;
-    if (target < 0 || target >= next.length) return;
-    [next[index], next[target]] = [next[target], next[index]];
-    patchSection("homepage", { heroSlides: next });
-  };
-
-  const moveSectionOrder = (index, delta) => {
-    const next = [...settings.homepage.sectionsOrder];
-    const target = index + delta;
-    if (target < 0 || target >= next.length) return;
-    [next[index], next[target]] = [next[target], next[index]];
-    patchSection("homepage", { sectionsOrder: next });
-  };
-
-  // ---- faq helpers --------------------------------------------------------
-  const patchFaq = (index, field, value) =>
-    patchSection("pages", {
-      faq: settings.pages.faq.map((row, i) =>
-        i === index ? { ...row, [field]: value } : row,
-      ),
-    });
-
-  if (loading) {
-    return (
-      <div className="space-y-6">
-        <div>
-          <h1 className="text-2xl font-bold text-gray-900 font-playfair">
-            Store Settings
-          </h1>
-          <p className="text-gray-500 mt-1 font-dm-sans">
-            Loading store settings…
-          </p>
-        </div>
-      </div>
+  const heroPreviewImage = useMemo(() => {
+    const first = settings.homepage.heroSlides.find(
+      (s) => s && s.enabled !== false && s.imageUrl,
     );
-  }
-
-  if (loadError) {
-    return (
-      <div className="space-y-6">
-        <div>
-          <h1 className="text-2xl font-bold text-gray-900 font-playfair">
-            Store Settings
-          </h1>
-          <p className="text-red-600 mt-2 font-dm-sans">{loadError}</p>
-          <button onClick={load} className={`${saveButtonClass} mt-4`}>
-            Retry
-          </button>
-        </div>
-      </div>
-    );
-  }
-
-  const { identity, theme, contact, homepage, pages, seo } = settings;
+    const url = first?.imageUrl || "";
+    return url.startsWith("http") || url.startsWith("/") ? url : "";
+  }, [settings.homepage.heroSlides]);
 
   return (
-    <div className="space-y-6">
-      {/* Header */}
-      <div>
-        <h1 className="text-2xl font-bold text-gray-900 font-playfair">
-          Store Settings
-        </h1>
-        <p className="text-gray-500 mt-1 font-dm-sans">
-          Your store's identity, look, homepage and content pages. Changes
-          apply to the storefront the next time it loads its settings.
-        </p>
-      </div>
-
-      {/* Tabs */}
-      <div className="flex flex-wrap gap-2" role="tablist" aria-label="Store settings sections">
-        {TABS.map(({ key, label }) => (
-          <button
-            key={key}
-            type="button"
-            role="tab"
-            aria-selected={tab === key}
-            onClick={() => setTab(key)}
-            className={
-              tab === key
-                ? "px-4 py-2.5 bg-teal-600 text-white rounded-xl text-sm font-medium transition-colors"
-                : "px-4 py-2.5 bg-white border border-gray-200 text-gray-700 rounded-xl text-sm font-medium hover:bg-gray-50 transition-colors"
-            }
-          >
-            {label}
-          </button>
-        ))}
-      </div>
-
-      <section className="bg-white rounded-2xl border border-gray-200 p-6 space-y-5">
-        {tab === "identity" && (
-          <>
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-              <Field label="Store name">
-                <input
-                  type="text"
-                  aria-label="Store name"
-                  value={identity.storeName}
-                  onChange={(e) =>
-                    patchSection("identity", { storeName: e.target.value })
-                  }
-                  className={inputClass}
-                />
-              </Field>
-              <Field label="Tagline">
-                <input
-                  type="text"
-                  aria-label="Tagline"
-                  value={identity.tagline}
-                  onChange={(e) =>
-                    patchSection("identity", { tagline: e.target.value })
-                  }
-                  className={inputClass}
-                />
-              </Field>
-              <Field label="Support email">
-                <input
-                  type="email"
-                  aria-label="Support email"
-                  value={identity.supportEmail}
-                  onChange={(e) =>
-                    patchSection("identity", { supportEmail: e.target.value })
-                  }
-                  className={inputClass}
-                />
-              </Field>
-            </div>
-            <ImageField
-              label="Logo URL"
-              value={identity.logoUrl}
-              onChange={(v) => patchSection("identity", { logoUrl: v })}
-            />
-            <ImageField
-              label="Dark logo URL"
-              value={identity.logoDarkUrl}
-              onChange={(v) => patchSection("identity", { logoDarkUrl: v })}
-              helper="Optional logo variant for dark backgrounds."
-            />
-            <ImageField
-              label="Favicon URL"
-              value={identity.faviconUrl}
-              onChange={(v) => patchSection("identity", { faviconUrl: v })}
-            />
-            {saveButton("identity", "Save identity")}
-          </>
-        )}
-
-        {tab === "theme" && (
-          <>
-            <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-              <div className="space-y-4">
-                <ColorField
-                  label="Primary colour"
-                  value={theme.primaryColor}
-                  onChange={(v) =>
-                    patchSection("theme", { primaryColor: v })
-                  }
-                />
-                <ColorField
-                  label="Primary hover colour"
-                  value={theme.primaryHoverColor}
-                  onChange={(v) =>
-                    patchSection("theme", { primaryHoverColor: v })
-                  }
-                />
-                <ColorField
-                  label="Navy / header colour"
-                  value={theme.navyColor}
-                  onChange={(v) => patchSection("theme", { navyColor: v })}
-                />
-                <Field label="Font">
-                  <select
-                    aria-label="Font"
-                    value={theme.fontFamily}
-                    onChange={(e) =>
-                      patchSection("theme", { fontFamily: e.target.value })
-                    }
-                    className={selectClass}
-                  >
-                    {FONTS.map((font) => (
-                      <option key={font} value={font}>
-                        {font}
-                      </option>
-                    ))}
-                  </select>
-                </Field>
-                <Field label="Button style">
-                  <select
-                    aria-label="Button style"
-                    value={theme.buttonRadius}
-                    onChange={(e) =>
-                      patchSection("theme", { buttonRadius: e.target.value })
-                    }
-                    className={selectClass}
-                  >
-                    {BUTTON_RADIUS_OPTIONS.map(({ value, label }) => (
-                      <option key={value} value={value}>
-                        {label}
-                      </option>
-                    ))}
-                  </select>
-                </Field>
-              </div>
-
-              {/* Live preview — local unsaved values only */}
-              <div>
-                <h3 className="text-sm font-medium text-gray-700 mb-2">
-                  Live preview
-                </h3>
-                <div
-                  data-testid="theme-preview"
-                  className="border border-gray-200 rounded-2xl overflow-hidden"
-                  style={{ fontFamily: theme.fontFamily }}
-                >
-                  <div
-                    className="flex items-center justify-between px-4 py-3"
-                    style={{ backgroundColor: theme.navyColor }}
-                  >
-                    <span className="text-white font-semibold text-sm">
-                      {identity.storeName || "Store"}
-                    </span>
-                    <span
-                      className="text-white text-xs px-3 py-1.5 font-medium"
-                      style={{
-                        backgroundColor: theme.primaryColor,
-                        borderRadius:
-                          RADIUS_CSS[theme.buttonRadius] || "0.5rem",
-                      }}
-                    >
-                      Shop now
-                    </span>
-                  </div>
-                  <div className="p-4 space-y-3 bg-white">
-                    <p className="text-sm font-semibold text-gray-900">
-                      Featured piece
-                    </p>
-                    <p className="text-sm text-gray-500">
-                      Buttons and accents update as you edit — nothing is
-                      saved until you click Save theme.
-                    </p>
-                    <div className="flex items-center gap-3">
-                      <button
-                        type="button"
-                        data-testid="preview-primary-button"
-                        className="text-white text-sm px-4 py-2 font-medium"
-                        style={{
-                          backgroundColor: theme.primaryColor,
-                          borderRadius:
-                            RADIUS_CSS[theme.buttonRadius] || "0.5rem",
-                        }}
-                      >
-                        Add to cart
-                      </button>
-                      <span
-                        className="text-xs px-2 py-1 text-white"
-                        style={{
-                          backgroundColor: theme.primaryHoverColor,
-                          borderRadius:
-                            RADIUS_CSS[theme.buttonRadius] || "0.5rem",
-                        }}
-                      >
-                        Hover colour
-                      </span>
-                    </div>
-                  </div>
-                </div>
-              </div>
-            </div>
-            {saveButton("theme", "Save theme")}
-          </>
-        )}
-
-        {tab === "contact" && (
-          <>
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-              <Field label="Phone">
-                <input
-                  type="text"
-                  aria-label="Phone"
-                  value={contact.phone}
-                  onChange={(e) =>
-                    patchSection("contact", { phone: e.target.value })
-                  }
-                  className={inputClass}
-                />
-              </Field>
-              <Field label="WhatsApp">
-                <input
-                  type="text"
-                  aria-label="WhatsApp"
-                  value={contact.socials.whatsapp}
-                  onChange={(e) =>
-                    patchSection("contact", {
-                      socials: {
-                        ...contact.socials,
-                        whatsapp: e.target.value,
-                      },
-                    })
-                  }
-                  placeholder="Number or wa.me link"
-                  className={inputClass}
-                />
-              </Field>
-              <Field label="Email">
-                <input
-                  type="email"
-                  aria-label="Contact email"
-                  value={contact.email}
-                  onChange={(e) =>
-                    patchSection("contact", { email: e.target.value })
-                  }
-                  className={inputClass}
-                />
-              </Field>
-              <Field label="Opening hours">
-                <input
-                  type="text"
-                  aria-label="Opening hours"
-                  value={contact.hours}
-                  onChange={(e) =>
-                    patchSection("contact", { hours: e.target.value })
-                  }
-                  className={inputClass}
-                />
-              </Field>
-              <Field label="Address">
-                <input
-                  type="text"
-                  aria-label="Address"
-                  value={contact.address}
-                  onChange={(e) =>
-                    patchSection("contact", { address: e.target.value })
-                  }
-                  className={inputClass}
-                />
-              </Field>
-              <Field label="Map link">
-                <input
-                  type="text"
-                  aria-label="Map link"
-                  value={contact.mapUrl}
-                  onChange={(e) =>
-                    patchSection("contact", { mapUrl: e.target.value })
-                  }
-                  placeholder="https://maps.google.com/…"
-                  className={inputClass}
-                />
-              </Field>
-            </div>
-            <h3 className="text-sm font-medium text-gray-700">Social links</h3>
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-              {[
-                ["facebook", "Facebook URL"],
-                ["instagram", "Instagram URL"],
-                ["tiktok", "TikTok URL"],
-                ["youtube", "YouTube URL"],
-                ["twitter", "Twitter / X URL"],
-                ["linkedin", "LinkedIn URL"],
-              ].map(([key, label]) => (
-                <Field key={key} label={label}>
-                  <input
-                    type="text"
-                    aria-label={label}
-                    value={contact.socials[key] || ""}
-                    onChange={(e) =>
-                      patchSection("contact", {
-                        socials: {
-                          ...contact.socials,
-                          [key]: e.target.value,
-                        },
-                      })
-                    }
-                    className={inputClass}
-                  />
-                </Field>
-              ))}
-            </div>
-            {saveButton("contact", "Save contact & socials")}
-          </>
-        )}
-
-        {tab === "homepage" && (
-          <>
-            <h3 className="text-sm font-medium text-gray-700">Hero slides</h3>
-            <div className="space-y-4">
-              {homepage.heroSlides.map((slide, index) => (
-                <div
-                  key={index}
-                  className="border border-gray-200 rounded-2xl p-4 space-y-4"
-                >
-                  <div className="flex items-center justify-between">
-                    <span className="text-sm font-medium text-gray-700">
-                      Slide {index + 1}
-                    </span>
-                    <span className="flex items-center gap-1">
-                      <MoveButtons
-                        label={`slide ${index + 1}`}
-                        index={index}
-                        count={homepage.heroSlides.length}
-                        onMove={moveSlide}
-                      />
-                      <button
-                        type="button"
-                        aria-label={`Remove slide ${index + 1}`}
-                        onClick={() =>
-                          patchSection("homepage", {
-                            heroSlides: homepage.heroSlides.filter(
-                              (_, i) => i !== index,
-                            ),
-                          })
-                        }
-                        className={iconButtonClass}
-                      >
-                        <Trash2 className="w-4 h-4 text-red-500" />
-                      </button>
-                    </span>
-                  </div>
-                  <ImageField
-                    label={`Slide ${index + 1} image URL`}
-                    value={slide.imageUrl}
-                    onChange={(v) => patchSlide(index, "imageUrl", v)}
-                  />
-                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                    <Field label="Headline">
-                      <input
-                        type="text"
-                        aria-label={`Slide ${index + 1} headline`}
-                        value={slide.headline || ""}
-                        onChange={(e) =>
-                          patchSlide(index, "headline", e.target.value)
-                        }
-                        className={inputClass}
-                      />
-                    </Field>
-                    <Field label="Button text">
-                      <input
-                        type="text"
-                        aria-label={`Slide ${index + 1} button text`}
-                        value={slide.buttonText || ""}
-                        onChange={(e) =>
-                          patchSlide(index, "buttonText", e.target.value)
-                        }
-                        className={inputClass}
-                      />
-                    </Field>
-                  </div>
-                  <Field label="Subtext">
-                    <textarea
-                      aria-label={`Slide ${index + 1} subtext`}
-                      value={slide.subtext || ""}
-                      onChange={(e) =>
-                        patchSlide(index, "subtext", e.target.value)
-                      }
-                      className={textareaClass}
-                    />
-                  </Field>
-                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                    <Field label="Button link">
-                      <input
-                        type="text"
-                        aria-label={`Slide ${index + 1} button link`}
-                        value={slide.buttonLink || ""}
-                        onChange={(e) =>
-                          patchSlide(index, "buttonLink", e.target.value)
-                        }
-                        className={inputClass}
-                      />
-                    </Field>
-                    <Field label="Visible">
-                      <label className="inline-flex items-center gap-2 text-sm text-gray-700 pt-2">
-                        <input
-                          type="checkbox"
-                          aria-label={`Slide ${index + 1} enabled`}
-                          checked={slide.enabled !== false}
-                          onChange={(e) =>
-                            patchSlide(index, "enabled", e.target.checked)
-                          }
-                          className="w-4 h-4 accent-teal-600"
-                        />
-                        Enabled
-                      </label>
-                    </Field>
-                  </div>
-                </div>
-              ))}
-            </div>
+    <SettingsPage>
+      <SettingsShell activeTab={activeTab} onTabChange={selectTab} tabs={visibleTabs}>
+        {loading ? (
+          <div className="bg-white border border-gray-200 rounded-2xl p-10 text-sm text-gray-500">
+            Loading settings…
+          </div>
+        ) : loadError ? (
+          <div className="bg-white border border-gray-200 rounded-2xl p-6">
+            <p className="text-red-600 text-sm">{loadError}</p>
             <button
               type="button"
-              onClick={() =>
-                patchSection("homepage", {
-                  heroSlides: [...homepage.heroSlides, emptySlide()],
-                })
-              }
-              className={smallButtonClass}
+              onClick={load}
+              className="mt-4 px-4 py-2.5 bg-blue-600 text-white rounded-lg text-sm font-medium hover:bg-blue-700"
             >
-              <Plus className="w-4 h-4" /> Add slide
+              Retry
             </button>
-
-            <h3 className="text-sm font-medium text-gray-700 pt-2">
-              Promo banner
-            </h3>
-            <div className="border border-gray-200 rounded-2xl p-4 space-y-4">
-              <ImageField
-                label="Promo image URL"
-                value={homepage.promoBanner.imageUrl}
-                onChange={(v) =>
-                  patchSection("homepage", {
-                    promoBanner: { ...homepage.promoBanner, imageUrl: v },
-                  })
-                }
-              />
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                <Field label="Promo headline">
-                  <input
-                    type="text"
-                    aria-label="Promo headline"
-                    value={homepage.promoBanner.headline || ""}
-                    onChange={(e) =>
-                      patchSection("homepage", {
-                        promoBanner: {
-                          ...homepage.promoBanner,
-                          headline: e.target.value,
-                        },
-                      })
-                    }
-                    className={inputClass}
-                  />
-                </Field>
-                <Field label="Promo button text">
-                  <input
-                    type="text"
-                    aria-label="Promo button text"
-                    value={homepage.promoBanner.buttonText || ""}
-                    onChange={(e) =>
-                      patchSection("homepage", {
-                        promoBanner: {
-                          ...homepage.promoBanner,
-                          buttonText: e.target.value,
-                        },
-                      })
-                    }
-                    className={inputClass}
-                  />
-                </Field>
-              </div>
-              <Field label="Promo subtext">
-                <textarea
-                  aria-label="Promo subtext"
-                  value={homepage.promoBanner.subtext || ""}
-                  onChange={(e) =>
-                    patchSection("homepage", {
-                      promoBanner: {
-                        ...homepage.promoBanner,
-                        subtext: e.target.value,
-                      },
-                    })
-                  }
-                  className={textareaClass}
-                />
-              </Field>
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                <Field label="Promo button link">
-                  <input
-                    type="text"
-                    aria-label="Promo button link"
-                    value={homepage.promoBanner.buttonLink || ""}
-                    onChange={(e) =>
-                      patchSection("homepage", {
-                        promoBanner: {
-                          ...homepage.promoBanner,
-                          buttonLink: e.target.value,
-                        },
-                      })
-                    }
-                    className={inputClass}
-                  />
-                </Field>
-                <Field label="Visible">
-                  <label className="inline-flex items-center gap-2 text-sm text-gray-700 pt-2">
-                    <input
-                      type="checkbox"
-                      aria-label="Promo enabled"
-                      checked={homepage.promoBanner.enabled !== false}
-                      onChange={(e) =>
-                        patchSection("homepage", {
-                          promoBanner: {
-                            ...homepage.promoBanner,
-                            enabled: e.target.checked,
-                          },
-                        })
-                      }
-                      className="w-4 h-4 accent-teal-600"
-                    />
-                    Enabled
-                  </label>
-                </Field>
-              </div>
-            </div>
-
-            <h3 className="text-sm font-medium text-gray-700 pt-2">
-              Homepage sections
-            </h3>
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-              <div className="space-y-2">
-                {Object.keys(HOMEPAGE_SECTION_LABELS).map((key) => (
-                  <label
-                    key={key}
-                    className="flex items-center gap-2 text-sm text-gray-700"
-                  >
-                    <input
-                      type="checkbox"
-                      aria-label={`Show ${HOMEPAGE_SECTION_LABELS[key]}`}
-                      checked={homepage.sections[key] !== false}
-                      onChange={(e) =>
-                        patchSection("homepage", {
-                          sections: {
-                            ...homepage.sections,
-                            [key]: e.target.checked,
-                          },
-                        })
-                      }
-                      className="w-4 h-4 accent-teal-600"
-                    />
-                    {HOMEPAGE_SECTION_LABELS[key]}
-                  </label>
-                ))}
-                <label className="flex items-center gap-2 text-sm text-gray-700">
-                  <input
-                    type="checkbox"
-                    aria-label="Show announcements"
-                    checked={homepage.announcementsEnabled !== false}
-                    onChange={(e) =>
-                      patchSection("homepage", {
-                        announcementsEnabled: e.target.checked,
-                      })
-                    }
-                    className="w-4 h-4 accent-teal-600"
-                  />
-                  Announcements bar
-                </label>
-                <label className="flex items-center gap-2 text-sm text-gray-700">
-                  <input
-                    type="checkbox"
-                    aria-label="Show newsletter"
-                    checked={homepage.newsletterEnabled !== false}
-                    onChange={(e) =>
-                      patchSection("homepage", {
-                        newsletterEnabled: e.target.checked,
-                      })
-                    }
-                    className="w-4 h-4 accent-teal-600"
-                  />
-                  Newsletter signup
-                </label>
-              </div>
-              <div>
-                <p className="text-sm text-gray-500 mb-2">Section order</p>
-                <ul className="space-y-2">
-                  {homepage.sectionsOrder.map((key, index) => (
-                    <li
-                      key={key}
-                      className="flex items-center justify-between border border-gray-200 rounded-xl px-4 py-2.5"
-                    >
-                      <span className="text-sm text-gray-800">
-                        {index + 1}.{" "}
-                        {HOMEPAGE_SECTION_LABELS[key] || key}
-                      </span>
-                      <MoveButtons
-                        label={`section ${key}`}
-                        index={index}
-                        count={homepage.sectionsOrder.length}
-                        onMove={moveSectionOrder}
-                      />
-                    </li>
-                  ))}
-                </ul>
-              </div>
-            </div>
-            {saveButton("homepage", "Save homepage")}
-          </>
-        )}
-
-        {tab === "pages" && (
+          </div>
+        ) : (
           <>
-            {[
-              ["about", "About"],
-              ["privacyPolicy", "Privacy Policy"],
-              ["terms", "Terms & Conditions"],
-              ["shippingReturns", "Shipping & Returns"],
-            ].map(([key, label]) => (
-              <Field key={key} label={label}>
-                <textarea
-                  aria-label={label}
-                  value={pages[key] || ""}
-                  onChange={(e) =>
-                    patchSection("pages", { [key]: e.target.value })
-                  }
-                  className={`${textareaClass} min-h-40`}
-                />
-              </Field>
-            ))}
-            <h3 className="text-sm font-medium text-gray-700">FAQ</h3>
-            <div className="space-y-4">
-              {pages.faq.map((row, index) => (
-                <div
-                  key={index}
-                  className="border border-gray-200 rounded-2xl p-4 space-y-3"
-                >
-                  <div className="flex items-center justify-between">
-                    <span className="text-sm font-medium text-gray-700">
-                      Question {index + 1}
-                    </span>
-                    <button
-                      type="button"
-                      aria-label={`Remove FAQ ${index + 1}`}
-                      onClick={() =>
-                        patchSection("pages", {
-                          faq: pages.faq.filter((_, i) => i !== index),
-                        })
-                      }
-                      className={iconButtonClass}
-                    >
-                      <Trash2 className="w-4 h-4 text-red-500" />
-                    </button>
-                  </div>
-                  <Field label="Question">
-                    <input
-                      type="text"
-                      aria-label={`FAQ question ${index + 1}`}
-                      value={row.question || ""}
-                      onChange={(e) =>
-                        patchFaq(index, "question", e.target.value)
-                      }
-                      className={inputClass}
-                    />
-                  </Field>
-                  <Field label="Answer">
-                    <textarea
-                      aria-label={`FAQ answer ${index + 1}`}
-                      value={row.answer || ""}
-                      onChange={(e) =>
-                        patchFaq(index, "answer", e.target.value)
-                      }
-                      className={textareaClass}
-                    />
-                  </Field>
-                </div>
-              ))}
-            </div>
-            <button
-              type="button"
-              onClick={() =>
-                patchSection("pages", {
-                  faq: [...pages.faq, { question: "", answer: "" }],
-                })
-              }
-              className={smallButtonClass}
-            >
-              <Plus className="w-4 h-4" /> Add FAQ
-            </button>
-            {saveButton("pages", "Save content pages")}
-          </>
-        )}
-
-        {tab === "seo" && (
-          <>
-            <Field label="Default page title">
-              <input
-                type="text"
-                aria-label="Default page title"
-                value={seo.defaultTitle}
-                onChange={(e) =>
-                  patchSection("seo", { defaultTitle: e.target.value })
-                }
-                className={inputClass}
+            {activeTab === "identity" && (
+              <IdentityTab
+                identity={settings.identity}
+                contact={settings.contact}
+                theme={settings.theme}
+                heroImage={heroPreviewImage}
+                onIdentity={patch("identity")}
+                onContact={patch("contact")}
               />
-            </Field>
-            <Field label="Meta description">
-              <textarea
-                aria-label="Meta description"
-                value={seo.metaDescription}
-                onChange={(e) =>
-                  patchSection("seo", { metaDescription: e.target.value })
-                }
-                className={textareaClass}
+            )}
+            {activeTab === "theme" && (
+              <ThemeTab
+                theme={settings.theme}
+                identity={settings.identity}
+                heroImage={heroPreviewImage}
+                onTheme={patch("theme")}
               />
-            </Field>
-            <ImageField
-              label="OG image URL"
-              value={seo.ogImage}
-              onChange={(v) => patchSection("seo", { ogImage: v })}
-              helper="Image shown when your store is shared on social media."
+            )}
+            {activeTab === "contact" && (
+              <ContactTab
+                contact={settings.contact}
+                onContact={patch("contact")}
+              />
+            )}
+            {activeTab === "homepage" && (
+              <HomepageTab
+                homepage={settings.homepage}
+                onHomepage={patch("homepage")}
+              />
+            )}
+            {activeTab === "seo" && (
+              <SeoTab
+                seo={settings.seo}
+                identity={settings.identity}
+                onSeo={patch("seo")}
+              />
+            )}
+            {activeTab === "operations" && (
+              <OperationsTab
+                commerce={settings.commerce}
+                chat={settings.chat}
+                notifications={settings.notifications}
+                onCommerce={patch("commerce")}
+                onChat={patch("chat")}
+                onNotifications={patch("notifications")}
+              />
+            )}
+            {activeTab === "pages" && (
+              <PagesTab pages={settings.pages} onPages={patch("pages")} />
+            )}
+            {activeTab === "advanced" && (
+              <AdvancedTab
+                theme={settings.theme}
+                onTheme={patch("theme")}
+                onReset={load}
+              />
+            )}
+            <SaveBar
+              dirty={isDirty}
+              saving={saving}
+              onCancel={handleCancel}
+              onSave={handleSave}
             />
-            <p className="text-sm text-gray-500">
-              Analytics &amp; marketing IDs — Google Analytics, Meta Pixel,
-              TikTok Pixel, Search Console verification and the Google Maps
-              API key — are managed under{" "}
-              <Link
-                to="/dashboard/integrations"
-                className="text-teal-600 hover:text-teal-700 font-medium"
-              >
-                Integrations → Analytics &amp; Marketing
-              </Link>
-              .
-            </p>
-            {saveButton("seo", "Save SEO")}
           </>
         )}
-      </section>
-
-      <p className="flex items-center gap-2 text-xs text-gray-400">
-        <Store className="w-4 h-4" />
-        These settings are read by the storefront from the public
-        settings endpoint; nothing here changes the admin layout itself.
-      </p>
-    </div>
+      </SettingsShell>
+    </SettingsPage>
   );
 }

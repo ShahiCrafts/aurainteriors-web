@@ -21,6 +21,7 @@ import {
   useCheckWishlist,
 } from "../../hooks/cart/useWishlistTan";
 import useAuthStore from "../../store/authStore";
+import useSiteSettingsStore from "../../store/siteSettingsStore";
 import { useShallow } from "zustand/react/shallow";
 import { toast } from "../../lib/toast";
 import ARViewModal from "../../components/modals/ARViewModal";
@@ -164,6 +165,13 @@ export default function ProductDetailsPage() {
   }, [selectedVariant?._id]);
 
   const { data: categoryTreeData } = useCategoryTree();
+  // Batch 3d: Settings → SEO "Enable Breadcrumbs" gate. There is no
+  // shared Breadcrumbs component in the customer UI — this page's
+  // inline breadcrumb nav is the one paired with the breadcrumb
+  // JSON-LD (which applyHead gates separately). Default true.
+  const breadcrumbsEnabled = useSiteSettingsStore(
+    (s) => s.settings.seo.features?.breadcrumbs !== false,
+  );
   const buildBreadcrumbs = () => {
     const crumbs = [{ name: "Home", path: "/" }];
     if (product?.category) {
@@ -311,30 +319,32 @@ export default function ProductDetailsPage() {
       <main className="min-h-screen bg-white pt-4 font-dm-sans pb-32 lg:pb-28">
         <div className="mx-auto px-4 sm:px-6 lg:px-8 py-2 sm:py-3">
           {/* Breadcrumb */}
-          <nav className="flex flex-wrap items-center gap-y-1 gap-x-2 text-[14px] font-medium mb-5">
-            {breadcrumbs.map((crumb, index) => (
-              <div key={index} className="flex items-center gap-2">
-                {index > 0 && (
-                  <ChevronRight
-                    size={14}
-                    className="text-neutral-400 shrink-0"
-                  />
-                )}
-                {index === breadcrumbs.length - 1 ? (
-                  <span className="text-neutral-500 truncate max-w-37.5 sm:max-w-75">
-                    {crumb.name}
-                  </span>
-                ) : (
-                  <Link
-                    to={crumb.path}
-                    className="text-neutral-500 hover:text-brand transition-colors whitespace-nowrap"
-                  >
-                    {crumb.name}
-                  </Link>
-                )}
-              </div>
-            ))}
-          </nav>
+          {breadcrumbsEnabled && (
+            <nav className="flex flex-wrap items-center gap-y-1 gap-x-2 text-[14px] font-medium mb-5">
+              {breadcrumbs.map((crumb, index) => (
+                <div key={index} className="flex items-center gap-2">
+                  {index > 0 && (
+                    <ChevronRight
+                      size={14}
+                      className="text-neutral-400 shrink-0"
+                    />
+                  )}
+                  {index === breadcrumbs.length - 1 ? (
+                    <span className="text-neutral-500 truncate max-w-37.5 sm:max-w-75">
+                      {crumb.name}
+                    </span>
+                  ) : (
+                    <Link
+                      to={crumb.path}
+                      className="text-neutral-500 hover:text-brand transition-colors whitespace-nowrap"
+                    >
+                      {crumb.name}
+                    </Link>
+                  )}
+                </div>
+              ))}
+            </nav>
+          )}
 
           {/* Product Section */}
           <div className="flex gap-10 mb-8">
