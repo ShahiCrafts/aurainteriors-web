@@ -449,10 +449,10 @@ export function ProductDetailsSkeleton() {
                 ))}
               </div>
             </div>
-            <div className="flex flex-col sm:flex-row items-stretch gap-3 mb-5">
-              <ListingBlock className="h-13 sm:w-29 shrink-0 rounded-lg" />
-              <ListingBlock className="h-13 sm:flex-2 rounded-lg" />
-              <ListingBlock className="h-13 sm:flex-1 rounded-lg" />
+            <div className="flex flex-wrap sm:flex-nowrap items-stretch gap-3 mb-5">
+              <ListingBlock className="h-13 w-29 shrink-0 rounded-lg" />
+              <ListingBlock className="h-13 flex-1 min-w-40 sm:flex-2 rounded-lg" />
+              <ListingBlock className="h-13 w-full sm:w-auto sm:flex-1 rounded-lg" />
             </div>
             <div className="flex items-start gap-12 mt-10">
               <ListingBlock className="w-32 h-5" />

@@ -184,9 +184,11 @@ export default function PurchasePanel({
           </div>
         </div>
       )}
-      {/* Quantity + Add to Cart + Buy Now — same row */}
-      <div className="flex flex-col sm:flex-row items-stretch gap-3 mb-5">
-        <div className="flex items-center h-13 shrink-0 justify-center sm:justify-start">
+      {/* Quantity + Add to Cart share a row on mobile (Buy Now wraps
+          full-width beneath them); from sm up all three sit in one
+          row, as before. */}
+      <div className="flex flex-wrap sm:flex-nowrap items-stretch gap-3 mb-5">
+        <div className="flex items-center h-13 shrink-0">
           <QuantitySelector
             value={quantity}
             onChange={setQuantity}
@@ -201,7 +203,7 @@ export default function PurchasePanel({
           id="main-add-to-cart"
           onClick={handleAddToCart}
           disabled={isOutOfStock}
-          className="sm:flex-2 bg-brand text-white h-13 py-3 rounded-lg font-bold text-[16px] hover:bg-brand-hover transition-all duration-300 flex items-center justify-center gap-2.5 disabled:bg-neutral-200"
+          className="flex-1 min-w-40 sm:flex-2 bg-brand text-white h-13 py-3 rounded-lg font-bold text-[16px] hover:bg-brand-hover transition-all duration-300 flex items-center justify-center gap-2.5 disabled:bg-neutral-200"
         >
           <ShoppingCart size={18} />
           {isOutOfStock ? "Out of Stock" : "Add to Cart"}
@@ -210,7 +212,7 @@ export default function PurchasePanel({
         <button
           onClick={handleBuyNow}
           disabled={isOutOfStock}
-          className="sm:flex-1 bg-white text-[#1A1714] border border-black/15 h-13 py-3 rounded-lg font-bold text-[16px] hover:border-black/30 transition-all duration-300 disabled:opacity-50"
+          className="w-full sm:w-auto sm:flex-1 bg-white text-[#1A1714] border border-black/15 h-13 py-3 rounded-lg font-bold text-[16px] hover:border-black/30 transition-all duration-300 disabled:opacity-50"
         >
           Buy Now
         </button>
