@@ -121,7 +121,7 @@ export default function AdminTopbar({
               onClick={() => setProfileMenuOpen((prev) => !prev)}
               className="flex items-center gap-3 pl-1 rounded-xl hover:bg-gray-50 py-1.5 pr-2 transition-colors"
             >
-              <div className="w-9 h-9 rounded-xl bg-brand/10 flex items-center justify-center text-brand font-bold text-sm border border-brand/20 shrink-0">
+              <div className="w-9 h-9 rounded-xl bg-brand flex items-center justify-center text-white font-bold text-sm shrink-0">
                 {user?.firstName?.charAt(0)?.toUpperCase() || "A"}
               </div>
               <div className="text-right hidden xl:block">
