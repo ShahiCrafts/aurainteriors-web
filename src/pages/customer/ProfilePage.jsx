@@ -55,12 +55,18 @@ export default function ProfilePage() {
       <Navbar />
       <CategoryBar />
 
-      {/* Fixed-height, non-scrolling shell. Page never scrolls; only the right panel scrolls internally. */}
-      <main className="h-[calc(100vh-138px)] bg-neutral-100 font-dm-sans overflow-hidden">
-        <div className="w-full h-full">
-          <div className="flex flex-col lg:flex-row items-stretch gap-6 h-full">
-            {/* Left Column: Sidebar Card — truly pinned, no sticky, no scroll */}
-            <aside className="w-full lg:w-[320px] xl:w-95 shrink-0 bg-white h-full overflow-hidden flex flex-col p-6 lg:p-8 space-y-8">
+      {/* Desktop: fixed-height, non-scrolling shell — the page never
+          scrolls, only the right panel scrolls internally. Mobile:
+          natural page flow — identity header, tab bar, then the active
+          section stacked full-width (the fixed shell + full-height
+          sidebar crushed the content panel to zero height). */}
+      <main className="bg-neutral-100 font-dm-sans lg:h-[calc(100vh-138px)] lg:overflow-hidden">
+        <div className="w-full lg:h-full">
+          <div className="flex flex-col lg:flex-row items-stretch lg:gap-6 lg:h-full">
+            {/* Left Column: Sidebar Card — truly pinned, no sticky, no scroll.
+                On mobile only the account summary shows; navigation is
+                the tab bar in the content panel. */}
+            <aside className="w-full lg:w-[320px] xl:w-95 shrink-0 bg-white lg:h-full lg:overflow-hidden flex flex-col p-4 sm:p-6 lg:p-8 space-y-0 lg:space-y-8">
               {/* Account Summary */}
               <div>
                 <h3 className="text-[15px] font-medium text-[#1A1714]/30 mb-4">
@@ -75,20 +81,20 @@ export default function ProfilePage() {
                     />
                   </div>
                   <div className="min-w-0">
-                    <p className="text-[18px] font-semibold text-[#1A1714] leading-none mb-1.5">
+                    <p className="text-[18px] font-semibold text-[#1A1714] leading-none mb-1.5 truncate">
                       {user?.firstName} {user?.lastName}
                     </p>
-                    <p className="text-[15px] text-black/40 leading-none">
+                    <p className="text-[15px] text-black/40 leading-none truncate">
                       {user?.email}
                     </p>
                   </div>
                 </div>
               </div>
 
-              <div className="w-full h-px bg-neutral-100" />
+              <div className="w-full h-px bg-neutral-100 hidden lg:block" />
 
               {/* Navigation Links */}
-              <div>
+              <div className="hidden lg:block">
                 <h3 className="text-[15px] font-medium text-[#1A1714]/30 mb-5">
                   Account Menu
                 </h3>
@@ -111,21 +117,21 @@ export default function ProfilePage() {
                 </nav>
               </div>
 
-              <div className="w-full h-px bg-neutral-100" />
+              <div className="w-full h-px bg-neutral-100 hidden lg:block" />
 
               {/* Actions */}
               <button
                 onClick={handleLogout}
-                className="text-[15px] font-semibold text-red-500/80 hover:text-red-600 transition-all duration-200 block text-left mt-auto px-4"
+                className="text-[15px] font-semibold text-red-500/80 hover:text-red-600 transition-all duration-200 hidden lg:block text-left mt-auto px-4"
               >
                 Sign Out
               </button>
             </aside>
 
             {/* Right Column: Content Panel — fills remaining height exactly, scrolls internally only if needed */}
-            <div className="flex-1 w-full bg-white p-6 lg:p-8 flex flex-col h-full overflow-y-auto">
+            <div className="flex-1 w-full bg-white p-4 sm:p-6 lg:p-8 flex flex-col lg:h-full lg:overflow-y-auto">
               {/* Mobile Navigation - Simple Text Scroller */}
-              <div className="lg:hidden flex items-center gap-6 overflow-x-auto no-scrollbar pb-4 mb-8 border-b border-black/3 shrink-0">
+              <div className="lg:hidden flex items-center gap-6 overflow-x-auto no-scrollbar pb-3 mb-5 border-b border-black/3 shrink-0">
                 {navItems.map((item) => (
                   <button
                     key={item.id}
