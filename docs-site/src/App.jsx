@@ -119,7 +119,7 @@ export default function App() {
           <input
             value={query}
             onChange={(e) => setQuery(e.target.value)}
-            placeholder="Search docs…"
+            placeholder="Quick search…"
             aria-label="Search documentation"
           />
         </div>
